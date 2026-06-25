@@ -1,0 +1,927 @@
+{
+  "custom": {
+    "selection": [],
+    "values": {
+      "chkItemTypeName": null,
+      "dataTypeInfo": {
+        "changedBy": null,
+        "changedDate": null,
+        "createdBy": null,
+        "createdDate": null,
+        "dataTypeId": null,
+        "dataTypeName": null,
+        "enabled": null,
+        "isNumeric": null,
+        "isTriggerType": null,
+        "pickListEnabled": null
+      },
+      "multiSelect": false,
+      "pickListInfo": {
+        "changedBy": null,
+        "changedDate": null,
+        "createdBy": null,
+        "createdDate": null,
+        "dataTypeId": null,
+        "dataTypeName": null,
+        "description": null,
+        "enabled": null,
+        "example": null,
+        "isNumeric": null,
+        "pickListId": null,
+        "pickListName": null
+      },
+      "tolerances": {
+        "lcl": null,
+        "ldl": null,
+        "lel": null,
+        "lsl": null,
+        "tgt": null,
+        "ucl": null,
+        "udl": null,
+        "uel": null,
+        "usl": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "chkItemId": null,
+      "chkItemTypeId": null,
+      "dataTypeId": null,
+      "engUnitId": null,
+      "pickListId": null,
+      "pickListValues": "",
+      "specification": {
+        "attributeTolerance": {},
+        "range": {
+          "max": null,
+          "min": null
+        },
+        "regex": {
+          "value": ""
+        },
+        "setPoint": {
+          "operator": null,
+          "value": null
+        },
+        "specType": null,
+        "tolerance": {
+          "lcl": null,
+          "ldl": null,
+          "lel": null,
+          "lsl": null,
+          "tgt": null,
+          "ucl": null,
+          "udl": null,
+          "uel": null,
+          "usl": null
+        }
+      },
+      "tolerances": {
+        "lcl": null,
+        "ldl": null,
+        "lel": null,
+        "lsl": null,
+        "tgt": null,
+        "ucl": null,
+        "udl": null,
+        "uel": null,
+        "usl": null
+      }
+    }
+  },
+  "propConfig": {
+    "custom.selection": {
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tvalues \u003d {\n\t\t\t\t\u0027dataTypeInfo\u0027: system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getDataTypes({\u0027dataTypeId\u0027:value.dataTypeId or -1}), 0),\n\t\t\t\t\u0027pickListInfo\u0027: system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getPickList({\u0027pickListId\u0027:value.pickListId or -1}), 0),\n\t\t\t\t\u0027chkItemTypeName\u0027: system.kanoa.utilities.getFieldValue(\u0027chkItemTypeName\u0027, system.kanoa.quality.config.getCheckItemTypes({\u0027chkItemTypeId\u0027: value[\u0027chkItemTypeId\u0027] or -1})),\n\t\t\t\t\u0027tolerances\u0027: value.tolerances\n\t\t\t}\n\t\n\tpickListName \u003d system.kanoa.utilities.getFieldValue(\u0027pickListName\u0027, system.kanoa.quality.config.getPickList({\u0027pickListId\u0027: value[\u0027pickListId\u0027]}))\n\tvalues[\u0027multiSelect\u0027] \u003d value[\u0027pickListValues\u0027][\u0027multiSelect\u0027] if value[\u0027pickListValues\u0027] and pickListName \u003d\u003d \u0027Text\u0027 and value[\u0027pickListValues\u0027].has_key(\u0027multiSelect\u0027) else False\n\treturn values",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 407,
+      "width": 324
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTime",
+              "name": "lblTime"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": ".../KeyPad Entry.props.params.value"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\n\tval \u003d value.ljust(6,\u00270\u0027)\n\t\n\treturn \"%s hrs %s mins %s secs\"%(val[:2], val[2:4], val[4:6])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "marginRight": 10
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "FlexCntTime",
+          "name": "FlexCntTime"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.pickListInfo.pickListName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Time\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "KeyPad-Entry",
+          "name": "KeyPad Entry"
+        },
+        "position": {
+          "basis": "320px"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "dataTypeInfo": "{view.custom.values.dataTypeInfo}",
+                  "pickList": "{../pickList.props.instances}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn len(value.pickList) \u003d\u003d 0 and value.dataTypeInfo[\u0027isNumeric\u0027] \u003d\u003d 1",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "value": ""
+          },
+          "path": "kanoa/core/templates/inputs/keypad/keyPadEntry"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "pickList",
+          "name": "pickList"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "this.props.instances"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn len(value) \u003e 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t\u0027\u0027\u0027\n\t\tpickListNames are defined as \u0027Number\u0027, \u0027Text\u0027 or \u0027Fraction\u0027\n\t\tFor Number and Fraction box, pickListValues are an integer value that dictate how many buttons should be generated\n\t\u0027\u0027\u0027\n\n\tdef getToleranceLimits(spec):\n\t\t#If we don\u0027t find a tolerance spec, we will default to the specification\n\t\tspecs \u003d {\u0027lel\u0027:None, \u0027lsl\u0027:None, \u0027lcl\u0027:None, \u0027tgt\u0027:None, \u0027ucl\u0027:None, \u0027usl\u0027:None, \u0027uel\u0027:None}\t\t\n\t\tif spec:\t\n\t\t\tif spec[\u0027specType\u0027] \u003d\u003d \u0027attributeTolerance\u0027: #We got our specs from the attributes table\n\t\t\t\ttolerances \u003d self.view.custom.values.tolerances\n\t\t\t\tspecs[\u0027lel\u0027] \u003d tolerances[\u0027lel\u0027]\n\t\t\t\tspecs[\u0027lsl\u0027] \u003d tolerances[\u0027lsl\u0027] or tolerances[\u0027ldl\u0027]\n\t\t\t\tspecs[\u0027lcl\u0027] \u003d tolerances[\u0027lcl\u0027]\n\t\t\t\tspecs[\u0027tgt\u0027] \u003d tolerances[\u0027tgt\u0027]\n\t\t\t\tspecs[\u0027ucl\u0027] \u003d tolerances[\u0027ucl\u0027]\n\t\t\t\tspecs[\u0027usl\u0027] \u003d tolerances[\u0027usl\u0027] or tolerances[\u0027udl\u0027]\n\t\t\t\tspecs[\u0027uel\u0027] \u003d tolerances[\u0027uel\u0027]\n\t\t\telif spec[\u0027specType\u0027] \u003d\u003d \u0027tolerance\u0027:\n\t\t\t\ttolerances \u003d spec[\u0027tolerance\u0027]\n\t\t\t\tspecs[\u0027lel\u0027] \u003d tolerances[\u0027lel\u0027]\n\t\t\t\tspecs[\u0027lsl\u0027] \u003d tolerances[\u0027lsl\u0027] or tolerances[\u0027ldl\u0027]\n\t\t\t\tspecs[\u0027lcl\u0027] \u003d tolerances[\u0027lcl\u0027]\n\t\t\t\tspecs[\u0027tgt\u0027] \u003d tolerances[\u0027tgt\u0027]\n\t\t\t\tspecs[\u0027ucl\u0027] \u003d tolerances[\u0027ucl\u0027]\n\t\t\t\tspecs[\u0027usl\u0027] \u003d tolerances[\u0027usl\u0027] or tolerances[\u0027udl\u0027]\n\t\t\t\tspecs[\u0027uel\u0027] \u003d tolerances[\u0027uel\u0027]\n\t\t\telif spec[\u0027specType\u0027] \u003d\u003d \u0027range\u0027:\n\t\t\t\tspecs[\u0027lel\u0027] \u003d None\n\t\t\t\tspecs[\u0027lsl\u0027] \u003d spec[\u0027range\u0027][\u0027min\u0027]\n\t\t\t\tspecs[\u0027usl\u0027] \u003d spec[\u0027range\u0027][\u0027max\u0027]\n\t\t\telif spec[\u0027specType\u0027] \u003d\u003d \u0027setPoint\u0027:\n\t\t\t\treturn []\n\t\t\n\t\tlowerV, target, upperV \u003d [0] * 3\t\n\t\tif len([v for k,v in specs.items() if v is not None]) \u003e 0:\n\t\t\tif (specs[\u0027lel\u0027] or None) is not None: lowerV \u003d specs[\u0027lel\u0027]\n\t\t\telif specs[\u0027lsl\u0027] is not None: lowerV \u003d specs[\u0027lsl\u0027]\t\t\t\n\t\t\tif (specs[\u0027tgt\u0027] or None) is not None: target \u003d specs[\u0027tgt\u0027]\n\t\t\tif (specs[\u0027uel\u0027] or None) is not None: upperV \u003d specs[\u0027uel\u0027]\n\t\t\telif specs[\u0027usl\u0027] is not None and specs[\u0027usl\u0027] !\u003d 0: upperV \u003d specs[\u0027usl\u0027]\n\t\t\telse: upperV \u003d lowerV + 1 #No upper limit set\n\t\telse:\n\t\t\tlowerV \u003d pickListValues[\u0027min\u0027] or 0\n\t\t\tupperV \u003d pickListValues[\u0027max\u0027] or 0\n\t\t\ttarget \u003d None\n\t\n\t\treturn lowerV, target, upperV\n\n\tif value.pickListInfo is None: return []\n\tpickListName \u003d value.pickListInfo.pickListName or None\n\t\n\tif pickListName is None: return []\n\tpickListValues \u003d self.view.params.value.pickListValues\n\tif pickListValues is None: return []\n\tdataTypeName \u003d value.dataTypeInfo.dataTypeName\n#\tsystem.perspective.print(\"building picklist with %s %s %s\"%(pickListName, pickListValues, dataTypeName))\t\n\n\tif dataTypeName is None or dataTypeName in (\u0027Datetime\u0027): return [] #shouldn\u0027t be opening this popup if it is a string\n\tif pickListName is None or pickListName in (\u0027Time\u0027, \u0027Tree\u0027): return []\t#show time picker / Tree\n\t\n\timport re\n\tvalues \u003d []\n\n\tif pickListName \u003d\u003d \u0027Text\u0027:\n\t\ttry:\t\t\n\t\t\tpassItems \u003d []\n\t\t\tfailItems \u003d []\n\t\t\totherItems \u003d []\n\t\t\tfor k, v in pickListValues.items():\n\t\t\t\tif k \u003d\u003d \u0027multiSelect\u0027: continue\n\t\t\t\tif k \u003d\u003d \u0027PASS\u0027: \n\t\t\t\t\tfor item in v: passItems.append(item)\n\t\t\t\telif k \u003d\u003d \u0027FAIL\u0027: \n\t\t\t\t\tfor item in v: failItems.append(item)\n\t\t\t\telse: \n\t\t\t\t\tfor item in v: otherItems.append(item)\n\t\t\t\tvalues \u003d passItems + failItems + otherItems\n\t\texcept:\n\t\t\tvalues \u003d str(pickListValues)\n\t\n\t\treturn [{\"label\": str(value), \"value\": value} for value in values]\n\telif pickListName \u003d\u003d \u0027Boolean\u0027:\n\t\ttry:\n\t\t\tfor k, v in pickListValues.items():\n\t\t\t\tif k \u003d\u003d \u0027TRUE\u0027: \n\t\t\t\t\tfor item in v: \tvalues.append({\"label\": item, \"value\": 1})\n\t\t\t\telse: \n\t\t\t\t\tfor item in v: values.append({\"label\": item, \"value\": 0})\t\t\t\n\t\t\treturn values\n\t\texcept:\n\t\t\treturn [{\"label\": str(value), \"value\": value} for value in str(pickListValues)]\n\n\t#we are dealing with numbers from here on in\n\tincrement \u003d float(pickListValues[\u0027increment\u0027]) if pickListValues.has_key(\u0027increment\u0027) else 1\t\t#default it to halves if no increment was set\n\tlowerV, target, upperV \u003d getToleranceLimits(self.view.params.value.specification)\n\t\n\tvalueRange \u003d int((upperV - lowerV) / increment)\n\tvalues \u003d [lowerV + float(i) * increment for i in range(valueRange+1)]\n\tif target not in values and target !\u003d 0 and target !\u003d None: values.append(target)\n\n\tif dataTypeName \u003d\u003d \u0027Integer\u0027: values \u003d [int(i) for i in values]\n\tif pickListName \u003d\u003d \u0027Number\u0027: values \u003d [{\u0027value\u0027: value, \u0027label\u0027:str(value)} for value in values]\n\telif pickListName \u003d\u003d \u0027Fraction\u0027: values \u003d [{\u0027value\u0027: value, \u0027label\u0027: str(system.kanoa.utilities.getFraction(value) or 0)} for value in values]\n\n\tvalues \u003d sorted(values, key\u003dlambda x: x[\u0027value\u0027])\n\n\tif len(values) \u003e 50: values \u003d values[:50]\t#Cap out at 50 buttons\n\n\treturn values",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "elementStyle": {
+            "padding": "5px"
+          },
+          "justify": "center",
+          "path": "kanoa/qds/schedule/popups/picklistButton",
+          "style": {
+            "gap": "5px"
+          },
+          "useDefaultViewHeight": false,
+          "wrap": "wrap"
+        },
+        "type": "ia.display.flex-repeater"
+      },
+      {
+        "meta": {
+          "domId": "evDatePicker",
+          "name": "evDatePicker"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.dataTypeInfo.dataTypeName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Datetime\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.value.chkShtDetailId": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.detailId"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.params.value.measNum": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.measNum"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.params.value.selectedDatetime": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "#\treturn value\n#\treturn system.date.parse(value, \"YYYY-MM-DD HH:mm\")\n\treturn system.date.parse(value, \"YYYY-MM-DD HH:mm\") if value is not None else system.date.now()",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "value": {
+              "$": [
+                "ts",
+                192,
+                1688873294349
+              ],
+              "$ts": 1688873294349
+            }
+          },
+          "path": "kanoa/qds/templates/selectors/dateTimeSelector"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tpayload \u003d {\u0027value\u0027:True}\n\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with %s\"%(payload))\t\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope\u003d\u0027page\u0027)\t"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnTrigger",
+          "name": "btnTrigger"
+        },
+        "position": {
+          "basis": "150px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "chkItemTypeName": "{view.custom.values.chkItemTypeName}",
+                  "dataTypeInfo": "{view.custom.values.dataTypeInfo}"
+                },
+                "waitOnAll": true
+              },
+              "transforms": [
+                {
+                  "code": "\n\treturn value[\u0027chkItemTypeName\u0027] \u003d\u003d \u0027Trigger\u0027 and value.dataTypeInfo[\u0027dataTypeName\u0027] \u003d\u003d \u0027Boolean\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "alignSelf": "center",
+            "backgroundColor": "#00D900",
+            "classes": "kanoa/button/flat",
+            "maxHeight": "60px",
+            "maxWidth": "150px"
+          },
+          "text": "Take Measurement"
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "meta": {
+          "domId": "evTreeSelector",
+          "name": "evTreeSelector"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.pickListInfo.pickListName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Tree\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.values.data": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "pickListName": "{view.custom.values.pickListInfo.pickListName}",
+                  "pickListValues": "{view.params.value.pickListValues}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value.pickListName !\u003d \u0027Tree\u0027 or (value.pickListValues or None) is None: return system.dataset.toDataSet([],[])\n#\ttreeList \u003d value.pickListValues\n#\ttreeList \u003d treeList[1:-1].split(\"\u0027,\u0027\")\n\tpickListValues \u003d value.pickListValues if value.pickListValues[0] \u003d\u003d \u0027[\u0027 and value.pickListValues[-1] \u003d\u003d \u0027]\u0027 else \u0027[\u0027 + value.pickListValues + \u0027]\u0027\n\ttreeList \u003d system.util.jsonDecode(pickListValues)\n\treturn system.dataset.toDataSet([\u0027path\u0027, \u0027sortOrder\u0027], [[item.replace(\u0027/\u0027,\u0027\\\\\u0027), i] for i, item in enumerate(treeList)])",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.params.values.selectorId": {
+            "binding": {
+              "config": {
+                "expression": "0"
+              },
+              "transforms": [
+                {
+                  "code": "\timport uuid\n\treturn str(uuid.uuid4())",
+                  "type": "script"
+                }
+              ],
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "refresh": false,
+            "values": {
+              "msgHandler": "checkValueTree",
+              "options": {
+                "expand": false,
+                "multiSelect": false,
+                "selectable": []
+              },
+              "selection": [],
+              "style": {
+                "backgroundColor": "",
+                "icoPath": null,
+                "iconColor": ""
+              }
+            }
+          },
+          "path": "kanoa/core/templates/selectors/tree/treeSelector"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tself.parent.parent.getChild(\"txtArea\").position.display \u003d not self.parent.parent.getChild(\"txtArea\").position.display"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnShowPaste",
+                  "name": "btnShowPaste",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Show paste field"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcGreen-60",
+                      "path": "material/content_paste"
+                    }
+                  },
+                  "style": {
+                    "alignSelf": "flex-start",
+                    "classes": "kanoa/button/flatIcon"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tpayload \u003d {\u0027value\u0027:self.parent.parent.getChild(\"txtArea\").props.text}\n\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with %s\"%(payload))\t\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope\u003d\u0027page\u0027)\n\tself.parent.parent.getChild(\"txtArea\").props.text \u003d \u0027\u0027\n\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnSendText",
+                  "name": "btnSendText",
+                  "tooltip": {
+                    "enabled": true,
+                    "text": "Send pasted text"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "display": "{.../txtArea.position.display}",
+                          "text": "{.../txtArea.props.text}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn value.display and value.text !\u003d \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcGreen-60",
+                      "path": "material/check_box"
+                    }
+                  },
+                  "style": {
+                    "alignSelf": "flex-start",
+                    "classes": "kanoa/button/flatIcon"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              }
+            ],
+            "meta": {
+              "domId": "flxAction",
+              "name": "flxAction"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "txtArea",
+              "name": "txtArea",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "Paste field"
+              }
+            },
+            "position": {
+              "display": false,
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "onChange": {
+                  "enabled": null,
+                  "script": "\n\tif currentValue.value:\n\t\t\timport time\n\t\t\ttime.sleep(0.5)\n\t\t\tself.focus()\n\t\t\t\n\t\t\t\n\treturn\t"
+                }
+              },
+              "props.text": {
+                "onChange": {
+                  "enabled": null,
+                  "script": "\n\tsystem.perspective.print(\u0027paste txt changed to %s\u0027%currentValue.value)\n\n\tif currentValue.value !\u003d \u0027\u0027:\n\t\tpayload \u003d {\u0027value\u0027: currentValue.value}\n\t\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with %s\"%(payload))\t\n\t\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope\u003d\u0027page\u0027)\n\t\tself.props.text \u003d \u0027\u0027\n\t\tself.parent.getChild(\"flxAction\").getChild(\"btnShowPaste\").focus()\n\n\treturn"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "style": {
+                "classes": "kanoa/border"
+              }
+            },
+            "type": "ia.input.text-area"
+          }
+        ],
+        "meta": {
+          "domId": "flxPaste",
+          "name": "flxPaste"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn value.pickListInfo[\u0027pickListId\u0027] is None and value.dataTypeInfo[\u0027dataTypeName\u0027] not in (\u0027Datetime\u0027 , \u0027Boolean\u0027)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblDebug",
+          "name": "lblSelection",
+          "tooltip": {}
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "this.props.text"
+              },
+              "type": "property"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.multiSelect"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.selection"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027, \u0027.join(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "textStyle": {
+            "wordWrap": "break-word"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tpayload \u003d {\u0027value\u0027: \u0027, \u0027.join(self.view.custom.selection)}\n\tsystem.perspective.print(\"checkValueSelector is sending msg ValuePicked() with payload: %s\"%(payload))\n\tsystem.perspective.sendMessage(\u0027ValuePicked\u0027, payload\u003dpayload)\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSelect",
+              "name": "btnSelect",
+              "tooltip": {
+                "delay": 0,
+                "location": "top",
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check"
+                },
+                "style": {
+                  "marginLeft": "100px"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Select"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnExit",
+              "name": "btnExit",
+              "tooltip": {
+                "delay": 0,
+                "location": "top",
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                },
+                "style": {
+                  "marginLeft": "100px"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "FlexCntAction",
+          "name": "flxCntAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.multiSelect"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "lblDebug",
+          "tooltip": {
+            "enabled": true
+          }
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/bodySmall"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "space-between",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "setOptions",
+          "pageScope": true,
+          "script": "\t\n#\tsystem.perspective.print(\u0027setOptions() msg rcvd with %s\u0027%payload)\n\t\n\tself.view.params.value \u003d payload[\u0027value\u0027]\n\t\n\treturn\n",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "buttonSelection",
+          "pageScope": true,
+          "script": "\t# implement your handler here\n\tmultiSelect \u003d self.view.custom.values.multiSelect\n\tif not multiSelect:\n\t\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with \" + str(payload))\n\t\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope\u003d\u0027page\u0027)\n\telse:\n\t\tselectedValue \u003d payload[\u0027value\u0027]\n\t\tif selectedValue in self.view.custom.selection: self.view.custom.selection.remove(selectedValue)\n\t\telse: self.view.custom.selection.append(selectedValue)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "custom": {
+    "scheduleOption": "default", 
+    "shiftAdherence": false
+  }, 
+  "params": {
+    "action": null, 
+    "scheduleBlockInfo": "value"
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 325, 
+      "height": 330
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "10px", 
+        "backgroundColor": "--kcSurface"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default", 
+                "fontSize": "1.5em", 
+                "fontWeight": "bold"
+              }, 
+              "text": "Scheduling Options"
+            }, 
+            "meta": {
+              "domId": "lblHeader", 
+              "name": "lblHeader"
+            }, 
+            "position": {
+              "grow": 1
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxHeader", 
+          "name": "flxHeader"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "classes": "kanoa/font/default", 
+            "gap": 5
+          }, 
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.input.toggle-switch", 
+            "props": {
+              "label": {
+                "position": "left", 
+                "text": "Shift Adherence"
+              }
+            }, 
+            "meta": {
+              "domId": "toggleShiftAdhere", 
+              "name": "toggleShiftAdhere"
+            }, 
+            "position": {
+              "display": false, 
+              "basis": "36px"
+            }, 
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.shiftAdherence"
+                  }
+                }, 
+                "persistent": true
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.radio-group", 
+            "props": {
+              "orientation": "column", 
+              "align": "start", 
+              "radios": [
+                {
+                  "text": "Default - does not affect existing events", 
+                  "value": "default", 
+                  "selected": true
+                }, 
+                {
+                  "text": "Fixed - modifies overlapping events", 
+                  "value": "fixed", 
+                  "selected": false
+                }, 
+                {
+                  "text": "Override - deletes overlapping events", 
+                  "value": "override", 
+                  "selected": false
+                }, 
+                {
+                  "text": "Wrap - wraps around existing events", 
+                  "value": "wrap", 
+                  "selected": false
+                }
+              ]
+            }, 
+            "meta": {
+              "domId": "rbOptions", 
+              "name": "rbOptions"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.scheduleOption"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxOptions", 
+          "name": "flxOptions"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "padding": "5px", 
+            "gap": "5px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/filled"
+              }, 
+              "text": "Save"
+            }, 
+            "meta": {
+              "domId": "btnConfirm", 
+              "name": "btnConfirm"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tpayload = {\n\t\t'shiftAdherence': self.view.custom.shiftAdherence,\n\t\t'scheduleOption': self.view.custom.scheduleOption,\n\t\t'scheduleBlockInfo': self.view.params.scheduleBlockInfo, \n\t\t'action': self.view.params.action\n\t}\n\tsystem.perspective.sendMessage('scheduleOptionSelect', payload)\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "backgroundColor": "--kcGray-0", 
+                "classes": "kanoa/button/outlined"
+              }, 
+              "text": "Close"
+            }, 
+            "meta": {
+              "domId": "btnClose", 
+              "name": "btnClose"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\t#If user closes without updating, we'll want to reset the moved event\n\tsystem.perspective.sendMessage('refreshEvents', {})\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxButtons", 
+          "name": "flxButtons"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.shiftAdherence": {
+      "persistent": true
+    }, 
+    "custom.scheduleOption": {
+      "persistent": true
+    }, 
+    "params.action": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.scheduleBlockInfo": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

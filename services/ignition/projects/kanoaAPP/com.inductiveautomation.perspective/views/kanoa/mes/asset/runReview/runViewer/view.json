@@ -1,0 +1,235 @@
+{
+  "custom": {
+    "tab": 0
+  },
+  "params": {
+    "value": {
+      "assetId": null,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1715002907721
+        ],
+        "$ts": 1714686681000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1715002900605
+        ],
+        "$ts": 1714543942000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.tab": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn 1",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 596,
+      "width": 945
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "custom": {
+          "selectedTab": "value"
+        },
+        "meta": {
+          "domId": "tabCnt",
+          "name": "tabCnt",
+          "tooltip": {
+            "text": "{\"waste\":{\"label\":\"Waste\",\"units\":\"Bottles\",\"calculated\":false,\"value\":500},\"outfeed\":{\"label\":\"Outfeed\",\"units\":\"Bottles\",\"calculated\":false,\"value\":400},\"endDate\":1685656281907,\"assetId\":18,\"pkgCount\":9,\"shift\":null,\"infeed\":{\"label\":\"Infeed\",\"units\":\"Bottles\",\"calculated\":false,\"value\":5000},\"startDate\":1685599942747}"
+          }
+        },
+        "position": {
+          "basis": ""
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "enabled": false,
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.currentTabIndex": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.custom.tab"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "menuType": "modern",
+          "tabSize": {
+            "height": 25
+          },
+          "tabStyle": {
+            "active": {
+              "classes": "kanoa/font/default",
+              "color": "--kcOrange-60",
+              "fontWeight": "bold"
+            },
+            "inactive": {
+              "classes": "kanoa/font/default",
+              "color": "--kcGrey-80"
+            }
+          },
+          "tabs": [
+            "Counts",
+            "Downtime"
+          ]
+        },
+        "type": "ia.container.tab"
+      },
+      {
+        "meta": {
+          "domId": "evCountViewer",
+          "name": "evCountViewer"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.tab"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.value": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/mes/asset/counts/countEditor"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "evDowntimeViewer",
+          "name": "evDowntimeViewer"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.tab"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d 1",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.value": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn {\"assetId\": value.assetId, \"endDate\": value.endDate, \"startDate\": value.startDate}\n",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/mes/asset/downtime/downtimeTable",
+          "style": {
+            "padding": "5px"
+          }
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcGray-0",
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "updateProductionViewer",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"updateProductionViewer() msg rcvd with payload %s\"%payload)\n#\tself.view.params.value \u003d {}\n#\timport time\n#\ttime.sleep(0.1)\n\tself.view.params.value \u003d payload[\u0027value\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

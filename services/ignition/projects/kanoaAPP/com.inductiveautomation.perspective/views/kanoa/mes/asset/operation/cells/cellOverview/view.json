@@ -1,0 +1,109 @@
+{
+  "custom": {
+    "filter": {
+      "endDate": null, 
+      "startDate": {
+        "$ts": 1735496642153, 
+        "$": [
+          "ts", 
+          192, 
+          1737505042145
+        ]
+      }
+    }
+  }, 
+  "params": {
+    "value": {
+      "assetId": 901
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 1041, 
+      "height": 775
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "flex-start", 
+      "alignContent": "flex-start", 
+      "style": {
+        "padding": "5px", 
+        "classes": "kanoa/container", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "meta": {
+          "domId": "flxHeader", 
+          "name": "flxHeader"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "display": false
+        }
+      }, 
+      {
+        "type": "ia.display.flex-repeater", 
+        "props": {
+          "alignItems": "flex-start", 
+          "alignContent": "flex-start", 
+          "path": "kanoa/mes/asset/operation/cells/cellCard", 
+          "style": {
+            "gap": 5
+          }, 
+          "wrap": "wrap"
+        }, 
+        "meta": {
+          "domId": "flxRptCellCards", 
+          "name": "flxRptCellCards"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\tinstances = []\t\n\t\n\tif (value['assetId'] or None) is None: return instances\n\t\n\tchildAssets = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({'parentId': value['assetId']}))\n\tchildAssets = sorted(childAssets, key=lambda x: x['sortOrder'], reverse = False)\n\n\tfor asset in childAssets:\n#\t\tinstances.append({'value': {'assetId': asset['assetId'], 'startDate': value['startDate'], 'endDate': value['endDate']}})\n\t\tinstances.append({'value': {'assetId': asset['assetId'], 'tab': 'State'}})\n\t\t\n\treturn instances", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.filter"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.filter.assetId": {
+      "binding": {
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value.assetId"
+        }
+      }
+    }
+  }
+}

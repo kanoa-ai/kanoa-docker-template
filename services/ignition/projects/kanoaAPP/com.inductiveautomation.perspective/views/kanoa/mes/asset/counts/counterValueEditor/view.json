@@ -1,0 +1,733 @@
+{
+  "custom": {
+    "changesMade": false,
+    "counterInfo": {
+      "assetId": 510,
+      "counterId": 132800,
+      "counterName": "infeed",
+      "itemId": null,
+      "itemPath": null,
+      "itemStateId": null,
+      "itemStatePath": null,
+      "value": null,
+      "workOrderId": null,
+      "workOrderName": null
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": 510,
+      "counterId": 132800,
+      "counterName": "infeed",
+      "itemId": null,
+      "itemPath": null,
+      "itemStateId": null,
+      "itemStatePath": null,
+      "value": null,
+      "workOrderId": null,
+      "workOrderName": null
+    }
+  },
+  "propConfig": {
+    "custom.changesMade": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn False",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.counterInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\n\tsystem.perspective.print(\"params change %s\"%origin)\n\t\n\tif origin in (\u0027Script\u0027, \u0027BindingWriteback\u0027): self.custom.changesMade \u003d True\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 219,
+      "width": 433
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblCounterName",
+              "name": "lblCounterName"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Counter"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblCounter",
+              "name": "lblCounter"
+            },
+            "position": {
+              "display": false,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.counterInfo.counterName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddCounter",
+              "name": "ddCounter"
+            },
+            "position": {
+              "basis": "150px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tdata \u003d system.kanoa.asset.getCounter({\u0027assetId\u0027: value[\u0027assetId\u0027] or -1})\n\treturn [{\u0027value\u0027: item[\u0027counterId\u0027], \u0027label\u0027: item[\u0027counterName\u0027]} for item in data]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.counterInfo.counterId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxCounterName",
+          "name": "flxCounterName"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblItemStateClass",
+              "name": "lblItemStateClass"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Item State Class"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddItemStates",
+              "name": "ddItemStates"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027value\u0027: row[\u0027itemStateId\u0027], \u0027label\u0027: system.kanoa.utilities.formatPath(row[\u0027itemStatePath\u0027], {})} for row in system.kanoa.item.getItemStates({\u0027enabled\u0027: True})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.counterInfo.itemStateId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default  kanoa/border"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxItemStateClass",
+          "name": "flxItemStateClass"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblItems",
+                  "name": "lblItems",
+                  "tooltip": {
+                    "location": "bottom-left",
+                    "text": "Filter Checks by material items"
+                  }
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Items"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "evItemSelector",
+                  "name": "evItemSelector"
+                },
+                "position": {
+                  "basis": "30px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.params.values.data": {
+                    "binding": {
+                      "config": {
+                        "expression": "now(0)"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn system.kanoa.item.getAssetItems({\u0027assetId\u0027: self.view.params.value.assetId, \u0027enabled\u0027: True})",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "values": {
+                      "msgHandler": "itemSelected",
+                      "options": {
+                        "expand": true,
+                        "multiSelect": false,
+                        "selectable": []
+                      },
+                      "selection": [],
+                      "style": {
+                        "backgroundColor": "",
+                        "iconColor": "",
+                        "iconPath": "material/card_giftcard",
+                        "position": {
+                          "width": "500px"
+                        },
+                        "tooltip": null
+                      }
+                    }
+                  },
+                  "path": "kanoa/core/templates/selectors/tree/selector"
+                },
+                "type": "ia.display.view"
+              }
+            ],
+            "meta": {
+              "domId": "flxLbl",
+              "name": "flxLbl"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "width": "80px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblItemPath",
+                  "name": "lblItemPath"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.counterInfo.itemPath"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn system.kanoa.utilities.formatPath(value, {})",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "textStyle": {
+                    "textOverflow": "ellipsis",
+                    "whitespace": "pre"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxItemPath",
+              "name": "flxItemPath"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxItems",
+          "name": "flxItems",
+          "tooltip": {
+            "location": "bottom-left"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblItems-1",
+              "name": "lblItems",
+              "tooltip": {
+                "location": "bottom-left",
+                "text": "Filter Checks by material items"
+              }
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Order"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddOrder",
+              "name": "ddOrder"
+            },
+            "position": {
+              "basis": "256px"
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn [{\"value\": row[\u0027workOrderId\u0027], \"label\": row[\u0027workOrderName\u0027]} for row in system.kanoa.order.getProductionOrders({\u0027statusList\u0027:[\u0027In Progress\u0027, \u0027Released\u0027], \u0027ignoreActualQty\u0027: True})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.counterInfo.workOrderId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Order..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOrder",
+          "name": "flxOrder",
+          "tooltip": {
+            "location": "bottom-left"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblCounterValue",
+              "name": "lblCounterValue"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Count"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numCounterValue",
+              "name": "numCounterValue"
+            },
+            "position": {
+              "basis": "100px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.counterInfo.value"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "format": "0,0.###",
+              "spinner": {
+                "enabled": false
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxCounterValue",
+          "name": "flxCounterValue"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.sendMessage(\u0027countsEdited\u0027, {\u0027countInfo\u0027: self.view.custom.counterInfo, \u0027oldCountInfo\u0027: self.view.params.value})\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.changesMade"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.counterInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value[\u0027counterId\u0027] is not None and (value[\u0027value\u0027] or None) is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "marginLeft": "5px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "itemSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"itemSelected() msg rcvd with %s\"%payload)\n\t\n\tself.view.custom.counterInfo.itemId \u003d None if len(payload[\u0027selection\u0027]) \u003d\u003d 0 else payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemId\u0027]\n\tself.view.custom.counterInfo.itemPath \u003d None if len(payload[\u0027selection\u0027]) \u003d\u003d 0 else payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]\n\t\t\n\tsystem.perspective.print(\"itemPath is %s\"%(None if len(payload[\u0027selection\u0027]) \u003d\u003d 0 else payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]))\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

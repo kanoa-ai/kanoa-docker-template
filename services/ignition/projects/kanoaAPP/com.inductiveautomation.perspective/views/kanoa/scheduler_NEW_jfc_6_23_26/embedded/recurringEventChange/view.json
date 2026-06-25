@@ -1,0 +1,219 @@
+{
+  "custom": {
+    "selectedOption": "This event"
+  }, 
+  "params": {
+    "action": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 325, 
+      "height": 237
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "10px", 
+        "backgroundColor": "--kcSurface"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge", 
+                "fontWeight": "bold"
+              }, 
+              "text": "Edit Recurring Event"
+            }, 
+            "meta": {
+              "domId": "lblHeader", 
+              "name": "lblHeader"
+            }, 
+            "position": {
+              "grow": 1
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxHeader", 
+          "name": "flxHeader"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "classes": "kanoa/font/default", 
+            "gap": 5
+          }, 
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.input.radio-group", 
+            "props": {
+              "orientation": "column", 
+              "align": "start", 
+              "radios": [
+                {
+                  "text": "This event", 
+                  "value": "This event", 
+                  "selected": true
+                }, 
+                {
+                  "text": "This and following events", 
+                  "value": "This and following events", 
+                  "selected": false
+                }, 
+                {
+                  "text": "All events", 
+                  "value": "All events", 
+                  "selected": false
+                }
+              ]
+            }, 
+            "meta": {
+              "domId": "rbOptions", 
+              "name": "rbOptions"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.selectedOption"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxOptions", 
+          "name": "flxOptions"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "padding": "5px", 
+            "gap": "5px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check_box"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/filled"
+              }, 
+              "text": "OK"
+            }, 
+            "meta": {
+              "domId": "btnConfirm", 
+              "name": "btnConfirm"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.sendMessage('editRecurringEvent', {'selectedOption': self.view.custom.selectedOption, 'action': self.view.params.action})\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "backgroundColor": "--kcGray-0", 
+                "classes": "kanoa/button/outlined"
+              }, 
+              "text": "Cancel"
+            }, 
+            "meta": {
+              "domId": "btnClose", 
+              "name": "btnClose"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\t#If user closes without updating, we'll want to reset the moved event\n\tsystem.perspective.sendMessage('refreshEvents', {})\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxButtons", 
+          "name": "flxButtons"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.selectedOption": {
+      "persistent": true
+    }, 
+    "params.action": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

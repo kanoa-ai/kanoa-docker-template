@@ -1,0 +1,386 @@
+{
+  "custom": {
+    "clearView": false,
+    "display": {}
+  },
+  "params": {
+    "value": {
+      "assetInfo": {
+        "assetGroupColor": null,
+        "assetGroupId": null,
+        "assetGroupName": null,
+        "assetId": null,
+        "assetName": null,
+        "assetPath": null,
+        "assetTypeId": null,
+        "assetTypeName": null,
+        "assetTypePath": null,
+        "displayPath": null,
+        "enabled": null,
+        "iconPath": null,
+        "oeeEnabled": null,
+        "parentId": null,
+        "path": null,
+        "processTypeId": null,
+        "processTypeName": null,
+        "sortOrder": null,
+        "tagPath": null,
+        "timeZone": null
+      },
+      "assetName": "",
+      "assets": [],
+      "childAssets": [],
+      "expand": true,
+      "level": 1
+    }
+  },
+  "propConfig": {
+    "custom.clearView": {
+      "onChange": {
+        "enabled": null,
+        "script": "\n\tif currentValue.value:\n\t\tself.params.value.assets \u003d []\n\t\tself.params.value.childAssets \u003d []\n\t\tself.params.value.assetName \u003d \u0027\u0027\n\t\tself.params.value.assetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: -1}), 0)\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tself.custom.clearView \u003d False\n\t\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.display": {
+      "persistent": true
+    },
+    "custom.display.expand": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.expand"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "custom.display.showChildren": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.childAssets"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn len(value) \u003e 0",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.display.showInfoLevel": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027status\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 869,
+      "width": 850
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "evHeader",
+          "name": "evHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.params.value": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/mes/asset/overview/assetLevelHeader"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "flxChildAssets",
+          "name": "flxChildAssets"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.display"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tif value is None or not value.has_key(\u0027expand\u0027) or not value.has_key(\u0027showChildren\u0027): return False\n\treturn value[\u0027expand\u0027] and value[\u0027showChildren\u0027] and value[\u0027showInfoLevel\u0027] \u003d\u003d \u0027status\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.childAssets"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n#\tsystem.perspective.print(\"Building L1 child asset instances\")\t\n\n\tlevel \u003d self.view.params.value.level + 1\n\texpand \u003d self.view.params.value.expand\n\tinfo \u003d []\n\n\tvalue \u003d sorted(value, key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tif len(dict(item[childAssets])) \u003d\u003d 1: assets.append(item[childAssets])\n\t\t\telse: children.append(item[childAssets])\n\t\t\t\t\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item[\u0027assetInfo\u0027][\u0027assetName\u0027], \u0027assetInfo\u0027: item[\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\n#\tsystem.perspective.print(\"Completed L1 child asset instances\")\t\n\n\treturn info",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            },
+            "persistent": false
+          },
+          "props.path": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.level"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tlevel \u003d (value or 0) + 1\n\treturn \u0027kanoa/mes/asset/overview/assetTreeOverviewL\u0027 + str(level)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "elementStyle": {
+            "padding": 0
+          },
+          "style": {
+            "gap": "3px",
+            "overflow": "hidden"
+          },
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      },
+      {
+        "meta": {
+          "domId": "flxAssetCards",
+          "name": "flxAssetCards"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.display.showInfoLevel"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027detail\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.instances": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "params": "{view.params.value}",
+                  "showInfoLevel": "{view.custom.display.showInfoLevel}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value[\u0027showInfoLevel\u0027] !\u003d \u0027detail\u0027: return []\n\n\tinfo \u003d []\t\n\tassets \u003d sorted(value[\u0027params\u0027][\u0027assets\u0027], key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in assets:\n\t\tif not item[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: continue\n\t\tinfo.append({\u0027value\u0027: {\u0027assetInfo\u0027: item[\u0027assetInfo\u0027]}})\n\t\t\n\tfor item in value[\u0027params\u0027][\u0027childAssets\u0027]:\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tif not item[childAssets][\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: continue\n\t\t\tinfo.append({\u0027value\u0027: {\u0027assetInfo\u0027: item[childAssets][\u0027assetInfo\u0027]}})\t\t\n\t\n\treturn info",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.path": {
+            "binding": {
+              "config": {
+                "path": "view.custom.display.showInfoLevel"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027kanoa/mes/asset/overview/assetCard/assetCard\u0027 if value \u003d\u003d \u0027detail\u0027 else \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "style": {
+            "gap": "3px",
+            "overflow": "hidden",
+            "padding": "5px"
+          },
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      },
+      {
+        "meta": {
+          "domId": "evAssetSummary",
+          "name": "evAssetSummary"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.display.showInfoLevel"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027summary\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "params": "{view.params.value}",
+                  "showInfoLevel": "{view.custom.display.showInfoLevel}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value[\u0027showInfoLevel\u0027] !\u003d \u0027summary\u0027: return {}\n\treturn {\u0027value\u0027: value[\u0027params\u0027]}",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.path": {
+            "binding": {
+              "config": {
+                "path": "view.custom.display.showInfoLevel"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027kanoa/mes/asset/overview/assetSummary/assetSummary\u0027 if value \u003d\u003d \u0027summary\u0027 else \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.level"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn \u0027kanoa/border\u0027 if value \u003c 3 else \u0027\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "expandAssets",
+          "pageScope": true,
+          "script": "\n\tif payload[\u0027assetPath\u0027] in self.view.params.value.assetInfo.assetPath: self.view.custom.display.expand \u003d payload[\u0027expand\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "showAssetInfo",
+          "pageScope": true,
+          "script": "\n\tif payload[\u0027assetPath\u0027] is None: return\n\tif payload[\u0027assetPath\u0027] in self.view.params.value.assetInfo.assetPath: self.view.custom.display.showInfoLevel \u003d payload[\u0027showInfoLevel\u0027]\n\t\n\treturn\n",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

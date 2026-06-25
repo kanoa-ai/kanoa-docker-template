@@ -1,0 +1,1015 @@
+{
+  "custom": {
+    "info": {
+      "enabled": false,
+      "infeedUnitId": null,
+      "itemPeriodId": null,
+      "outfeedUnitId": null,
+      "packageCount": 1,
+      "scheduleRate": null,
+      "sources": null,
+      "standardRate": null,
+      "wasteUnitId": null
+    },
+    "units": [
+      {
+        "label": "bag",
+        "value": 48
+      },
+      {
+        "label": "baggies",
+        "value": 57
+      },
+      {
+        "label": "bags",
+        "value": 47
+      },
+      {
+        "label": "Bottles",
+        "value": 3
+      },
+      {
+        "label": "Cans",
+        "value": 4
+      },
+      {
+        "label": "Cases",
+        "value": 5
+      },
+      {
+        "label": "eggs and bacon",
+        "value": 56
+      },
+      {
+        "label": "Gallons",
+        "value": 6
+      },
+      {
+        "label": "LB",
+        "value": 59
+      },
+      {
+        "label": "lbs",
+        "value": 7
+      },
+      {
+        "label": "links",
+        "value": 52
+      },
+      {
+        "label": "Loaves",
+        "value": 8
+      },
+      {
+        "label": "meatballs",
+        "value": 49
+      },
+      {
+        "label": "mg",
+        "value": 21
+      },
+      {
+        "label": "oranges",
+        "value": 50
+      },
+      {
+        "label": "oz",
+        "value": 2
+      },
+      {
+        "label": "testUnits",
+        "value": 58
+      },
+      {
+        "label": "Trays",
+        "value": 9
+      },
+      {
+        "label": "units",
+        "value": 1
+      },
+      {
+        "label": "wafers",
+        "value": 53
+      }
+    ]
+  },
+  "params": {
+    "values": {
+      "itemAssetRateIds": []
+    }
+  },
+  "propConfig": {
+    "custom.info": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\titemAssetRateIds \u003d self.view.params.values.itemAssetRateIds\n\tif len(itemAssetRateIds) \u003e 0:\n\t\tdata \u003d system.kanoa.item.getAssetItems({\u0027itemAssetRateIdList\u0027:itemAssetRateIds})\n\t\t\n\t\t#The selected rates may be all the same or different. We\u0027ll check. If they are the same we will populate the fields.\n\t\t#If they are different we will indicate they are mixed.\n\n\t\tstdRates \u003d [row[\u0027standardRate\u0027] for row in data]\n\t\tschRates \u003d [row[\u0027scheduleRate\u0027] for row in data]\n\t\tperiods \u003d [row[\u0027itemPeriodId\u0027] for row in data]\n\t\tinfeedUnits \u003d [row[\u0027infeedUnitId\u0027] for row in data]\t\t\n\t\toutfeedUnits \u003d [row[\u0027outfeedUnitId\u0027] for row in data]\t\t\n\t\twasteUnits \u003d [row[\u0027wasteUnitId\u0027] for row in data]\t\t\n\t\tpackageCounts \u003d [row[\u0027packageCount\u0027] for row in data]\t\t\n\t\tenablers \u003d [row[\u0027assetRateEnabled\u0027] for row in data]\n\t\tsources \u003d [row[\u0027itemSourceId\u0027] for row in data]\t\n\n\t\treturn {\n\t\t\t\t\t\u0027standardRate\u0027: stdRates[0] if len(set(stdRates)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027scheduleRate\u0027: schRates[0] if len(set(schRates)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027itemPeriodId\u0027: periods[0] if len(set(periods)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027packageCount\u0027: packageCounts[0] if len(set(packageCounts)) \u003d\u003d 1 else 1.0,\n\t\t\t\t\t\u0027infeedUnitId\u0027: infeedUnits[0] if len(set(infeedUnits)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027outfeedUnitId\u0027: outfeedUnits[0] if len(set(outfeedUnits)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027wasteUnitId\u0027: wasteUnits[0] if len(set(wasteUnits)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027enabled\u0027: enablers[0] if len(set(enablers)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027itemSourceId\u0027: sources[0] if len(set(sources)) \u003d\u003d 1 else None\n\t\t\t\t}\n\telse:\n\t\treturn {\n\t\t\t\t\t\u0027standardRate\u0027: None,\n\t\t\t\t\t\u0027scheduleRate\u0027: None,\n\t\t\t\t\t\u0027wasteUnitId\u0027: None,\n\t\t\t\t\t\u0027infeedUnitId\u0027: None,\n\t\t\t\t\t\u0027packageCount\u0027: 1.0,\n\t\t\t\t\t\u0027itemPeriodId\u0027: None,\n\t\t\t\t\t\u0027outfeedUnitId\u0027: None,\n\t\t\t\t\t\u0027enabled\u0027:False,\n\t\t\t\t\t\u0027sources\u0027:None\n\t\t\t\t}\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.units": {
+      "binding": {
+        "config": {
+          "expression": "1"
+        },
+        "transforms": [
+          {
+            "code": "\n\treturn [{\u0027value\u0027: row[\u0027itemUnitId\u0027], \u0027label\u0027:row[\u0027itemUnitName\u0027]} for row in system.kanoa.item.getItemUnits({\u0027enabled\u0027: True})]",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.id": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.key": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 369,
+      "width": 300
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblInfo",
+              "name": "lblInfo"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Selected Ids"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblIds",
+              "name": "lblIds"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn str(value[\u0027itemAssetRateIds\u0027]) if value.has_key(\u0027itemAssetRateIds\u0027) else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxInfo",
+          "name": "flxInfo"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblRate",
+              "name": "lblRate"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Std Rate"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numRate",
+              "name": "numRate"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.standardRate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "format": "0,0.###",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxStdRate",
+          "name": "flxStdRate",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "text": "The expected process rate (infeed) for this item on this asset. It is used to calculate OEE Performance"
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblRate-1",
+              "name": "lblRate"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Sch Rate"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numRate-1",
+              "name": "numRate"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.scheduleRate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "format": "0,0.###",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxSchRate",
+          "name": "flxSchRate",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "sustain": 0,
+            "text": "This is the expected production rate based on the historical OEE for this asset. It is used to calcuate how long a production run should be scheduled for based on the order qty."
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblPeriod",
+              "name": "lblPeriod"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Period"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddPeriod",
+              "name": "ddPeriod"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn [{\u0027value\u0027: row[\u0027itemPeriodId\u0027], \u0027label\u0027:row[\u0027itemPeriodName\u0027]} for row in system.kanoa.item.getItemPeriod({})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.itemPeriodId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default",
+                "textAlign": "center"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxPeriod",
+          "name": "flxPeriod",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "text": "This is the rate period i.e. minutes or hours"
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblUnits",
+              "name": "lblUnits"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Infeed Units"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddUnits",
+              "name": "ddUnits"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.units"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.infeedUnitId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\n\timport time\n\tvalue \u003d currentValue.value or \u0027\u0027\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tif value !\u003d \u0027\u0027 and next((d for d in self.props.options if d.get(\u0027value\u0027) \u003d\u003d value), None) is None:\t#Doesn\u0027t exist, we\u0027ll create this entry\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value \u003d itemUnitId\n\t\n\treturn"
+                }
+              }
+            },
+            "props": {
+              "allowCustomOptions": true,
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default",
+                "textAlign": "center"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxInfeedUnits",
+          "name": "flxInfeedUnits"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblUnits-1",
+              "name": "lblUnits"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Outfeed Units"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddUnits-1",
+              "name": "ddUnits"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.units"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.outfeedUnitId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\t\n\timport time\n\tvalue \u003d currentValue.value or \u0027\u0027\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tif value !\u003d \u0027\u0027 and next((d for d in self.props.options if d.get(\u0027value\u0027) \u003d\u003d value), None) is None:\t#Doesn\u0027t exist, we\u0027ll create this entry\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value \u003d itemUnitId\n\t\n\treturn"
+                }
+              }
+            },
+            "props": {
+              "allowCustomOptions": true,
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default",
+                "textAlign": "center"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOutfeedUnits",
+          "name": "flxOutfeedUnits"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblUnits-2",
+              "name": "lblUnits"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Waste Units"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddUnits-2",
+              "name": "ddUnits"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.units"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.wasteUnitId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\timport time\n\tvalue \u003d currentValue.value or \u0027\u0027\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tif value !\u003d \u0027\u0027 and next((d for d in self.props.options if d.get(\u0027value\u0027) \u003d\u003d value), None) is None:\t#Doesn\u0027t exist, we\u0027ll create this entry\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value \u003d itemUnitId\n\t\n\treturn"
+                }
+              }
+            },
+            "props": {
+              "allowCustomOptions": true,
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default",
+                "textAlign": "center"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxWasteUnits",
+          "name": "flxWasteUnits"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblCount",
+              "name": "lblCount"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Package Count"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numCount",
+              "name": "numCount"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.packageCount"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "format": "0,0.0",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxPackageCount",
+          "name": "flxPackageCount",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "sustain": 20000,
+            "text": "This is the number of infeed units contained in the outfeed units, i.e 24 bottles in one case. It is used to calculate the infeedCount when only an outfeedCount is provided."
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxEnabled",
+          "name": "flxEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").save()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn True if value.has_key(\u0027itemAssetRateIds\u0027) and len(value[\u0027itemAssetRateIds\u0027]) \u003e 0 else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/popup",
+        "gap": 5,
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\t\n\tsystem.perspective.print(\u0027save() called\u0027)\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdata \u003d system.kanoa.item.getAssetItems({\u0027itemAssetRateIdList\u0027:self.view.params.values.itemAssetRateIds})\n\tinfo \u003d self.view.custom.info\n\t\n\t#We have turned on the ability for the user to create a new unit, if they do this, the value in the value.infeedUnitId will likely be a string\n\t#If we detect a string, then we will add this to the units table\n\tinfeedUnitId \u003d info.infeedUnitId\n\toutfeedUnitId \u003d info.outfeedUnitId\n\twasteUnitId \u003d info.wasteUnitId\n\t\n\tif type(infeedUnitId) in (type(\u0027\u0027), type(u\u0027\u0027)): infeedUnitId \u003d system.kanoa.item.addItemUnit(infeedUnitId)\n\tif type(outfeedUnitId) in (type(\u0027\u0027), type(u\u0027\u0027)): outfeedUnitId \u003d system.kanoa.item.addItemUnit(outfeedUnitId)\n\tif type(wasteUnitId) in (type(\u0027\u0027), type(u\u0027\u0027)): wasteUnitId \u003d system.kanoa.item.addItemUnit(wasteUnitId)\n\n\tself.view.refreshBinding(\"custom.units\")\t#If we added any units, we\u0027ll refresh the dropdown options\n\t\n\t#If the user has not selected a value for a field, we will use the value that was previously stored for this item\n\tfor row in data:\n\t\titemAssetRateId \u003d row[\u0027itemAssetRateId\u0027]\n\t\titemId \u003d row[\u0027itemId\u0027]\n\t\tassetId \u003d row[\u0027assetId\u0027]\n\t\trateInfo \u003d {\n\t\t\t\t\t\t\u0027itemAssetRateId\u0027: row[\u0027itemAssetRateId\u0027],\n\t\t\t\t\t\t\u0027itemId\u0027: row[\u0027itemId\u0027],\n\t\t\t\t\t\t\u0027assetId\u0027: row[\u0027assetId\u0027],\n\t\t\t\t\t\t\u0027standardRate\u0027: info.standardRate or row[\u0027standardRate\u0027],\n\t\t\t\t\t\t\u0027scheduleRate\u0027: info.scheduleRate or row[\u0027scheduleRate\u0027],\n\t\t\t\t\t\t\u0027itemPeriodId\u0027: info.itemPeriodId or row[\u0027itemPeriodId\u0027],\n\t\t\t\t\t\t\u0027infeedUnitId\u0027: infeedUnitId or row[\u0027infeedUnitId\u0027],\n\t\t\t\t\t\t\u0027outfeedUnitId\u0027: outfeedUnitId or row[\u0027outfeedUnitId\u0027],\n\t\t\t\t\t\t\u0027wasteUnitId\u0027: wasteUnitId or row[\u0027wasteUnitId\u0027],\n\t\t\t\t\t\t\u0027packageCount\u0027: info.packageCount or row[\u0027packageCount\u0027],\n\t\t\t\t\t\t\u0027enabled\u0027: info.enabled,\n\t\t\t\t\t\t\u0027itemSourceId\u0027: info.itemSourceId or row[\u0027itemSourceId\u0027]\n\t\t\t\t\t}\n\n\t\tsystem.kanoa.item.updateItemAssetRate(rateInfo, userId)\n\t\t\n\tsystem.perspective.sendMessage(\"refreshItems\", {})\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Rates saved\u0027})\n\tself.view.refreshBinding(\"custom.info\")\t#update the info values with any changes to the units\n\n\treturn\t"
+        },
+        {
+          "name": "checkUnit",
+          "params": [
+            "unitName"
+          ],
+          "script": "\t\n\titemUnitId \u003d None\n\tif unitName and unitName not in [unit[\u0027label\u0027] for unit in self.view.custom.units]:\n\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(unitName, userId)\n\n\tself.view.refreshBinding(\"custom.units\")\n\t\n\treturn itemUnitId"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetItemRatesSelected",
+          "pageScope": true,
+          "script": "\t\n\tsystem.perspective.print(\"assetItemRatesSelected() msg rcvd with %s\"%payload)\n\t\n\tself.view.params.values.itemAssetRateIds \u003d payload[\u0027itemAssetRateIds\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

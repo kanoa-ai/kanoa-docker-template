@@ -1,0 +1,146 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "label": "Target", 
+      "units": "Bottles", 
+      "value": 65844.611111112
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 199, 
+      "height": 43
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcSurface"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "padding": "5px", 
+            "classes": "kanoa/border", 
+            "overflow": "visible", 
+            "gap": 5, 
+            "position": "relative"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "color": "--kcOnSurface", 
+                "top": -6, 
+                "left": 3, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "fontSize": "0.8em"
+              }
+            }, 
+            "meta": {
+              "domId": "label", 
+              "name": "label"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "50px"
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.label"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblValue", 
+              "name": "lblValue"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\tif value is None: return ''\n\ttry:\n\t\treturn \"{:,g}\".format(value) if int(value) == value else \"{:,.1f}\".format(value)\n\texcept:\n\t\treturn ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.value"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblUnits", 
+              "name": "lblUnits"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value if value is not None else ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.units"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxCnt", 
+          "name": "flxCnt"
+        }, 
+        "position": {
+          "basis": "200px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

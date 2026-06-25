@@ -1,0 +1,1222 @@
+{
+  "custom": {
+    "info": {
+      "changedBy": null,
+      "changedDate": null,
+      "chkShtId": null,
+      "chkShtTriggerId": null,
+      "comingDueMins": null,
+      "createdBy": null,
+      "createdDate": null,
+      "delayMins": null,
+      "enabled": true,
+      "graceMins": null,
+      "intervalMins": null,
+      "modeId": null,
+      "modeName": null,
+      "modifier": null,
+      "overDueMins": null,
+      "productionCount": null,
+      "shiftName": null,
+      "shiftNameId": null,
+      "triggerTypeId": null,
+      "triggerTypeName": null
+    },
+    "triggerTypeName": null
+  },
+  "params": {
+    "values": {
+      "chkShtId": null,
+      "chkShtTriggerId": null
+    }
+  },
+  "propConfig": {
+    "custom.info": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtTriggerId\u0027:value[\u0027chkShtTriggerId\u0027] or -1}), 0)\n\tinfo[\u0027chkShtId\u0027] \u003d value.chkShtId\n\t\n\tif not info[\u0027chkShtTriggerId\u0027]: info[\u0027enabled\u0027] \u003d True\n\t\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.triggerTypeName": {
+      "binding": {
+        "config": {
+          "path": "view.custom.info.triggerTypeId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027triggerTypeName\u0027, system.kanoa.quality.config.getTriggerTypes({\u0027triggerTypeId\u0027: value or -1}))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.values.chkShtId": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.values.chkShtTriggerId": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 134,
+      "width": 1046
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "ddTriggers",
+              "name": "ddTriggers"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn [{\u0027value\u0027:row[\u0027triggerTypeId\u0027], \u0027label\u0027:row[\u0027triggerTypeName\u0027]} for row in system.kanoa.quality.config.getTriggerTypes({\u0027enabled\u0027:True}) if \u0027Count\u0027 not in row[\u0027triggerTypeName\u0027]]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.triggerTypeId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "data": {
+                "$": [
+                  "ds",
+                  192,
+                  1594933271114
+                ],
+                "$columns": [
+                  {
+                    "data": [
+                      15,
+                      16,
+                      17,
+                      18,
+                      19,
+                      14,
+                      35,
+                      33,
+                      25,
+                      27,
+                      28,
+                      34,
+                      29,
+                      31,
+                      26,
+                      30,
+                      32,
+                      13,
+                      10,
+                      11,
+                      12,
+                      7,
+                      6,
+                      8,
+                      9,
+                      20,
+                      21,
+                      22,
+                      23,
+                      24,
+                      36,
+                      37,
+                      38
+                    ],
+                    "name": "Line_Id",
+                    "type": "Long"
+                  },
+                  {
+                    "data": [
+                      "DD Line 1",
+                      "DD Line 2",
+                      "DD Line 3",
+                      "DD Line 4",
+                      "RCORTO",
+                      "Root",
+                      "Dry Waste",
+                      "Oiler",
+                      "Panel Saw",
+                      "Poly Patch 1",
+                      "Poly Patch 2",
+                      "Regrade STN",
+                      "Sander",
+                      "Spec Saw",
+                      "Strapper 1",
+                      "Strapper 2",
+                      "Strapper 3",
+                      "Core System",
+                      "GE Line 1",
+                      "GE Line 2",
+                      "GE Line 3",
+                      "Cutup",
+                      "Debarker",
+                      "Vat Line 1",
+                      "Vat Line 2",
+                      "Glue Line 1",
+                      "Glue Line 2",
+                      "Glue Tanks",
+                      "Press Line 1",
+                      "Press Line 2",
+                      "Boiler",
+                      "Compressors",
+                      "Weather"
+                    ],
+                    "name": "Line_Name",
+                    "type": "String"
+                  }
+                ]
+              },
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Trigger..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "150px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Every"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue",
+                  "name": "numValue"
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.productionCount"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "units"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxCount",
+              "name": "flxCount"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Count\u0027 in value if value is not None else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName-1",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Every"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue-1",
+                  "name": "numValue"
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.intervalMins"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits-1",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "mins"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxInterval",
+              "name": "flxInterval"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Interval\u0027 in value if value is not None else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "ddModifier",
+              "name": "ddModifier"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027Product Change\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.modifier"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "options": [
+                {
+                  "label": "Every Product",
+                  "value": "Every Product"
+                },
+                {
+                  "label": "Only Unique Products Per Shift",
+                  "value": "Only Unique Products Per Shift"
+                },
+                {
+                  "label": "Once Per Shift",
+                  "value": "Once Per Shift"
+                }
+              ],
+              "placeholder": {
+                "text": "Select Modifier..."
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "200px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "ddShifts",
+              "name": "ddShifts"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tdata \u003d system.kanoa.shift.getShiftNames({})\n\treturn [{\u0027value\u0027: None, \u0027label\u0027:\u0027All Shifts\u0027}] + [{\u0027value\u0027:row[\u0027shiftNameId\u0027], \u0027label\u0027:row[\u0027shiftName\u0027]} for row in data if row[\u0027shiftName\u0027] !\u003d \u0027No Shift Defined\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.shiftNameId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "data": {
+                "$": [
+                  "ds",
+                  192,
+                  1594933271114
+                ],
+                "$columns": [
+                  {
+                    "data": [
+                      15,
+                      16,
+                      17,
+                      18,
+                      19,
+                      14,
+                      35,
+                      33,
+                      25,
+                      27,
+                      28,
+                      34,
+                      29,
+                      31,
+                      26,
+                      30,
+                      32,
+                      13,
+                      10,
+                      11,
+                      12,
+                      7,
+                      6,
+                      8,
+                      9,
+                      20,
+                      21,
+                      22,
+                      23,
+                      24,
+                      36,
+                      37,
+                      38
+                    ],
+                    "name": "Line_Id",
+                    "type": "Long"
+                  },
+                  {
+                    "data": [
+                      "DD Line 1",
+                      "DD Line 2",
+                      "DD Line 3",
+                      "DD Line 4",
+                      "RCORTO",
+                      "Root",
+                      "Dry Waste",
+                      "Oiler",
+                      "Panel Saw",
+                      "Poly Patch 1",
+                      "Poly Patch 2",
+                      "Regrade STN",
+                      "Sander",
+                      "Spec Saw",
+                      "Strapper 1",
+                      "Strapper 2",
+                      "Strapper 3",
+                      "Core System",
+                      "GE Line 1",
+                      "GE Line 2",
+                      "GE Line 3",
+                      "Cutup",
+                      "Debarker",
+                      "Vat Line 1",
+                      "Vat Line 2",
+                      "Glue Line 1",
+                      "Glue Line 2",
+                      "Glue Tanks",
+                      "Press Line 1",
+                      "Press Line 2",
+                      "Boiler",
+                      "Compressors",
+                      "Weather"
+                    ],
+                    "name": "Line_Name",
+                    "type": "String"
+                  }
+                ]
+              },
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Shifts..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "150px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "ddModes",
+              "name": "ddModes"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tdata \u003d system.kanoa.asset.getModes({\u0027enabled\u0027:True})\n\treturn [{\u0027value\u0027: None, \u0027label\u0027:\u0027All Modes\u0027}] +  [{\u0027value\u0027:row[\u0027modeId\u0027], \u0027label\u0027:row[\u0027modeName\u0027]} for row in data if row[\u0027modeName\u0027] not in (\u0027Unknown\u0027, \u0027Production Delay\u0027)]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.modeId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Mode..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "200px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxTrigger",
+          "name": "flxTrigger"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName-2",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Delay"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue-2",
+                  "name": "numValue"
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.delayMins"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits-2",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "mins"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxDelay",
+              "name": "flxDelay"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName-3",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Coming Due"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue-3",
+                  "name": "numValue"
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.comingDueMins"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits-3",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "mins"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxComingDue",
+              "name": "flxComingDue"
+            },
+            "position": {
+              "basis": "160px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName-4",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Over Due"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue-4",
+                  "name": "numValue"
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.overDueMins"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits-4",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "mins"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxOverDue",
+              "name": "flxOverDue"
+            },
+            "position": {
+              "basis": "140px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName-5",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Grace"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue-5",
+                  "name": "numValue"
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.graceMins"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits-5",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "mins"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxGrace",
+              "name": "flxGrace"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxDue",
+          "name": "flxDue"
+        },
+        "position": {
+          "basis": "30px",
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tif self.view.getChild(\"root\").saveData():\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Triggers updated\u0027})\n\telse: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027Triggers were not updated\u0027})\n\t\t\n\tsystem.perspective.sendMessage(\"triggerUpdate\", payload\u003d{})\t\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "top",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "basis": "100px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "info": "{view.custom.info}",
+                      "triggerTypeName": "{view.custom.triggerTypeName}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value[\u0027info\u0027][\u0027triggerTypeId\u0027] is None: return False\n\t\n\ttriggerTypeName \u003d value[\u0027triggerTypeName\u0027]\n\tif triggerTypeName \u003d\u003d \u0027Mode Change\u0027: return True \t\t#don\u0027t need anything else\n\telif triggerTypeName \u003d\u003d \u0027Product Change\u0027:\treturn True\n\tif triggerTypeName \u003d\u003d \u0027Shift Change\u0027: return True\n\tif triggerTypeName \u003d\u003d \u0027Timed Interval\u0027: (self.view.custom.info.intervalMins or 0) \u003e 0\n\telif \u0027Count\u0027 in triggerTypeName: return (self.view.custom.info.productionCount or 0) \u003e 0\n\t\n\treturn True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "top",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "flex-start",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "Label",
+          "name": "Label"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "custom": {
+      "action": {
+        "Create": true,
+        "Delete": true,
+        "Edit": true,
+        "View": true
+      },
+      "viewName": "Check Sheet Editor",
+      "viewPath": "Kanoa/Quality/Configuration/Checksheet"
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "saveData",
+          "params": [],
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\ttriggerInfo \u003d dict(self.view.custom.info)\n\tchkShtTriggerId \u003d self.view.custom.info.chkShtTriggerId\n\t\n\tif chkShtTriggerId is None: \n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\t\tself.view.params.values.chkShtTriggerId \u003d chkShtTriggerId\n\t\tretVal \u003d 1 if (chkShtTriggerId or None) is not None else 0\n\t\ttriggerTypeName \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeName\u0027, system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtTriggerId\u0027: chkShtTriggerId}))\n\t\tchange \u003d \"Trigger %s added\"%triggerTypeName\n\telse: \n\t\tretVal \u003d system.kanoa.quality.config.updateChkShtTrigger(triggerInfo, userId)\n\t\tchange \u003d \"Trigger %s modified\"%triggerInfo[\u0027triggerTypeName\u0027]\n\t\tself.view.refreshBinding(\"custom.info\")\n\n\tif system.kanoa.utilities.getFieldValue(\u0027chkShtVersionStateName\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: self.view.custom.info.chkShtId})) !\u003d \u0027Draft\u0027: \n\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: self.view.custom.info.chkShtId, \u0027change\u0027: change}, userId)\n\t\t\n\tsystem.perspective.sendMessage(\u0027changeLogUpdated\u0027, {})\n\t\n\treturn retVal"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

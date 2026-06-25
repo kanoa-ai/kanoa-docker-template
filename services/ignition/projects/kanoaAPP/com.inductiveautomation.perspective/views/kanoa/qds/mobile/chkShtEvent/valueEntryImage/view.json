@@ -1,0 +1,322 @@
+{
+  "custom": {
+    "image": null,
+    "imageId": null
+  },
+  "params": {
+    "value": {
+      "chkItemEventId": 157374,
+      "chkItemId": null,
+      "chkItemStateColor": null,
+      "chkItemStateId": null,
+      "chkItemStateName": null,
+      "chkItemTakenDate": {
+        "$": [
+          "ts",
+          192,
+          1733161465961
+        ],
+        "$ts": 1733092126280
+      },
+      "chkItemValue": "2022-07-12 06.55.12.jpg",
+      "dataTypeName": "Image",
+      "enabled": true,
+      "measCount": 1,
+      "measNumber": 1,
+      "pickListValues": null
+    }
+  },
+  "propConfig": {
+    "custom.image": {
+      "binding": {
+        "config": {
+          "path": "view.custom.imageId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value is None: return None\n\timage \u003d system.kanoa.quality.image.getImageThumbnail(value)\n\treturn \"data:imagef;base64,%s\" %image\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.imageId": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value[\u0027chkItemId\u0027] is None or value[\u0027chkItemValue\u0027] is None: return None\n\treturn system.kanoa.quality.image.getImageId(value[\u0027chkItemId\u0027], value[\u0027chkItemValue\u0027])",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 103,
+      "width": 272
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblMeasNum",
+          "name": "lblMeasNum"
+        },
+        "position": {
+          "basis": "32px"
+        },
+        "propConfig": {
+          "meta.visible": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.measCount"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003e 1",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.measNumber"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#%s\u0027%(value or 1)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "textAlign": "right"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Image",
+              "name": "Image"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.source"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.source": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.image"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "fit": {
+                "mode": "contain"
+              },
+              "style": {
+                "height": "100px"
+              }
+            },
+            "type": "ia.display.image"
+          },
+          {
+            "meta": {
+              "domId": "icoImage",
+              "name": "icoImage"
+            },
+            "position": {
+              "basis": "100px"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.chkItemValue"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "material/image"
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\n\tself.parent.setSelected()\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "flxImage",
+          "name": "flxImage"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "classes": "kanoa/border",
+            "minHeight": "30px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tif self.view.custom.imageId is None: return None\t\t\n\timageInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.image.getImageData({\u0027imageId\u0027: self.view.custom.imageId, \u0027includeThumbnail\u0027: False, \u0027includeImage\u0027: False}), 0)\n\tsystem.perspective.openPopup(\u0027showImage\u0027, \u0027kanoa/qds/images/imageViewer\u0027, params \u003d {\u0027imageData\u0027: imageInfo} , showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, viewportBound\u003dTrue)\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnShowImage",
+          "name": "btnShowImage"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.chkItemValue"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/search"
+            }
+          },
+          "style": {
+            "classes": "kanoa/button/flatIcon",
+            "height": "40px",
+            "width": "40px"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "enabled": true
+      }
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcOnPrimary",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "setSelected",
+          "params": [],
+          "script": "\n\tsystem.perspective.print(\"valueEntryImage - onClick for chkItemId %s meas# %s\"%(\tself.view.params.value.chkItemId, self.view.params.value.measNumber))\n\tsystem.perspective.sendMessage(\"chkItemSelected\", {\u0027measNum\u0027: self.view.params.value.measNumber, \u0027chkItemId\u0027: self.view.params.value.chkItemId})\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "setFocus",
+          "pageScope": true,
+          "script": "\n\tif payload.has_key(\u0027chkItemId\u0027) and payload.has_key(\u0027measNumber\u0027):\n\t\tif payload[\u0027chkItemId\u0027] \u003d\u003d self.view.params.value.chkItemId and payload[\u0027measNumber\u0027] \u003d\u003d self.view.params.value.measNumber:\n\t\t\tsystem.perspective.print(\"setfocus msg rcvd with %s\"%payload)\n\t\t\tself.setSelected()\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshImage",
+          "pageScope": true,
+          "script": "\n\tif payload[\u0027imageId\u0027] \u003d\u003d self.view.params.value.chkItemValue:\n\t\tsystem.perspective.print(\"refreshImage msg rcvd with %s\"%payload)\n\t\tself.view.refreshBinding(\"custom.image\")\n\t\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

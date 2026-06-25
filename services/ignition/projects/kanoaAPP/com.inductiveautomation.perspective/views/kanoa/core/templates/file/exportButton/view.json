@@ -1,0 +1,81 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": {
+      "data": "", 
+      "exportType": "", 
+      "name": ""
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 25, 
+      "height": 25
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "backgroundColor": "transparent", 
+        "overflow": "hidden"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcBlue-30", 
+              "path": "material/publish"
+            }
+          }, 
+          "style": {
+            "backgroundColor": "inherit", 
+            "classes": "Kanoa/Button/flat-icon", 
+            "width": 25, 
+            "height": 25
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "delay": 0, 
+            "location": "top", 
+            "text": "Export", 
+            "sustain": 0
+          }, 
+          "domId": "btnExport", 
+          "name": "btnExport"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tname = self.view.params.values.name\n\tnow = system.date.format(system.date.now(), 'yyyy-MM-dd HH:mm:ss')\n\tfileName = '{} ({}).json'.format(self.view.params.values.name, now)\n\t\n\tdocument = system.util.jsonEncode({\n\t\t'exportType': str(self.view.params.values.exportType),\n\t\t'data': system.util.jsonDecode(system.util.jsonEncode(self.view.params.values.data))\n\t})\n\t\n\tsystem.perspective.download(fileName, document)\n\t\n\treturn\n\t"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.values": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

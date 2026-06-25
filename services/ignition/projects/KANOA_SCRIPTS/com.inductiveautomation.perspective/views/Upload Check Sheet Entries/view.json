@@ -1,0 +1,79 @@
+{
+  "custom": {
+    "dataset": "value"
+  },
+  "params": {},
+  "propConfig": {
+    "custom.dataset": {
+      "persistent": true
+    }
+  },
+  "props": {},
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onFileReceived": {
+              "config": {
+                "script": "\t\t\n\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027SYSTEM\u0027})\n\tworkSheetName \u003d \u0027Dataset 1\u0027\n#\tkanoaScripts.custom.ops.import.importAssetStateEvents(event.file, workSheetName, userId)\n\tself.view.custom.dataset \u003d kanoaScripts.custom.ops.import.parseExcelFile(event.file, workSheetName)\n\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "FileUpload"
+        },
+        "position": {
+          "height": 145,
+          "width": 400,
+          "x": 38,
+          "y": 118
+        },
+        "type": "ia.input.fileupload"
+      },
+      {
+        "meta": {
+          "name": "TextArea"
+        },
+        "position": {
+          "height": 65,
+          "width": 581,
+          "x": 38,
+          "y": 27
+        },
+        "props": {
+          "text": "Pick an excel file here to upload state events to the Kanoa system. Uses the kanoaScripts.custom.ops.import.importAssetStateEvents() script to go through the excel file and extract information to import.  Can just run the view in the designer."
+        },
+        "type": "ia.input.text-area"
+      },
+      {
+        "meta": {
+          "name": "Table"
+        },
+        "position": {
+          "height": 706,
+          "width": 780,
+          "y": 212
+        },
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.dataset"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.table"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "type": "ia.container.coord"
+  }
+}

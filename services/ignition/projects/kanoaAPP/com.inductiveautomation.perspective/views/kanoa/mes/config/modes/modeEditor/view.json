@@ -1,0 +1,650 @@
+{
+  "custom": {
+    "modeInfo": {
+      "canSchedule": true,
+      "canSelect": true,
+      "enabled": true,
+      "iconPath": null,
+      "modeColor": null,
+      "modeId": null,
+      "modeName": "",
+      "modeTypeId": null,
+      "modeTypeName": null,
+      "reservedBySystem": null
+    }
+  },
+  "params": {
+    "modeId": null
+  },
+  "propConfig": {
+    "custom.modeInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.modeId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tmodeInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getModes({\u0027modeId\u0027: value or -1}),0)\n\tif modeInfo[\u0027modeId\u0027] is None: \n\t\tmodeInfo[\u0027modeName\u0027] \u003d \u0027\u0027\n\t\tmodeInfo[\u0027enabled\u0027] \u003d True\n\t\tmodeInfo[\u0027canSelect\u0027] \u003d True\n\t\tmodeInfo[\u0027canSchedule\u0027] \u003d True\n\t\n\treturn modeInfo",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.modeId": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 234,
+      "width": 350
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "Label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Mode Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "TextField",
+              "name": "TextField"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.modeName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxModeName",
+          "name": "flxModeName"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblType",
+              "name": "lblType"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Type"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddModeType",
+              "name": "ddModeType"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn [{\u0027value\u0027: row[\u0027modeTypeId\u0027], \u0027label\u0027: row[\u0027modeTypeName\u0027]} for row in system.kanoa.asset.getModeTypes({\u0027enabled\u0027: True})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.modeTypeId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "allowCustomOptions": true,
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxModeType",
+          "name": "flxModeType"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "basis": "56px"
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "domId": "lblCanSelect",
+              "name": "lblCanSelect",
+              "tooltip": {
+                "enabled": true,
+                "text": "Operator selectable in Run Control screen"
+              }
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Can Select"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkCanSelect",
+              "name": "chkCanSelect"
+            },
+            "position": {
+              "basis": "56px"
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.canSelect"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "domId": "lblCanSchedule",
+              "name": "lblCanSchedule",
+              "tooltip": {
+                "enabled": true,
+                "text": "Mode can be scheduled"
+              }
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Can Schedule"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkCanSchedule",
+              "name": "chkCanSchedule"
+            },
+            "position": {
+              "basis": "56px"
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.canSchedule"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label",
+              "name": "label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Color"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").custom.selectedAttribute \u003d \u0027Color-Light\u0027\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss\u003dTrue)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "lblColor",
+              "name": "lblColor"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.modeColor"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/input",
+                "height": "25px"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxColor",
+          "name": "flxColor"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label-1",
+              "name": "label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Icon"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "evIconPicker",
+              "name": "evIconPicker"
+            },
+            "propConfig": {
+              "props.params.icon.path": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.modeInfo.iconPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "default": {
+                  "color": "",
+                  "path": "material/view_carousel"
+                },
+                "icon": {
+                  "color": null
+                }
+              },
+              "path": "kanoa/core/templates/selectors/icons/iconPickerButton"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxIcon",
+          "name": "flxIcon"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tmodeInfo \u003d dict(self.view.custom.modeInfo)\n\tif modeInfo[\u0027reservedBySystem\u0027] is None: modeInfo[\u0027reservedBySystem\u0027] \u003d False\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tif modeInfo[\u0027modeId\u0027] is not None: system.kanoa.asset.updateMode(modeInfo, userId)\n\telse: system.kanoa.asset.addMode(modeInfo, userId)\n\t\n\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Mode has been %s\u0027%\u0027updated\u0027 if modeInfo[\u0027modeId\u0027] else \u0027added\u0027})\n\tsystem.perspective.sendMessage(\"updateModeReasons\", {})\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isnull({view.params.values.code}), \u0027Add\u0027, \u0027Update\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.modeInfo"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn (value.modeName or None) is not None and value.modeTypeId is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\t"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "location": "bottom"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "custom": {
+      "selectedAttribute": "Color-Light"
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/popup",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "colorPicked",
+          "pageScope": true,
+          "script": "\t\n\tsystem.perspective.print(\"colorPicked message received with payload \" + str(payload))\n\tself.view.custom.modeInfo.modeColor \u003d payload[\u0027color\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "custom": {
+    "userAction": {
+      "canUpdate": true, 
+      "canRead": true, 
+      "canCreate": true, 
+      "canDelete": true
+    }, 
+    "security": {
+      "userId": 5, 
+      "userCRUD": {
+        "configureQuality": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "configureAssets": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "scheduleShifts": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "editOperations": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "scheduleOperations": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "configureItems": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "enterQualityCheck": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "configureSecurity": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "approveQualityCheck": {
+          "enabled": false, 
+          "assets": []
+        }, 
+        "isGatewayAdmin": true, 
+        "operateAssets": {
+          "enabled": false, 
+          "assets": []
+        }
+      }, 
+      "config": {
+        "userSource": "default", 
+        "userSources": "[\"default\"]", 
+        "allowGuest": "1"
+      }
+    }
+  }, 
+  "params": {}, 
+  "props": {
+    "defaultSize": {
+      "width": 1091
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.flex-repeater", 
+        "props": {
+          "elementPosition": {
+            "basis": "auto"
+          }, 
+          "path": "kanoa/core/config/debuggers/tagDebugger", 
+          "useDefaultViewHeight": false, 
+          "wrap": "wrap"
+        }, 
+        "meta": {
+          "domId": "flxRptTags", 
+          "name": "flxRptTags"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\ttags = system.tag.browse('[Kanoa]kanoa/debug/tags')\n\t\n\ttagValues = []\n\tfor tag in tags:\n\t\ttagValues.append({'value': {'tagPath': tag['fullPath'], 'canEdit': value['canUpdate']}})\n\t\n\treturn tagValues", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.userAction"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tsecConfig = system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), 'configName', 'configValue')\n\tuserId = system.kanoa.security.getIDPUserId(value)\n\tuserCRUD = system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "config": {
+          "path": "session.props.auth.user"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.userAction": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tsecurity = value['security']\n\t\n\tcanCreate = False\n\tcanEdit = False\n\tif security['userCRUD']['isGatewayAdmin']: \n\t\tcanCreate = True\n\t\tcanEdit = True\n\t\n\taction = {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}\n\t\n\treturn action", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "navItem": "{view.custom.navInfo}", 
+            "security": "{view.custom.security}"
+          }, 
+          "waitOnAll": true
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

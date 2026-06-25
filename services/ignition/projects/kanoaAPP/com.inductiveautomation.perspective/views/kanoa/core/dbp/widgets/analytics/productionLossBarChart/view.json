@@ -1,0 +1,724 @@
+{
+  "custom": {
+    "chart": {
+      "colors": [],
+      "series": [],
+      "xLabels": []
+    },
+    "data": {},
+    "filters": {
+      "assetId": null,
+      "assetPath": null,
+      "barMode": "byReason",
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            0,
+            1777651346910
+          ],
+          "$ts": 1757512893737
+        },
+        "startDate": {
+          "$": [
+            "ts",
+            0,
+            1777651346910
+          ],
+          "$ts": 1757508668000
+        }
+      },
+      "showAssetPath": true,
+      "stacked": true,
+      "topN": 25,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    },
+    "loading": {
+      "index": 11,
+      "max": 11,
+      "msg": null
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "barMode": "byReason",
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1757525455351
+          ],
+          "$ts": 1757512893737
+        },
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1757596421758
+          ],
+          "$ts": 1757508668000
+        }
+      },
+      "stacked": true,
+      "topN": 25
+    }
+  },
+  "propConfig": {
+    "custom.chart": {
+      "binding": {
+        "config": {
+          "path": "view.custom.data.productionEvents"
+        },
+        "transforms": [
+          {
+            "code": "\tfrom collections import defaultdict\n\t\n\tlogger \u003d system.util.getLogger(\u0027lossReasonBarchart\u0027)\n\t\n\tCAT_COLOR_AVAIL \u003d \u0027#ba1a1a\u0027\n\tCAT_COLOR_PERF  \u003d \u0027#f4b400\u0027\n\tCAT_COLOR_QUAL  \u003d \u0027#489fe2\u0027\n\tFALLBACK_COLOR  \u003d \u0027#9e9e9e\u0027\n\n\tdef toMinutes(valSecs):\n\t\ttry:\n\t\t\treturn round(float(valSecs)/60.0, 4)\n\t\texcept:\n\t\t\treturn 0.0\n\t\n\ttry:\n\t\tif not value:\n\t\t\treturn {\"series\": [], \"colors\": [], \"xLabels\": []}\n\t\n\t\t# Filters\n\t\tfilters \u003d getattr(self.view.custom, \u0027filters\u0027, {}) or {}\n\t\tbarMode \u003d (filters.get(\u0027barMode\u0027) or \u0027byReason\u0027)\n\t\ttopN \u003d int(filters.get(\u0027topN\u0027) or 10)\n\t\n\t\t# Global aggregations\n\t\t# reasonTotals[reason] -\u003e {\"Availability\": mins, \"Performance\": mins, \"Quality\": mins, \"category\": bestGuess}\n\t\treasonTotals \u003d defaultdict(lambda: {\"Availability\":0.0,\"Performance\":0.0,\"Quality\":0.0,\"category\":\"\"})\n\t\n\t\tfor evt in value:\n\t\t\t# Skip non-production for loss math; losses reside in summaries\n\t\t\tdurationSecs \u003d float(evt.get(\u0027durationSecs\u0027) or 0.0)\n\t\t\toutfeedCount \u003d float(evt.get(\u0027outfeedCount\u0027) or 0.0)\n\t\t\tsecondsPerUnit \u003d (durationSecs / outfeedCount) if outfeedCount \u003e 0 else 0.0\n\t\n\t\t\t# --- Availability (Downtime) ---\n\t\t\tfor dt in (evt.get(\u0027downtimeEventSummary\u0027) or []):\n\t\t\t\tstateName \u003d (dt.get(\u0027stateName\u0027) or \u0027\u0027).strip() or \u0027Unspecified\u0027\n\t\t\t\tstateCategoryName \u003d (dt.get(\u0027stateCategoryName\u0027) or \u0027\u0027).strip()\n\t\t\t\tstateTypeName \u003d (dt.get(\u0027stateTypeName\u0027) or \u0027\u0027).strip()\n\t\t\t\tif stateName \u003d\u003d \u0027Running\u0027 or stateCategoryName \u003d\u003d \u0027Running\u0027 or stateTypeName \u003d\u003d \u0027Running\u0027:\n\t\t\t\t\tcontinue\n\t\t\t\tmins \u003d toMinutes(dt.get(\u0027durationSecs\u0027) or 0)\n\t\t\t\tif mins \u003c\u003d 0:\n\t\t\t\t\tcontinue\n\t\t\t\trec \u003d reasonTotals[stateName]\n\t\t\t\trec[\"Availability\"] +\u003d mins\n\t\t\t\tif not rec[\"category\"]:\n\t\t\t\t\trec[\"category\"] \u003d stateCategoryName or stateTypeName or \u0027Availability\u0027\n\t\n\t\t\t# --- Performance ---\n\t\t\tfor pe in (evt.get(\u0027performanceEventSummary\u0027) or []):\n\t\t\t\treason \u003d (pe.get(\u0027performanceStateName\u0027) or \u0027\u0027).strip() or \u0027Unspecified\u0027\n\t\t\t\tpath \u003d (pe.get(\u0027performanceStatePath\u0027) or \u0027\u0027).strip()\n\t\t\t\tcategory \u003d (path.split(\u0027\\\\\u0027)[0] if \u0027\\\\\u0027 in path else path) or \u0027Performance\u0027\n\t\t\t\tmins \u003d float(pe.get(\u0027value\u0027) or 0.0)  # assumed minutes\n\t\t\t\tif mins \u003c\u003d 0:\n\t\t\t\t\tcontinue\n\t\t\t\trec \u003d reasonTotals[reason]\n\t\t\t\trec[\"Performance\"] +\u003d mins\n\t\t\t\tif not rec[\"category\"]:\n\t\t\t\t\trec[\"category\"] \u003d category\n\t\n\t\t\t# --- Quality (Waste units -\u003e minutes) ---\n\t\t\tfor ce in (evt.get(\u0027countEventSummary\u0027) or []):\n\t\t\t\tif (ce.get(\u0027counterTypeName\u0027) or \u0027\u0027).lower() !\u003d \u0027waste\u0027:\n\t\t\t\t\tcontinue\n\t\t\t\treason \u003d (ce.get(\u0027itemStateName\u0027) or \u0027\u0027).strip() or \u0027Unspecified\u0027\n\t\t\t\tcategory \u003d (ce.get(\u0027itemStateClassName\u0027) or \u0027\u0027).strip() or \u0027Quality\u0027\n\t\t\t\tunits \u003d float(ce.get(\u0027value\u0027) or 0.0)\n\t\t\t\tif units \u003c\u003d 0:\n\t\t\t\t\tcontinue\n\t\t\t\tmins \u003d (units * secondsPerUnit) / 60.0 if secondsPerUnit \u003e 0 else 0.0\n\t\t\t\tif mins \u003c\u003d 0:\n\t\t\t\t\tcontinue\n\t\t\t\trec \u003d reasonTotals[reason]\n\t\t\t\trec[\"Quality\"] +\u003d round(mins, 4)\n\t\t\t\tif not rec[\"category\"]:\n\t\t\t\t\trec[\"category\"] \u003d category\n\t\n\t\t# Colors by category (series)\n\t\tseriesColors \u003d [CAT_COLOR_AVAIL, CAT_COLOR_PERF, CAT_COLOR_QUAL]\n\t\n\t\tif barMode \u003d\u003d \u0027byCategory\u0027:\n\t\t\t# x-axis: categories; series: reasons (topN per category)\n\t\t\tcatNames \u003d [\u0027Availability\u0027,\u0027Performance\u0027,\u0027Quality\u0027]\n\t\t\t# Build separate rankings\n\t\t\tcatReasonMaps \u003d {c: [] for c in catNames}\n\t\t\tfor reason, buckets in reasonTotals.items():\n\t\t\t\tfor c in catNames:\n\t\t\t\t\tval \u003d buckets.get(c, 0.0)\n\t\t\t\t\tif val \u003e 0:\n\t\t\t\t\t\tcatReasonMaps[c].append((reason, val))\n\t\n\t\t\t# Pick topN per category\n\t\t\tfor c in catNames:\n\t\t\t\tcatReasonMaps[c].sort(key\u003dlambda t: t[1], reverse\u003dTrue)\n\t\t\t\tcatReasonMaps[c] \u003d catReasonMaps[c][:topN]\n\t\n\t\t\t# Build union of top reasons across categories as series\n\t\t\treasonSet \u003d set()\n\t\t\tfor c in catNames:\n\t\t\t\tfor r, _ in catReasonMaps[c]:\n\t\t\t\t\treasonSet.add(r)\n\t\t\torderedReasons \u003d sorted(list(reasonSet))\n\t\n\t\t\tseries \u003d []\n\t\t\tfor r in orderedReasons:\n\t\t\t\tdata \u003d []\n\t\t\t\tfor c in catNames:\n\t\t\t\t\tval \u003d 0.0\n\t\t\t\t\tfor rr, v in catReasonMaps[c]:\n\t\t\t\t\t\tif rr \u003d\u003d r:\n\t\t\t\t\t\t\tval \u003d v\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\tdata.append({\"x\": c, \"y\": round(val, 2)})\n\t\t\t\tseries.append({\"name\": r, \"data\": data})\n\t\n\t\t\treturn {\"series\": series, \"colors\": None, \"xLabels\": catNames}\n\t\n\t\telse:\n\t\t\t# Default: byReason + TopN support\n\t\t\t# x-axis: reasons (sorted by total minutes desc); series: Availability/Performance/Quality\n\t\t\ttotalByReason \u003d {}\n\t\t\tfor reason, b in reasonTotals.items():\n\t\t\t\ttotal \u003d b[\"Availability\"] + b[\"Performance\"] + b[\"Quality\"]\n\t\t\t\tif total \u003e 0:\n\t\t\t\t\ttotalByReason[reason] \u003d total\n\t\t\n\t\t\t# Sort all reasons by total minutes\n\t\t\tsortedReasons \u003d [r for r, _ in sorted(totalByReason.items(), key\u003dlambda kv: kv[1], reverse\u003dTrue)]\n\t\t\n\t\t\t# Apply TopN; remainder becomes \"Other\"\n\t\t\tn \u003d int(topN or 10)\n\t\t\tuseTopN \u003d n \u003e 0 and len(sortedReasons) \u003e n\n\t\t\tmainReasons \u003d sortedReasons[:n] if useTopN else sortedReasons\n\t\t\totherReasons \u003d sortedReasons[n:] if useTopN else []\n\t\t\n\t\t\t# Prepare \"Other\" buckets (per category)\n\t\t\totherBuckets \u003d {\"Availability\": 0.0, \"Performance\": 0.0, \"Quality\": 0.0}\n\t\t\tif useTopN:\n\t\t\t\tfor r in otherReasons:\n\t\t\t\t\totherBuckets[\"Availability\"] +\u003d reasonTotals[r][\"Availability\"]\n\t\t\t\t\totherBuckets[\"Performance\"]  +\u003d reasonTotals[r][\"Performance\"]\n\t\t\t\t\totherBuckets[\"Quality\"]      +\u003d reasonTotals[r][\"Quality\"]\n\t\t\n\t\t\t# Final x-labels (append \"Other\" if used)\n\t\t\txLabels \u003d list(mainReasons)\n\t\t\tif useTopN:\n\t\t\t\txLabels.append(\"Other\")\n\t\t\n\t\t\tdef mkSeries(name):\n\t\t\t\tdata \u003d []\n\t\t\t\tfor r in mainReasons:\n\t\t\t\t\tdata.append({\"x\": r, \"y\": round(reasonTotals[r][name], 2)})\n\t\t\t\tif useTopN:\n\t\t\t\t\tdata.append({\"x\": \"Other\", \"y\": round(otherBuckets[name], 2)})\n\t\t\t\treturn {\"name\": name, \"data\": data}\n\t\t\n\t\t\tseries \u003d [\n\t\t\t\tmkSeries(\"Availability\"),\n\t\t\t\tmkSeries(\"Performance\"),\n\t\t\t\tmkSeries(\"Quality\")\n\t\t\t]\n\t\t\n\t\t\treturn {\"series\": series, \"colors\": [CAT_COLOR_AVAIL, CAT_COLOR_PERF, CAT_COLOR_QUAL], \"xLabels\": xLabels}\n\t\n\texcept Exception as ex:\n\t\tlogger.error(\u0027lossReasonBarchart transform failed: %s\u0027 % ex)\n\t\treturn {\"series\": [], \"colors\": [], \"xLabels\": []}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.productionEvents": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tsystem.perspective.print(\"data binding change\")\n\t\n\tfilter \u003d value\n\n\tif (filter[\u0027assetPath\u0027] or None) is None: return []\n\tassetPath \u003d filter[\u0027assetPath\u0027] + \u0027%\u0027\n\tassetId \u003d filter[\u0027assetId\u0027]\n\tstartDate \u003d filter[\u0027dateRange\u0027][\u0027startDate\u0027]\n\tendDate \u003d filter[\u0027dateRange\u0027][\u0027endDate\u0027]\n\tmodeEventId \u003d None\n\n\tif assetPath is None: return []\n\t\n\tparamsDict \u003d {\u0027assetId\u0027: assetId, \u0027assetPath\u0027: assetPath, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027modeEventId\u0027: modeEventId, \u0027strictDates\u0027: False}\n\tprodEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEvents(paramsDict))\n\t\n\tself.custom.loading[\u0027max\u0027] \u003d len(prodEvents)\n\tself.custom.loading[\u0027msg\u0027] \u003d \u0027loading\u0027\n\t\n\tfor index in range(len(prodEvents)):\n\t\tself.custom.loading[\u0027index\u0027] \u003d index+1\n\t\tself.custom.loading[\u0027msg\u0027] \u003d \u0027{} / {}\u0027.format(index, self.custom.loading[\u0027max\u0027])\n\t\tparamsDict \u003d {\u0027assetId\u0027: prodEvents[index][\u0027assetId\u0027], \u0027startDate\u0027: max(prodEvents[index][\u0027startDate\u0027], startDate), \u0027endDate\u0027: min(prodEvents[index][\u0027endDate\u0027] or system.date.now(), endDate), \u0027strictDates\u0027: True}\n#\t\tprodEvents[index][\u0027countEventSummary\u0027] \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\tprodEvents[index][\u0027performanceEventSummary\u0027] \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getPerformanceEvents(paramsDict))\n\t\tprodEvents[index][\u0027downtimeEventSummary\u0027] \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetStateEventsSummary(paramsDict))\n\t\n\tself.custom.loading[\u0027msg\u0027] \u003d None\n\treturn prodEvents",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027showAssetPath\u0027): filters[\u0027showAssetPath\u0027] \u003d True\n\t\n\tviewParams \u003d value[\u0027viewParams\u0027]\n\tif viewParams.has_key(\u0027dateRange\u0027) and viewParams[\u0027dateRange\u0027].has_key(\u0027startDate\u0027) and viewParams[\u0027dateRange\u0027].has_key(\u0027endDate\u0027):\n\t\tfilters[\u0027dateRange\u0027] \u003d viewParams[\u0027dateRange\u0027]\n\t\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.loading": {
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 450,
+      "width": 926
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge"
+              },
+              "text": "Production Loss Reasons",
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblAsset",
+              "name": "lblAsset"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tassetPath \u003d system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}) if value[\u0027showAssetPath\u0027] else \u0027\u0027\n\treturn \u0027%s\u0027%(assetPath)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader",
+          "tooltip": {
+            "enabled": true
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.assetPath"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblMetric",
+              "name": "lblMetric"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tmetricType \u003d value[\u0027metricType\u0027] if value.has_key(\u0027showMetricSelector\u0027) and not value[\u0027showMetricSelector\u0027] else \u0027\u0027\n\treturn \u0027Summarize by %s\u0027%(metricType)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddMetric",
+              "name": "ddMetric"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showMetricSelector\u0027) and value[\u0027showMetricSelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027Duration\u0027, \u0027value\u0027: \u0027Duration\u0027}, \n\t{\u0027label\u0027: \u0027Occurrence\u0027, \u0027value\u0027: \u0027Occurrence\u0027}]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.metricType"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "lblGroupBy",
+              "name": "lblGroupBy"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tgroupBy \u003d value[\u0027groupBy\u0027] if value.has_key(\u0027showGroupBySelector\u0027) and not value[\u0027showGroupBySelector\u0027] else \u0027\u0027\n\treturn \u0027Group by %s\u0027%(groupBy)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddGroup",
+              "name": "ddGroup"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showGroupBySelector\u0027) and value[\u0027showGroupBySelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027Asset\u0027, \u0027value\u0027: \u0027Asset\u0027}, \n\t{\u0027label\u0027: \u0027Reason\u0027, \u0027value\u0027: \u0027Reason\u0027}, \n\t{\u0027label\u0027: \u0027Work Order\u0027, \u0027value\u0027: \u0027Work Order\u0027},\n\t{\u0027label\u0027: \u0027Item\u0027, \u0027value\u0027: \u0027Item\u0027},\n\t{\u0027label\u0027: \u0027Line\u0027, \u0027value\u0027: \u0027Line\u0027}]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.groupBy"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions"
+        },
+        "position": {
+          "display": false
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "visible"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "Progress",
+          "name": "Progress"
+        },
+        "position": {
+          "basis": "10px"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.loading.msg"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn value is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.max": {
+            "binding": {
+              "config": {
+                "path": "view.custom.loading.max"
+              },
+              "type": "property"
+            }
+          },
+          "props.value": {
+            "binding": {
+              "config": {
+                "path": "view.custom.loading.index"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "bar": {
+            "color": "--kcPrimary"
+          }
+        },
+        "type": "ia.display.progress"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "apexBar",
+              "name": "apexBar"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options.chart.stacked": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.stacked"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.options.colors": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.colors"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.series"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "options": {
+                "chart": {
+                  "fontFamily": "Roboto",
+                  "height": 350,
+                  "toolbar": {
+                    "show": false
+                  },
+                  "type": "bar"
+                },
+                "dataLabels": {
+                  "enabled": true
+                },
+                "fill": {
+                  "opacity": 1
+                },
+                "legend": {
+                  "position": "bottom"
+                },
+                "markers": {
+                  "size": 5
+                },
+                "plotOptions": {
+                  "bar": {
+                    "dataLabels": {
+                      "total": {
+                        "dropShadow": {
+                          "blur": 2,
+                          "enabled": true,
+                          "left": 0,
+                          "opacity": 0.25,
+                          "top": 1
+                        },
+                        "enabled": true,
+                        "offsetY": -10,
+                        "style": {
+                          "color": "#444",
+                          "fontSize": "13px",
+                          "fontWeight": 500
+                        }
+                      }
+                    },
+                    "horizontal": false
+                  }
+                },
+                "stroke": {
+                  "colors": [
+                    "#000000"
+                  ],
+                  "curve": "monotoneCubic",
+                  "width": 1
+                },
+                "theme": {},
+                "title": {
+                  "text": ""
+                },
+                "tooltip": {
+                  "y": {
+                    "formatter": "function(val) { return val.toFixed(1) + \u0027 min\u0027; }"
+                  }
+                },
+                "xaxis": {
+                  "labels": {
+                    "formatter": "function(val) { if (!val) return \u0027\u0027; var parts \u003d val.split(\u0027\\\\\u0027); return parts[parts.length - 1]; }"
+                  },
+                  "type": "category"
+                }
+              },
+              "type": "bar"
+            },
+            "type": "kyvislabs.display.apexchart"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblFilter",
+              "name": "lblFilter"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_0",
+              "name": "lblFilter_0"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_1",
+              "name": "lblFilter_1"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo.params[0].enabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxDebug",
+          "name": "flxDebug"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 3
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

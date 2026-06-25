@@ -1,0 +1,436 @@
+{
+  "custom": {
+    "selection": []
+  },
+  "params": {
+    "values": {
+      "data": {
+        "$": [
+          "ds",
+          192,
+          1763820392200
+        ],
+        "$columns": [
+          {
+            "data": [],
+            "name": "assetId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "parentId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "assetName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "assetPath",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "path",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "displayPath",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "assetTypeId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "assetTypeName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "assetTypePath",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "assetGroupId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "assetGroupName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "processTypeId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "processTypeName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "oeeEnabled",
+            "type": "Boolean"
+          },
+          {
+            "data": [],
+            "name": "sortOrder",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "iconPath",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "assetGroupColor",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "enabled",
+            "type": "Boolean"
+          },
+          {
+            "data": [],
+            "name": "tagPath",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "timeZone",
+            "type": "String"
+          }
+        ]
+      },
+      "msgHandler": "",
+      "options": {
+        "dragDrop": true,
+        "expand": false,
+        "multiSelect": true
+      },
+      "selection": [],
+      "selectorId": null,
+      "style": {
+        "backgroundColor": "",
+        "icoPath": null,
+        "iconColor": ""
+      },
+      "treePath": null
+    }
+  },
+  "propConfig": {
+    "custom.getData": {
+      "persistent": true
+    },
+    "custom.selection": {
+      "persistent": true
+    },
+    "params.assetType": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.inputParentPath": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.selectedAssetPath": {
+      "paramDirection": "output",
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 600,
+      "width": 633
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "evTreeSelector",
+          "name": "evTreeSelector"
+        },
+        "position": {
+          "basis": "320px",
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.params.values": {
+            "binding": {
+              "config": {
+                "path": "view.params.values"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\tvalue \u003d dict(value)\n\tif value[\u0027msgHandler\u0027] is None: value[\u0027msgHandler\u0027] \u003d \u0027updatePopupSelection\u0027\n\tif not value.has_key(\u0027selectorId\u0027): value[\u0027selectorId\u0027] \u003d None\n\t\n\treturn value",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "refresh": false
+          },
+          "path": "kanoa/core/templates/selectors/tree/treeSelector",
+          "style": {
+            "classes": "kanoa/border"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.parent.parent.getChild(\"evTreeSelector\").props.params.refresh \u003d True\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClear",
+              "name": "btnClear",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom",
+                "text": "Clear Selection"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/blur_off"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Clear"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.print(\"treePopup is sending msg updateSelection() to msgHandler: %s\"%(self.view.params.values.msgHandler))\n\tsystem.perspective.sendMessage(\u0027updateSelection\u0027, payload\u003d{\u0027selectorId\u0027: self.view.params.values.selectorId,\u0027activity\u0027: \u0027nodeSelected\u0027,\u0027selection\u0027: self.view.custom.selection, \u0027msgHandler\u0027: self.view.params.values.msgHandler})\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSelect",
+              "name": "btnSelect",
+              "tooltip": {
+                "delay": 0,
+                "location": "top",
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check"
+                },
+                "style": {
+                  "marginLeft": "100px"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Select"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnExit",
+              "name": "btnExit",
+              "tooltip": {
+                "delay": 0,
+                "location": "top",
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                },
+                "style": {
+                  "marginLeft": "100px"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "FlexCntAction",
+          "name": "FlexCntAction"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "Label",
+          "name": "Label"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false,
+          "grow": 1
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tparams \u003d dict(value)\n\tparams[\u0027data\u0027] \u003d None\n\treturn params",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/popup",
+        "gap": 5,
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "updatePopupSelection",
+          "pageScope": true,
+          "script": "\t\n#\tsystem.perspective.print(\"treePopup recvd updatePopupSelection msg with %s\"%payload)\n\tself.view.custom.selection \u003d payload[\"selection\"]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "doubleClick",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\"treePopup recvd doubleClick msg with %s\"%payload)\n\tsystem.perspective.sendMessage(\u0027updateSelection\u0027, {\u0027selection\u0027: payload[\u0027selection\u0027], \u0027msgHandler\u0027: self.view.params.values.msgHandler})\n\tsystem.perspective.closePopup(\u0027\u0027)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

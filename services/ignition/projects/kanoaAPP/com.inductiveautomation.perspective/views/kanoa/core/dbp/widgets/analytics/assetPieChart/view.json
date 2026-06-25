@@ -1,0 +1,472 @@
+{
+  "custom": {
+    "data": {
+      "assetData": []
+    },
+    "filters": {
+      "assetId": null,
+      "assetMetric": "mode",
+      "assetPath": null,
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1780254696865
+          ],
+          "$ts": 1780297200000
+        },
+        "selectedRange": "Today",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1780254696865
+          ],
+          "$ts": 1780210800000
+        }
+      },
+      "showAssetPath": false,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetMetric": "mode",
+      "assetPath": null,
+      "showAssetPath": false
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.modeData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tif value[\u0027assetId\u0027] and value.has_key(\u0027assetMetric\u0027) and value[\u0027assetMetric\u0027] \u003d\u003d \u0027mode\u0027:\n\t\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027]}))\n\telse:\n\t\treturn []",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.stateData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tif value[\u0027assetId\u0027] and value.has_key(\u0027assetMetric\u0027) and value[\u0027assetMetric\u0027] \u003d\u003d \u0027state\u0027:\n\t\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetStateEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027] or -1, \u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027]}))\n\telse:\n\t\treturn []",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsystem.perspective.print(\"assetPieChart filter change\")\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value[\u0027viewParams\u0027].has_key(\u0027assetPath\u0027) and value[\u0027viewParams\u0027][\u0027assetPath\u0027]: filters[\u0027assetPath\u0027] \u003d value[\u0027viewParams\u0027][\u0027assetPath\u0027]\n\tif not filters.has_key(\u0027showAssetPath\u0027): filters[\u0027showAssetPath\u0027] \u003d True\n\tif not filters.has_key(\u0027assetMetric\u0027): filters[\u0027assetMetric\u0027] \u003d \u0027state\u0027\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 469,
+      "width": 693
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027%s\u0027%(system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "apexDonutTimeInState",
+          "name": "apexDonutTimeInState"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.assetMetric"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027state\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.colors": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.stateData"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [row[\u0027stateColor\u0027] or row[\u0027stateTypeColor\u0027] for row in value]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.labels": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.stateData"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [row[\u0027stateName\u0027] for row in value]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.theme.mode": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.stateData"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [round((row[\u0027durationSecs\u0027] or 0)/60.0,1) for row in value]\n",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "options": {
+            "chart": {
+              "events": {
+                "animationEnd": false,
+                "beforeMount": false,
+                "beforeResetZoom": false,
+                "beforeZoom": false,
+                "brushScrolled": false,
+                "click": false,
+                "dataPointMouseEnter": false,
+                "dataPointMouseLeave": false,
+                "dataPointSelection": false,
+                "legendClick": false,
+                "markerClick": false,
+                "mounted": false,
+                "mouseLeave": false,
+                "mouseMove": false,
+                "scrolled": false,
+                "selection": false,
+                "updated": false,
+                "zoomed": false
+              },
+              "type": "donut",
+              "width": "auto"
+            },
+            "legend": {
+              "position": "bottom",
+              "show": true
+            },
+            "plotOptions": {},
+            "responsive": [
+              {
+                "breakpoint": 480,
+                "options": {
+                  "legend": {
+                    "position": "bottom"
+                  }
+                }
+              }
+            ],
+            "theme": {},
+            "title": {
+              "text": "State Time (in mins)"
+            }
+          },
+          "type": "donut"
+        },
+        "type": "kyvislabs.display.apexchart"
+      },
+      {
+        "meta": {
+          "domId": "apexDonutTimeInMode",
+          "name": "apexDonutTimeInMode"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.assetMetric"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027mode\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.colors": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.modeData"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [row[\u0027modeColor\u0027] or row[\u0027modeTypeColor\u0027] for row in value]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.labels": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.modeData"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tlabels \u003d []\n\tfor row in value:\n\t\tif row[\u0027modeName\u0027] !\u003d \u0027Production\u0027: label \u003d row[\u0027modeName\u0027]\n\t\telif row[\u0027workOrderName\u0027]: label \u003d row[\u0027workOrderName\u0027] or row[\u0027itemName\u0027] or row[\u0027modeName\u0027]\n\t\telif row[\u0027itemName\u0027]: label \u003d row[\u0027itemName\u0027] or row[\u0027modeName\u0027]\n\t\tlabels.append(label)\n\n\treturn labels\n#\treturn [row[\u0027modeName\u0027] for row in value]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.theme.mode": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.modeData"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [round((row[\u0027durationSecs\u0027] or 0)/60.0,1) for row in value]\n",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "options": {
+            "chart": {
+              "events": {
+                "animationEnd": false,
+                "beforeMount": false,
+                "beforeResetZoom": false,
+                "beforeZoom": false,
+                "brushScrolled": false,
+                "click": false,
+                "dataPointMouseEnter": false,
+                "dataPointMouseLeave": false,
+                "dataPointSelection": false,
+                "legendClick": false,
+                "markerClick": false,
+                "mounted": false,
+                "mouseLeave": false,
+                "mouseMove": false,
+                "scrolled": false,
+                "selection": false,
+                "updated": false,
+                "zoomed": false
+              },
+              "type": "donut",
+              "width": "auto"
+            },
+            "legend": {
+              "position": "bottom",
+              "show": true
+            },
+            "plotOptions": {},
+            "responsive": [
+              {
+                "breakpoint": 480,
+                "options": {
+                  "legend": {
+                    "position": "bottom"
+                  }
+                }
+              }
+            ],
+            "theme": {},
+            "title": {
+              "text": "Mode Time (in mins)"
+            }
+          },
+          "type": "donut"
+        },
+        "type": "kyvislabs.display.apexchart"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

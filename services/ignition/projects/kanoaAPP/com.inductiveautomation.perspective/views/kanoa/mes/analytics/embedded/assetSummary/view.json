@@ -1,0 +1,530 @@
+{
+  "custom": {
+    "data": {}
+  },
+  "params": {
+    "value": {
+      "assetId": 901,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1772809226742
+        ],
+        "$ts": 1772773200000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1772809226742
+        ],
+        "$ts": 1772686800000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.groupBy": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027stateName\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.data.oee": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getOEESummary({\u0027assetId\u0027:value.assetId or -1, \u0027startDate\u0027: value.startDate, \u0027endDate\u0027: value.endDate}),0)\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.production": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn \tsystem.kanoa.event.getAssetProductionEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027] or -1, \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027]})\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.state": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn system.kanoa.event.getStateEventSummary(value[\u0027assetId\u0027] or -1, value[\u0027startDate\u0027], value[\u0027endDate\u0027])\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 169,
+      "width": 1294
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "evOEE",
+                  "name": "evOEE"
+                },
+                "position": {
+                  "basis": "405px",
+                  "grow": 1,
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.params.values": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.oee"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tdarkMode \u003d \u0027dark\u0027 in self.session.props.theme\n\toeeValues \u003d dict(value)\n\tif oeeValues[\u0027performance\u0027] \u003e 1.0: oeeValues[\u0027performance\u0027] \u003d 1.0\n\toeeValues[\u0027oee\u0027] \u003d None if oeeValues[\u0027availability\u0027] is None or oeeValues[\u0027performance\u0027] is None or oeeValues[\u0027quality\u0027] is None else oeeValues[\u0027availability\u0027] * oeeValues[\u0027performance\u0027] * oeeValues[\u0027quality\u0027]\n\toeeColors \u003d system.kanoa.event.getOEEColors({\u0027assetId\u0027:self.view.params.value.assetId}, oeeValues[\u0027oee\u0027], oeeValues[\u0027availability\u0027], oeeValues[\u0027performance\u0027], oeeValues[\u0027quality\u0027])\n\treturn {\n\t\t\t\t\u0027oee\u0027: {\u0027value\u0027: oeeValues[\u0027oee\u0027], \u0027color\u0027: kanoaScripts.colors.getCSSColor(oeeColors[\u0027oee\u0027], darkMode), \u0027fontColor\u0027: \u0027\u0027},\n\t\t\t\t\u0027availability\u0027: {\u0027value\u0027: oeeValues[\u0027availability\u0027],\t\u0027color\u0027: kanoaScripts.colors.getCSSColor(oeeColors[\u0027availability\u0027], darkMode), \u0027fontColor\u0027: \u0027\u0027},\n\t\t\t\t\u0027performance\u0027: {\u0027value\u0027: oeeValues[\u0027performance\u0027],\t\u0027color\u0027: kanoaScripts.colors.getCSSColor(oeeColors[\u0027performance\u0027], darkMode),\t\u0027fontColor\u0027: \u0027\u0027\t},\n\t\t\t\t\u0027quality\u0027: {\u0027value\u0027: oeeValues[\u0027quality\u0027], \u0027color\u0027: kanoaScripts.colors.getCSSColor(oeeColors[\u0027quality\u0027], darkMode), \u0027fontColor\u0027: \u0027\u0027}\n\t\t\t}",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "fontStyleClass": "kanoa/font/default",
+                    "showInfo": true,
+                    "showInfoOnRight": true
+                  },
+                  "path": "kanoa/mes/templates/display/oee/guage/detailedFourCircles"
+                },
+                "type": "ia.display.view"
+              }
+            ],
+            "meta": {
+              "domId": "flxCntOEE",
+              "name": "flxCntOEE"
+            },
+            "position": {
+              "basis": "405px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.height": {
+                "binding": {
+                  "config": {
+                    "path": "/root.custom.widgetHeight"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/container",
+                "overflow": "hidden",
+                "padding": 0
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "PieChart",
+                  "name": "PieChart"
+                },
+                "position": {
+                  "basis": "600px"
+                },
+                "propConfig": {
+                  "props.colors": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.theme"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn kanoaScripts.colors.getChartColors()",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.production"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t#This function gets the dataset from the getProductionDataSummary() function and generates the appropriate doc for the pie chart component\n\tdata \u003d system.dataset.toPyDataSet(value)\n\tif data is None: return\n\t\n\thdr \u003d [\"Label\", \"Value\", \"Color\"]\n\trows \u003d []\n\t\n\tmodeList \u003d list(set([data.getValueAt(x, \u0027modeName\u0027) for x in range(data.rowCount)]))\n\tassetList \u003d list(set([data.getValueAt(x, \u0027assetName\u0027) for x in range(data.rowCount)]))\n\tassetModeList \u003d []\n\t\t\n\tfor mode in modeList:\t#Build out 2d array so we can sum up the durations\n\t\tfor asset in assetList:\n\t\t\tassetModeList.append(asset + \" \" + mode)\n\t\t\trows.append([asset + \" \" + mode, 0.0, None])\n\t\t\t\n\tfor row in data:\n\t\trows[assetModeList.index(row[\"assetName\"] + \" \" + row[\"modeName\"])][1] +\u003d row[\u0027durationSecs\u0027] / 3600.0\n\t\trows[assetModeList.index(row[\"assetName\"] + \" \" + row[\"modeName\"])][2] \u003d row[\u0027modeColor\u0027]\n\t\t\n\tdata \u003d system.dataset.toDataSet(hdr, rows)\n\t\n\tself.props.colors \u003d [data.getValueAt(i, \u0027Color\u0027) for i in range(data.rowCount)]\n\treturn system.dataset.filterColumns(data, [\u0027Label\u0027, \u0027Value\u0027])",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.title": {
+                    "binding": {
+                      "config": {
+                        "expression": "translate(\u0027Utilization\u0027)"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  },
+                  "props.titleColor": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.theme"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "labels": {
+                    "showName": false,
+                    "showValue": false
+                  },
+                  "legend": {
+                    "fontSize": 10,
+                    "icon": {
+                      "height": 10,
+                      "width": 10
+                    },
+                    "position": "right"
+                  },
+                  "showLegend": false,
+                  "style": {
+                    "fontSize": "12px",
+                    "fontWeight": "bold"
+                  }
+                },
+                "type": "ia.chart.pie"
+              }
+            ],
+            "meta": {
+              "domId": "flxCntUtilization",
+              "name": "flxCntUtilization"
+            },
+            "position": {
+              "basis": "200px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.production"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value.rowCount \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.height": {
+                "binding": {
+                  "config": {
+                    "path": "/root.custom.widgetHeight"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/container",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "PieChart-1",
+                  "name": "PieChart"
+                },
+                "position": {
+                  "basis": "600px"
+                },
+                "propConfig": {
+                  "props.colors": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.theme"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\tgoodColor \u003d kanoaScripts.colors.getCSSColor(\u0027--kcGood\u0027, value)\n\tbadColor \u003d kanoaScripts.colors.getCSSColor(\u0027--kcBad\u0027, value)\n\treturn [goodColor, badColor, badColor, badColor, badColor, badColor, badColor, badColor, badColor, badColor, badColor, badColor, badColor]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "data": "{view.custom.data.state}",
+                          "groupBy": "{view.custom.data.groupBy}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\n\tif value[\u0027data\u0027] is None: return [{\u0027label\u0027: \u0027No Data\u0027, \u0027value\u0027: 1}]\n\t\n\t# Options: \u0027stateName\u0027 or \u0027stateTypeName\u0027\n\t\n\tgroupBy \u003d value[\u0027groupBy\u0027] or \u0027stateName\u0027\n\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(value[\u0027data\u0027])\n\t\n\ttotals \u003d {}\n\tcolors \u003d {}\n\t\n\tfor row in data:\n\t\tlabel \u003d row.get(groupBy)\n\t\tval \u003d row.get(\u0027durationSecs\u0027)\n\t\n\t\ttry:\n\t\t\tval \u003d float(val or 0)\n\t\texcept:\n\t\t\tval \u003d 0\n\t\n\t\tif label is not None and val \u003e 0:\n\t\t\ttotals[label] \u003d totals.get(label, 0) + val\n\t\n\t\t\tif label not in colors:\n\t\t\t\tif groupBy \u003d\u003d \u0027stateTypeName\u0027: colors[label] \u003d row.get(\u0027stateTypeColor\u0027) or row.get(\u0027stateColor\u0027)\n\t\t\t\telse: colors[label] \u003d row.get(\u0027stateColor\u0027) or row.get(\u0027stateTypeColor\u0027)\n\t\n\tclean \u003d [{\u0027label\u0027: label, \u0027value\u0027: val} for label, val in totals.items()]\n\t\n\tself.props.colors \u003d [colors[row[\u0027label\u0027]] for row in clean]\n\t\n\tif not clean: return [{\u0027label\u0027: \u0027No Data\u0027, \u0027value\u0027: 1}]\n\telse: return clean",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.title": {
+                    "binding": {
+                      "config": {
+                        "expression": "translate(\u0027State\u0027)"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  },
+                  "props.titleColor": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.theme"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "labels": {
+                    "showName": false,
+                    "showValue": false
+                  },
+                  "legend": {
+                    "fontSize": 10,
+                    "icon": {
+                      "height": 10,
+                      "width": 10
+                    }
+                  },
+                  "showLegend": false,
+                  "style": {
+                    "fontSize": "12px",
+                    "fontWeight": "bold"
+                  }
+                },
+                "type": "ia.chart.pie"
+              },
+              {
+                "meta": {
+                  "name": "ddGroupBy"
+                },
+                "position": {
+                  "basis": "25px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.data.groupBy"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "dropdownOptionStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "options": [
+                    {
+                      "label": "State",
+                      "value": "stateName"
+                    },
+                    {
+                      "label": "State Type",
+                      "value": "stateTypeName"
+                    },
+                    {
+                      "label": "Category",
+                      "value": "stateCategoryName"
+                    }
+                  ],
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "width": "120px"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              }
+            ],
+            "meta": {
+              "domId": "flxCntState",
+              "name": "flxCntState"
+            },
+            "position": {
+              "basis": "200px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.state"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value.rowCount \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.height": {
+                "binding": {
+                  "config": {
+                    "path": "/root.custom.widgetHeight"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "center",
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/container",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntMain",
+          "name": "flxCntMain"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden",
+            "padding": 5
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "custom": {
+      "widgetHeight": "160px"
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "classes": "kanoa/font/default",
+        "overflow": "hidden"
+      },
+      "wrap": "wrap"
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "custom": {
+    "navItem": {
+      "navItem": "downtime", 
+      "userFunction": null, 
+      "label": "Downtime", 
+      "enabled": true
+    }
+  }, 
+  "params": {
+    "canUpdate": false, 
+    "value": {
+      "navItem": "downtime", 
+      "userFunction": null, 
+      "label": "Downtime", 
+      "enabled": true
+    }, 
+    "userFunctions": [
+      {
+        "label": "Configure Security", 
+        "value": "configureSecurity"
+      }, 
+      {
+        "label": "Configure Assets", 
+        "value": "configureAssets"
+      }, 
+      {
+        "label": "Configure Items", 
+        "value": "configureItems"
+      }, 
+      {
+        "label": "Operate Assets", 
+        "value": "operateAssets"
+      }, 
+      {
+        "label": "Edit Operations", 
+        "value": "editOperations"
+      }, 
+      {
+        "label": "Configure Quality", 
+        "value": "configureQuality"
+      }, 
+      {
+        "label": "Enter Checks", 
+        "value": "enterQualityCheck"
+      }, 
+      {
+        "label": "Approve Checks", 
+        "value": "approveQualityCheck"
+      }, 
+      {
+        "label": "Schedule Shifts", 
+        "value": "scheduleShifts"
+      }, 
+      {
+        "label": "Schedule Operations", 
+        "value": "scheduleOperations"
+      }
+    ]
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 304, 
+      "height": 40
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "margin": "5px", 
+        "classes": "kanoa/border kanoa/font/default", 
+        "overflow": "hidden", 
+        "gap": "5px", 
+        "height": "40px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.checkbox", 
+        "props": {
+          "style": {
+            "height": "30px"
+          }
+        }, 
+        "meta": {
+          "domId": "chkEnabled", 
+          "name": "chkEnabled"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "120px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.label"
+              }
+            }
+          }, 
+          "props.selected": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.navItem.enabled"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.canUpdate"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/font/default"
+          }, 
+          "placeholder": {
+            "text": "Select user function..."
+          }
+        }, 
+        "meta": {
+          "domId": "ddUserFunction", 
+          "name": "ddUserFunction"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "160px"
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.userFunctions"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.navItem.userFunction"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\treturn value['navItem']['enabled'] and value['canUpdate']", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "overlayOptOut": true, 
+              "config": {
+                "struct": {
+                  "canUpdate": "{view.params.canUpdate}", 
+                  "navItem": "{view.custom.navItem}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.navItem": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tif origin == 'BindingWriteback': system.perspective.sendMessage('navItemChanged', self.custom.navItem)\n\t\n\treturn"
+      }, 
+      "binding": {
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.userFunctions": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.canUpdate": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

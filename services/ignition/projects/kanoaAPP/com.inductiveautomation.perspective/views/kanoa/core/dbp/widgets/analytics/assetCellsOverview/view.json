@@ -1,0 +1,134 @@
+{
+  "custom": {
+    "filter": {
+      "assetId": null,
+      "assetPath": null,
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null
+    }
+  },
+  "propConfig": {
+    "custom.filter": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1299
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "flxRptStationCards",
+          "name": "flxRptStationCards"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\tif (value[\u0027assetId\u0027] or None) is None: return []\n\t\n\tchildAssets \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027: value[\u0027assetPath\u0027] + \u0027\\\\%\u0027, \u0027oeeEnabled\u0027: True}))\n\tchildAssets \u003d sorted(childAssets, key\u003dlambda x: x[\u0027sortOrder\u0027], reverse \u003d False)\n\n\treturn [{\u0027value\u0027: {\u0027assetPath\u0027: asset[\u0027assetPath\u0027], \u0027showAssetPath\u0027: True}} for asset in childAssets]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "path": "kanoa/core/dbp/widgets/analytics/assetCellCard",
+          "style": {
+            "gap": 5
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filter\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filter\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

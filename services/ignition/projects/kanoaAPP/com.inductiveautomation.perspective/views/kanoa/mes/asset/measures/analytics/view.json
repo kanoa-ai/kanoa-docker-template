@@ -1,0 +1,1378 @@
+{
+  "custom": {
+    "data": {
+      "gapAnalysis": [],
+      "hourlyTrends": [],
+      "outliers": [],
+      "rollingAverage": [],
+      "sampleConsistency": [],
+      "summary": {},
+      "valueDistribution": []
+    },
+    "filters": {
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1780576667447
+        ],
+        "$ts": 1780297200000
+      },
+      "measureId": null,
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1780575179661
+        ],
+        "$ts": 1780210800000
+      }
+    }
+  },
+  "params": {
+    "endDate": null,
+    "measureId": null,
+    "startDate": null
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1404
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblMeasureId"
+            },
+            "props": {
+              "style": {
+                "whiteSpace": "nowrap"
+              },
+              "text": "Measure"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddMeasure"
+            },
+            "position": {
+              "basis": "400px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027value\u0027: item[\u0027measureId\u0027], \u0027label\u0027: \u0027%s %s\u0027%(item[\u0027measureName\u0027], item[\u0027assetPath\u0027])} for item in system.kanoa.measures.getMeasures({})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.measureId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Measure..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "name": "evDateRangeSelector"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.dates.endDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.endDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.dates.startDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "dates": {
+                  "selectedRange": "Today"
+                },
+                "value": {
+                  "display": {
+                    "persistent": false,
+                    "showAutoRefresh": false,
+                    "showDateSelector": true,
+                    "showPeriodSelector": true
+                  },
+                  "enabled": true,
+                  "options": [
+                    {
+                      "enabled": true,
+                      "label": "Today"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Yesterday"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Month"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Month"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 24 Hrs"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 7 Days"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Custom"
+                    }
+                  ]
+                }
+              },
+              "path": "kanoa/core/templates/selectors/dateSelector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.getChild(\u0027root\u0027).getData()\n\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnGetData"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/play_arrow"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Go"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.custom.data.summary \u003d {}\n\tself.view.custom.data.hourlyTrends \u003d []\n\tself.view.custom.data.outliers \u003d []\n\tself.view.custom.data.valueDistribution \u003d []\n\tself.view.custom.data.rollingAverage \u003d []\n\tself.view.custom.data.sampleConsistency \u003d []\n\tself.view.custom.data.gapAnalysis \u003d []\n\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnClear"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/not_interested"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Clear"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "style": {
+            "classes": "kanoa/container",
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "cardAvgValueTitle"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "color": "#666",
+                    "fontSize": "14px"
+                  },
+                  "text": "Avg Measure Value"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardAvgValueValue"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027{:.2f}\u0027.format(value.get(\u0027avgMeasureValue\u0027) or 0)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardAvgValueRange"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027Min: {:.2f}  Max: {:.2f}\u0027.format(value.get(\u0027minMeasureValue\u0027) or 0, value.get(\u0027maxMeasureValue\u0027) or 0)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#999",
+                    "fontSize": "12px",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "cardAvgValue"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "display": "flex",
+                "flex": "1",
+                "flexDirection": "column",
+                "gap": "4px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "cardTotalSamplesTitle"
+                },
+                "props": {
+                  "style": {
+                    "color": "#666",
+                    "fontSize": "14px"
+                  },
+                  "text": "Total Samples"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardTotalSamplesValue"
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027{:,}\u0027.format(int(value.get(\u0027totalSamples\u0027) or 0))",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardTotalSamplesEvents"
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027{:,} events  ~{:.1f} avg/event\u0027.format(int(value.get(\u0027totalEvents\u0027) or 0), value.get(\u0027avgSampleCount\u0027) or 0)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#999",
+                    "fontSize": "12px",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "cardTotalSamples"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "display": "flex",
+                "flex": "1",
+                "flexDirection": "column",
+                "gap": "4px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "cardStdDevTitle"
+                },
+                "props": {
+                  "style": {
+                    "color": "#666",
+                    "fontSize": "14px"
+                  },
+                  "text": "Avg Std Dev (within sample)"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardStdDevValue"
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027{:.4f}\u0027.format(value.get(\u0027avgWithinSampleStdDev\u0027) or 0)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardStdDevBetween"
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027Between-event σ: {:.4f}\u0027.format(value.get(\u0027stdDevOfMeans\u0027) or 0)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#999",
+                    "fontSize": "12px",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "cardStdDev"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "display": "flex",
+                "flex": "1",
+                "flexDirection": "column",
+                "gap": "4px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "cardDurationTitle"
+                },
+                "props": {
+                  "style": {
+                    "color": "#666",
+                    "fontSize": "14px"
+                  },
+                  "text": "Avg Duration (secs)"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardDurationValue"
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027{:.1f}\u0027.format(value.get(\u0027avgDurationSecs\u0027) or 0)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "32px",
+                    "fontWeight": "700",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "cardDurationDates"
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.summary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\tfirst \u003d value.get(\u0027firstEvent\u0027)\n\tlast  \u003d value.get(\u0027lastEvent\u0027)\n\tif not first or not last: return \u0027\u0027\n\treturn system.date.format(first, \u0027MM/dd HH:mm\u0027) + \u0027 → \u0027 + system.date.format(last, \u0027MM/dd HH:mm\u0027)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "#999",
+                    "fontSize": "12px",
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "cardDuration"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "display": "flex",
+                "flex": "1",
+                "flexDirection": "column",
+                "gap": "4px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "kpiRow"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "12px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "chartRollingAvg"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options.xaxis.categories": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.rollingAverage"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn [system.date.format(row[\u0027tStamp\u0027], \u0027MM/dd HH:mm\u0027) for row in value]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.rollingAverage"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tds \u003d value\n\tif not ds:\n\t\treturn [\n\t\t\t{\u0027name\u0027: \u0027Measure Value\u0027, \u0027type\u0027: \u0027scatter\u0027, \u0027data\u0027: []},\n\t\t\t{\u0027name\u0027: \u0027Rolling Avg\u0027,   \u0027type\u0027: \u0027line\u0027,    \u0027data\u0027: []}\n\t\t]\n\t\n\treturn [\n\t\t{\u0027name\u0027: \u0027Measure Value\u0027, \u0027type\u0027: \u0027scatter\u0027, \u0027data\u0027: [row[\u0027measureValue\u0027] for row in ds]},\n\t\t{\u0027name\u0027: \u0027Rolling Avg\u0027,   \u0027type\u0027: \u0027line\u0027,    \u0027data\u0027: [row[\u0027rollingAvg\u0027]   for row in ds]}\n\t]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "options": {
+                    "chart": {
+                      "fontFamily": "Roboto",
+                      "height": 350,
+                      "stacked": false,
+                      "toolbar": {
+                        "show": true
+                      },
+                      "type": "line"
+                    },
+                    "colors": [
+                      "var(--kcBlue-50)",
+                      "var(--kcPrimary)"
+                    ],
+                    "dataLabels": {
+                      "enabled": false
+                    },
+                    "markers": {
+                      "size": [
+                        3,
+                        0
+                      ]
+                    },
+                    "stroke": {
+                      "curve": "monotoneCubic",
+                      "width": [
+                        0,
+                        3
+                      ]
+                    },
+                    "theme": {
+                      "mode": "light"
+                    },
+                    "title": {
+                      "text": "Measure Value with Rolling Average"
+                    },
+                    "tooltip": {
+                      "y": {
+                        "formatter": "function(v){ return v !\u003d null ? v.toFixed(4) : \u0027N/A\u0027; }"
+                      }
+                    },
+                    "xaxis": {
+                      "axisBorder": {
+                        "show": false
+                      },
+                      "axisTicks": {
+                        "show": false
+                      },
+                      "tickAmount": 10
+                    },
+                    "yaxis": [
+                      {
+                        "title": {
+                          "text": "Value"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "type": "kyvislabs.display.apexchart"
+              }
+            ],
+            "meta": {
+              "name": "chartRollingAvgCard"
+            },
+            "position": {
+              "basis": "50%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "overflow": "hidden",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "chartHourly"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options.xaxis.categories": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.hourlyTrends"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn [str(row[\u0027hour\u0027]) + \u0027:00\u0027 for row in value]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.hourlyTrends"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tds \u003d value\n\tif not ds:\n\t\treturn [\n\t\t\t{\u0027name\u0027: \u0027Avg Value\u0027, \u0027type\u0027: \u0027bar\u0027,  \u0027data\u0027: []},\n\t\t\t{\u0027name\u0027: \u0027Min\u0027,       \u0027type\u0027: \u0027line\u0027, \u0027data\u0027: []},\n\t\t\t{\u0027name\u0027: \u0027Max\u0027,       \u0027type\u0027: \u0027line\u0027, \u0027data\u0027: []}\n\t\t]\n\t\n\treturn [\n\t\t{\u0027name\u0027: \u0027Avg Value\u0027, \u0027type\u0027: \u0027bar\u0027,  \u0027data\u0027: [row[\u0027avgMeasureValue\u0027] for row in ds]},\n\t\t{\u0027name\u0027: \u0027Min\u0027,       \u0027type\u0027: \u0027line\u0027, \u0027data\u0027: [row[\u0027minMeasureValue\u0027] for row in ds]},\n\t\t{\u0027name\u0027: \u0027Max\u0027,       \u0027type\u0027: \u0027line\u0027, \u0027data\u0027: [row[\u0027maxMeasureValue\u0027] for row in ds]}\n\t]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "options": {
+                    "chart": {
+                      "fontFamily": "Roboto",
+                      "height": 350,
+                      "stacked": false,
+                      "toolbar": {
+                        "show": true
+                      },
+                      "type": "line"
+                    },
+                    "colors": [
+                      "var(--kcPrimary)",
+                      "var(--kcBlue-50)",
+                      "var(--kcOrange-50)"
+                    ],
+                    "dataLabels": {
+                      "enabled": false
+                    },
+                    "markers": {
+                      "size": [
+                        0,
+                        3,
+                        3
+                      ]
+                    },
+                    "stroke": {
+                      "curve": "monotoneCubic",
+                      "width": [
+                        3,
+                        2,
+                        2
+                      ]
+                    },
+                    "theme": {
+                      "mode": "light"
+                    },
+                    "title": {
+                      "text": "Avg / Min / Max Value by Hour of Day"
+                    },
+                    "xaxis": {},
+                    "yaxis": [
+                      {
+                        "title": {
+                          "text": "Value"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "type": "kyvislabs.display.apexchart"
+              }
+            ],
+            "meta": {
+              "name": "chartHourlyCard"
+            },
+            "position": {
+              "basis": "50%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "overflow": "hidden",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "trendRow"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "12px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "chartDistribution"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options.xaxis.categories": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.valueDistribution"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn [row[\u0027valueBucket\u0027] for row in value]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.valueDistribution"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tds \u003d value\n\tif not ds:\n\t\treturn [{\u0027name\u0027: \u0027Event Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: []}]\n\treturn [{\u0027name\u0027: \u0027Event Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: [row[\u0027eventCount\u0027] for row in ds]}]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "options": {
+                    "chart": {
+                      "fontFamily": "Roboto",
+                      "height": 350,
+                      "toolbar": {
+                        "show": true
+                      },
+                      "type": "bar"
+                    },
+                    "colors": [
+                      "var(--kcPrimary)"
+                    ],
+                    "dataLabels": {
+                      "enabled": true
+                    },
+                    "plotOptions": {
+                      "bar": {
+                        "horizontal": false
+                      }
+                    },
+                    "theme": {
+                      "mode": "light"
+                    },
+                    "title": {
+                      "text": "Measure Value Distribution"
+                    },
+                    "tooltip": {
+                      "y": {
+                        "formatter": "function(v, opts){ var pct \u003d opts.w.globals.series[0].reduce(function(a,b){return a+b},0); return v + \u0027 events (\u0027 + (v/pct*100).toFixed(1) + \u0027%)\u0027; }"
+                      }
+                    },
+                    "xaxis": {},
+                    "yaxis": [
+                      {
+                        "title": {
+                          "text": "Event Count"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "type": "kyvislabs.display.apexchart"
+              }
+            ],
+            "meta": {
+              "name": "chartDistributionCard"
+            },
+            "position": {
+              "basis": "50%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "overflow": "hidden",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "chartSampleConsistency"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.sampleConsistency"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tds \u003d value\n\tif not ds: return [{\u0027name\u0027: \u0027Sample Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: []}]\n\t\n\tdata \u003d []\n\tfor row in ds:\n\t\tstatus \u003d row.get(\u0027sampleCountStatus\u0027) or \u0027Normal\u0027\n\t\tif status \u003d\u003d \u0027High\u0027:   color \u003d \u0027var(--kcOrange-60)\u0027\n\t\telif status \u003d\u003d \u0027Low\u0027:  color \u003d \u0027var(--kcOrange-40)\u0027\n\t\telse:                  color \u003d \u0027var(--kcPrimary)\u0027\n\t\t\n\t\tdata.append({\n\t\t\t\u0027x\u0027: system.date.format(row[\u0027tStamp\u0027], \"MM/dd HH:mm\"),\n\t\t\t\u0027y\u0027: row[\u0027sampleCount\u0027],\n\t\t\t\u0027fillColor\u0027: color\n\t\t})\n\t\n\treturn [{\u0027name\u0027: \u0027Sample Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: data}]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "options": {
+                    "chart": {
+                      "fontFamily": "Roboto",
+                      "height": 350,
+                      "toolbar": {
+                        "show": true
+                      },
+                      "type": "bar"
+                    },
+                    "colors": [
+                      "var(--kcPrimary)"
+                    ],
+                    "dataLabels": {
+                      "enabled": false
+                    },
+                    "legend": {
+                      "show": true
+                    },
+                    "plotOptions": {
+                      "bar": {
+                        "distributed": true
+                      }
+                    },
+                    "stroke": {
+                      "show": false
+                    },
+                    "theme": {
+                      "mode": "light"
+                    },
+                    "title": {
+                      "text": "Sample Count Outliers by Event Time"
+                    },
+                    "xaxis": {
+                      "categories": [],
+                      "labels": {
+                        "rotate": -45,
+                        "rotateAlways": true
+                      }
+                    },
+                    "yaxis": [
+                      {
+                        "title": {
+                          "text": "Sample Count"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "type": "kyvislabs.display.apexchart"
+              }
+            ],
+            "meta": {
+              "name": "chartSampleConsistencyCard"
+            },
+            "position": {
+              "basis": "50%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "overflow": "hidden",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "distributionRow"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "12px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "tblOutliersTitle"
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "marginBottom": "8px"
+                  },
+                  "text": "Outliers (z-score \u003e 2)"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "tblOutliers"
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.outliers"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "columns": [
+                    {
+                      "field": "tStamp",
+                      "header": {
+                        "title": "Timestamp"
+                      }
+                    },
+                    {
+                      "field": "measureValue",
+                      "header": {
+                        "title": "Value"
+                      }
+                    },
+                    {
+                      "field": "overallMean",
+                      "header": {
+                        "title": "Mean"
+                      }
+                    },
+                    {
+                      "field": "overallStdDev",
+                      "header": {
+                        "title": "Std Dev"
+                      }
+                    },
+                    {
+                      "field": "zScore",
+                      "header": {
+                        "title": "Z-Score"
+                      }
+                    },
+                    {
+                      "field": "outlierDirection",
+                      "header": {
+                        "title": "Direction"
+                      }
+                    }
+                  ],
+                  "style": {
+                    "borderStyle": "none",
+                    "height": "100%"
+                  }
+                },
+                "type": "ia.display.table"
+              }
+            ],
+            "meta": {
+              "name": "tblOutliersCard"
+            },
+            "position": {
+              "basis": "50%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "flex": "1",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "tblGapAnalysisTitle"
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "marginBottom": "8px"
+                  },
+                  "text": "Gap Analysis"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "tblGapAnalysis"
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.gapAnalysis"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "columns": [
+                    {
+                      "field": "tStamp",
+                      "header": {
+                        "title": "Timestamp"
+                      }
+                    },
+                    {
+                      "field": "prevTStamp",
+                      "header": {
+                        "title": "Prev Timestamp"
+                      }
+                    },
+                    {
+                      "field": "gapSecs",
+                      "header": {
+                        "title": "Gap (secs)"
+                      }
+                    },
+                    {
+                      "field": "gapStatus",
+                      "header": {
+                        "title": "Status"
+                      }
+                    }
+                  ],
+                  "style": {
+                    "borderStyle": "none",
+                    "height": "100%"
+                  }
+                },
+                "type": "ia.display.table"
+              }
+            ],
+            "meta": {
+              "name": "tblGapAnalysisCard"
+            },
+            "position": {
+              "basis": "50%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "flex": "1",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "tableRow"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "12px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "#f7f8fa",
+        "classes": "kanoa/font/default",
+        "gap": "12px",
+        "height": "100%",
+        "padding": "12px",
+        "width": "100%"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getData",
+          "params": [],
+          "script": "\n\tsystem.perspective.print(\"Get Data called\")\n\tparamsDict \u003d {\n\t\t\u0027measureId\u0027:   self.view.custom.filters.measureId,\n\t\t\u0027tStampStart\u0027: self.view.custom.filters.startDate,\n\t\t\u0027tStampEnd\u0027:   self.view.custom.filters.endDate\n\t}\n\n\tself.view.custom.data.summary           \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.measures.getMeasureSummary(paramsDict), 0)\n\tself.view.custom.data.hourlyTrends      \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureHourlyTrends(paramsDict))\n\tself.view.custom.data.outliers          \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureOutliers(paramsDict))\n\tself.view.custom.data.valueDistribution \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureValueDistribution(paramsDict))\n\tself.view.custom.data.rollingAverage    \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureRollingAverage(paramsDict))\n\tself.view.custom.data.sampleConsistency \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureSampleCountConsistency(paramsDict))\n\tself.view.custom.data.gapAnalysis       \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureGapAnalysis(paramsDict))\n\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

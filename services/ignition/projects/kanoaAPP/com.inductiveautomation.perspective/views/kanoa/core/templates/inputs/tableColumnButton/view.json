@@ -1,0 +1,132 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "msgHandler": null, 
+      "label": "view Asset", 
+      "enabled": true, 
+      "btnColor": "--kcGreen-20", 
+      "iconPath": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 204, 
+      "height": 52
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "justify": "center", 
+      "style": {
+        "padding": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {}, 
+            "width": 16, 
+            "position": "right", 
+            "height": 16
+          }, 
+          "style": {
+            "borderStyle": "none", 
+            "height": 40
+          }, 
+          "primary": false
+        }, 
+        "meta": {
+          "domId": "btn", 
+          "name": "btn"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tif self.view.params.value.msgHandler:\n\t\tsystem.perspective.print(\"Sending %s message\"%self.view.params.value.msgHandler)\n\t\tsystem.perspective.sendMessage('self.view.params.value.msgHandler', {})\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.btnColor"
+              }
+            }
+          }, 
+          "props.image.icon.path": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.iconPath"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.label"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value is not None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.label"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "tooltip": {
+        "enabled": true
+      }, 
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "propConfig": {
+      "meta.tooltip.text": {
+        "binding": {
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "path": "view.params.value"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "custom": {}, 
+  "params": {
+    "chkShtId": null, 
+    "groupId": null, 
+    "enabled": false
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 246, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "overflow": "hidden"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/border kanoa/font/default", 
+            "minWidth": "150px"
+          }, 
+          "placeholder": {
+            "text": "Select Group..."
+          }
+        }, 
+        "meta": {
+          "domId": "ddGroup", 
+          "name": "ddGroup"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [{\"value\": row['chkItemGroupId'], \"label\": row['chkItemGroupName']} for row in system.kanoa.quality.config.getGroups({'chkShtId': value or -1})]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.chkShtId"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.groupId"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.chkShtId": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.groupId": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

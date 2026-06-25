@@ -1,0 +1,163 @@
+{
+  "custom": {},
+  "params": {
+    "text": "| **Name** | **Value** |\n|---|---|\n| **dbProduct** | `Microsoft SQL Server` |\n| **dbVersion** | `15.00.2000` |\n| **driverName** | `Microsoft JDBC Driver 9.4 for SQL Server` |\n| **driverVersion** | `9.4.0.0` |\n| **hawthornError** | `Database tables present but no changeSet` |\n| **ignitionSystemName** | `Kanoa Dev Gateway` |\n| **ignitionVersion** | `8.1.50 (b2025093011)` |\n| **installationDate** | `2026.01.26-6.19pm` |\n| **kanoaMESVersion** | `1.14.3` |\n"
+  },
+  "propConfig": {
+    "params.text": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 454,
+      "width": 420
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "mdInfo"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.source": {
+            "binding": {
+              "config": {
+                "path": "view.params.text"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.markdown"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "basis": "100px"
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tpayload\u003d{\"lines\": 1000, \"which\": 0}  # which\u003d0 \u003d\u003e wrapper.log, 1\u003d\u003ewrapper.log.1, etc.\n\tresp \u003d self.view.getChild(\"root\").getLogs(payload)\n\tself.view.getChild(\"root\").exportLogs(resp[\"text\"], self.view.params.text)\n\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnGetLogs"
+            },
+            "position": {
+              "basis": "160px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/cloud_download"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Export Logs"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "flex-end",
+      "style": {
+        "backgroundColorX": "--kcGray-0",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getLogs",
+          "params": [
+            "payload"
+          ],
+          "script": "\n\timport os\n\tfrom java.io import RandomAccessFile\n\tfrom jarray import zeros\n\n\tlines \u003d int(payload.get(\"lines\", 500))\n\twhich \u003d int(payload.get(\"which\", 0))\t\t\t# 0 \u003d\u003e wrapper.log, 1 \u003d\u003e wrapper.log.1, etc.\n\tmaxBytes \u003d int(payload.get(\"maxBytes\", 1024 * 512))\t# default 512KB\n\n\tfileSep \u003d system.util.getProperty(\"file.separator\")\n\tosName \u003d system.util.getProperty(\"os.name\") or \"\"\n\tignitionHome \u003d system.util.getProperty(\"ignition.home\")\n\n\tdef getRotatedPath(basePath):\n\t\tif which \u003c\u003d 0:\treturn basePath\n\t\treturn basePath + \".\" + str(which)\n\n\tcandidatePaths \u003d []\n\n\t# Prefer ignition.home if available\n\tif ignitionHome: candidatePaths.append(ignitionHome + fileSep + \"logs\" + fileSep + \"wrapper.log\")\n\n\t# Windows common installs\n\tcandidatePaths.append(r\"C:\\Program Files\\Inductive Automation\\Ignition\\logs\\wrapper.log\")\n\tcandidatePaths.append(r\"C:\\Program Files (x86)\\Inductive Automation\\Ignition\\logs\\wrapper.log\")\n\n\t# Linux common installs (varies by install)\n\tcandidatePaths.append(\"/usr/local/bin/ignition/logs/wrapper.log\")\n\tcandidatePaths.append(\"/usr/local/ignition/logs/wrapper.log\")\n\tcandidatePaths.append(\"/opt/ignition/logs/wrapper.log\")\n\tcandidatePaths.append(\"/var/log/ignition/wrapper.log\")\n\n\twrapperPath \u003d None\n\tfor basePath in candidatePaths:\n\t\tp \u003d getRotatedPath(basePath)\n\t\tif system.file.fileExists(p):\n\t\t\twrapperPath \u003d p\n\t\t\tbreak\n\n\tif wrapperPath is None:\n\t\tcontainerNote \u003d \"\"\n\t\tif \"Linux\" in osName and system.file.fileExists(\"/.dockerenv\"):\n\t\t\tcontainerNote \u003d (\"\\n\\nNote: This Gateway appears to be running in a container. \"\n\t\t\t\t\"Official Ignition container images typically send wrapper output to stdout, \"\n\t\t\t\t\"so wrapper.log may not exist on disk. Use docker/k8s logs instead.\")\n\n\t\tchecked \u003d \"\\n\".join([getRotatedPath(p) for p in candidatePaths])\n\t\treturn {\"text\": \"wrapper.log not found. Checked:\\n\" + checked + containerNote}\n\n\tdef tailFileText(path, maxBytes):\n\t\traf \u003d RandomAccessFile(path, \"r\")\n\t\ttry:\n\t\t\tlength \u003d raf.length()\n\t\t\tstart \u003d max(0, length - maxBytes)\n\t\t\traf.seek(start)\n\n\t\t\tsize \u003d int(length - start)\n\t\t\tbuf \u003d zeros(size, \u0027b\u0027)\t\t# byte[]\n\t\t\traf.readFully(buf)\n\n\t\t\t# Convert signed Java bytes -\u003e characters\n\t\t\treturn \"\".join([chr(b \u0026 0xFF) for b in buf])\n\t\tfinally:\n\t\t\traf.close()\n\n\ttry:\n\t\ttext \u003d tailFileText(wrapperPath, maxBytes)\n\t\ttextLines \u003d text.splitlines()\n\t\ttailLines \u003d \"\\n\".join(textLines[-lines:])\n\t\treturn {\"text\": \"\u003d\u003d\u003d \" + wrapperPath + \" \u003d\u003d\u003d\\n\" + tailLines}\n\texcept Exception as e:\n\t\treturn {\"text\": \"Error reading wrapper log: \" + str(e)}"
+        },
+        {
+          "name": "exportLogs",
+          "params": [
+            "logText",
+            "diagnosticText"
+          ],
+          "script": "\n\tts \u003d system.date.format(system.date.now(), \"yyyy-MM-dd HH:mm:ss\")\n\ttsFile \u003d system.date.format(system.date.now(), \"yyyyMMdd_HHmmss\")\n\t\n\tprojectName \u003d system.util.getProjectName()\n\ttimezone \u003d self.session.props.gateway.timezone\n\tgatewayAddress \u003d self.session.props.gateway.address\t\n\t\n\t# Try to extract the resolved wrapper path from:\n\t# \u003d\u003d\u003d C:\\...\\wrapper.log \u003d\u003d\u003d\n\tresolvedPath \u003d \"\"\n\tfirstLine \u003d logText.splitlines()[0] if logText else \"\"\n\tif firstLine.startswith(\"\u003d\u003d\u003d \") and firstLine.endswith(\" \u003d\u003d\u003d\"):\n\t\tresolvedPath \u003d firstLine.replace(\"\u003d\u003d\u003d \", \"\").replace(\" \u003d\u003d\u003d\", \"\")\n\t\n\theader \u003d []\n\theader.append(\"Kanoa Wrapper Log Export\")\n\theader.append(\"Exported: {}\".format(ts))\n\theader.append(\"Gateway Host: {}\".format(timezone))\n\theader.append(\"Gateway Address: {}\".format(gatewayAddress))\n\theader.append(\"Project: {}\".format(projectName))\n\theader.append(\"InstallInfo: {}\".format(diagnosticText))\n\n\tif resolvedPath: header.append(\"Resolved Path: {}\".format(resolvedPath))\n\theader.append(\"-\" * 60)\n\t\n\ttagInfoList \u003d system.tag.browse(\u0027[Kanoa]kanoa/config\u0027, {})\n\tinfo \u003d [{\"name\": d.get(\"name\"), \"value\": d.get(\"value\").value} for d in tagInfoList]\n\tlicenseInfo \u003d \"| Name | Value |\\n|---|---|\\n\" + \"\\n\".join(\"| {} | {} |\".format(d[\"name\"], d[\"value\"])for d in info)\n\theader.append(\"licenseInfo: {}\".format(licenseInfo))\n\t\n\texportText \u003d \"\\n\".join(header) + \"\\n\\n\" + logText\n\tfileName \u003d \"diagnosticLogs_{}.txt\".format(tsFile)\n\t\n\tsystem.perspective.download(filename\u003dfileName, data\u003dexportText.encode(\"utf-8\"), contentType\u003d\"text/plain\")\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "custom": {
+    "values": {
+      "chkItemEventId": null,
+      "chkItemName": null,
+      "comment": ""
+    }
+  },
+  "params": {
+    "values": {
+      "chkItemEventId": null,
+      "chkItemName": null,
+      "comment": null
+    }
+  },
+  "propConfig": {
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tinfo \u003d dict(value)\n\tinfo[\u0027comment\u0027] \u003d info[\u0027comment\u0027] or \u0027\u0027\n\t\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 84
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "lblName"
+        },
+        "position": {
+          "basis": "250px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.chkItemName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/font/default",
+            "color": "--kcOnPrimaryContainer",
+            "marginLeft": "3px",
+            "paddingLeft": "5px",
+            "paddingRight": "5px",
+            "position": "absolute",
+            "textAlign": "center",
+            "top": -8,
+            "width": "auto"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "txtComment"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.custom.values.comment"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "deferUpdates": false,
+          "resize": "vertical"
+        },
+        "type": "ia.input.text-area"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: self.session.props.auth.user.userName})\n\tretVal \u003d system.kanoa.quality.event.addChkItemEventComment(dict(self.view.custom.values), userId)\n\t\n\tsystem.perspective.sendMessage(\u0027failedCheckCommentUpdated\u0027, {\u0027chkItemEventId\u0027: self.view.custom.values[\u0027chkItemEventId\u0027]})\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "btnSave"
+        },
+        "position": {
+          "basis": "80px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.comment"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn (value or None) is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/save"
+            }
+          },
+          "style": {
+            "height": "30px"
+          },
+          "text": "Save"
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "classes": "kanoa/border",
+        "gap": "5px",
+        "marginTop": "5px",
+        "overflow": "visible",
+        "padding": "12px 5px 5px 5px",
+        "position": "relative"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

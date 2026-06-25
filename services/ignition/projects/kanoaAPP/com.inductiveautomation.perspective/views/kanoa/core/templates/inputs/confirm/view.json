@@ -1,0 +1,223 @@
+{
+  "custom": {},
+  "params": {
+    "action": null,
+    "inputPayload": {},
+    "messageHandler": "userResponseOverwrite",
+    "text": "value"
+  },
+  "propConfig": {
+    "params.action": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.inputPayload": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.messageHandler": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.text": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 167,
+      "width": 420
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "Label",
+          "name": "Label"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.text"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.getChild(\"root\").actionSelected(\u0027OK\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnOK",
+              "name": "btnOK",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "OK"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "OK"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.getChild(\"root\").actionSelected(\u0027CLOSE\u0027)\n\t\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "custom": {
+          "clear": false,
+          "testRegex": [
+            "(.*$)",
+            "([0-9]{2})$",
+            "([0-9])$",
+            "([\\w\\r\\n])",
+            "([\\w\\r\\n\\b])"
+          ]
+        },
+        "meta": {
+          "domId": "barcodeScannerInput",
+          "name": "barcodeScannerInput"
+        },
+        "position": {
+          "display": false,
+          "shrink": 0
+        },
+        "propConfig": {
+          "custom.clear": {
+            "onChange": {
+              "enabled": null,
+              "script": "\t\n\tif currentValue.value:\n\t\tself.props.data \u003d []\n\t\tself.custom.clear \u003d False\n\t\n\treturn"
+            }
+          },
+          "props.data": {
+            "onChange": {
+              "enabled": null,
+              "script": "\t\t\n\tdata \u003d self.props.data\n#\tsystem.perspective.print(\"Confirm button pressed with %s\"%data)\t\n\t\n\tif len(data) \u003e 0:\t\n\t\tlastChar \u003d data[len(data)-1]\t\n\t\tself.props.data \u003d []\t\n\t\tif lastChar \u003d\u003d \u0027Enter\u0027: self.view.getChild(\"root\").actionSelected(\u0027OK\u0027)\n\t\n\treturn\n\n"
+            }
+          }
+        },
+        "props": {
+          "captureMode": "keyup",
+          "regex": "(.*$)"
+        },
+        "type": "ia.input.barcodescannerinput"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "flex-end",
+      "style": {
+        "backgroundColor": "--kcContainer",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "actionSelected",
+          "params": [
+            "action"
+          ],
+          "script": "\n\tinputPayload \u003d self.view.params[\u0027inputPayload\u0027] if self.view.params.has_key(\u0027inputPayload\u0027) else {}\n\n\tif action in (\u0027OK\u0027, \u0027CLOSE\u0027):\n\t\tsystem.perspective.sendMessage(self.view.params.messageHandler, payload\u003d{\u0027userInput\u0027:action, \u0027inputPayload\u0027: inputPayload})\n\t\tsystem.perspective.closePopup(\"\")\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

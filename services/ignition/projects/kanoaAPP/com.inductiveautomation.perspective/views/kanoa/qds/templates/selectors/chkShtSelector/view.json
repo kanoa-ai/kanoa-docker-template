@@ -1,0 +1,147 @@
+{
+  "custom": {},
+  "params": {
+    "chkShtId": null,
+    "values": {
+      "enabled": true,
+      "filter": {
+        "assetId": null,
+        "chkShtTypeId": null,
+        "chkShtVersionStateNameList": [
+          "Released"
+        ],
+        "enabled": true,
+        "itemId": null
+      }
+    }
+  },
+  "propConfig": {
+    "params.chkShtId": {
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 300
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "ddChkShtSelector",
+          "name": "ddChkShtSelector"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.enabled"
+              },
+              "type": "property"
+            }
+          },
+          "props.options": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.filter"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tparamsDict \u003d dict(value)\n\tdata \u003d system.kanoa.quality.sheet.getSheetsFilteredBy(paramsDict)\t#This will returns all chksheets that meet the filter criteria.\n\tdata \u003d system.kanoa.quality.sheet.getUniqueChecksOnly(data)#There may be duplicate entries, so we will delete duplicates\n\treturn [{\u0027value\u0027:row[\u0027chkShtId\u0027], \u0027label\u0027:row[\u0027chkShtPath\u0027]} for row in data]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.value": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.chkShtId"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "placeholder": {
+            "text": "Select Check Sheet..."
+          },
+          "showClearIcon": true,
+          "style": {
+            "borderBottomLeftRadius": "5px",
+            "borderBottomRightRadius": "5px",
+            "borderColor": "#D5D5D5",
+            "borderStyle": "solid",
+            "borderTopLeftRadius": "5px",
+            "borderTopRightRadius": "5px",
+            "borderWidth": "1px",
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.dropdown"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tself.parent.getData()\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnRefresh",
+          "name": "btnRefresh"
+        },
+        "position": {
+          "basis": "20px",
+          "display": false,
+          "shrink": 0
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/cached"
+            }
+          },
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": 5
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

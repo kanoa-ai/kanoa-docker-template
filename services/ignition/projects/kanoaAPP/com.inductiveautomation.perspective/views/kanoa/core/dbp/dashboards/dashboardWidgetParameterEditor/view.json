@@ -1,0 +1,213 @@
+{
+  "custom": {
+    "dashboardWidgetParamInfo": null
+  }, 
+  "params": {
+    "value": {
+      "dashboardWidgetId": 3, 
+      "widgetParameterId": 7, 
+      "dashboardWidgetParameterId": 17
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 522, 
+      "height": 50
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcSurface", 
+        "classes": "kanoa/font/default", 
+        "gap": "5px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom", 
+            "text": "Widget Parameter Name"
+          }, 
+          "domId": "lblParameterName", 
+          "name": "lblParameterName"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.dashboardWidgetParamInfo.widgetParameterName"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.text-field", 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom", 
+            "text": "Widget Parameter Value"
+          }, 
+          "domId": "txtValue", 
+          "name": "txtValue"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.dashboardWidgetParamInfo.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.checkbox", 
+        "meta": {
+          "domId": "chkEnabled", 
+          "name": "chkEnabled"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'Enabled' if value else 'Disabled'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "this.props.selected"
+              }
+            }
+          }, 
+          "props.selected": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.dashboardWidgetParamInfo.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcRed-60", 
+              "path": "material/delete_forever"
+            }
+          }, 
+          "style": {
+            "color": "--kcGray-50", 
+            "classes": "kanoa/button/flatIcon", 
+            "width": 30, 
+            "height": 30
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "delay": 0, 
+            "location": "center-right", 
+            "text": "Clear Parameter", 
+            "sustain": 0
+          }, 
+          "domId": "btnDelete", 
+          "name": "btnDelete"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tretVal, msg = system.kanoa.dashboard.deleteWidgetParameter(self.view.custom.dashboardWidgetParamInfo.dashboardWidgetParameterId, userId)\n\tif msg:\n\t\tsystem.perspective.sendMessage('showFailerToast', msg)\n\telse:\n\t\tsystem.perspective.sendMessage('showSuccessfulToast', 'Dashboard Widget parameter has been cleared')\t\t\n\t\tself.view.params.value.dashboardWidgetParameterId = None\n\t\t\n\tself.view.refreshBinding(\"custom.dashboardWidgetParamInfo\")\n\t\n\tsystem.perspective.sendMessage('refreshDashboardWidgetParams', {'dashboardWidgetId':self.params.value.dashboardWidgetId})\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['dashboardWidgetParameterId'] is not None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.dashboardWidgetParamInfo"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.dashboardWidgetParamInfo": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tsystem.perspective.print(\"widgetParameterInfo change %s\"%origin)\n\t\n\tif origin != 'BindingWriteback': return\n\t\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdashboardWidgetParamInfo = self.custom.dashboardWidgetParamInfo\n\t\n\tdashboardWidgetParameterId = dashboardWidgetParamInfo['dashboardWidgetParameterId']\n\tsystem.perspective.print('dashboardWidgetParameterId is %s'%dashboardWidgetParameterId)\n\tif dashboardWidgetParameterId is None: \n\t\tsystem.perspective.print('addWidgetParameter')\n\t\tdashboardWidgetParameterId, msg = system.kanoa.dashboard.addWidgetParameter(dashboardWidgetParamInfo, userId)\n\t\tself.params.value.dashboardWidgetParameterId = dashboardWidgetParameterId\n\telse: \n\t\tsystem.perspective.print('updateWidgetParameter')\n\t\tretVal, msg = system.kanoa.dashboard.updateWidgetParameter(dashboardWidgetParamInfo, userId)\n\t\tself.refreshBinding(\"custom.dashboardWidgetParamInfo\")\n\t\t\n\tif msg:\tsystem.perspective.sendMessage('showFailerToast', msg)\n\telse: system.perspective.sendMessage('showSuccessfulToast', 'Dashbord widget parameter has been saved')\n\t\n\tsystem.perspective.sendMessage('refreshDashboardWidgetParams', {'dashboardWidgetId':self.params.value.dashboardWidgetId})\n\t\n\treturn"
+      }, 
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tparamInfo = system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getWidgetParameters({'widgetParameterId': value['widgetParameterId'], 'dashboardWidgetParameterId': value['dashboardWidgetParameterId']}),0)\n\t\n\tif paramInfo['widgetParameterName'] is None: paramInfo['widgetParameterName'] = ''\n\tif paramInfo['defaultValue'] is None: paramInfo['defaultValue'] = ''\n\tif paramInfo['value'] is None: paramInfo['value'] = paramInfo['defaultValue']\n\tif paramInfo['enabled'] is None: paramInfo['enabled'] = False\n\tparamInfo['dashboardWidgetId'] = self.params.value.dashboardWidgetId\n\t\n\treturn paramInfo", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

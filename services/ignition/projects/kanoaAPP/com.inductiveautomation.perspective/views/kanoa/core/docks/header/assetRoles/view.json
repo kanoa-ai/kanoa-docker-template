@@ -1,0 +1,559 @@
+{
+  "custom": {
+    "data": {
+      "$": [
+        "ds",
+        192,
+        1774969957949
+      ],
+      "$columns": [
+        {
+          "data": [
+            1,
+            2,
+            4,
+            6,
+            23,
+            81,
+            82,
+            85
+          ],
+          "name": "roleId",
+          "type": "Integer"
+        },
+        {
+          "data": [
+            "Administrator",
+            "Operator",
+            "Manager",
+            "QA Manager",
+            "Supervisor",
+            "configureQuality",
+            "configureSecurity",
+            "Check Taker"
+          ],
+          "name": "Role",
+          "type": "String"
+        },
+        {
+          "data": [
+            "Chewters Chocolates, E4, Enterprise 1, Enterprise 2, Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2, Kanoa Box Co\\Box Plant\\Processing\\L2, Kanoa Box Co\\Box Plant\\Processing\\Line 1\\cell 1, Kanoa Box Co\\Box Plant\\Processing\\Line 1\\cell 2, Kanoa Box Co\\Resin Plant, Kanoa Safety Inc, Link Snacks Inc",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "name": "Assets",
+          "type": "String"
+        },
+        {
+          "data": [
+            "2584, 2584, 2584, 2584, 2584, 2584, 2584, 2584, 2584, 2584, 2584, 2554, 2554, 2554, 2554, 2554, 2554, 2554, 2554, 2554, 2554, 2554, 2538, 2538, 2538, 2538, 2538, 2538, 2538, 2538, 2538, 2538, 2538, 2546, 2546, 2546, 2546, 2546, 2546, 2546, 2546, 2546, 2546, 2546, 2531, 2531, 2531, 2531, 2531, 2531, 2531, 2531, 2531, 2531, 2531, 2555, 2555, 2555, 2555, 2555, 2555, 2555, 2555, 2555, 2555, 2555, 2468, 2468, 2468, 2468, 2468, 2468, 2468, 2468, 2468, 2468, 2468, 2469, 2469, 2469, 2469, 2469, 2469, 2469, 2469, 2469, 2469, 2469, 2558, 2558, 2558, 2558, 2558, 2558, 2558, 2558, 2558, 2558, 2558, 2561, 2561, 2561, 2561, 2561, 2561, 2561, 2561, 2561, 2561, 2561, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "name": "assetIds",
+          "type": "String"
+        }
+      ]
+    },
+    "user": {
+      "email": null,
+      "firstName": "Jason",
+      "gatewayAdmin": true,
+      "id": "5",
+      "lastName": "Coope",
+      "roles": [
+        "Gateway Admin",
+        "User",
+        "Administrator"
+      ],
+      "timestamp": {
+        "$": [
+          "ts",
+          192,
+          1774969957934
+        ],
+        "$ts": 1774947372528
+      },
+      "userId": 5,
+      "userName": "jason"
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.data": {
+      "binding": {
+        "config": {
+          "path": "view.custom.user.userId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n#\tuserSource \u003d system.kanoa.security.getUserSource()\n#\tallRoles \u003d [role for role in system.user.getRoles(userSource) if role !\u003d \u0027Gateway Admin\u0027]\n\troles \u003d system.kanoa.security.getRoles({\u0027enabled\u0027:True})\n\tuserRoles \u003d system.kanoa.security.getUserAssetRoles({\u0027userId\u0027: value})\n\trolesHeaders \u003d [\u0027roleId\u0027, \u0027Role\u0027, \u0027Assets\u0027, \u0027assetIds\u0027]\n\trolesRows \u003d []\n\trolesDict \u003d {}\n\tfor row in roles:\n\t\trolesDict[row[\u0027roleName\u0027]] \u003d [row[\u0027roleId\u0027], row[\u0027roleName\u0027], [], []]\n\t\n\tfor row in userRoles:\n\t\tif row[\u0027assetPath\u0027] not in rolesDict[row[\u0027roleName\u0027]][2]:\n\t\t\trolesDict[row[\u0027roleName\u0027]][2].append(row[\u0027assetPath\u0027])\n\t\trolesDict[row[\u0027roleName\u0027]][3].append(str(row[\u0027assetId\u0027]))\n\t\t\n\tfor role in rolesDict:\n\t\trolesDict[role][2] \u003d \", \".join(rolesDict[role][2])\n\t\trolesDict[role][3] \u003d \", \".join(rolesDict[role][3])\n\t\trolesRows.append(rolesDict[role])\n\t\t\n\trolesRows.sort(key\u003dlambda x: x[0])\n\t\n\treturn system.dataset.toDataSet(rolesHeaders, rolesRows)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.user": {
+      "binding": {
+        "config": {
+          "path": "session.props.auth.user"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tvalue \u003d dict(value)\n\tvalue[\u0027userId\u0027] \u003d system.kanoa.security.getIDPUserId(value)\n\tvalue[\u0027gatewayAdmin\u0027] \u003d system.kanoa.security.checkIsGatewayAdmin(value[\u0027userId\u0027])\n\t\n\treturn value",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 358,
+      "width": 549
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "tblAssetRoles",
+          "name": "tblAssetRoles"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "bodyStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "columns": [
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "Role",
+              "filter": {
+                "boolean": {
+                  "condition": ""
+                },
+                "date": {
+                  "condition": "",
+                  "value": ""
+                },
+                "enabled": false,
+                "number": {
+                  "condition": "",
+                  "value": ""
+                },
+                "string": {
+                  "condition": "",
+                  "value": ""
+                },
+                "visible": "on-hover"
+              },
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "justify": "auto",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": false,
+              "strictWidth": false,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": ""
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "Assets",
+              "filter": {
+                "boolean": {
+                  "condition": ""
+                },
+                "date": {
+                  "condition": "",
+                  "value": ""
+                },
+                "enabled": false,
+                "number": {
+                  "condition": "",
+                  "value": ""
+                },
+                "string": {
+                  "condition": "",
+                  "value": ""
+                },
+                "visible": "on-hover"
+              },
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "justify": "auto",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": false,
+              "strictWidth": false,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": ""
+            }
+          ],
+          "footerGroupStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "footerStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "headerStyle": {
+            "classes": "kanoa/font/default",
+            "fontWeight": "bold"
+          },
+          "pager": {
+            "bottom": false
+          },
+          "rows": {
+            "striped": {
+              "enabled": false
+            }
+          },
+          "style": {
+            "border": "none"
+          }
+        },
+        "type": "ia.display.table"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "chkGwAdmin",
+              "name": "chkGwAdmin"
+            },
+            "position": {
+              "basis": "125px"
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.user.gatewayAdmin"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "enabled": false,
+              "text": "Gateway Admin",
+              "textPosition": "left"
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxGwAdmin",
+          "name": "flxGwAdmin"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.login()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSwitchUser",
+              "name": "btnSwitchUser",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom",
+                "style": {
+                  "classes": "kanoa/tooltipError"
+                },
+                "sustain": 1000,
+                "tail": false
+              }
+            },
+            "position": {
+              "basis": "145px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": ".../flxRoleName/txtRoleName.props.text"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Role name already exists\u0027 if value in system.user.getRoles(\u0027default\u0027) else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/account_box"
+                }
+              },
+              "primary": false,
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Switch User"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003d{\u0027path\u0027: \u0027/\u0027, \u0027name\u0027: \u0027Home\u0027, \u0027type\u0027: \u0027page\u0027, \u0027params\u0027: None})\n\tsystem.kanoa.config.clearNavigationHistory(self)\n\tsystem.perspective.logout()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnLogout"
+            },
+            "position": {
+              "basis": "135px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/login"
+                }
+              },
+              "primary": false,
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Log Out"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "basis": "135px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "primary": false,
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction",
+          "tooltip": {
+            "delay": 0
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default kanoa/popup"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

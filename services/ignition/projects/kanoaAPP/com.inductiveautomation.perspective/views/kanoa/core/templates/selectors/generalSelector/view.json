@@ -1,0 +1,227 @@
+{
+  "custom": {
+    "assetInfo": null
+  }, 
+  "params": {
+    "values": {
+      "dateRange": {
+        "endDate": {
+          "$ts": 1743638400000, 
+          "$": [
+            "ts", 
+            192, 
+            1745023806803
+          ]
+        }, 
+        "selectedRange": "Today", 
+        "startDate": {
+          "$ts": 1743429600000, 
+          "$": [
+            "ts", 
+            192, 
+            1745024143391
+          ]
+        }
+      }, 
+      "assetId": 901, 
+      "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 1047, 
+      "height": 42
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "alignContent": "center", 
+      "style": {
+        "backgroundColor": "--kcSurface", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }, 
+      "wrap": "wrap"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "params": {
+            "value": {}
+          }, 
+          "path": "kanoa/core/templates/selectors/assetSelector"
+        }, 
+        "meta": {
+          "tooltip": {
+            "location": "bottom-left"
+          }, 
+          "domId": "evAssetSelector", 
+          "name": "evAssetSelector"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.params.assetInfo": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.assetInfo"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "params": {
+            "dates": {
+              "selectedRange": "Custom"
+            }, 
+            "value": {
+              "display": {
+                "showAutoRefresh": true, 
+                "showDateSelector": true, 
+                "showPeriodSelector": true
+              }, 
+              "enabled": true, 
+              "options": [
+                {
+                  "label": "Current Run", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Current Shift", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Previous Shift", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Today", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Yesterday", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "This Week", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last Week", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "This Month", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last Month", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Year To Date", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last 24 Hrs", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last 7 Days", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last 14 Days", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Custom", 
+                  "enabled": true
+                }
+              ]
+            }
+          }, 
+          "path": "kanoa/core/templates/selectors/dateSelector"
+        }, 
+        "meta": {
+          "domId": "dateRangeSelector", 
+          "name": "dateRangeSelector"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.params.dates.endDate": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.values.dateRange.endDate"
+              }
+            }
+          }, 
+          "props.params.dates.startDate": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.values.dateRange.startDate"
+              }
+            }
+          }, 
+          "props.params.value.assetPath": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values.assetPath"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.assetInfo": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\n\tif self.custom.assetInfo is None: return\n\tself.view.params.values.assetId = self.custom.assetInfo.assetId\n\tself.view.params.values.assetPath = self.custom.assetInfo.assetPath\n\t\n\treturn"
+      }, 
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tsystem.perspective.print(\"getting assetInfo for %s\"%value)\n\n\tassetPath = system.kanoa.utilities.getStoredAssetPath(self)#on startup, we'll grab the currently selected assetPath\n\tassetInfo = system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({'assetPath':assetPath or 'None'}), 0)\n\t\n\tif assetPath:\n\t\ttimezones = system.kanoa.date.getAssetTimeZoneInfo(assetPath)\n\t\ttimezone = timezones[assetPath]['timeZone'] if timezones.has_key(assetPath) else 'UTC'\n\telse:\n\t\ttimezone = 'UTC'\n\t\n\tassetInfo['timeZone'] = timezone\n\t\t\n\treturn assetInfo", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "overlayOptOut": true, 
+        "config": {
+          "expression": "now(0)"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.values": {
+      "paramDirection": "output", 
+      "persistent": true
+    }
+  }
+}

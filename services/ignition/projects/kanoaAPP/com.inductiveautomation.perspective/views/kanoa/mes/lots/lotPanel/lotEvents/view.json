@@ -1,0 +1,484 @@
+{
+  "custom": {
+    "lotEventInfo": {
+      "assetGroupName": null,
+      "assetId": null,
+      "assetName": null,
+      "assetPath": null,
+      "assetTransportId": null,
+      "assetTransportName": null,
+      "assetTransportPath": null,
+      "assetTypeName": null,
+      "changedBy": null,
+      "changedByUser": null,
+      "changedDate": null,
+      "comment": null,
+      "createdBy": null,
+      "createdByUser": null,
+      "createdDate": null,
+      "itemClassPath": null,
+      "itemColor": null,
+      "itemDescription": null,
+      "itemId": null,
+      "itemName": null,
+      "itemPath": null,
+      "itemSourceId": null,
+      "itemSourceName": null,
+      "itemUnitId": null,
+      "itemUnitName": null,
+      "lotEventId": null,
+      "lotEventQty": null,
+      "lotId": null,
+      "lotName": null,
+      "lotOperationColor": null,
+      "lotOperationEventId": null,
+      "lotOperationId": null,
+      "lotOperationName": null,
+      "lotStateId": null,
+      "lotStateName": null,
+      "lotStateReasonId": null,
+      "lotStateReasonName": null,
+      "operationAssetGroupName": null,
+      "operationAssetId": null,
+      "operationAssetName": null,
+      "operationAssetPath": null,
+      "operationtStamp": null,
+      "shiftId": null,
+      "shiftName": null,
+      "tStamp": null,
+      "workOrderId": null,
+      "workOrderName": null
+    }
+  },
+  "params": {
+    "value": {
+      "lotEventId": 14
+    }
+  },
+  "propConfig": {
+    "custom.lotEventInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.lotEventId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tdateFields \u003d [\u0027createdDate\u0027]\n\tclientTZOffset \u003d self.session.props.device.timezone.utcOffset\n\tlotEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLotEvents({\u0027lotEventId\u0027: value or -1}), 0)\n\tfor field in dateFields:\n\t\tif lotEventInfo[field] is not None: lotEventInfo[field] \u003d system.date.addHours(lotEventInfo[field], clientTZOffset)\n\treturn lotEventInfo",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 84,
+      "width": 437
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl",
+                  "name": "lbl"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "/root.custom.labelWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "text": "Operation"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblValue",
+                  "name": "lblValue"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.lotEventInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\ttStamp \u003d \"on %s\"%system.date.format(value[\u0027createdDate\u0027], \u0027M-d-YY HH:mm:ss\u0027) if value[\u0027createdDate\u0027] else \u0027\u0027\n\treturn \"{} {:,} {} {}\".format((value[\u0027lotOperationName\u0027] or \u0027\u0027), value[\u0027lotEventQty\u0027] or \u0027\u0027, value[\u0027itemUnitName\u0027], tStamp)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxLotOperationInfo",
+              "name": "flxLotOperationInfo"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl-1",
+                  "name": "lbl"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "/root.custom.labelWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.lotEventInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027From\u0027 if value[\u0027itemSourceName\u0027]  \u003d\u003d \u0027input\u0027 else \u0027To\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblValue-1",
+                  "name": "lblValue"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.lotEventInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "#\treturn system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}) or \u0027\u0027\n\treturn value[\u0027assetName\u0027] or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxAssetPath",
+              "name": "flxAssetPath"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl-2",
+                  "name": "lbl"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "/root.custom.labelWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "text": "Lot State"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblValue-2",
+                  "name": "lblValue"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.lotEventInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\t\n\tlotStateReasonName \u003d \u0027\u0027 if value[\u0027lotStateReasonName\u0027] \u003d\u003d value[\u0027lotStateName\u0027] else value[\u0027lotStateReasonName\u0027] or \u0027\u0027\n\t\t\n\treturn \"{} {}\".format(value[\u0027lotStateName\u0027], lotStateReasonName)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxLotState",
+              "name": "flxLotState"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl-3",
+                  "name": "lbl"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "/root.custom.labelWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "text": "Operator"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblValue-3",
+                  "name": "lblValue"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.lotEventInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value[\u0027createdByUser\u0027] or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lbl-4",
+                      "name": "lbl"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.basis": {
+                        "binding": {
+                          "config": {
+                            "path": "/root.custom.labelWidth"
+                          },
+                          "enabled": false,
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "text": "lotEventId"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblValue-4",
+                      "name": "lblValue"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.lotEventInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value[\u0027lotEventId\u0027] or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxLotEvent",
+                  "name": "flxLotEvent"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "props": {
+                  "alignContent": "flex-end",
+                  "alignItems": "flex-end",
+                  "justify": "flex-end",
+                  "style": {
+                    "gap": "5px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxCreatedBy",
+              "name": "flxCreatedBy"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxInfoPanel",
+          "name": "flxInfoPanel"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "borderBottomColor": "#D5D5D5",
+            "borderBottomStyle": "solid",
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "custom": {
+      "labelWidth": "75px"
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

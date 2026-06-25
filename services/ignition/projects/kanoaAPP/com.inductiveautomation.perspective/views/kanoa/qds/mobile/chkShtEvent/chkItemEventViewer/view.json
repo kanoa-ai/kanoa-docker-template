@@ -1,0 +1,670 @@
+{
+  "custom": {
+    "showSpec": false, 
+    "stats": {
+      "max": null, 
+      "min": null, 
+      "mean": null, 
+      "stdDev": null
+    }
+  }, 
+  "params": {
+    "enabled": true, 
+    "value": {
+      "calculation": null, 
+      "instructions": null, 
+      "sourceTagPath": null, 
+      "required": false, 
+      "spec": {
+        "tgt": null, 
+        "lsl": null, 
+        "usl": null, 
+        "lel": null, 
+        "lcl": null, 
+        "uel": null, 
+        "ucl": null
+      }, 
+      "attributeId": null, 
+      "pickListValues": "{\"script\":\"Left Four Chars\"}", 
+      "engUnitId": null, 
+      "ignoreZeroValues": null, 
+      "pickListName": "Barcode Scanner", 
+      "dynamic": false, 
+      "engUnitName": null, 
+      "chkItemId": 2313, 
+      "chkItemTypeId": 1, 
+      "measurements": [
+        {
+          "chkItemValue": "qw23", 
+          "chkItemStateId": 1, 
+          "measNumber": 1, 
+          "chkItemEventId": 157899, 
+          "chkItemStateName": "PASS", 
+          "chkItemStateColor": "--kcGoodContainer", 
+          "chkItemTakenDate": {
+            "$ts": 1733255361060, 
+            "$": [
+              "ts", 
+              192, 
+              1733262277967
+            ]
+          }
+        }
+      ], 
+      "dataTypeName": "String", 
+      "scaleFactor": null, 
+      "dataTypeId": 2, 
+      "format": null, 
+      "specification": null, 
+      "pickListId": 9, 
+      "chkItemName": "Barcode Check", 
+      "chkItemGroupId": 363, 
+      "chkItemGroupName": "Main", 
+      "isNumeric": false, 
+      "sortOrder": null, 
+      "persistence": false, 
+      "dataSourceEnabled": null, 
+      "comment": null, 
+      "chkItemTriggerId": null, 
+      "chkItemTypeName": "Check", 
+      "measCount": 1
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 399, 
+      "height": 374
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "classes": "kanoa/container", 
+        "overflow": "visible", 
+        "gap": "5px", 
+        "width": "390px", 
+        "position": "relative", 
+        "marginTop": "8px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcGray-50", 
+              "path": "material/clear"
+            }, 
+            "width": 16, 
+            "height": 16
+          }, 
+          "style": {
+            "backgroundColor": "--kcOnPrimary", 
+            "classes": "kanoa/button/flatIcon", 
+            "right": 8, 
+            "top": -8, 
+            "position": "absolute", 
+            "height": "16px"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom", 
+            "text": "Clear measurement values"
+          }, 
+          "domId": "btnClearValues", 
+          "name": "btnClearValues"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tpayload = {'value':None, 'chkItemId': self.view.params.value.chkItemId, 'measNum': None}\n\t\n#\tmeasNum = payload['measNum'] if payload.has_key('measNum') else self.view.custom.userSelection['measNum'] or 1\n\tsystem.perspective.print(\"btnClear Sending 'ValuePicked' message with %s\"%(payload))\t\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\t\n\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "backgroundColor": "--kcOnPrimary", 
+            "paddingRight": "5px", 
+            "top": "-8px", 
+            "left": "5px", 
+            "position": "absolute", 
+            "paddingLeft": "5px", 
+            "fontWeight": "bold"
+          }
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true
+          }, 
+          "domId": "lblChkItemName", 
+          "name": "lblChkItemName"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn str(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.chkItemId"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\tif value['chkItemTypeName'] == 'Calculated': typeIcon = ' (∑)'\n\telif value['chkItemTypeName'] == 'Trigger': typeIcon = ' (Ţ)'\n\telif value['chkItemTriggerId']: typeIcon = ' (Ť)'\n\telse: typeIcon = ''\n\t\n\treturn \"%s > %s %s\" %(value['chkItemGroupName'], value['chkItemName'], typeIcon)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "overflow": "hidden", 
+            "gap": "5px", 
+            "paddingTop": "8px", 
+            "paddingLeft": "5px"
+          }, 
+          "wrap": "wrap"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.flex-repeater", 
+            "props": {
+              "elementPosition": {
+                "grow": 0, 
+                "shrink": 0, 
+                "basis": "auto"
+              }, 
+              "useDefaultViewWidth": false, 
+              "path": "kanoa/qds/mobile/chkShtEvent/chkItemEntry", 
+              "elementStyle": {
+                "minWidth": "100px"
+              }, 
+              "style": {
+                "gap": "5px"
+              }, 
+              "useDefaultViewHeight": false, 
+              "direction": "column"
+            }, 
+            "meta": {
+              "domId": "FlexRepeater", 
+              "name": "FlexRepeater"
+            }, 
+            "position": {
+              "grow": 1, 
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.instances": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\tinstances = []\n\tfor i in range(value['chkItem']['measCount']):\n\t\tchkItem = dict(value['chkItem'])\n\t\tchkItem['measurements'] = [chkItem['measurements'][i]]\n\t\tinstances.append({'enabled': value['enabled'], 'value':chkItem})\t\n\t\n\treturn instances", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "enabled": "{view.params.enabled}", 
+                      "chkItem": "{view.params.value}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblUnits", 
+              "name": "lblUnits"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value if value is not None else ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value[0].engUnitName"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxEntry", 
+          "name": "flxEntry"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "path": "kanoa/core/templates/displays/specIndicator", 
+          "useDefaultViewHeight": true
+        }, 
+        "meta": {
+          "domId": "evSpecIndicator", 
+          "name": "evSpecIndicator"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.showSpec"
+              }
+            }
+          }, 
+          "props.params.value": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\t\n\treturn {\n\t\t\t\t'LEL': value['spec']['lel'],\n\t\t\t\t'LCL': value['spec']['lcl'],\n\t\t\t\t'LSL': value['spec']['lsl'],\n\t\t\t\t'ProcessValue': system.math.mean([float(item['chkItemValue']) for item in value['measurements'] if item['chkItemValue'] is not None]),\n\t\t\t\t'Target': value['spec']['tgt'],\n\t\t\t\t'UCL': value['spec']['ucl'],\n\t\t\t\t'USL': value['spec']['usl'],\n\t\t\t\t'UEL': value['spec']['uel'],\n\t\t\t\t'Units' : value['engUnitName']\n\t\t\t}", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "padding": "5px", 
+            "margin": "5px", 
+            "classes": "kanoa/border", 
+            "gap": "5px"
+          }, 
+          "wrap": "wrap"
+        }, 
+        "children": [
+          {
+            "type": "ia.container.flex", 
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            }, 
+            "children": [
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "text": "min:"
+                }, 
+                "meta": {
+                  "domId": "lblTitle", 
+                  "name": "lblTitle"
+                }, 
+                "position": {
+                  "shrink": 0
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "lblValue", 
+                  "name": "lblValue"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn value or ''", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.stats.min"
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "flxMin", 
+              "name": "flxMin"
+            }, 
+            "position": {
+              "shrink": 0
+            }
+          }, 
+          {
+            "type": "ia.container.flex", 
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            }, 
+            "children": [
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "text": "max:"
+                }, 
+                "meta": {
+                  "domId": "lblTitle-1", 
+                  "name": "lblTitle"
+                }, 
+                "position": {
+                  "shrink": 0
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "lblValue-1", 
+                  "name": "lblValue"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn value or ''", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.stats.max"
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "flxMax", 
+              "name": "flxMax"
+            }, 
+            "position": {
+              "shrink": 0
+            }
+          }, 
+          {
+            "type": "ia.container.flex", 
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            }, 
+            "children": [
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "text": "mean:"
+                }, 
+                "meta": {
+                  "domId": "lblTitle-2", 
+                  "name": "lblTitle"
+                }, 
+                "position": {
+                  "shrink": 0
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "lblValue-2", 
+                  "name": "lblValue"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn value or ''", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.stats.mean"
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "flxMean", 
+              "name": "flxMean"
+            }, 
+            "position": {
+              "shrink": 0
+            }
+          }, 
+          {
+            "type": "ia.container.flex", 
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            }, 
+            "children": [
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "text": "stdDev"
+                }, 
+                "meta": {
+                  "domId": "lblTitle-3", 
+                  "name": "lblTitle"
+                }, 
+                "position": {
+                  "shrink": 0
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "lblValue-3", 
+                  "name": "lblValue"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn value or ''", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.stats.stdDev"
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "flxSTDDev", 
+              "name": "flxSTDDev"
+            }, 
+            "position": {
+              "shrink": 0
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxStats", 
+          "name": "flxStats"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['min'] is not None and value['Max'] is not None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.stats"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [
+            "chkItem"
+          ], 
+          "script": "\n\t#If we don't find a tolerance spec, we will default to the picklist values\n\t\n\tspecs = {'lel':None, 'lsl':None, 'lcl':None, 'tgt':None, 'ucl':None, 'usl':None, 'uel':None}\n\tpickListValues = system.util.jsonDecode(chkItem['pickListValues'] or '{}')\n\t\n\tif (chkItem['lsl'] or chkItem['ldl']) is not None and (chkItem['usl'] or chkItem['udl']) is not None:\t#We got our specs from the attributes table\n\t\tspecs['lel'] = chkItem['lel']\n\t\tspecs['lsl'] = chkItem['lsl'] or chkItem['ldl']\n\t\tspecs['lcl'] = chkItem['lcl']\n\t\tspecs['tgt'] = chkItem['tgt']\n\t\tspecs['ucl'] = chkItem['ucl']\n\t\tspecs['usl'] = chkItem['usl'] or chkItem['udl']\n\t\tspecs['uel'] = chkItem['uel']\n\telse:\n\t\tif pickListValues.has_key('lel'): specs['lel'] = pickListValues['lel']\n\t\tif pickListValues.has_key('lsl'): specs['lsl'] = pickListValues['lsl']\n\t\tif pickListValues.has_key('lcl'): specs['lcl'] = pickListValues['lcl']\n\t\tif pickListValues.has_key('tgt'): specs['tgt'] = pickListValues['tgt']\n\t\tif pickListValues.has_key('ucl'): specs['ucl'] = pickListValues['ucl']\n\t\tif pickListValues.has_key('usl'): specs['usl'] = pickListValues['usl']\n\t\tif pickListValues.has_key('uel'): specs['uel'] = pickListValues['uel']\n\n\treturn specs", 
+          "name": "getTolerances"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.stats": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tif value['dataTypeName'] not in ('Integer', 'Float') or value['measCount'] == 1: return  {'min': None,'max': None,'mean': None,'stdDev': None}\n\t\n\tmeasurements = [float(item['chkItemValue']) for item in value['measurements'] if item['chkItemValue'] is not None]\n\t\n\treturn {\n\t\t\t\t'min': system.math.min(measurements),\n\t\t\t\t'max': system.math.max(measurements),\n\t\t\t\t'mean': system.math.mean(measurements),\n\t\t\t\t'stdDev': round(system.math.standardDeviation(measurements),5)\n\t\t\t}", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.showSpec": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\treturn False if not any(value['spec'].values()) else True", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

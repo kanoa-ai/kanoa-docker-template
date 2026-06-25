@@ -1,0 +1,175 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "userId": 3, 
+      "assetId": 122, 
+      "attributeName": "Lot Code"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 240, 
+      "height": 65
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 5, 
+        "overflow": "hidden", 
+        "background": "--kcSurface", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "textStyle": {
+            "classes": "kanoa/font/labelMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "Label", 
+          "name": "Label"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.params.value.attributeName"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "center", 
+          "style": {
+            "overflow": "visible", 
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.text-field", 
+            "props": {
+              "spellcheck": false, 
+              "deferUpdates": false
+            }, 
+            "meta": {
+              "domId": "daTextEntry", 
+              "name": "daTextEntry"
+            }, 
+            "position": {
+              "grow": 1, 
+              "basis": "34px"
+            }, 
+            "events": {
+              "dom": {
+                "onCompositionUpdate": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tlinkId = system.kanoa.attribute.getAttributeAssetLinks({'assetId': self.view.params.value.assetId, 'attributeName': self.view.params.value.attributeName})\n\tif linkId is not None:\n\t\tlinkId = linkId[0]['attributeAssetLinkId']\n\t\tsystem.kanoa.attribute.addAttributeEvent({'attributeAssetLinkId': linkId, 'value': self.props.text, 'tStamp': system.date.now()}, self.view.params.value.userId)"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tattributeId = system.kanoa.utilities.getFieldValue('attributeId', system.kanoa.attribute.getAttributes({'attributeName': value['attributeName']}))\n\treturn system.kanoa.utilities.getFieldValue('value', system.kanoa.attribute.getPreviousAttributeEvent(value['assetId'], attributeId, system.date.now()))", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.value"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcPrimary", 
+                  "path": "material/save"
+                }, 
+                "height": 36
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "domId": "btnSave", 
+              "name": "btnSave"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "36px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\tself.view.getChild(\"root\").saveAttributeEvent(self.getSibling(\"daTextEntry\").props.text)"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxDataEntry", 
+          "name": "flxDataEntry"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "36px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [
+            "value"
+          ], 
+          "script": "\tlinkId = system.kanoa.attribute.getAttributeAssetLinks({'assetId': self.view.params.value.assetId, 'attributeName': self.view.params.value.attributeName})\n\tif linkId is not None:\n\t\tlinkId = linkId[0]['attributeAssetLinkId']\n\t\tsystem.kanoa.attribute.addAttributeEvent({'attributeAssetLinkId': linkId, 'value': value, 'tStamp': system.date.now()}, self.view.params.value.userId)", 
+          "name": "saveAttributeEvent"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

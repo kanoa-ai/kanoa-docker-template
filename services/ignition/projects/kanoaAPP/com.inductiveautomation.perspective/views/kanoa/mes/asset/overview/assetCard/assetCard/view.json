@@ -1,0 +1,2538 @@
+{
+  "custom": {
+    "data": {},
+    "oeeColors": {
+      "availability": "--kcOK",
+      "oee": "--kcBad",
+      "performance": "--kcBad",
+      "quality": "--kcBad"
+    },
+    "oeeThresholds": {
+      "a": 0.75,
+      "aTolerance": 0.03,
+      "oee": 0.7,
+      "oeeTolerance": 0.1,
+      "p": 0.8,
+      "pTolerance": 0.1,
+      "q": 0.8,
+      "qTolerance": 0.1,
+      "update": false
+    },
+    "scheduleInfo": {},
+    "tagInfo": {
+      "availability": 0.7281842,
+      "durationSecs": 258074,
+      "endDate": null,
+      "iconPath": "kanoa/production",
+      "infeedCount": 550,
+      "infeedRateSecs": 0.0041623763,
+      "infeedUnits": "links",
+      "itemDescription": "",
+      "itemId": 230,
+      "itemName": "Sausages",
+      "modeColor": "#00639a",
+      "modeName": "Production",
+      "modeSourceName": "Operator",
+      "modeTypeName": "Production",
+      "outfeedCount": 550,
+      "outfeedRatePerMinute": 0.12792979,
+      "outfeedUnits": "links",
+      "packageCount": 1,
+      "performance": 0.14930551,
+      "period": "Hour",
+      "plannedDowntimeSecs": 75898,
+      "quality": 1,
+      "refresh": false,
+      "reqdQty": null,
+      "runtimeSecs": 132674,
+      "scheduleBlockId": null,
+      "scheduleEnd": null,
+      "scheduleStart": null,
+      "shiftEnd": 1776114000000,
+      "shiftId": 490,
+      "shiftName": "2nd Shift",
+      "shiftNameId": 2,
+      "shiftStart": 1776078000000,
+      "standardRate": 100,
+      "startDate": 1775835932237,
+      "stateColor": "#00639a",
+      "stateIconPath": "kanoa/running",
+      "stateName": "Running",
+      "stateTypeColor": "#00639a",
+      "stateTypeName": "Running",
+      "targetCount": 3685.389,
+      "unplannedDowntimeSecs": 49502,
+      "userName": "jason",
+      "wasteCount": 0,
+      "wasteUnits": "links",
+      "woActualQty": null,
+      "woRemainingMinutes": null,
+      "workOrderId": null,
+      "workOrderName": null,
+      "workOrderTitle": null
+    }
+  },
+  "params": {
+    "value": {
+      "assetInfo": {
+        "assetGroupColor": null,
+        "assetGroupId": 1,
+        "assetGroupName": "Packaging",
+        "assetId": null,
+        "assetName": "",
+        "assetPath": null,
+        "assetTypeId": null,
+        "assetTypeName": "line",
+        "assetTypePath": "",
+        "displayPath": "",
+        "enabled": true,
+        "iconPath": "kanoa/line",
+        "oeeEnabled": true,
+        "parentId": 1709,
+        "path": "",
+        "processTypeId": 1,
+        "processTypeName": "continuous",
+        "sortOrder": 0,
+        "tagPath": "[Kanoa]Kanoa Box Co/Box Plant/Packaging/Box Line 1",
+        "timeZone": "Eastern Standard Time"
+      }
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.oeeData": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetInfo.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value is None: return system.dataset.toDataSet([],[])\t\n\ttimeNow \u003d system.date.now()\n\thourNow \u003d system.date.getHour24(system.date.addHours(timeNow, 1))\n\tendDate \u003d system.date.setTime(timeNow, hourNow, 0, 0)\n\n\tdata \u003d system.kanoa.event.getOEEDataByInterval(value, system.date.addHours(endDate,-12), endDate, \u0027Hour\u0027)\n\t\n\tif data.rowCount \u003e 12: data \u003d system.dataset.deleteRows(data, [i for i in range(data.rowCount - 12)])\n\treturn data",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.tzOffset": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\ttzOffsetMins \u003d system.kanoa.date.getTimeZoneOffsetMins(value[\u0027timeZone\u0027], system.date.now())\n\tgatewayOffsetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\t\n\treturn {\u0027tzOffset\u0027:tzOffsetMins - gatewayOffsetMins, \u0027tz\u0027: value[\u0027timeZone\u0027]}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.woInfo": {
+      "binding": {
+        "config": {
+          "path": "view.custom.tagInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tremainingQty \u003d (value.reqdQty or 0.0) - (value.woActualQty or 0.0) if value.workOrderId is not None else (value.reqdQty or 0.0) - (value.outfeedCount or 0.0)\n\n\tif value.reqdQty \u003e 0 and value.woActualQty \u003e value.reqdQty: return {\u0027status\u0027: \u0027Alarm\u0027,\u0027text\u0027:\u0027Over production\u0027, \u0027remainingQty\u0027: remainingQty}\n\tif value.infeedCount \u003c ((value.targetCount or 0) * 0.95): return {\u0027status\u0027: \u0027Warning\u0027,\u0027text\u0027:\u0027Running below target rate\u0027, \u0027remainingQty\u0027: remainingQty}\n\t\n\treturn {\u0027status\u0027: \u0027Ok\u0027,\u0027text\u0027:\u0027Looking good\u0027, \u0027remainingQty\u0027: remainingQty}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.oeeColors": {
+      "binding": {
+        "config": {
+          "struct": {
+            "tagInfo": "{view.custom.tagInfo}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\ta \u003d value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0\n\tp \u003d value[\u0027tagInfo\u0027][\u0027performance\u0027]  or 0.0\n\tq \u003d value[\u0027tagInfo\u0027][\u0027quality\u0027]  or 0.0\n\toee \u003d a * p * q\t\n\n\tassetPath \u003d self.params.value.assetInfo.assetPath or \u0027none\u0027\n\toeeColors \u003d system.kanoa.event.getOEEColors({\u0027assetPath\u0027: assetPath}, oee, a, p, q)\n\n\treturn {\u0027availability\u0027: oeeColors[\u0027availability\u0027], \u0027performance\u0027: oeeColors[\u0027performance\u0027], \u0027quality\u0027: oeeColors[\u0027performance\u0027], \u0027oee\u0027: oeeColors[\u0027performance\u0027]}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.oeeThresholds": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.params.value.assetInfo.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value[\u0027oeeThresholds\u0027]",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      },
+      "persistent": true
+    },
+    "custom.scheduleInfo": {
+      "binding": {
+        "config": {
+          "path": "view.custom.tagInfo.scheduleBlockId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value is None: return {}\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.schedule.getScheduleBlocks({\u0027scheduleBlockId\u0027: value}),0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.tagInfo": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.params.value.assetInfo.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value[\u0027OEE\u0027]",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 200,
+      "width": 1355
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblAssetName",
+              "name": "lblAssetName"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetInfo.assetPath"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn system.kanoa.utilities.formatPath(value, {})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "borderStyle": "none",
+                "classes": "kanoa/border kanoa/clickable",
+                "overflow": "hidden"
+              },
+              "textStyle": {
+                "fontSize": "14px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblLabel",
+                  "name": "lblLabel"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Mode:",
+                  "textStyle": {
+                    "classes": "kanoa/font/labelLarge",
+                    "color": "--onSurfaceVariant"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "icoMode",
+                  "name": "icoMode"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.color": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.tagInfo.modeColor"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "path": "material/brightness_1",
+                  "style": {
+                    "height": 16,
+                    "stroke": "--kcOutline",
+                    "strokeWidth": 1,
+                    "width": 16
+                  }
+                },
+                "type": "ia.display.icon"
+              },
+              {
+                "meta": {
+                  "domId": "lblMode",
+                  "name": "lblMode"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.tagInfo.modeName"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value or \u0027Unknown\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "textStyle": {
+                    "classes": "kanoa/font/bodyMedium",
+                    "color": "--onSurfaceVariant"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblProductiveTimeValue",
+                  "name": "lblTime"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.tagInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tdurationSecs \u003d value[\u0027runtimeSecs\u0027] if value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027\telse value[\u0027durationSecs\u0027]\n\treturn system.kanoa.utilities.secondsToText(durationSecs, {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True})",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "textStyle": {
+                    "color": "--kcOnSurfaceVariant"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxMode",
+              "name": "flxMode"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagInfo.modeTypeName"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value !\u003d \u0027Production\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignContent": "center",
+              "alignItems": "center",
+              "style": {
+                "gap": 5,
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "justify": "space-between",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblLabel-1",
+                      "name": "lblLabel"
+                    },
+                    "position": {
+                      "basis": "50px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "text": "Mode:",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelLarge",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "icoMode-1",
+                      "name": "icoMode"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.modeColor"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "path": "material/brightness_1",
+                      "style": {
+                        "height": 16,
+                        "stroke": "--kcOutline",
+                        "strokeWidth": "1px",
+                        "width": 16
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblMode-1",
+                      "name": "lblMode"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.modeName"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value or \u0027Unknown\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "classes": "kanoa/font/bodyMedium",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblSpacer",
+                      "name": "lblSpacer"
+                    },
+                    "position": {
+                      "grow": 1,
+                      "shrink": 0
+                    },
+                    "props": {
+                      "textStyle": {
+                        "classes": "kanoa/font/bodyMedium",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "icoModeSet",
+                      "name": "icoModeSet",
+                      "tooltip": {
+                        "enabled": true
+                      }
+                    },
+                    "position": {
+                      "basis": "20px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "meta.tooltip.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn \u0027Set by %s\u0027%name or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.modeSourceName"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\t\n\tif value \u003d\u003d \u0027Schedule\u0027: icon \u003d \u0027material/calendar_today\u0027\n\telif value \u003d\u003d \u0027PLC\u0027: icon \u003d \u0027kanoa/cell\u0027\n\telif value in (\u0027Operator\u0027, \u0027Operator Run\u0027): icon \u003d \u0027material/engineering\u0027\n\telse: icon \u003d \u0027\u0027\n\t\n\treturn icon",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "color": "--kcOnSurfaceVariant",
+                      "style": {
+                        "maxHeight": 30
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxMode-1",
+                  "name": "flxMode"
+                },
+                "position": {
+                  "basis": "25px",
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": 5,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblLabel-2",
+                      "name": "lblLabel"
+                    },
+                    "position": {
+                      "basis": "50px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "text": "State:",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelLarge",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "icoStatus",
+                      "name": "icoStatus"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.stateTypeColor"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "path": "material/brightness_1",
+                      "style": {
+                        "height": 16,
+                        "stroke": "--kcOutline",
+                        "strokeWidth": "1px",
+                        "width": 16
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblStatus",
+                      "name": "lblStatus"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.stateName"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value or \u0027Unknown\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "classes": "kanoa/font/bodyMedium",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxState",
+                  "name": "flxState"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.visible": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.tagInfo.modeName"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value \u003d\u003d \u0027Production\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": 5,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "barRunTime",
+                      "name": "barRunTime",
+                      "tooltip": {
+                        "enabled": true,
+                        "text": "Time running"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tif value is None: return 0\n\tdenom \u003d float((value[\u0027runtimeSecs\u0027] or 0) + (value[\u0027unplannedDowntimeSecs\u0027] or 0) + (value[\u0027plannedDowntimeSecs\u0027] or 0))\n\treturn float(value[\u0027runtimeSecs\u0027] or 0) / denom * 100 if denom else 0\t",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcGood",
+                        "borderRadius": 8,
+                        "height": 16
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "barUPD",
+                      "name": "barUPD",
+                      "tooltip": {
+                        "enabled": true,
+                        "text": "Unplanned Downtime"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tif value is None: return 0\n\t\n\tdenom \u003d float((value[\u0027runtimeSecs\u0027] or 0) + (value[\u0027unplannedDowntimeSecs\u0027] or 0) + (value[\u0027plannedDowntimeSecs\u0027] or 0))\n\treturn float(value[\u0027unplannedDowntimeSecs\u0027] or 0) / denom * 100 if denom else 0\n\t",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcBad",
+                        "borderRadius": 8,
+                        "height": 16
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "barOther",
+                      "name": "barOther",
+                      "tooltip": {
+                        "enabled": true,
+                        "text": "Planned Downtime"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tif value is None: return 0\n\tdenom \u003d float((value[\u0027runtimeSecs\u0027] or 0) + (value[\u0027unplannedDowntimeSecs\u0027] or 0) + (value[\u0027plannedDowntimeSecs\u0027] or 0))\n\treturn float(value[\u0027plannedDowntimeSecs\u0027] or 0) / denom * 100 if denom else 0\n\t",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcOK",
+                        "borderRadius": 8,
+                        "height": 16
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxGraph",
+                  "name": "flxGraph"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": 3,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblProductiveTimeValue",
+                      "name": "lblTime"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tdurationSecs \u003d value[\u0027runtimeSecs\u0027] if value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027\telse value[\u0027durationSecs\u0027]\n\treturn \u0027Run Time: {}\u0027.format(system.kanoa.utilities.secondsToText(durationSecs, {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True}))",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblTotalDowntime",
+                      "name": "lblTotalDowntime"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "meta.visible": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.modeName"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value \u003d\u003d \u0027Production\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\ttotalDTSecs \u003d ((value.unplannedDowntimeSecs or 0) + (value.plannedDowntimeSecs or 0))\n\treturn \u0027Total Downtime: {}\u0027.format(system.kanoa.utilities.secondsToText(totalDTSecs, {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True}))",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblTotalDowntime",
+                          "name": "lbl"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "text": "Start Time:",
+                          "textStyle": {
+                            "color": "--kcOnSurfaceVariant"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "lblTotalDowntime",
+                          "name": "lblStart"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.tagInfo"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\t\n#\treturn \"Start Time: %s\"%system.date.format((system.date.fromMillis(value[\u0027startDate\u0027])), \u0027YY-MM-dd HH:mm\u0027)\n\treturn value[\u0027startDate\u0027]",
+                                  "type": "script"
+                                },
+                                {
+                                  "formatType": "datetime",
+                                  "formatValue": {
+                                    "date": "medium",
+                                    "time": "medium"
+                                  },
+                                  "type": "format"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "textStyle": {
+                            "color": "--kcOnSurfaceVariant"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "name": "flxStart"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "gap": "5px"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxProduction",
+                  "name": "flxProduction"
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": 5,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxModeState",
+              "name": "flxModeState"
+            },
+            "position": {
+              "basis": "165px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "height": "150px",
+                "minWidth": "250px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblLabel-3",
+                      "name": "lblLabel"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "text": "Production Order:",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelLarge",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblNumber",
+                      "name": "lblNumber"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.workOrderName"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "classes": "kanoa/font/bodyMedium",
+                        "color": "--kcOnSurfaceVariant",
+                        "overflow": "hidden",
+                        "textOverflow": "ellipsis",
+                        "whiteSpace": "nowrap"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "icoInfo",
+                          "name": "icoInfo",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "bottom"
+                          }
+                        },
+                        "position": {
+                          "basis": "30px"
+                        },
+                        "propConfig": {
+                          "meta.tooltip.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.data.woInfo.text"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          },
+                          "props.color": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.data.woInfo.status"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\tif value \u003d\u003d \u0027Ok\u0027: return \u0027--kcGood\u0027\n\tif value \u003d\u003d \u0027Warning\u0027: return \u0027--kcOK\u0027\n\treturn \u0027--kcBad\u0027",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          },
+                          "props.path": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.data.woInfo.status"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\tif value \u003d\u003d \u0027Ok\u0027: return \u0027material/check\u0027\n#\tif value \u003d\u003d \u0027Warning\u0027: \n\treturn \u0027material/warning\u0027",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "type": "ia.display.icon"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxInfo",
+                      "name": "flxInfo"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.outfeedCount"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value !\u003d 0.0",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "justify": "flex-end"
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxWorkOrder-1",
+                  "name": "flxWorkOrder"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": 5,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblLabel-4",
+                      "name": "lblLabel"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "text": "Product:",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelLarge",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblName",
+                      "name": "lblName"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.itemName"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "classes": "kanoa/font/bodyMedium",
+                        "color": "--kcOnSurfaceVariant",
+                        "overflow": "hidden",
+                        "textOverflow": "ellipsis",
+                        "whiteSpace": "nowrap"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxProduct",
+                  "name": "flxProduct"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": 5,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "barCount",
+                      "name": "barCount",
+                      "tooltip": {
+                        "enabled": true
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "meta.tooltip.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\treturn \u0027Produced: {:d} {}\u0027.format(int((value[\u0027outfeedCount\u0027] or 0.0)), value[\u0027outfeedUnits\u0027] or \u0027\u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo.outfeedCount"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcGood",
+                        "borderRadius": 8,
+                        "height": 16
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "barRemaining",
+                      "name": "barRemaining",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "bottom",
+                        "text": "0 links remaining"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "assetInfo": "{view.custom.tagInfo}",
+                              "scheduleInfo": "{view.custom.schedule.scheduleInfo}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tremainingQty \u003d 0\n\tself.meta.tooltip.text \u003d \u0027\u0027\n\n\tif value[\u0027assetInfo\u0027][\u0027woActualQty\u0027]:\n\t\tif (value[\u0027assetInfo\u0027][\u0027reqdQty\u0027] or 0.0) \u003d\u003d 0.0: return 0\n\t\tremainingQty \u003d int(value[\u0027assetInfo\u0027][\u0027reqdQty\u0027]-value[\u0027assetInfo\u0027][\u0027woActualQty\u0027])\n\t\n\telif value[\u0027scheduleInfo\u0027] and value[\u0027scheduleInfo\u0027][\u0027scheduleBlockId\u0027]:\t#Check if there is an actualQty\n\t\tscheduledQty \u003d value[\u0027scheduleInfo\u0027][\u0027scheduledQty\u0027] or 0.0\n\t\tif scheduledQty \u003d\u003d 0.0: return 0\n\t\tremainingQty \u003d int(scheduledQty-value[\u0027assetInfo\u0027][\u0027outfeedCount\u0027])\n\n\tif remainingQty \u003c 0: return 0\n\t\n\tself.meta.tooltip.text \u003d \u0027%s %s remaining\u0027%(remainingQty, value[\u0027assetInfo\u0027][\u0027outfeedUnits\u0027])\n\treturn int(remainingQty)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcNeutral-50",
+                        "borderRadius": 8,
+                        "height": 16
+                      },
+                      "textStyle": {
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxGraph-1",
+                  "name": "flxGraph"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.visible": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.scheduleInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif len(dict(value or {})) \u003d\u003d 0: return False\n\treturn value[\u0027scheduledQty\u0027] \u003e 0",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": 3,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "barCount-1",
+                      "name": "barCount",
+                      "tooltip": {}
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "meta.tooltip.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn \"Target Rate: %s | Actual Rate: %s\"%(tgtRate, actualRate)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1)\n\n\treturn actualRate",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcGood",
+                        "borderRadius": 8,
+                        "height": 16
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "barRemaining-1",
+                      "name": "barRemaining",
+                      "tooltip": {}
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "meta.tooltip.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn \"Target Rate: %s | Actual Rate: %s\"%(tgtRate, actualRate)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "position.grow": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\ttgtRate \u003d 0.0 if value.standardRate is None or value.period is None else value.standardRate\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tactualRate \u003d round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1)\n\n\treturn max(tgtRate - actualRate, 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcNeutral-50",
+                        "borderRadius": 8,
+                        "height": 16
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxRateGraph",
+                  "name": "flxRateGraph",
+                  "tooltip": {
+                    "enabled": true
+                  }
+                },
+                "position": {
+                  "display": false,
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.tagInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn \"Target Rate: %s | Actual Rate: %s\"%(tgtRate, actualRate)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.tagInfo.workOrderName"
+                      },
+                      "enabled": false,
+                      "transforms": [
+                        {
+                          "code": "\tif value is None or value \u003d\u003d \u0027\u0027: return True\n\treturn False",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": 3,
+                    "height": 20,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblProduction",
+                      "name": "lblProduction"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "assetInfo": "{view.custom.tagInfo}",
+                              "scheduleInfo": "{view.custom.schedule.scheduleInfo}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tremainingQty \u003d None\n\n\tif (value[\u0027assetInfo\u0027][\u0027reqdQty\u0027] or 0.0) \u003e 0: \n\t\treqdQty \u003d value[\u0027assetInfo\u0027][\u0027reqdQty\u0027]\n\telif value[\u0027scheduleInfo\u0027] and value[\u0027scheduleInfo\u0027][\u0027scheduleBlockId\u0027]:\t#Check if there is an actualQty\n\t\treqdQty \u003d value[\u0027scheduleInfo\u0027][\u0027scheduledQty\u0027] or 0.0\n\telse:\n\t\treqdQty \u003d 0.0\n\n\tunits \u003d value[\u0027assetInfo\u0027][\u0027outfeedUnits\u0027] or \u0027\u0027\n\n\tdurationTxt \u003d system.kanoa.utilities.secondsToText(value[\u0027assetInfo\u0027][\u0027durationSecs\u0027], {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True})\n\treturn \u0027Scheduled: {:,} {} | Produced: {:,} {} in {}\u0027.format(int(reqdQty), units, int((value[\u0027assetInfo\u0027][\u0027outfeedCount\u0027] or 0.0)), units, durationTxt)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblRemaining",
+                      "name": "lblRemaining"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "this.props.text"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn (value or None) is not None",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "assetInfo": "{view.custom.tagInfo}",
+                              "scheduleInfo": "{view.custom.schedule.scheduleInfo}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value[\u0027assetInfo\u0027] is None or value[\u0027scheduleInfo\u0027] is None: return \u0027\u0027\n\tremainingQty \u003d None\n\n\tif value[\u0027assetInfo\u0027][\u0027woActualQty\u0027]:\n\t\tif (value[\u0027assetInfo\u0027][\u0027reqdQty\u0027] or 0.0) \u003d\u003d 0.0: return \u0027No work order quantity specified\u0027\n\t\tremainingQty \u003d int(value[\u0027assetInfo\u0027][\u0027reqdQty\u0027]-value[\u0027assetInfo\u0027][\u0027woActualQty\u0027])\n\t\n\telif value[\u0027scheduleInfo\u0027] and value[\u0027scheduleInfo\u0027][\u0027scheduleBlockId\u0027]:\t#Check if there is an actualQty\n\t\tscheduledQty \u003d value[\u0027scheduleInfo\u0027][\u0027scheduledQty\u0027] or 0.0\n\t\tif scheduledQty \u003d\u003d 0.0: return \u0027No schedule quantity specified\u0027\n\t\tremainingQty \u003d int(scheduledQty-value[\u0027assetInfo\u0027][\u0027outfeedCount\u0027])\n\n\tif remainingQty is None: return \u0027\u0027\n\tif remainingQty \u003c 0:\n\t\tself.props.textStyle.color \u003d \u0027--kcRed-60\u0027\n\t\treturn \u0027{:,} over-production\u0027.format(abs(remainingQty))\n\n\tself.props.textStyle.color \u003d \u0027--kcOnSurfaceVariant\u0027\n\treturn \u0027{:,} Remaining\u0027.format(remainingQty)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "classes": "kanoa/font/bodySmall",
+                        "color": "--kcOnSurfaceVariant"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxProduction-1",
+                  "name": "flxProduction"
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": 5,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblRate",
+                      "name": "lblRate",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Infeed target is the standard rate set for this item running on this asset. Actual Infeed Rate is calculate by the infeed count / actual runtime"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tcolor \u003d \u0027--kcOnSurfaceVariant\u0027\n\t\n\ttgtRate \u003d value.standardRate or 0.0\n\ttgtRateLabel \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027{:,} {} per {}\u0027.format(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\t\n\tactualRate \u003d (value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60)\n\tactualRateLabel \u003d \u0027{:,} {} per {}\u0027.format(round((actualRate),1), infeedUnits, period)\n\t\n\tself.props.textStyle.color \u003d \u0027--kcOnSurfaceVariant\u0027 if actualRate \u003e\u003d (tgtRate * 0.1) else \u0027--kcError\u0027\n\treturn \"Infeed Target Rate: %s | Actual Infeed Rate: %s\"%(tgtRateLabel, actualRateLabel)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "Color": "--kcOK",
+                        "backcolor": "--kcOK",
+                        "classes": "kanoa/font/bodySmall",
+                        "color": "--kcOnSurfaceVariant",
+                        "groundColor": "--kcOK",
+                        "overflow": "hidden",
+                        "textOverflow": "ellipsis",
+                        "whiteSpace": "nowrap"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxProductionRate",
+                  "name": "flxInfeedRate"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": 5,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblRate",
+                      "name": "lblRate",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "/actual Production Rate is cacluated from the outfeed count over the total duration of this production run"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\toutfeedUnits \u003d value[\u0027outfeedUnits\u0027] or \u0027\u0027\n\tperiod \u003d value[\u0027period\u0027] or \u0027min\u0027\n\tduration \u003d value[\u0027durationSecs\u0027] / 3600.0 if period \u003d\u003d \u0027Hour\u0027 else value[\u0027durationSecs\u0027] / 60.0 \n\tactualProductionRate \u003d (value[\u0027outfeedCount\u0027] or 0.0) / duration\n\treturn \"Actual Production Rate: {:,} {} per {}\".format(round((actualProductionRate),1), outfeedUnits, period)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "Color": "--kcOK",
+                        "backcolor": "--kcOK",
+                        "classes": "kanoa/font/bodySmall",
+                        "color": "--kcOnSurfaceVariant",
+                        "groundColor": "--kcOK",
+                        "overflow": "hidden",
+                        "textOverflow": "ellipsis",
+                        "whiteSpace": "nowrap"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxProductionRate",
+                  "name": "flxProductionRate"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": 5,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxWorkOrder",
+              "name": "flxWorkOrder"
+            },
+            "position": {
+              "basis": "165px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.visible": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagInfo.modeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027Production\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "height": "150px",
+                "minWidth": "250px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "gaugeBG",
+                          "name": "gaugeBG"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "arc": {
+                            "color": "#88888822",
+                            "cornerRadius": 7,
+                            "width": 14
+                          },
+                          "arcBackground": {
+                            "color": "#BADA55",
+                            "opacity": 0
+                          },
+                          "endAngle": 405,
+                          "label": {
+                            "maxDecimal": 0,
+                            "offsetY": 22,
+                            "size": 50,
+                            "units": "%",
+                            "visible": false
+                          },
+                          "maxValue": 1,
+                          "startAngle": 135,
+                          "style": {
+                            "classes": [
+                              "value"
+                            ],
+                            "height": 150,
+                            "position": "absolute",
+                            "top": -25
+                          },
+                          "value": 1
+                        },
+                        "type": "ia.chart.simple-gauge"
+                      },
+                      {
+                        "meta": {
+                          "domId": "gauge",
+                          "name": "gauge"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.arc.color": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.oeeColors.oee"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\treturn kanoaScripts.colors.getCSSColor(value, self.session.props.theme)",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          },
+                          "props.value": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.tagInfo"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\n\ta \u003d 0 if value[\u0027availability\u0027] is None else value[\u0027availability\u0027]\n\tp \u003d 0 if value[\u0027performance\u0027] is None else value[\u0027performance\u0027]\n\tq \u003d 0 if value[\u0027quality\u0027] is None else value[\u0027quality\u0027]\n\treturn a*p*q",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "animate": true,
+                          "arc": {
+                            "cornerRadius": 7,
+                            "width": 14
+                          },
+                          "arcBackground": {
+                            "color": "",
+                            "opacity": 0
+                          },
+                          "endAngle": 405,
+                          "label": {
+                            "maxDecimal": 0,
+                            "offsetY": 22,
+                            "size": 50,
+                            "units": "%",
+                            "visible": false
+                          },
+                          "maxValue": 1,
+                          "startAngle": 135,
+                          "style": {
+                            "classes": [
+                              "value"
+                            ],
+                            "height": 150,
+                            "position": "absolute",
+                            "top": -25
+                          }
+                        },
+                        "type": "ia.chart.simple-gauge"
+                      },
+                      {
+                        "meta": {
+                          "domId": "label",
+                          "name": "label",
+                          "tooltip": {
+                            "enabled": true,
+                            "text": "OEE"
+                          }
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.tagInfo"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\ta \u003d 0 if value[\u0027availability\u0027] is None else value[\u0027availability\u0027]\n\tp \u003d 0 if value[\u0027performance\u0027] is None else value[\u0027performance\u0027]\n\tq \u003d 0 if value[\u0027quality\u0027] is None else value[\u0027quality\u0027]\n\treturn str(int(a*p*q*100))+\"%\"",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "style": {
+                            "bottom": 0,
+                            "left": 0,
+                            "position": "absolute",
+                            "right": 0,
+                            "textAlign": "center",
+                            "top": 10
+                          },
+                          "textStyle": {
+                            "classes": "kanoa/font/titleMedium",
+                            "color": "--kcOnSurface",
+                            "textAlignLast": "center"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxTotalOEE",
+                      "name": "flxTotalOEE"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "height": 100,
+                        "overflow": "hidden",
+                        "position": "relative",
+                        "width": 130
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "flxPillRepeater",
+                          "name": "flxPillRepeater"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "propConfig": {
+                          "props.instances": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.data.oeeData"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\t\n\tdef getColor(inputVal, target, threshold):\n\t\tif target is None: return \u0027#444444\u0027\t\t\n\t\tif value \u003e\u003d target: return colors[\u0027colorGood\u0027]\n\t\telif value \u003e\u003d target - (threshold or 0.0): return colors[\u0027colorWarn\u0027]\n\t\treturn colors[\u0027colorBad\u0027]\n\t\n\tcolors \u003d {\u0027colorGood\u0027: \"--kcGood\", \u0027colorWarn\u0027: \"--kcOK\", \u0027colorBad\u0027: \"--kcBad\"}\n\t\n\tassetInfo \u003d self.view.params.value.assetInfo\n\tif assetInfo is None: return []\n\toeeThresholds \u003d self.view.custom.oeeThresholds\n\n\tvalues \u003d []\n\tdata \u003d self.view.custom.data\n\tif not data.has_key(\u0027tzOffset\u0027): return []\n\t\n\ttzInfo \u003d data[\u0027tzOffset\u0027]\n\ttzOffSetMins \u003d int(tzInfo[\u0027tzOffset\u0027] if tzInfo.has_key(\u0027tzOffset\u0027) else 0)\n\tfor row in system.dataset.toPyDataSet(value):\n\t\ta\u003d row[\u0027availability\u0027] or 0.0\n\t\tp \u003d row[\u0027performance\u0027] or 0.0\n\t\tq \u003d row[\u0027quality\u0027] or 0.0\n\t\toee \u003d a * p * q\n\t\tbgColor \u003d getColor(oee, oeeThresholds[\u0027oee\u0027], oeeThresholds[\u0027oeeTolerance\u0027])\n\t\ttooltip \u003d \u0027OEE %g%% (%s %s)\u0027%(round(oee*100.0,1), system.date.format(system.date.addMinutes(row[\u0027hourTimeStamp\u0027], tzOffSetMins), \u0027MM/dd ha\u0027), tzInfo[\u0027tz\u0027])\n\t\tvalues.append({\"value\": {\"bgColor\": None, \"color\": bgColor, \"label\": tooltip, \"value\": oee}})\n\t\t\n\treturn values",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "elementPosition": {
+                            "basis": "18px",
+                            "grow": 0
+                          },
+                          "path": "kanoa/mes/asset/overview/assetCard/pill",
+                          "style": {
+                            "gap": "4px",
+                            "height": "100%",
+                            "overflow": "hidden"
+                          },
+                          "useDefaultViewHeight": false,
+                          "useDefaultViewWidth": false
+                        },
+                        "type": "ia.display.flex-repeater"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxOEETimeline",
+                      "name": "flxOEETimeline"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "props": {
+                      "alignContent": "center",
+                      "alignItems": "flex-end",
+                      "justify": "center",
+                      "style": {
+                        "gap": 4,
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxOEE",
+                  "name": "flxOEE"
+                },
+                "position": {
+                  "grow": 1,
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": 5,
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblInfo",
+                      "name": "lblInfo"
+                    },
+                    "position": {
+                      "basis": "130px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "key": "value"
+                      },
+                      "text": "Current Production Run",
+                      "textStyle": {
+                        "fontSize": "10px",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblLabel-5",
+                          "name": "lblLabel"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "text": "A",
+                          "textStyle": {
+                            "classes": "kanoa/font/bodyLarge",
+                            "color": "--kcOnSurface"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "icoStatus-1",
+                          "name": "icoStatus"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.color": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.oeeColors.availability"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "path": "material/brightness_1",
+                          "style": {
+                            "height": 25,
+                            "stroke": "--kcOutline",
+                            "strokeWidth": "1px",
+                            "width": 25
+                          }
+                        },
+                        "type": "ia.display.icon"
+                      },
+                      {
+                        "meta": {
+                          "domId": "lblValue",
+                          "name": "lblValue"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.tagInfo.availability"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "formatType": "numeric",
+                                  "formatValue": "percent",
+                                  "type": "format"
+                                },
+                                {
+                                  "code": "\treturn value or \u0027\u0027",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "textStyle": {
+                            "classes": "kanoa/font/bodyLarge",
+                            "color": "--kcOnSurface"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxA",
+                      "name": "flxA"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 2
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblLabel-6",
+                          "name": "lblLabel"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "text": "P",
+                          "textStyle": {
+                            "classes": "kanoa/font/bodyLarge",
+                            "color": "--kcOnSurface"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "icoStatus-2",
+                          "name": "icoStatus"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.color": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.oeeColors.performance"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "path": "material/brightness_1",
+                          "style": {
+                            "height": 25,
+                            "stroke": "--kcOutline",
+                            "strokeWidth": "1px",
+                            "width": 25
+                          }
+                        },
+                        "type": "ia.display.icon"
+                      },
+                      {
+                        "meta": {
+                          "domId": "lblValue-1",
+                          "name": "lblValue"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.tagInfo.performance"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "formatType": "numeric",
+                                  "formatValue": "percent",
+                                  "type": "format"
+                                },
+                                {
+                                  "code": "\treturn value or \u0027\u0027",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "textStyle": {
+                            "classes": "kanoa/font/bodyLarge",
+                            "color": "--kcOnSurface"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxP",
+                      "name": "flxP"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 2
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblLabel-7",
+                          "name": "lblLabel"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "text": "Q",
+                          "textStyle": {
+                            "classes": "kanoa/font/bodyLarge",
+                            "color": "--kcOnSurface"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "icoStatus-3",
+                          "name": "icoStatus"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.color": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.oeeColors.quality"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "path": "material/brightness_1",
+                          "style": {
+                            "height": 25,
+                            "stroke": "--kcOutline",
+                            "strokeWidth": "1px",
+                            "width": 25
+                          }
+                        },
+                        "type": "ia.display.icon"
+                      },
+                      {
+                        "meta": {
+                          "domId": "lblValue-2",
+                          "name": "lblValue"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.tagInfo.quality"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "formatType": "numeric",
+                                  "formatValue": "percent",
+                                  "type": "format"
+                                },
+                                {
+                                  "code": "\treturn value or \u0027\u0027",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "textStyle": {
+                            "classes": "kanoa/font/bodyLarge",
+                            "color": "--kcOnSurface"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxQ",
+                      "name": "flxQ"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "color": "--kcOnSurface",
+                        "fontSize": "1.35em"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxAPQ",
+                  "name": "flxAPQ"
+                },
+                "props": {
+                  "justify": "space-between",
+                  "style": {
+                    "maxWidth": "400px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxGraphs",
+              "name": "flxGraphs"
+            },
+            "position": {
+              "basis": "400px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.visible": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagInfo.modeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027Production\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "height": "150px",
+                "minWidth": "250px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.tagInfo.modeTypeName"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Production\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignItems": "flex-start",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

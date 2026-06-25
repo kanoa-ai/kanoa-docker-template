@@ -1,0 +1,332 @@
+{
+  "custom": {
+    "unitWidth": "50px", 
+    "checkingInput": false, 
+    "labelWidth": "auto", 
+    "editing": false, 
+    "numberWidth": "100px"
+  }, 
+  "params": {
+    "footer": false, 
+    "editable": false, 
+    "pattern": "", 
+    "label": "", 
+    "number": "", 
+    "unit": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 500, 
+      "height": 25
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "0 5px", 
+        "classes": "kanoa/font/default", 
+        "minHeight": "20px", 
+        "overflow": "hidden"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "fontWeight": "bold"
+          }
+        }, 
+        "meta": {
+          "domId": "label", 
+          "name": "label"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.label"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "padding": "0 5px", 
+            "textAlign": "right"
+          }
+        }, 
+        "meta": {
+          "domId": "number", 
+          "name": "number"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\tif self.view.params.editable:\n\t\tself.view.custom.editing = True"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn '--kcBlue-20' if value else ''", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.editable"
+              }
+            }
+          }, 
+          "position.display": {
+            "binding": {
+              "type": "expr", 
+              "overlayOptOut": true, 
+              "config": {
+                "expression": "!{view.custom.editing}"
+              }
+            }
+          }, 
+          "position.basis": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.numberWidth"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tnumber = value.number\n\tpattern = value.pattern or '{}'\n\t\n\ttry:\n\t\treturn pattern.format(number)\n\texcept:\n\t\treturn number", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "config": {
+                "struct": {
+                  "pattern": "{view.params.pattern}", 
+                  "number": "{view.params.number}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }, 
+          "props.style.fontWeight": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'bold' if value else 'normal'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.footer"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.text-field", 
+        "props": {
+          "style": {
+            "textAlign": "right"
+          }
+        }, 
+        "meta": {
+          "domId": "input", 
+          "name": "input"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onBlur": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\tself.view.custom.editing = False"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tif value:\n\t\tself.focus()\n\t\n\treturn value", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.editing"
+              }
+            }
+          }, 
+          "position.basis": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.numberWidth"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.number"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "domId": "unit", 
+          "name": "unit"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "position.basis": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.unitWidth"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.unit"
+              }
+            }
+          }, 
+          "props.style.fontWeight": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'bold' if value else 'normal'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.footer"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "propConfig": {
+      "props.style.borderTop": {
+        "binding": {
+          "transforms": [
+            {
+              "code": "\treturn '1px solid currentcolor' if value else 'none'", 
+              "type": "script"
+            }
+          ], 
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "path": "view.params.footer"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "custom.checkingInput": {
+      "persistent": true
+    }, 
+    "params.label": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.numberWidth": {
+      "persistent": true
+    }, 
+    "custom.editing": {
+      "persistent": true
+    }, 
+    "custom.unitWidth": {
+      "persistent": true
+    }, 
+    "params.pattern": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.editable": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.footer": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.unit": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.number": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\toldValue = previousValue.value if previousValue is not None else ''\n\tnewValue = currentValue.value if currentValue is not None else ''\n\t\n\tdef isNumber(value):\n\t    try:\n\t\t\tfloat(value)\n\t\t\treturn True\n\t    except:\n\t        return False\n\tdef fixNumber(value):\n\t\tif value == '':\n\t\t\treturn ''\n\t\t\t\n\t\tvalue = str(value)\n\t\t\n\t\tif isNumber(value):\n\t\t\tvalue = float(value)\n\t\t\tif value % 1 == 0:\n\t\t\t\tvalue = int(value)\n\t\t\t\t\n\t\treturn value\n\t\t\n#\tsystem.perspective.print(['tableRow change script', oldValue, newValue, isNumber(newValue)])\n\t\n\tif self.custom.checkingInput:\n\t\tself.custom.checkingInput = False\n\telif newValue != '' and not isNumber(newValue):\n\t\tself.custom.checkingInput = True\n\t\tself.params.number = oldValue\n\telse:\n\t\tself.params.number = fixNumber(newValue)"
+      }, 
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

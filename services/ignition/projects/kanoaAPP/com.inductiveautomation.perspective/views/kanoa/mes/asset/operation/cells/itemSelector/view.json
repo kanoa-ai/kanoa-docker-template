@@ -1,0 +1,149 @@
+{
+  "custom": {
+    "modeInfo": {
+      "canSchedule": null,
+      "canSelect": null,
+      "enabled": null,
+      "iconPath": null,
+      "modeColor": null,
+      "modeId": null,
+      "modeName": null,
+      "modeTypeId": null,
+      "modeTypeName": null,
+      "reservedBySystem": null
+    }
+  },
+  "params": {
+    "value": {
+      "itemClassColor": null,
+      "itemColor": null,
+      "itemId": 18,
+      "itemName": "Beans"
+    }
+  },
+  "propConfig": {
+    "custom.modeInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.mode"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getModes({\u0027modeName\u0027: value}),0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 60,
+      "width": 160
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tvalues \u003d self.view.params.value\n\tmodeSourceId \u003d system.kanoa.asset.getModeSourceId(\u0027Operator\u0027)\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Setting asset mode to %s\u0027%values[\u0027mode\u0027]})\n#\tsystem.kanoa.event.assetOperationChange(values[\u0027assetId\u0027], values[\u0027code\u0027], None, None, modeSourceId, system.date.now(), True, userId)\n\tvals \u003d self.view.params.value\n\tassetOperationInfo \u003d {\u0027assetId\u0027: vals[\u0027assetId\u0027], \u0027modeCode\u0027: vals[\u0027code\u0027], \u0027workOrderId\u0027: None, \u0027itemId\u0027: None, \u0027standardRate\u0027: None, \u0027modeSourceId\u0027: modeSourceId, \u0027tStamp\u0027: system.date.now(), \u0027includeChildren\u0027: True}\n\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\n\tif msg: system.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027Could not change operation. %s\u0027%msg})\n\telse: \n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Asset has been set to %s\u0027%values[\u0027mode\u0027]})\n\t\tsystem.tag.writeBlocking([system.kanoa.asset.getAssetTagPath({\u0027assetId\u0027:values[\u0027assetId\u0027]}) + \u0027/Line/OEE/scheduleBlockId\u0027], [None]) #Clear the scheduleBlockId. We should put this in the assetOperationChange, but for now, we\u0027ll call it from here\n\treturn\n"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "button",
+          "name": "button",
+          "tooltip": {
+            "delay": 0,
+            "location": "top",
+            "tail": false,
+            "text": "Changeover"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value[\u0027itemColor\u0027] or value[\u0027itemClassColor\u0027] or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "path": "this.props.style.backgroundColor"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value[\u0027itemName\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/button/filled"
+          },
+          "textStyle": {
+            "fontSize": "16px"
+          }
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "center",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,373 @@
+{
+  "custom": {
+    "data": {}, 
+    "currentIndex": 0
+  }, 
+  "params": {
+    "steps": [
+      {
+        "data": {
+          "dependencies": {}, 
+          "fields": {
+            "type": {
+              "required": true, 
+              "value": ""
+            }
+          }
+        }, 
+        "stepTitle": "Pet Type", 
+        "path": "Kanoa/Templates/Wizard Template/Sample Step Views/Animal Step"
+      }, 
+      {
+        "data": {
+          "dependencies": {
+            "type": "Dog"
+          }, 
+          "fields": {
+            "breed": {
+              "required": true, 
+              "value": ""
+            }
+          }
+        }, 
+        "stepTitle": "Breed", 
+        "path": "Kanoa/Templates/Wizard Template/Sample Step Views/Breed Step"
+      }, 
+      {
+        "data": {
+          "dependencies": {}, 
+          "fields": {
+            "name": {
+              "required": true, 
+              "value": ""
+            }
+          }
+        }, 
+        "stepTitle": "Name", 
+        "path": "Kanoa/Templates/Wizard Template/Sample Step Views/Name Step"
+      }
+    ]
+  }, 
+  "props": {}, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "#CCC", 
+        "boxSizing": "border-box"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "backgroundColor": "grey", 
+            "classes": "kanoa/font/default", 
+            "paddingLeft": "10px"
+          }, 
+          "textStyle": {
+            "color": "white", 
+            "fontSize": "20px"
+          }
+        }, 
+        "meta": {
+          "domId": "lblTitle", 
+          "name": "lblTitle"
+        }, 
+        "position": {
+          "display": false, 
+          "basis": "50px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn \"Pet Maker Wizard - \" + str(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.data"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "children": [
+          {
+            "type": "ia.display.flex-repeater", 
+            "props": {
+              "alignItems": "center", 
+              "alignContent": "center", 
+              "path": "Kanoa/Templates/Wizard Template/Embedded/Step Tab", 
+              "justify": "space-evenly"
+            }, 
+            "meta": {
+              "domId": "FlexRepeater", 
+              "name": "FlexRepeater"
+            }, 
+            "position": {
+              "basis": "760px"
+            }, 
+            "propConfig": {
+              "props.instances": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tsteps = value.steps\n\treturn [{\"stepTitle\": step.stepTitle, \"selected\": index == value.currentIndex, \"index\": index} for index, step in enumerate(steps)]\n\t\t", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "config": {
+                    "struct": {
+                      "currentIndex": "{view.custom.currentIndex}", 
+                      "steps": "{view.params.steps}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxSteps", 
+          "name": "flxSteps"
+        }
+      }, 
+      {
+        "custom": {
+          "data": {}
+        }, 
+        "type": "ia.display.view", 
+        "props": {
+          "style": {
+            "padding": "20px", 
+            "backgroundColor": "white", 
+            "borderColor": "#D5D5D5", 
+            "borderWidth": "3px", 
+            "borderStyle": "inset"
+          }
+        }, 
+        "meta": {
+          "domId": "evCurrentStep", 
+          "name": "evCurrentStep"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "600px"
+        }, 
+        "propConfig": {
+          "props.params": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\tstepData = self.view.params.steps[value].data\n\tdependencies = stepData.dependencies\n\tfor dependency in dependencies:\n\t\tself.view.params.steps[value].data.dependencies[dependency] = self.view.custom.data[dependency]\n\t\t\n\tfields = stepData.fields\n\tfor field in fields:\n\t\tif field in self.view.custom.data.keys():\n\t\t\tself.view.params.steps[value].data.fields[field].value = self.view.custom.data[field]\n\t\t\n\treturn {\"data\": self.view.params.steps[value].data}", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.currentIndex"
+              }
+            }
+          }, 
+          "props.path": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn self.view.params.steps[value].path", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.currentIndex"
+              }
+            }
+          }, 
+          "props.params.data": {
+            "persistent": false
+          }, 
+          "props.params.data.type.value": {
+            "persistent": false
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "center", 
+          "alignContent": "space-between", 
+          "justify": "space-evenly"
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "text": "Back"
+            }, 
+            "meta": {
+              "domId": "btnBack", 
+              "name": "btnBack"
+            }, 
+            "position": {
+              "basis": "80px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\tself.view.custom.currentIndex -= 1"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value > 0", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.custom.currentIndex"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "text": "Next"
+            }, 
+            "meta": {
+              "domId": "btnNext", 
+              "name": "btnNext"
+            }, 
+            "position": {
+              "basis": "80px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tdata = self.parent.parent.getChild(\"evCurrentStep\").props.params.data.fields\n\tfor field in data:\n\t\tself.view.custom.data[field] = data[field].value\n\t\n\tself.view.custom.currentIndex += 1"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\tdataFields = value.fields\n\tfor field in dataFields:\n\t\tif dataFields[field].required and not dataFields[field].value:\n\t\t\treturn False\n\treturn self.view.custom.currentIndex < len(self.view.params.steps) - 1", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": ".../evCurrentStep.props.params.data"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "text": "Submit"
+            }, 
+            "meta": {
+              "domId": "btnSubmit", 
+              "name": "btnSubmit"
+            }, 
+            "position": {
+              "basis": "80px"
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value == len(self.view.params.steps) - 1", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.custom.currentIndex"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxBottomButtons", 
+          "name": "flxBottomButtons"
+        }, 
+        "position": {
+          "basis": "60px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\t# payload: {\n\t# \tnewIndex: \n\t# }\n\t\n\tself.view.custom.currentIndex = payload['newIndex']", 
+          "messageType": "traverseWizard", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "events": {
+    "system": {
+      "onStartup": {
+        "type": "script", 
+        "scope": "G", 
+        "config": {
+          "script": "\tself.custom.currentIndex = 0\n\tself.custom.data = {}"
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.steps": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.data": {
+      "persistent": true
+    }, 
+    "custom.currentIndex": {
+      "persistent": true
+    }
+  }
+}

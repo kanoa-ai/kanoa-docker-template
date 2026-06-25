@@ -1,0 +1,188 @@
+{
+  "custom": {}, 
+  "params": {
+    "label": "", 
+    "enabled": false, 
+    "ZoomLeft": false, 
+    "ZoomRight": false, 
+    "addValue": 0
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 65, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "justify": "center", 
+      "style": {
+        "overflow": "hidden", 
+        "gap": 5
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.icon", 
+        "props": {
+          "path": "material/fast_rewind"
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "enabled": true, 
+            "delay": 0, 
+            "location": "top"
+          }, 
+          "domId": "icoLeft", 
+          "name": "icoLeft"
+        }, 
+        "position": {
+          "basis": "30px"
+        }, 
+        "events": {
+          "dom": {
+            "onMouseUp": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.view.params.ZoomLeft = False\n\tself.view.params.addValue = 0"
+              }
+            }, 
+            "onMouseDown": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.view.params.ZoomLeft = True\n\tself.view.params.addValue = 1"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\ttext = 'Decrement ' + value.label\n\treturn text", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "config": {
+                "struct": {
+                  "label": "{view.params.label}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.icon", 
+        "props": {
+          "path": "material/fast_forward"
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "enabled": true, 
+            "delay": 0, 
+            "location": "top"
+          }, 
+          "domId": "icoRight", 
+          "name": "icoRight"
+        }, 
+        "position": {
+          "basis": "30px"
+        }, 
+        "events": {
+          "dom": {
+            "onMouseUp": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.view.params.ZoomRight = False\n\tself.view.params.addValue = 0"
+              }
+            }, 
+            "onMouseDown": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.view.params.ZoomRight = True\n\tself.view.params.addValue = 1"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\ttext = 'Increment ' + value.label\n\treturn text", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "config": {
+                "struct": {
+                  "label": "{view.params.label}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "propConfig": {
+      "props.style.color": {
+        "binding": {
+          "transforms": [
+            {
+              "code": "\treturn '--kcGray-50' if value else '--kcGray-30'", 
+              "type": "script"
+            }
+          ], 
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "path": "view.params.enabled"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.label": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.ZoomLeft": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.ZoomRight": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.addValue": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tif currentValue.value == 0:\n\t\tif self.params.ZoomLeft or self.params.ZoomRight:\n\t\t\tself.params.addValue = 1"
+      }, 
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

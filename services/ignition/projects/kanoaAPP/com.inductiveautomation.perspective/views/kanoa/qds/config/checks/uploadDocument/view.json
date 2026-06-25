@@ -1,0 +1,349 @@
+{
+  "custom": {
+    "imageData": {
+      "filePath": null, 
+      "description": "", 
+      "type": null, 
+      "bytes": null, 
+      "name": "", 
+      "camera": null
+    }
+  }, 
+  "params": {
+    "value": {
+      "fileName": "", 
+      "serialNo": null, 
+      "machine": "", 
+      "ifpId": null, 
+      "camera": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 361, 
+      "height": 409
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 5, 
+        "classes": "form", 
+        "overflow": "hidden", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "gap": 5
+          }, 
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.container.flex", 
+            "props": {
+              "alignItems": "center", 
+              "style": {
+                "gap": 5
+              }
+            }, 
+            "children": [
+              {
+                "type": "ia.container.flex", 
+                "props": {
+                  "style": {
+                    "height": 180
+                  }, 
+                  "direction": "column"
+                }, 
+                "children": [
+                  {
+                    "type": "ia.input.fileupload", 
+                    "props": {
+                      "supportedFileTypes": [
+                        "jpg", 
+                        "bmp"
+                      ], 
+                      "maxUploads": 1, 
+                      "fileSizeLimit": 20
+                    }, 
+                    "meta": {
+                      "domId": "FileUpload", 
+                      "name": "FileUpload"
+                    }, 
+                    "position": {
+                      "grow": 1, 
+                      "shrink": 0
+                    }, 
+                    "events": {
+                      "component": {
+                        "onUploadsCleared": {
+                          "type": "script", 
+                          "scope": "G", 
+                          "config": {
+                            "script": "\n\tself.view.getChild(\"root\").clearData()"
+                          }
+                        }, 
+                        "onFileReceived": {
+                          "type": "script", 
+                          "scope": "G", 
+                          "config": {
+                            "script": "\n\timport base64\n\tself.view.custom.imageData.bytes = base64.b64encode(event.file.getBytes())\n\tself.view.custom.imageData.name = event.file.name\n\tfilePath = 'C:\\\\MES Images Conversion\\\\User Uploaded Images\\%s'% event.file.name\n\tshared.AllHealth.imageProcessing.convertImage.removeFile(filePath)\n\tevent.file.copyTo(filePath) #We'll store this file on the gateway so we can convert and create thumbnails\n\tself.view.custom.imageData.filePath = filePath\n\t\n\treturn"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ], 
+                "meta": {
+                  "domId": "flxCol", 
+                  "name": "flxCol"
+                }, 
+                "position": {
+                  "grow": 1, 
+                  "shrink": 0
+                }
+              }, 
+              {
+                "type": "ia.display.image", 
+                "props": {
+                  "fit": {
+                    "mode": "contain", 
+                    "width": 150, 
+                    "height": 150
+                  }, 
+                  "style": {
+                    "cursor": "pointer", 
+                    "maxHeight": 150, 
+                    "maxWidth": 150
+                  }
+                }, 
+                "meta": {
+                  "domId": "image", 
+                  "name": "image"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "events": {
+                  "dom": {
+                    "onClick": {
+                      "type": "script", 
+                      "scope": "G", 
+                      "config": {
+                        "script": "\n\tdata = self.view.params.data\n\tid = data.name\n\tview = 'All Health/Product Tracking/Embedded/ImagePopup'\n\tparams = {'data': data}\n\ttitle = 'Image: %s' % data.name\n\t\n\tsystem.perspective.openPopup(id, view, params, title, resizable=True, modal=True, overlayDismiss=True)"
+                      }
+                    }
+                  }
+                }, 
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn (value or None) is not None", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.imageData.bytes"
+                      }
+                    }
+                  }, 
+                  "props.source": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\timage = value.image or None\n\t\n\treturn \"data:imagef;base64,%s\" % image if image is not None else ''", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "image": "{view.custom.imageData.bytes}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "flxFileSelector", 
+              "name": "flxFileSelector"
+            }, 
+            "position": {
+              "shrink": 0
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxImageInfo", 
+          "name": "flxImageInfo"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcGreen-60", 
+                  "path": "material/save_alt"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon", 
+                "transform": "rotate(180deg)"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "tooltip": {
+                "enabled": true, 
+                "text": "Upload image"
+              }, 
+              "domId": "btnUploadFile", 
+              "name": "btnUploadFile"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tdesc = self.view.custom.imageData.description\n\tfileName = self.view.params.value.fileName\n\tmachine = self.view.params.value.machine\n\tcamera = self.view.params.value.camera\n\tuser = self.session.props.auth.user.userName\n\tfilePath = self.view.custom.imageData.filePath\n\tshared.AllHealth.database.ignCustom.AddUserImage(filePath, fileName, machine, camera, desc, user)\n\t\n\tself.view.getChild(\"root\").clearData()\n\tsystem.perspective.closePopup('Image Popup')\t#If we are uploading an image from the imagePopup, we need it to update\n\tsystem.perspective.sendMessage('refreshImages', {})\t#Tell CombinedTracking screen to update itself to show the new image\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn (value.image or None) is not None", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "image": "{view.custom.imageData.bytes}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "tooltip": {
+                "enabled": true, 
+                "text": "Close"
+              }, 
+              "domId": "btnClose", 
+              "name": "btnClose"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup('')"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxButtons", 
+          "name": "flxButtons"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\n\tself.view.custom.imageData = {\n\t  \"bytes\": None,\n\t  \"name\": '',\n\t  \"type\": None,\n\t  \"description\": '',\n\t  \"camera\":None,\n\t  \"filePath\":None\n\t}", 
+          "name": "clearData"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "events": {
+    "system": {
+      "onStartup": {
+        "type": "script", 
+        "scope": "G", 
+        "config": {
+          "script": "\t\n\tself.getChild(\"root\").clearData()"
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "custom.imageData": {
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

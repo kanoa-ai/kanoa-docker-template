@@ -1,0 +1,120 @@
+{
+  "custom": {
+    "userInfo": {
+      "bgColor": "--kcGray-10",
+      "initials": "G"
+    }
+  },
+  "params": {
+    "values": {
+      "firstName": null,
+      "lastName": null,
+      "userName": null
+    }
+  },
+  "propConfig": {
+    "custom.userInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tdef nameToColor(userName):\n\t\t\"\"\"\n\t\tReturns a hex color string based on first + last name.\n\t\tSame input always returns the same color.\n\t\t\"\"\"\n\t\tif not userName or userName \u003d\u003d \u0027Guest\u0027: return \"--kcGray-10\"  # fallback gray\n\t\t\n\t\tuserName \u003d userName.strip().lower()\n\t\tuserName \u003d userName.replace(\" \", \"\")\n\t\t\n\t\t# Create a deterministic hash\n\t\th \u003d 0\n\t\tfor c in userName:\n\t\t    h \u003d ord(c) + ((h \u003c\u003c 5) - h)\n\t\t\n\t\t# Extract RGB components\n\t\tr \u003d (h \u003e\u003e 16) \u0026 0xFF\n\t\tg \u003d (h \u003e\u003e 8) \u0026 0xFF\n\t\tb \u003d h \u0026 0xFF\n\t\t\n\t\treturn \"#{:02X}{:02X}{:02X}\".format(r, g, b)\n\t\t\n\tuserName \u003d \"%s %s\"%(value[\u0027firstName\u0027], value[\u0027lastName\u0027]) if value[\u0027firstName\u0027] and value[\u0027lastName\u0027] else value[\u0027userName\u0027]\n\tif not userName: userName \u003d \u0027Guest\u0027\n\tinitials \u003d \"\".join(part[0].upper() for part in userName.split() if part)\n\n\treturn {\u0027initials\u0027: initials, \u0027bgColor\u0027: nameToColor(userName)}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 30
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "lblUser"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.custom.userInfo.bgColor"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.style.borderColor": {
+            "binding": {
+              "config": {
+                "path": "this.props.style.color"
+              },
+              "type": "property"
+            }
+          },
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "path": "this.props.style.backgroundColor"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn system.kanoa.utilities.getContrastingColor(self.props.style.backgroundColor)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.userInfo.initials"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "borderBottomLeftRadius": "15px",
+            "borderBottomRightRadius": "15px",
+            "borderStyle": "solid",
+            "borderTopLeftRadius": "15px",
+            "borderTopRightRadius": "15px",
+            "borderWidth": "1px",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

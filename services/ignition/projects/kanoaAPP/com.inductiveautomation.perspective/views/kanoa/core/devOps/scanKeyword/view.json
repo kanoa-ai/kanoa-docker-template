@@ -1,0 +1,657 @@
+{
+  "custom": {
+    "chooseProject": "",
+    "filters": {
+      "keyword": "",
+      "projectName": ""
+    },
+    "hitSummary": [],
+    "hits": [],
+    "keyword": "",
+    "output": "",
+    "summary": ""
+  },
+  "params": {},
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn {\"projectName\": \"\", \"keyword\": \"\"}",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.hitSummary": {
+      "persistent": true
+    },
+    "custom.hits": {
+      "persistent": true
+    },
+    "custom.output": {
+      "persistent": true
+    },
+    "custom.summary": {
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 967,
+      "width": 1339
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblTitle"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "marginBottom": 4
+              },
+              "text": "Scan Keyword",
+              "textStyle": {
+                "classes": "kanoa/font/headlineLarge",
+                "color": "--kcPrimary",
+                "fontSize": 28,
+                "textAlign": "left"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "subTitle"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "marginTop": 0
+              },
+              "text": "Search for keyword usage across your  projects.",
+              "textStyle": {
+                "classes": "kanoa/font/labelMedium",
+                "color": "--kcSecondary",
+                "fontSize": 14
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "headerContainer"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "classes": "kanoa/border kanoa/card",
+            "gap": 4
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "criteriaTitle"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "marginBottom": 4
+                  },
+                  "text": "Search criteria",
+                  "textStyle": {
+                    "classes": "kanoa/font/labelLarge",
+                    "fontSize": 18
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "name": "lblKeyWord"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "marginBottom": 2
+                          },
+                          "text": "Keyword",
+                          "textStyle": {
+                            "classes": "kanoa/font/labelMedium",
+                            "fontSize": 14,
+                            "textAlign": "left"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "name": "txtKeyword"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.filters.keyword"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "deferUpdates": false,
+                          "placeholder": "Enter keyword(s) to scan…",
+                          "style": {
+                            "minWidth": 280,
+                            "padding": 8
+                          }
+                        },
+                        "type": "ia.input.text-field"
+                      }
+                    ],
+                    "meta": {
+                      "name": "cntKeyword"
+                    },
+                    "position": {
+                      "basis": "200px",
+                      "grow": 1
+                    },
+                    "props": {
+                      "direction": "column",
+                      "style": {
+                        "gap": 2
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "name": "lblProject"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "marginBottom": 2
+                          },
+                          "text": "Project",
+                          "textStyle": {
+                            "classes": "kanoa/font/labelMedium",
+                            "fontSize": 14,
+                            "textAlign": "left"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "name": "ddProject"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.options": {
+                            "binding": {
+                              "config": {
+                                "path": ""
+                              },
+                              "transforms": [
+                                {
+                                  "code": "\timport system\n\t\n\tprojects \u003d list(system.project.getProjectNames() or [])\n\tprojects.sort()\n\t\n\toptions \u003d [{\"label\": \"All Projects\", \"value\": \"ALL\"}]\n\t\n\tfor p in projects:\n\t    options.append({\"label\": p, \"value\": p})\n\t\n\treturn options",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          },
+                          "props.value": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.filters.projectName"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "placeholder": {
+                            "text": "Select project you want to scan..."
+                          },
+                          "style": {
+                            "classes": "kanoa/border",
+                            "height": "30px",
+                            "minWidth": 280,
+                            "padding": 8
+                          }
+                        },
+                        "type": "ia.input.dropdown"
+                      }
+                    ],
+                    "meta": {
+                      "name": "cntProject"
+                    },
+                    "position": {
+                      "basis": "200px",
+                      "grow": 1
+                    },
+                    "props": {
+                      "direction": "column",
+                      "style": {
+                        "gap": 2
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "name": "keywordProjectRow"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": 12
+                  },
+                  "wrap": "wrap"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\t\t\n\t\n\tself.view.custom.keyword \u003d \"\"\n\tself.view.custom.output \u003d \"\"\n\tself.view.custom.summary \u003d \"\"\n\tself.view.custom.hits \u003d []\n\tself.view.custom.chooseProject \u003d \"\""
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "name": "btnClear"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "padding": "8px 14px"
+                      },
+                      "text": "Clear"
+                    },
+                    "type": "ia.input.button"
+                  },
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\n\tdef prettyPath(resPath):\n\t    resPath \u003d resPath or \"\"\n\t    if resPath.startswith(\u0027com.inductiveautomation.perspective/views/\u0027):\n\t        p \u003d resPath.replace(\u0027com.inductiveautomation.perspective/views/\u0027, \u0027\u0027).replace(\u0027/view.json\u0027, \u0027\u0027)\n\t        return \"views/\" + p\n\t    elif resPath.startswith(\u0027ignition/script-python/\u0027): return \"scripts/\" + resPath.replace(\u0027ignition/script-python/\u0027, \u0027\u0027)\n\t    elif resPath.startswith(\u0027ignition/named-query/\u0027): return \"namedQueries/\" + resPath.replace(\u0027ignition/named-query/\u0027, \u0027\u0027)\n\t    elif resPath.startswith(\u0027ignition/tags/\u0027): return \"tags/\" + resPath.replace(\u0027ignition/tags/\u0027, \u0027\u0027)\n\t    elif resPath.startswith(\u0027com.inductiveautomation.perspective/session-scripts/\u0027): return \"sessionScripts/\" + resPath.replace(\u0027com.inductiveautomation.perspective/session-scripts/\u0027, \u0027\u0027)\n\t    elif resPath.startswith(\u0027com.inductiveautomation.perspective/session-props/\u0027): return \"sessionProps/\" + resPath.replace(\u0027com.inductiveautomation.perspective/session-props/\u0027, \u0027\u0027)\n\t    return resPath\n\t\n\tdef extractPropertyKey(snippet, keyword):\n\t    if not snippet: return keyword or \"\"\n\t    text \u003d snippet\n\t    idx \u003d text.find(keyword)\n\t    if idx \u003d\u003d -1: return text.strip()\n\t\n\t    start \u003d idx\n\t    while start \u003e 0 and (text[start - 1].isalnum() or text[start - 1] in \"._\"): start -\u003d 1\n\t\n\t    end \u003d idx + len(keyword)\n\t    while end \u003c len(text) and (text[end].isalnum() or text[end] in \"._\"): end +\u003d 1\n\t\n\t    return text[start:end].strip()\n\t    \n\tfrom collections import defaultdict\n\t\n\tlogger \u003d system.util.getLogger(\"scanKeywordView\")\n\t\n\t# Toast so you know the button was clicked\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, payload\u003d{\u0027message\u0027: \u0027Button Scan clicked\u0027})\n\t\n\tfilters \u003d self.view.custom.filters\n\trawText \u003d (filters.keyword).strip() \t# Keyword(s) from the view\t\n\tkeywords \u003d [k.strip() for k in rawText.split(\",\") if k.strip()] \t# Turn \"foo, bar\" into [\"foo\", \"bar\"]\n\tpayload \u003d {\"keywords\": keywords}\n\t\n\tprojectFilter \u003d filters[\u0027projectName\u0027] or \u0027ALL\u0027\n\tif projectFilter !\u003d \"ALL\": payload[\"projectNames\"] \u003d [projectFilter] \t# If user picked a specific project, send it to the gateway\t\n\t\t\n\tself.view.custom.output \u003d \"Scanning...\"\n\t\t\n\tlogger.info(\"Requesting scanKeyword for %r in %s\" %(keywords, projectFilter))\n\t\t\n\thits \u003d system.kanoa.devOps.scanKeyword(payload)\n\tself.view.custom.hits \u003d hits[\u0027hits\u0027] or []\n\t\n\tif not hits:\n\t    lines \u003d []\n\t    lines.append(\"\")\n\t    lines.append(\"\u003d\" * 70)\n\t    lines.append(\"NO RESULTS\")\n\t    lines.append(\"\u003d\" * 70)\n\t    lines.append(\"No uses of %s were found in %s.\" %(rawText, \"all projects\" if projectFilter \u003d\u003d \"ALL\" else projectFilter))\n\t    lines.append(\"\u003d\" * 70)\n\t    self.view.custom.summary \u003d \"\\n\".join(lines)\n\t    self.view.custom.output \u003d \"Scan Completed (no hits)\"\n\t    return\n\t\n\t# Build project/path structures\n\tbyProjectCount \u003d defaultdict(int)\n\tbyProjectPaths \u003d defaultdict(set)\n\tbyProjectPathHits \u003d defaultdict(lambda: defaultdict(list))  # project -\u003e path -\u003e [hits]\n\t\n\tfor hit in self.view.custom.hits:\n\t\tsystem.perspective.print(\"hit is %s\"%hit)\n\t\tproj \u003d hit.get(\"project\", \"Unknown\")\n\t\tresPath \u003d hit.get(\"resourcePath\", \"\")\n\t\t\n\t\tbyProjectCount[proj] +\u003d 1\n\t\tbyProjectPaths[proj].add(resPath)\n\t\tbyProjectPathHits[proj][resPath].append(hit)\n\t\n\tprojectsWithHits \u003d sorted(byProjectCount.keys())\n\t\n\t# Build report text (same style as console)\n\tlines \u003d []\n\tlines.append(\"\")\n\tlines.append(\"\u003d\" * 70)\n\tscopeLabel \u003d \"ALL PROJECTS\" if projectFilter \u003d\u003d \"ALL\" else (\"PROJECT: %s\" % projectFilter)\n\tlines.append(\"%s SCANNER - %s\" % (\", \".join(keywords).upper(), scopeLabel))\n\tlines.append(\"\u003d\" * 70)\n\tlines.append(\"\")\n\tlines.append(\"Projects with  hits:\")\n\tfor proj in projectsWithHits:\n\t    lines.append(\"  - %s\" % proj)\n\t\n\ttotalProjectsWithHits \u003d len(byProjectCount)\n\ttotalHits \u003d len(hits)\n\t\n\tlines.append(\"\")\n\tlines.append(\"\u003d\" * 70)\n\tlines.append(\"SUMMARY\")\n\tlines.append(\"\u003d\" * 70)\n\tlines.append(\"Total projects with hits: %d\" % totalProjectsWithHits)\n\tlines.append(\"Total occurrences:        %d\" % totalHits)\n\tlines.append(\"\u003d\" * 70)\n\tlines.append(\"\")\n\tlines.append(\"HITS BY PROJECT\")\n\tlines.append(\"-\" * 70)\n\t\n\tfor proj in projectsWithHits:\n\t    count \u003d byProjectCount[proj]\n\t    lines.append(\"Project: %s (hits: %d)\" % (proj, count))\n\t\n\t    paths \u003d sorted(byProjectPaths[proj])\n\t    for p in paths:\n\t        pathHits \u003d byProjectPathHits[proj][p]\n\t        nicePath \u003d prettyPath(p)\n\t\n\t        lines.append(\"  - %s (%d)\" % (nicePath, len(pathHits)))\n\t\n\t        for h in pathHits:\n\t            lineNumber \u003d h.get(\"line\", \"?\")\n\t            keyword \u003d h.get(\"keyword\", \"\")\n\t            snippet \u003d h.get(\"snippet\", \"\")\n\t            resourceType \u003d h.get(\"resourceType\", \"\")\n\t\n\t            propKey \u003d extractPropertyKey(snippet, keyword)\n\t\n\t            lines.append(\"      (property key)\\t%s\" % propKey)\n\t            lines.append(\"      line %s [%s%s]: %s\" % (\n\t                lineNumber,\n\t                keyword,\n\t                (\", \" + resourceType) if resourceType else \"\",\n\t                snippet\n\t            ))\n\t\n\t    lines.append(\"-\" * 70)\n\t\n\tself.view.custom.summary \u003d \"\\n\".join(lines)\n\tself.view.custom.output \u003d \"Scan Completed\"\n\t\n\tlogger.info(\"scanKeyword returned %d hits across %d projects (scope\u003d%s)\" %(totalHits, len(byProjectCount), projectFilter))"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "name": "btnScan"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.enabled": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.filters"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn (value[\u0027keyword\u0027] or None) is not None",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "padding": "8px 14px"
+                      },
+                      "text": "Scan"
+                    },
+                    "type": "ia.input.button"
+                  }
+                ],
+                "meta": {
+                  "name": "actionsRow"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "justifyContent": "flex-end",
+                  "style": {
+                    "gap": 8,
+                    "marginTop": 8
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "meta": {
+                  "name": "hitsTable"
+                },
+                "position": {
+                  "basis": "0",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.hits"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\tfrom collections import defaultdict, OrderedDict\n\t\n\thits \u003d value or []\n\t\n\t#group by project\n\tgrouped \u003d defaultdict(lambda: {\"hits\": 0, \"types\": set()})\n\t\n\tfor h in hits:\n\t    try:\n\t        proj   \u003d h.get(\"project\", \"Unknown\")\n\t        rtype  \u003d h.get(\"resourceType\", \"\")\n\t        snippet \u003d h.get(\"snippet\", \"\") or \"\"\n\t    except AttributeError:\n\t        continue\n\t\n\t    displayType \u003d rtype\n\t    lower_snippet \u003d snippet.lower()\n\t    if \"tagpath\" in lower_snippet:\n\t        displayType \u003d \"Tag\"\n\t\n\t    g \u003d grouped[proj]\n\t    g[\"hits\"] +\u003d 1\n\t    if displayType:\n\t        g[\"types\"].add(displayType)\n\t\n\tsummary \u003d []\n\tfor proj, info in grouped.items():\n\t    types_list \u003d sorted(info[\"types\"])\n\t    if types_list:\n\t        types_str \u003d \", \".join(types_list)\n\t    else:\n\t        types_str \u003d \"\"\n\t\n\t    row \u003d OrderedDict()\n\t    row[\"project\"] \u003d proj\n\t    row[\"hits\"] \u003d info[\"hits\"]\n\t    row[\"resourceTypes\"] \u003d types_str\n\t\n\t    summary.append(row)\n\t\n\t# most hits first, then project name\n\tsummary.sort(key\u003dlambda r: (-r[\"hits\"], r[\"project\"]))\n\t\n\treturn summary",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "marginTop": 10
+                  }
+                },
+                "type": "ia.display.table"
+              },
+              {
+                "meta": {
+                  "name": "hitsSummaryLabel"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "marginTop": 4
+                  },
+                  "text": "Hits summary",
+                  "textStyle": {
+                    "classes": "kanoa/font/labelMedium",
+                    "color": "#94A3B8",
+                    "fontSize": 12
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "criteriaCard"
+            },
+            "position": {
+              "basis": "360px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "borderRadius": 12,
+                "boxShadow": "0 20px 50px rgba(15,23,42,0.6)",
+                "classes": "kanoa/container",
+                "gap": 14,
+                "padding": 18
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "resultsHeader"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "marginBottom": 4
+                  },
+                  "text": "Results",
+                  "textStyle": {
+                    "classes": "kanoa/font/labelLarge",
+                    "fontSize": 18
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "summary"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.output"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "marginTop": 4
+                  },
+                  "textStyle": {
+                    "color": "#808080",
+                    "fontSize": 13,
+                    "fontStyle": "italic",
+                    "textAlign": "left"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "Label_0"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/labelLarge",
+                    "marginTop": 8
+                  },
+                  "text": "Hits Results",
+                  "textStyle": {
+                    "classes": "kanoa/font/labelLarge",
+                    "fontSize": 16,
+                    "fontWeight": "bold",
+                    "textAlign": "left"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "resultDisplay"
+                },
+                "position": {
+                  "basis": "0",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.summary"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/border",
+                    "minHeight": 380,
+                    "padding": 10
+                  }
+                },
+                "type": "ia.input.text-area"
+              },
+              {
+                "children": [
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\timport system\n\timport csv\n\tfrom java.io import StringWriter\n\timport traceback\n\t\n\tlogger \u003d system.util.getLogger(\"scanKeywordView\")\n\t\n\thits \u003d self.view.custom.hits or []\n\t\n\tif not hits:\n\t    system.perspective.sendMessage(\n\t        \u0027showWarningToast\u0027,\n\t        {\u0027message\u0027: \u0027No hits to export.\u0027}\n\t    )\n\t    return\n\t\n\t\n\trawKeywords \u003d (self.view.custom.keyword or \"\").strip()\n\tif rawKeywords:\n\t    firstKeyword \u003d rawKeywords.split(\",\")[0].strip().replace(\" \", \"_\")\n\telse:\n\t    firstKeyword \u003d \"keyword_scan\"\n\t\n\tfilename \u003d \"%s_detailed_report.csv\" % firstKeyword\n\t\n\tdef prettyPath(resPath):\n\t    \"\"\"Convert internal resourcePath to the nice style used in your report.\"\"\"\n\t    resPath \u003d resPath or \"\"\n\t    if resPath.startswith(\u0027com.inductiveautomation.perspective/views/\u0027):\n\t        p \u003d resPath.replace(\u0027com.inductiveautomation.perspective/views/\u0027, \u0027\u0027).replace(\u0027/view.json\u0027, \u0027\u0027)\n\t        return p  # e.g. kanoa/mes/asset/operation/main\n\t    elif resPath.startswith(\u0027ignition/script-python/\u0027):\n\t        return resPath.replace(\u0027ignition/script-python/\u0027, \u0027scripts/\u0027)\n\t    elif resPath.startswith(\u0027ignition/named-query/\u0027):\n\t        return resPath.replace(\u0027ignition/named-query/\u0027, \u0027namedQueries/\u0027)\n\t    elif resPath.startswith(\u0027ignition/tags/\u0027):\n\t        return resPath.replace(\u0027ignition/tags/\u0027, \u0027tags/\u0027)\n\t    elif resPath.startswith(\u0027com.inductiveautomation.perspective/session-scripts/\u0027):\n\t        return resPath.replace(\u0027com.inductiveautomation.perspective/session-scripts/\u0027, \u0027sessionScripts/\u0027)\n\t    elif resPath.startswith(\u0027com.inductiveautomation.perspective/session-props/\u0027):\n\t        return resPath.replace(\u0027com.inductiveautomation.perspective/session-props/\u0027, \u0027sessionProps/\u0027)\n\t    return resPath\n\t\n\ttry:\n\t    # Columns to match your oeeType_detailed_report.csv\n\t    headers \u003d [\"Project\", \"ResourceType\", \"ResourcePath\", \"Line\", \"Snippet\"]\n\t\n\t    sw \u003d StringWriter()\n\t    writer \u003d csv.writer(sw)\n\t\n\t    # Header row\n\t    writer.writerow(headers)\n\t\n\t    # Data rows\n\t    for h in hits:\n\t        project      \u003d h.get(\"project\", \"\")\n\t        resourceType \u003d h.get(\"resourceType\", \"\")\n\t        rawPath      \u003d h.get(\"resourcePath\", \"\")\n\t        line         \u003d h.get(\"line\", \"\")\n\t        snippet      \u003d h.get(\"snippet\", \"\")\n\t\n\t        displayPath \u003d prettyPath(rawPath)\n\t\n\t        row \u003d [\n\t            unicode(project),\n\t            unicode(resourceType),\n\t            unicode(displayPath),\n\t            unicode(line),\n\t            unicode(snippet),\n\t        ]\n\t        writer.writerow(row)\n\t\n\t    csvText \u003d sw.toString()\n\t\n\t    # Download as CSV (Excel opens this perfectly)\n\t    system.perspective.download(\n\t        filename\u003dfilename,\n\t        data\u003dcsvText,\n\t        mimeType\u003d\"text/csv\"\n\t    )\n\t\n\t    logger.info(\"Exported %d hits to %s\" % (len(hits), filename))\n\t\n\texcept:\n\t    msg \u003d \"Failed to export CSV:\\n%s\" % traceback.format_exc()\n\t    logger.error(msg)\n\t    system.perspective.sendMessage(\n\t        \u0027showWarningToast\u0027,\n\t        {\u0027message\u0027: \u0027Failed to export. See logs.\u0027}\n\t    )"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "name": "btnDownload"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "marginTop": 8,
+                        "padding": "8px 14px"
+                      },
+                      "text": "Export"
+                    },
+                    "type": "ia.input.button"
+                  }
+                ],
+                "meta": {
+                  "name": "exportRow"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "justifyContent": "flex-end",
+                  "style": {
+                    "marginTop": 4
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "resultsCard"
+            },
+            "position": {
+              "basis": "0",
+              "grow": 2
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "borderRadius": 12,
+                "boxShadow": "0 20px 50px rgba(15,23,42,0.6)",
+                "classes": "kanoa/container",
+                "gap": 14,
+                "padding": 18
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "mainRow"
+        },
+        "position": {
+          "basis": "0",
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": 24,
+            "marginTop": 8
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container",
+        "gap": 28,
+        "padding": 28
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

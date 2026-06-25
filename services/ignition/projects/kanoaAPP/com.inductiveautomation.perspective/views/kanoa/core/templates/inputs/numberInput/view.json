@@ -1,0 +1,217 @@
+{
+  "custom": {},
+  "params": {
+    "bgColor": null,
+    "enabled": true,
+    "label": "label",
+    "tooltip": "",
+    "units": "units",
+    "value": "None"
+  },
+  "propConfig": {
+    "params.bgColor": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.enabled": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.label": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.tooltip": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.units": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "inout",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 32,
+      "width": 130
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblName",
+          "name": "lblName",
+          "tooltip": {
+            "location": "bottom-right"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.tooltip"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn (value or None) is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.tooltip"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{this.props.text}!\u003d\u0027\u0027"
+              },
+              "type": "expr"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.label"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "textAlign": "right"
+          },
+          "textStyle": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "system": {
+            "onStartup": {
+              "config": {
+                "script": "\tself.props.text \u003d str(self.view.params.value)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "txtValue",
+          "name": "txtValue"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": false,
+              "script": "\n\timport re\n\n\tvalue \u003d str(currentValue.value) or \u0027\u0027\n\tif not re.compile(r\"^\\d*[.,]?\\d*$\").match(value): self.props.text \u003d previousValue.value\n\n\treturn"
+            },
+            "persistent": true
+          }
+        },
+        "props": {
+          "deferUpdates": false,
+          "rejectUpdatesWhileFocused": false,
+          "style": {
+            "classes": "kanoa/border",
+            "maxWidth": "60px",
+            "textAlign": "center"
+          },
+          "text": "None"
+        },
+        "type": "ia.input.text-field"
+      },
+      {
+        "meta": {
+          "domId": "lblUnits",
+          "name": "lblUnits"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{this.props.text} !\u003d \u0027\u0027"
+              },
+              "type": "expr"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.units"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default"
+          },
+          "textStyle": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "justify": "flex-end",
+      "style": {
+        "gap": 5,
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

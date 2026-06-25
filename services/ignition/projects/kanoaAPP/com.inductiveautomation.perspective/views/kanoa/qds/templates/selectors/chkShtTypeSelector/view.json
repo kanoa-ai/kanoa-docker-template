@@ -1,0 +1,150 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": {
+      "enabled": true, 
+      "chkShtTypeId": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 179, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "overflow": "hidden", 
+        "gap": 1
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "style": {
+            "minWidth": "120px"
+          }, 
+          "placeholder": {
+            "text": "Select Type..."
+          }
+        }, 
+        "meta": {
+          "domId": "ddType", 
+          "name": "ddType"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\treturn [{'value':row['chkShtTypeId'], 'label': row['chkShtTypeName']} for row in system.kanoa.quality.sheet.getSheetTypes({'enabled': True})]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.values.chkShtTypeId"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.icon", 
+        "props": {
+          "color": "--kcBlue-60", 
+          "path": "material/help_center", 
+          "style": {
+            "maxWidth": "24px"
+          }
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom-right", 
+            "style": {
+              "whiteSpace": "pre"
+            }
+          }, 
+          "domId": "Icon", 
+          "name": "Icon"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "display": false, 
+          "basis": "24px"
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tsystem.perspective.navigate(url = 'https://docs.kanoa.ai/configuration/quality/checksheets#check-sheet-types', newTab=True)\n\t"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\treturn '\\n'.join([row['chkShtTypeName'] + ': ' + row['description'] for row in value])", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.options"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.values.chkShtTypeId": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

@@ -1,0 +1,472 @@
+{
+  "custom": {
+    "date": null, 
+    "userAction": {
+      "canUpdate": false, 
+      "canRead": true, 
+      "canCreate": true, 
+      "canDelete": false
+    }, 
+    "dateChange": false, 
+    "textEditor": false, 
+    "security": {
+      "userId": 5, 
+      "userCRUD": {
+        "configureQuality": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "configureAssets": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "scheduleShifts": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "editOperations": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "scheduleOperations": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "configureItems": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "enterQualityCheck": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "configureSecurity": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "approveQualityCheck": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }, 
+        "isGatewayAdmin": true, 
+        "operateAssets": {
+          "enabled": true, 
+          "assets": [
+            "Kanoa Testing\\AAA", 
+            "Kanoa Testing\\BBB", 
+            "Kanoa Testing\\CCC"
+          ]
+        }
+      }, 
+      "config": {
+        "userSource": "default", 
+        "userSources": "[\"default\"]", 
+        "allowGuest": "1"
+      }
+    }
+  }, 
+  "params": {
+    "value": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 299, 
+      "height": 41
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "style": {
+        "backgroundColor": "--kcSurface", 
+        "gap": "5px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {}
+          }, 
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "delay": 0, 
+            "location": "bottom-left", 
+            "text": "Switch between datetime picker and text editor"
+          }, 
+          "domId": "btnSelect", 
+          "name": "btnSelect"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.view.custom.textEditor = not self.view.custom.textEditor\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['action']['canUpdate']", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "overlayOptOut": true, 
+              "config": {
+                "struct": {
+                  "action": "{view.custom.userAction}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }, 
+          "props.image.icon.path": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'material/calendar_today' if value else 'material/text_format'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.textEditor"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.date-time-input", 
+        "props": {
+          "dismissOnSelect": false, 
+          "format": "YYYY-MM-DD HH:mm:ss", 
+          "formattedValue": null, 
+          "style": {
+            "height": "30px"
+          }
+        }, 
+        "meta": {
+          "domId": "DateTimeInput", 
+          "name": "DateTimeInput"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn not value", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.textEditor"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.date"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.text-field", 
+        "props": {
+          "style": {
+            "textAlign": "center", 
+            "height": "30px"
+          }
+        }, 
+        "meta": {
+          "domId": "txtDate", 
+          "name": "txtDate"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.textEditor"
+              }
+            }
+          }, 
+          "props.text": {
+            "onChange": {
+              "enabled": null, 
+              "script": "\t\n\tif origin == 'Browser': \n\t\tself.view.custom.date = system.date.addMinutes(system.date.parse(self.props.text), system.kanoa.schedule.getTimezoneOffsetMinsBetweenClientAndGateway(self.session.props.device.timezone.utcOffset))\n\t\n\treturn"
+            }, 
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value or system.date.now()", 
+                  "type": "script"
+                }, 
+                {
+                  "type": "format", 
+                  "formatValue": "YYYY-MM-dd HH:mm:ss", 
+                  "formatType": "datetime"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.date"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['action']['canUpdate']", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "overlayOptOut": true, 
+              "config": {
+                "struct": {
+                  "action": "{view.custom.security.action}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcGreen-60", 
+              "path": "material/save"
+            }
+          }, 
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "delay": 0, 
+            "location": "center-right", 
+            "text": "Update"
+          }, 
+          "domId": "btnUpdate", 
+          "name": "btnUpdate"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.view.getChild(\"root\").updateTimeStamp()\n\tself.view.custom.dateChange = False\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "meta.visible": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['action']['canUpdate']", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "overlayOptOut": true, 
+              "config": {
+                "struct": {
+                  "action": "{view.custom.userAction}"
+                }, 
+                "waitOnAll": false
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\n\tsystem.perspective.sendMessage('eventTimeStampUpdated', {'tStamp': self.view.custom.date})\n\n\treturn", 
+          "name": "updateTimeStamp"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tsecConfig = system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), 'configName', 'configValue')\n\tuserId = system.kanoa.security.getIDPUserId(value['user'])\t\n\tuserCRUD = system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "user": "{session.props.auth.user}"
+          }, 
+          "waitOnAll": false
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.userAction": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tsecurity = value['security']\n\tcanCreate = False\n\tcanEdit = False\n\tif security['userCRUD'] is not None and security['userId'] is not None:\n\t\tif security['userCRUD']['isGatewayAdmin'] or security['userCRUD']['editOperations']['enabled']: \n\t\t\tcanCreate = True\n\t\t\tcanEdit = True if value['dateChange'] else False\n\t\n\treturn {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "dateChange": "{view.custom.dateChange}", 
+            "security": "{view.custom.security}"
+          }, 
+          "waitOnAll": true
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.value": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\ttry:\t#date gets converted from date object to millis when this view is embedded in a table\n\t\tself.custom.date = system.date.fromMillis(self.params.value)\n\texcept:\n\t\tself.custom.date = self.params.value\n\t\n\treturn"
+      }, 
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.dateChange": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\ttry:\n\t\tdateIn = system.date.fromMillis(value['dateIn'])\n\texcept:\n\t\tdateIn = value['dateIn']\n\t\n\treturn True if dateIn != value['dateOut'] else False", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "dateIn": "{view.params.value}", 
+            "dateOut": "{view.custom.date}"
+          }, 
+          "waitOnAll": true
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.date": {
+      "persistent": true
+    }, 
+    "custom.textEditor": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn True if value else False", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

@@ -1,0 +1,383 @@
+{
+  "custom": {
+    "filter": "",
+    "itemData": {
+      "$": [
+        "ds",
+        192,
+        1774823952141
+      ],
+      "$columns": [
+        {
+          "data": [],
+          "name": "itemAssetRateId",
+          "type": "Long"
+        },
+        {
+          "data": [],
+          "name": "assetRateEnabled",
+          "type": "Boolean"
+        },
+        {
+          "data": [],
+          "name": "assetId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "assetPath",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemSourceId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "itemSourceName",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "itemClassPath",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "path",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemName",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemDescription",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemColor",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemClassId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "itemClassName",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "itemClassColor",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "groupCode",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "groupName",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "itemEnabled",
+          "type": "Boolean"
+        },
+        {
+          "data": [],
+          "name": "standardRate",
+          "type": "Double"
+        },
+        {
+          "data": [],
+          "name": "scheduleRate",
+          "type": "Double"
+        },
+        {
+          "data": [],
+          "name": "itemPeriodId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "itemPeriodName",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "infeedUnitId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "infeedUnits",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "outfeedUnitId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "outfeedUnits",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "wasteUnitId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "wasteUnits",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "packageCount",
+          "type": "Double"
+        }
+      ]
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": null,
+      "itemClassName": null
+    }
+  },
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.itemData": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "transforms": [
+          {
+            "code": "\n\titemSourceId \u003d system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: \u0027output\u0027}))\n\treturn system.kanoa.item.getAssetItems({\u0027assetId\u0027: value.assetId or -1, \u0027enabled\u0027: True, \u0027itemSourceId\u0027: itemSourceId})",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 314,
+      "width": 773
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTxtFilter",
+              "name": "lblTxtFilter"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Filter..."
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "TextField",
+              "name": "TextField"
+            },
+            "position": {
+              "basis": "150px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntFilter",
+          "name": "flxCntFilter"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "FlexRepeater",
+          "name": "flxRptProducts"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "filter": "{view.custom.filter}",
+                  "items": "{view.custom.itemData}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\titems \u003d value[\u0027items\u0027]\n\tfilter \u003d value.filter.lower() if value.filter is not None else None\n\t\n\tif filter:\n\t\tdeleteRows \u003d [i for i, item in enumerate(items) if filter not in (item[\u0027itemName\u0027].lower()) and filter not in ((item[\u0027itemDescription\u0027]) or \u0027\u0027).lower()]\t\t\t\n\t\titems \u003d system.dataset.toPyDataSet(system.dataset.deleteRows(items, deleteRows))\n\t\n\tinstances \u003d []\n\tfor item in items:\n\t\tif item[\u0027standardRate\u0027] is None or item[\u0027itemPeriodName\u0027] is None:\n\t\t\tinfo \u003d \"Item rate not configured\"\n\t\telse:\n\t\t\tinfo \u003d \"%s %s per %s\"%(item[\u0027standardRate\u0027] or \u0027\u0027, item[\u0027infeedUnits\u0027] or \u0027\u0027, item[\u0027itemPeriodName\u0027] or \u0027\u0027)\n\t\tinstances.append({\u0027value\u0027: {\"itemId\":item[\u0027itemId\u0027], \"itemName\": item[\u0027itemName\u0027],  \"itemColor\": item[\u0027itemColor\u0027] or item[\u0027itemclassColor\u0027], \"itemDesc\": item[\u0027itemDescription\u0027], \"info\": info}})\n\n\treturn instances",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "elementStyle": {
+            "borderRadius": 5,
+            "width": 250
+          },
+          "path": "kanoa/mes/asset/runControl/productButton",
+          "style": {
+            "gap": 5
+          },
+          "useDefaultViewWidth": false,
+          "wrap": "wrap"
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "custom": {
+      "data": {
+        "$": [
+          "ds",
+          192,
+          1682706804125
+        ],
+        "$columns": [
+          {
+            "data": [],
+            "name": "ItemId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "ItemName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "ItemDesc",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "ItemClassId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "ItemClassName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "ItemClassDesc",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "ItemClassCode",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "Color_Light",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "Color_Dark",
+            "type": "String"
+          }
+        ]
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

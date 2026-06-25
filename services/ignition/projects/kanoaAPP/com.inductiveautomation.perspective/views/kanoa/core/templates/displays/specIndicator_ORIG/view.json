@@ -1,0 +1,1749 @@
+{
+  "custom": {
+    "values": {
+      "Target1": 0.5, 
+      "highAlarmL": 0.55, 
+      "Target": 0.5
+    }, 
+    "activeAlarms": {}, 
+    "labels": {}, 
+    "initialParams": {
+      "LSL": 1, 
+      "Units": "inches", 
+      "USL": 5, 
+      "LEL": 0, 
+      "Target": 3, 
+      "LCL": 2, 
+      "ProcessValue": 5.5, 
+      "UEL": 6, 
+      "UCL": 4
+    }, 
+    "activeWarnings": {}, 
+    "sliders": {}
+  }, 
+  "params": {
+    "value": {
+      "LSL": 0, 
+      "Units": null, 
+      "USL": 100, 
+      "LEL": null, 
+      "Target": null, 
+      "LCL": null, 
+      "ProcessValue": 2, 
+      "UEL": null, 
+      "UCL": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 350, 
+      "height": 55
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px 20px", 
+        "backgroundColor": "--kcSurface", 
+        "classes": "kanoa/font/default", 
+        "overflow": "hidden", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "paddingRight": "5px", 
+                "borderTopLeftRadius": 50, 
+                "overflow": "hidden", 
+                "borderBottomLeftRadius": 50, 
+                "borderBottomRightRadius": 50, 
+                "borderTopRightRadius": 50, 
+                "paddingLeft": "5px"
+              }, 
+              "textStyle": {
+                "fontSize": "1em", 
+                "textAlignLast": "center", 
+                "fontWeight": "bold"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top", 
+                "text": "Actual"
+              }, 
+              "domId": "lblValue", 
+              "name": "lblValue"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\tif value.alarms.high or value.alarms.low: return '--kcBadContainer'\n\tif value.warnings.high or value.warnings.low: return '--kcOKContainer'\n\tif value.target == value.actual: return '--kcGoodContainer'\n\t\n\treturn '--kcSurface'", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "config": {
+                    "struct": {
+                      "actual": "{view.custom.actual}", 
+                      "alarms": "{view.custom.activeAlarms}", 
+                      "warnings": "{view.custom.activeWarnings}", 
+                      "target": "{view.custom.setPoint}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.textStyle.color": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\tif value.alarms.high or value.alarms.low: return '--kcOnBadContainer'\n\tif value.warnings.high or value.warnings.low: return '--kcOnOKContainer'\n\tif value.target == value.actual: return '--kcOnGoodContainer'\n\t\n\treturn '--kcOnSurface'", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "config": {
+                    "struct": {
+                      "actual": "{view.custom.actual}", 
+                      "alarms": "{view.custom.activeAlarms}", 
+                      "warnings": "{view.custom.activeWarnings}", 
+                      "target": "{view.custom.setPoint}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "meta.visible": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None and value != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.values.actual"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\tval = 'no value' if value['actual'] is None else value['actual']\n\treturn '%s %s '%(val, value['unit'] or '')", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "actual": "{view.custom.values.actual}", 
+                      "unit": "{view.custom.values.units}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "FlexContainer", 
+          "name": "FlexContainer"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "custom": {
+          "showLabels": true, 
+          "bottomMargin": 16
+        }, 
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "overflow": "visible", 
+            "position": "relative"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.container.flex", 
+            "props": {
+              "alignItems": "center", 
+              "style": {
+                "border": "1px solid gray", 
+                "overflow": "hidden", 
+                "position": "relative"
+              }
+            }, 
+            "children": [
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "style": {
+                    "border": "1px solid gray", 
+                    "height": "100%"
+                  }
+                }, 
+                "meta": {
+                  "domId": "lowAlarm", 
+                  "name": "lowAlarm"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '--kcBad' if value else '--neutral-30'", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.activeAlarms.low"
+                      }
+                    }
+                  }, 
+                  "position.basis": {
+                    "binding": {
+                      "type": "property", 
+                      "config": {
+                        "path": "view.custom.sliders.lowAlarmBasis"
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "style": {
+                    "border": "1px solid gray", 
+                    "height": "100%"
+                  }
+                }, 
+                "meta": {
+                  "domId": "lowWarning", 
+                  "name": "lowWarning"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '--kcOK' if value else '--kcOKContainer'", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.activeWarnings.low"
+                      }
+                    }
+                  }, 
+                  "position.basis": {
+                    "binding": {
+                      "type": "property", 
+                      "config": {
+                        "path": "view.custom.sliders.lowWarningBasis"
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "style": {
+                    "border": "1px solid gray", 
+                    "backgroundColor": "--kcGoodContainer", 
+                    "height": "100%"
+                  }
+                }, 
+                "meta": {
+                  "domId": "target", 
+                  "name": "target"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "type": "property", 
+                      "config": {
+                        "path": "view.custom.sliders.targetBasis"
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "style": {
+                    "border": "1px solid gray", 
+                    "height": "100%"
+                  }
+                }, 
+                "meta": {
+                  "domId": "highWarning", 
+                  "name": "highWarning"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '--kcOK' if value else '--kcOKContainer'", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.activeWarnings.high"
+                      }
+                    }
+                  }, 
+                  "position.basis": {
+                    "binding": {
+                      "type": "property", 
+                      "config": {
+                        "path": "view.custom.sliders.highWarningBasis"
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "style": {
+                    "border": "1px solid gray", 
+                    "height": "100%"
+                  }
+                }, 
+                "meta": {
+                  "domId": "highAlarm", 
+                  "name": "highAlarm"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '--kcBad' if value else '--neutral-30'", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.activeAlarms.high"
+                      }
+                    }
+                  }, 
+                  "position.basis": {
+                    "binding": {
+                      "type": "property", 
+                      "config": {
+                        "path": "view.custom.sliders.highAlarmBasis"
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.icon", 
+                "props": {
+                  "color": "--kcTertiary", 
+                  "path": "material/vertical_align_center", 
+                  "style": {
+                    "transform": "translate(-50%) rotate(90deg)", 
+                    "width": 25, 
+                    "position": "absolute"
+                  }
+                }, 
+                "meta": {
+                  "domId": "setPoint", 
+                  "name": "setPoint"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn value is not None and value != ''", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.values.setPoint"
+                      }
+                    }
+                  }, 
+                  "props.style.left": {
+                    "binding": {
+                      "type": "property", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "path": "view.custom.labels.setPointPosition"
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "flxSliders", 
+              "name": "flxSliders"
+            }, 
+            "position": {
+              "grow": 1, 
+              "shrink": 0, 
+              "basis": "1px"
+            }, 
+            "propConfig": {
+              "props.style.marginBottom": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "parent.custom.bottomMargin"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "left": "95%", 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "maxValueLabel", 
+              "name": "maxValueLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tshowLabels = value.showLabels\n\tmaxValue = value.maxValue\n\t\n\treturn showLabels and maxValue is not None and maxValue != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "maxValue": "{view.custom.values.maxValue}", 
+                      "showLabels": "{parent.custom.showLabels}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Upper Entry Limit (UCL) %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.maxValue"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "minValueLabel", 
+              "name": "minValueLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tshowLabels = value.showLabels\n\tminValue = value.minValue\n\t\n\treturn showLabels and minValue is not None and minValue != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "minValue": "{view.custom.values.minValue}", 
+                      "showLabels": "{parent.custom.showLabels}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Lower Entry Limit (LEL) %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.minValue"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "highAlarmLabel", 
+              "name": "highAlarmLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tshowLabels = value.showLabels\n\thighAlarm = value.highAlarm\n\t\n\treturn showLabels and highAlarm is not None and highAlarm != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "highAlarm": "{view.custom.values.highAlarm}", 
+                      "showLabels": "{parent.custom.showLabels}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.style.left": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.labels.highAlarmLabelPosition"
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Upper Spec Limit (USL) %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.highAlarm"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "lowAlarmLabel", 
+              "name": "lowAlarmLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tshowLabels = value.showLabels\n\tlowAlarm = value.lowAlarm\n\t\n\treturn showLabels and lowAlarm is not None and lowAlarm != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "lowAlarm": "{view.custom.values.lowAlarm}", 
+                      "showLabels": "{parent.custom.showLabels}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.style.left": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.labels.lowAlarmLabelPosition"
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Lower Spec Limit (LSL) %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.lowAlarm"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface", 
+                "fontWeight": "bold"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "setPointLabel", 
+              "name": "setPointLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tshowLabels = value.showLabels\n\tsetPoint = value.setPoint\n\t\n\treturn showLabels and setPoint is not None and setPoint != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "setPoint": "{view.custom.values.setPoint}", 
+                      "showLabels": "{parent.custom.showLabels}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.style.left": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.labels.setPointPosition"
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Target %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.setPoint"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "custom": {
+              "lineThickness": 2, 
+              "arrowHeight": 5, 
+              "arrowWidth": 10
+            }, 
+            "type": "ia.container.flex", 
+            "props": {
+              "alignItems": "center", 
+              "justify": "center", 
+              "style": {
+                "transform": "translate(-50%)", 
+                "position": "absolute", 
+                "zIndex": 10
+              }, 
+              "direction": "column"
+            }, 
+            "children": [
+              {
+                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "topArrow", 
+                  "name": "topArrow"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.style.borderRight": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid transparent' % (value.width / 2)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "width": "{parent.custom.arrowWidth}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }, 
+                  "props.style.borderLeft": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid transparent' % (value.width / 2)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "width": "{parent.custom.arrowWidth}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }, 
+                  "props.style.borderTop": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid %s' % (value.height, value.color)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "color": "{parent.custom.color}", 
+                          "height": "{parent.custom.arrowHeight}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "props": {
+                  "style": {
+                    "width": 0, 
+                    "height": "100%"
+                  }
+                }, 
+                "meta": {
+                  "domId": "line", 
+                  "name": "line"
+                }, 
+                "position": {
+                  "grow": 1
+                }, 
+                "propConfig": {
+                  "props.style.border": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid %s' % (value.thickness / 2, value.color)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "color": "{parent.custom.color}", 
+                          "thickness": "{parent.custom.lineThickness}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }
+                }
+              }, 
+              {
+                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "bottomArrow", 
+                  "name": "bottomArrow"
+                }, 
+                "position": {
+                  "shrink": 0
+                }, 
+                "propConfig": {
+                  "props.style.borderBottom": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid %s' % (value.height, value.color)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "color": "{parent.custom.color}", 
+                          "height": "{parent.custom.arrowHeight}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }, 
+                  "props.style.borderRight": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid transparent' % (value.width / 2)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "width": "{parent.custom.arrowWidth}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }, 
+                  "props.style.borderLeft": {
+                    "binding": {
+                      "transforms": [
+                        {
+                          "code": "\treturn '%dpx solid transparent' % (value.width / 2)", 
+                          "type": "script"
+                        }
+                      ], 
+                      "type": "expr-struct", 
+                      "overlayOptOut": true, 
+                      "config": {
+                        "struct": {
+                          "width": "{parent.custom.arrowWidth}"
+                        }, 
+                        "waitOnAll": true
+                      }
+                    }
+                  }
+                }
+              }
+            ], 
+            "meta": {
+              "domId": "actual", 
+              "name": "actual"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None and value != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.values.actual"
+                  }
+                }
+              }, 
+              "custom.color": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn kanoaScripts.colors.getCSSColor('--kcOnSurface', value)", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "session.props.theme"
+                  }
+                }
+              }, 
+              "props.style.bottom": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tbottomMargin = value.bottomMargin\n\tarrowHeight = value.arrowHeight\n\t\n\treturn bottomMargin - arrowHeight", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "config": {
+                    "struct": {
+                      "arrowHeight": "{this.custom.arrowHeight}", 
+                      "bottomMargin": "{parent.custom.bottomMargin}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.style.left": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.labels.actualPosition"
+                  }
+                }
+              }, 
+              "props.style.top": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn -value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "this.custom.arrowHeight"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "highWarningLabel", 
+              "name": "highWarningLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value.showLabels and value.highWarning is not None and value.highWarning != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "highWarning": "{view.custom.values.highWarning}", 
+                      "showLabels": "{parent.custom.showLabels}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.style.left": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.labels.highWarningLabelPosition"
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Upper Control Limit (UCL) %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.highWarning"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface", 
+                "bottom": 0, 
+                "position": "absolute"
+              }, 
+              "textStyle": {
+                "color": "--kcOnSurface"
+              }
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top"
+              }, 
+              "domId": "lowWarningLabel", 
+              "name": "lowWarningLabel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value.showLabels and value.lowWarning is not None and value.lowWarning != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "showLabels": "{parent.custom.showLabels}", 
+                      "lowWarning": "{view.custom.values.lowWarning}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }, 
+              "props.style.left": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.labels.lowWarningLabelPosition"
+                  }
+                }
+              }, 
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Lower Control Limit (LCL) %s'%value", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.values.lowWarning"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "display", 
+          "name": "display"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0, 
+          "basis": "15px"
+        }, 
+        "propConfig": {
+          "custom.setPointPosition": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "max(0, min(1, ({view.custom.setPoint} - {view.custom.minValue}) / ({view.custom.maxValue} - {view.custom.minValue})))"
+              }
+            }
+          }, 
+          "custom.lowAlarmLabelPosition": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "max(0, min(1, ({view.custom.lowAlarm} - {view.custom.minValue}) / ({view.custom.maxValue} - {view.custom.minValue})))"
+              }
+            }
+          }, 
+          "custom.totalWidth": {
+            "binding": {
+              "type": "expr", 
+              "overlayOptOut": true, 
+              "config": {
+                "expression": "{view.custom.maxValue} - {view.custom.minValue}"
+              }
+            }
+          }, 
+          "custom.highAlarmLabelPosition": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "max(0, min(1, ({view.custom.highAlarm} - {view.custom.minValue}) / ({view.custom.maxValue} - {view.custom.minValue})))"
+              }
+            }
+          }, 
+          "custom.highAlarmWidth": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "{this.custom.highAlarmLabelPosition} - {this.custom.highWarningLabelPosition}"
+              }
+            }
+          }, 
+          "custom.targetWidth": {
+            "binding": {
+              "type": "expr", 
+              "overlayOptOut": true, 
+              "config": {
+                "expression": "{view.custom.highWarning} - {view.custom.lowWarning}"
+              }
+            }
+          }, 
+          "custom.highWarningWidth": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "{this.custom.highWarningLabelPosition} - {this.custom.setPointPosition}"
+              }
+            }
+          }, 
+          "custom.highWarningLabelPosition": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "max(0, min(1, ({view.custom.highWarning} - {view.custom.minValue}) / ({view.custom.maxValue} - {view.custom.minValue})))"
+              }
+            }
+          }, 
+          "custom.lowAlarmWidth": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "this.custom.lowAlarmLabelPosition"
+              }
+            }
+          }, 
+          "custom.lowWarningLabelPosition": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "max(0, min(1, ({view.custom.lowWarning} - {view.custom.minValue}) / ({view.custom.maxValue} - {view.custom.minValue})))"
+              }
+            }
+          }, 
+          "custom.actualPosition": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "max(0, min(1, ({view.custom.actual} - {view.custom.minValue}) / ({view.custom.maxValue} - {view.custom.minValue})))"
+              }
+            }
+          }, 
+          "custom.lowWarningWidth": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "{this.custom.setPointPosition} - {this.custom.lowWarningLabelPosition}"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "text": "Set Point:", 
+              "textStyle": {
+                "fontSize": "1.15em"
+              }
+            }, 
+            "meta": {
+              "domId": "label", 
+              "name": "label"
+            }, 
+            "position": {
+              "shrink": 0
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "textStyle": {
+                "padding": "0 5px", 
+                "fontSize": "1.15em", 
+                "borderBottom": "1px solid currentcolor"
+              }
+            }, 
+            "meta": {
+              "domId": "value", 
+              "name": "value"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn '%s %s'%(value.setPoint, value.unit or '')", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr-struct", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "struct": {
+                      "setPoint": "{view.custom.values.setPoint}", 
+                      "unit": "{view.custom.values.units}"
+                    }, 
+                    "waitOnAll": true
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxSetPoint", 
+          "name": "flxSetPoint"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "display": false
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.sliders": {
+      "persistent": true
+    }, 
+    "custom.sliders.lowWarningBasis": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "(({view.custom.values.lowWarning} - {view.custom.values.lowAlarm}) /  {view.custom.values.range}) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.sliders.highWarningBasis": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "(({view.custom.values.highAlarm} - {view.custom.values.highWarning}) /  {view.custom.values.range}) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.labels": {
+      "persistent": true
+    }, 
+    "custom.labels.lowWarningLabelPosition": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "max(0, min(1, ({view.custom.values.lowWarning} - {view.custom.values.minValue}) / ({view.custom.values.maxValue} - {view.custom.values.minValue}))) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.sliders.targetBasis": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "(({view.custom.values.highWarning} - {view.custom.values.lowWarning}) / {view.custom.values.range}) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.values.units": {
+      "binding": {
+        "type": "property", 
+        "config": {
+          "path": "view.params.value.Units"
+        }
+      }
+    }, 
+    "custom.values.lowWarning": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\treturn value.LCL if (value.LCL or None) is not None else value.LSL", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "{view.params.value}"
+        }
+      }
+    }, 
+    "custom.activeWarnings": {
+      "persistent": true
+    }, 
+    "custom.labels.highAlarmLabelPosition": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "max(0, min(1, ({view.custom.values.highAlarm} - {view.custom.values.minValue}) / ({view.custom.values.maxValue} - {view.custom.values.minValue}))) * 100.0 + '%'\r\n"
+        }
+      }
+    }, 
+    "custom.values": {
+      "persistent": true
+    }, 
+    "custom.values.lowAlarm": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tif (value.lowAlarm or None) is not None:\treturn value.lowAlarm\n\t\n\thighAlarm = value.highAlarm\n\tmaxValue = value.maxValue or (value.highAlarm / 0.85)\n\tminValue = value.minValue or 0\n\t\n\treturn round(minValue + ((maxValue - minValue) * 0.15), 3)\n\t", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "config": {
+          "struct": {
+            "maxValue": "{view.params.value.UEL}", 
+            "highAlarm": "{view.params.value.USL}", 
+            "minValue": "{view.params.value.LEL}", 
+            "lowAlarm": "{view.params.value.LSL}"
+          }, 
+          "waitOnAll": true
+        }
+      }
+    }, 
+    "custom.activeAlarms.high": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "{view.custom.values.actual} > {view.custom.values.highAlarm}"
+        }
+      }
+    }, 
+    "custom.labels.lowAlarmLabelPosition": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "max(0, min(1, ({view.custom.values.lowAlarm} - {view.custom.values.minValue}) / ({view.custom.values.maxValue} - {view.custom.values.minValue}))) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.values.range": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "{view.custom.values.maxValue} - {view.custom.values.minValue}  "
+        }
+      }
+    }, 
+    "custom.initialParams": {
+      "persistent": true
+    }, 
+    "custom.labels.highWarningLabelPosition": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "max(0, min(1, ({view.custom.values.highWarning} - {view.custom.values.minValue}) / ({view.custom.values.maxValue} - {view.custom.values.minValue}))) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.values.highAlarm": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tif (value.highAlarm or None) is not None: return value.highAlarm\n\t\n\tmaxValue = value.maxValue or 100\n\tminValue = value.minValue or 0\n\t\n\treturn maxValue - ((maxValue - minValue) * 0.15)\n\t", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "config": {
+          "struct": {
+            "maxValue": "{view.params.value.UEL}", 
+            "highAlarm": "{view.params.value.USL}", 
+            "minValue": "{view.params.value.LEL}"
+          }, 
+          "waitOnAll": true
+        }
+      }
+    }, 
+    "custom.activeAlarms": {
+      "persistent": true
+    }, 
+    "custom.values.setPoint": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\ttry:\n\t\treturn value['Target'] if value['Target'] is not None else (value['USL'] - value['LSL']) / value['LSL']\n\texcept:\n\t\treturn None\n", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "config": {
+          "path": "view.params.value"
+        }
+      }
+    }, 
+    "custom.labels.setPointPosition": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "max(0, min(1, ({view.custom.values.setPoint} - {view.custom.values.minValue}) / ({view.custom.values.maxValue} - {view.custom.values.minValue}))) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.sliders.highAlarmBasis": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "(({view.custom.values.maxValue} - {view.custom.values.highAlarm}) /  {view.custom.values.range}) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.values.minValue": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tif value.minValue is not None: return value.minValue\n\t\n\thighAlarm = value.highAlarm\n\tlowAlarm = value.lowAlarm\n\tbuff = 15 / 70.0\n\t\n\treturn round(lowAlarm - ((highAlarm - lowAlarm) * buff), 1)", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "highAlarm": "{view.params.value.USL}", 
+            "minValue": "{view.params.value.LEL}", 
+            "lowAlarm": "{view.params.value.LSL}"
+          }, 
+          "waitOnAll": true
+        }
+      }
+    }, 
+    "custom.sliders.lowAlarmBasis": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "(({view.custom.values.lowAlarm} - {view.custom.values.minValue}) /  {view.custom.values.range}) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.values.actual": {
+      "binding": {
+        "type": "property", 
+        "config": {
+          "path": "view.params.value.ProcessValue"
+        }
+      }
+    }, 
+    "custom.values.highWarning": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\treturn value.UCL if (value.UCL or None) is not None else value.USL", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "{view.params.value}"
+        }
+      }
+    }, 
+    "custom.activeWarnings.low": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "{view.custom.values.actual} < {view.custom.values.lowWarning} && {view.custom.values.actual} >= {view.custom.values.lowAlarm} "
+        }
+      }
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.activeAlarms.low": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "{view.custom.values.actual} < {view.custom.values.lowAlarm}"
+        }
+      }
+    }, 
+    "custom.labels.actualPosition": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "max(0, min(1, ({view.custom.values.actual} - {view.custom.values.minValue}) / ({view.custom.values.maxValue} - {view.custom.values.minValue}))) * 100.0 + '%'"
+        }
+      }
+    }, 
+    "custom.values.maxValue": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tif (value.maxValue or None) is not None: return value.maxValue\n\t\n\thighAlarm = value.highAlarm\n\tlowAlarm = value.lowAlarm\n\tbuff = 15 / 70.0\n\t\n\treturn round(highAlarm + ((highAlarm - lowAlarm) * buff), 1)", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "maxValue": "{view.params.value.UEL}", 
+            "highAlarm": "{view.params.value.USL}", 
+            "lowAlarm": "{view.params.value.LSL}"
+          }, 
+          "waitOnAll": true
+        }
+      }
+    }, 
+    "custom.activeWarnings.high": {
+      "binding": {
+        "type": "expr", 
+        "config": {
+          "expression": "{view.custom.values.actual} > {view.custom.values.highWarning} && {view.custom.values.actual} <= {view.custom.values.highAlarm} "
+        }
+      }
+    }
+  }
+}

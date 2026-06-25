@@ -1,0 +1,103 @@
+{
+  "custom": {}, 
+  "params": {
+    "alertGroup": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 247, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "overflow": "hidden"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "options": {
+            "$": [
+              "ds", 
+              192, 
+              1682279196642
+            ], 
+            "$columns": [
+              {
+                "data": [
+                  "Quality Team", 
+                  "Operations Team"
+                ], 
+                "type": "String", 
+                "name": "Group"
+              }
+            ]
+          }, 
+          "style": {
+            "classes": "kanoa/border kanoa/font/default"
+          }, 
+          "placeholder": {
+            "text": "Select Email Group..."
+          }, 
+          "value": null, 
+          "multiSelect": true
+        }, 
+        "meta": {
+          "domId": "ddEmail", 
+          "name": "ddEmail"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\trows = []\n\trows.append(['Quality Team'])\n\trows.append(['Operations Team'])\n\t\n\tself.getChild(\"ddEmail\").props.options = system.dataset.toDataSet(['Group'], rows)", 
+          "name": "getData"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "events": {
+    "system": {
+      "onStartup": {
+        "type": "script", 
+        "scope": "G", 
+        "config": {
+          "script": "\tself.getChild(\"root\").getData()"
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.alertGroup": {
+      "binding": {
+        "type": "property", 
+        "config": {
+          "bidirectional": true, 
+          "path": "/root/ddEmail.props.value"
+        }
+      }, 
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

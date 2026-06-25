@@ -1,0 +1,221 @@
+{
+  "custom": {
+    "data": {}, 
+    "filter": {
+      "endDate": {
+        "$ts": 1737003600000, 
+        "$": [
+          "ts", 
+          201, 
+          1737033949259
+        ]
+      }, 
+      "assetId": 45, 
+      "startDate": {
+        "$ts": 1736917200000, 
+        "$": [
+          "ts", 
+          201, 
+          1737033949259
+        ]
+      }
+    }
+  }, 
+  "params": {
+    "data": {
+      "endDate": {
+        "$ts": 1737003600000, 
+        "$": [
+          "ts", 
+          201, 
+          1737033949259
+        ]
+      }, 
+      "assetId": 45, 
+      "startDate": {
+        "$ts": 1736917200000, 
+        "$": [
+          "ts", 
+          201, 
+          1737033949259
+        ]
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 481, 
+      "height": 431
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "kyvislabs.display.apexchart", 
+        "props": {
+          "type": "donut", 
+          "options": {
+            "plotOptions": {}, 
+            "legend": {
+              "show": true, 
+              "position": "bottom"
+            }, 
+            "title": {
+              "text": "State Time (in mins)"
+            }, 
+            "responsive": [
+              {
+                "breakpoint": 480, 
+                "options": {
+                  "legend": {
+                    "position": "bottom"
+                  }
+                }
+              }
+            ], 
+            "theme": {}, 
+            "chart": {
+              "type": "donut", 
+              "width": "auto", 
+              "events": {
+                "dataPointSelection": false, 
+                "beforeResetZoom": false, 
+                "markerClick": false, 
+                "mouseMove": false, 
+                "beforeMount": false, 
+                "dataPointMouseLeave": false, 
+                "scrolled": false, 
+                "click": false, 
+                "dataPointMouseEnter": false, 
+                "mounted": false, 
+                "mouseLeave": false, 
+                "zoomed": false, 
+                "animationEnd": false, 
+                "brushScrolled": false, 
+                "legendClick": false, 
+                "selection": false, 
+                "beforeZoom": false, 
+                "updated": false
+              }
+            }
+          }, 
+          "style": {
+            "classes": "kanoa/container"
+          }
+        }, 
+        "meta": {
+          "domId": "apexDonutTimeInState", 
+          "name": "apexDonutTimeInState"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "200px"
+        }, 
+        "propConfig": {
+          "props.series": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [round((row['durationSecs'] or 0)/60.0,1) for row in value]\n", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.data.stateDataSummary"
+              }
+            }
+          }, 
+          "props.options.theme.mode": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tif 'dark' in value: return 'dark'\n\telse: return 'light'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "session.props.theme"
+              }
+            }
+          }, 
+          "props.options.colors": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [row['stateTypeColor'] for row in value]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.data.stateDataSummary"
+              }
+            }
+          }, 
+          "props.options.labels": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [row['stateName'] for row in value]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.data.stateDataSummary"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.filter": {
+      "binding": {
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.data"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.data.stateDataSummary": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getStateEventSummary(value.assetId, value.startDate, value.endDate))", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "config": {
+          "path": "view.custom.filter"
+        }
+      }
+    }, 
+    "custom.data": {
+      "persistent": true
+    }, 
+    "params.data": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

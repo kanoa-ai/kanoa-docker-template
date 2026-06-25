@@ -1,0 +1,142 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {}
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 426, 
+      "height": 210
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "justify": "center", 
+      "style": {
+        "classes": "kanoa/container"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "text": "Confirm", 
+          "textStyle": {
+            "textAlign": "center", 
+            "classes": "kanoa/font/titleMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "lblTitle", 
+          "name": "lblTitle"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "text": "Are you sure you are ready to start this run?", 
+          "textStyle": {
+            "textAlign": "center", 
+            "classes": "kanoa/font/bodyMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "lblDescription", 
+          "name": "lblDescription"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "text": "Confirm", 
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            }, 
+            "meta": {
+              "domId": "btnConfirm", 
+              "name": "btnConfirm"
+            }, 
+            "position": {
+              "basis": "160px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tassetOperationInfo = dict(self.view.params.value)\n\tif not assetOperationInfo.has_key('standardRate'): assetOperationInfo['standardRate'] = None\n\tif not assetOperationInfo.has_key('tStamp'): assetOperationInfo['tStamp'] = system.date.now()\n\tif not assetOperationInfo.has_key('workOrderId'): assetOperationInfo['workOrderId'] = None\n\tif not assetOperationInfo.has_key('itemId'): assetOperationInfo['itemId'] = None\n\tmodeEventId, msg = system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\n\tif msg: system.perspective.sendMessage('showWarningToast', {'message': 'Could not change asset mode. %s'%msg})\n\telse: \n\t\tsystem.perspective.sendMessage('showSuccessfulToast', {'message': 'Asset mode has been changed'})\n\t\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "text": "Cancel", 
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }, 
+              "primary": false
+            }, 
+            "meta": {
+              "domId": "btnCancel", 
+              "name": "btnCancel"
+            }, 
+            "position": {
+              "basis": "160px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxAction", 
+          "name": "flxAction"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "40px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "custom": {}, 
+  "params": {
+    "inputTagPath": "", 
+    "popupId": "value", 
+    "selectedTagPath": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 392, 
+      "height": 368
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcContainer", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.tree", 
+        "props": {
+          "appearance": {
+            "defaultNodeIcons": {
+              "collapsed": {
+                "path": "material/folder"
+              }, 
+              "empty": {
+                "path": "material/stop"
+              }, 
+              "expanded": {
+                "path": "material/folder_open"
+              }
+            }, 
+            "expandIcons": {
+              "collapsed": {
+                "path": "material/arrow_right"
+              }, 
+              "expanded": {
+                "path": "material/arrow_drop_down"
+              }
+            }
+          }, 
+          "selection": [
+            "0/2"
+          ], 
+          "style": {
+            "classes": "kanoa/border"
+          }, 
+          "selectionData": [
+            {
+              "itemPath": "0/2", 
+              "value": "[Kanoa]Kanoa Industries/Adelaide Hills/Packaging/Line 1/Line/eqPath"
+            }
+          ]
+        }, 
+        "meta": {
+          "domId": "treeTags", 
+          "name": "treeTags"
+        }, 
+        "position": {
+          "basis": "476px"
+        }, 
+        "propConfig": {
+          "props.selectionData": {
+            "onChange": {
+              "enabled": null, 
+              "script": "\n\tif len(currentValue.value) > 0:\t\n\t\titem = currentValue.value[0].value\n\t\tvalue = item.get(\"value\").value\t\t\n\telse:\t\t\t\n\t\t value = None\n\n\tself.view.params.selectedTagPath = value\n\n\treturn\t"
+            }
+          }, 
+          "props.items": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\tdef tagTree(path):\t# Recursively builds a tag tree, starting from the specified path\n\t\ttagTreeList = []\n\n\t\tresults = system.tag.browse(path, filter = {\"maxResults\":100}) # Browse the curent path.\t\t\n\t\tif results.getResults() is None: return tagTreeList\n\t\t\n\t\t# Add each tag that was found to a new item.\n\t\tfor result in results.getResults():\n\t\t\tnewItem = {}\n#\t\t\tsystem.perspective.print(\"%s\"%result)\n\t\t\tnewItem['label'] = result['name']\n\t\t\tnewItem['data'] = result['fullPath']\n\t\t\t\n\t\t\t# If the tag has children, browse and add each of the children to the item.\n\t\t\tif result['hasChildren']: newItem['items'] = tagTree(result['fullPath'])\t\t\t\n\t\t\ttagTreeList.append(newItem.copy())\t# Once all children have been added to the item, add the new item to the list\n\n\t\treturn tagTreeList \t# After all items under the path have been added to the list, return the list.\t\n\t\t\n\tpath = value['tagPath'] or ''\n\treturn tagTree(path) if path != '' else []", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "config": {
+                "struct": {
+                  "tagPath": "{view.params.inputTagPath}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "padding": "5px", 
+            "gap": "5px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check_box"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/filled"
+              }, 
+              "text": "Select"
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "location": "top-left", 
+                "text": "Seelct Tag"
+              }, 
+              "domId": "btnSelect", 
+              "name": "btnSelect"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.sendMessage(\"TagSelected\", payload = {'tagPath':self.view.params.selectedTagPath})\n\tsystem.perspective.closePopup('')"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn (value or None) is not None", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.selectedTagPath"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/outlined"
+              }, 
+              "text": "Close"
+            }, 
+            "meta": {
+              "domId": "btnClose", 
+              "name": "btnClose"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup('')"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flexButtons", 
+          "name": "flexButtons"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.selectedTagPath": {
+      "paramDirection": "output", 
+      "persistent": true
+    }, 
+    "params.popupId": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.inputTagPath": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

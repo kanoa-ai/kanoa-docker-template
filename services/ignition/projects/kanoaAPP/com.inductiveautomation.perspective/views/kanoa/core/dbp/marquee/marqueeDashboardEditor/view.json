@@ -1,0 +1,556 @@
+{
+  "custom": {
+    "info": null,
+    "marqueeDashboardInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "dashboardId": null,
+      "dashboardPath": null,
+      "duration": 30,
+      "enabled": true,
+      "marqueeDashboardId": null,
+      "marqueeId": null,
+      "marqueeName": null,
+      "sortOrder": 0
+    }
+  },
+  "params": {
+    "value": {
+      "marqueeDashboardId": null,
+      "marqueeId": null
+    }
+  },
+  "propConfig": {
+    "custom.marqueeDashboardInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tmarqueeDashboardId \u003d value[\u0027marqueeDashboardId\u0027]\n\tif marqueeDashboardId is None: marqueeDashboardId \u003d -1\n\n\tmarqueeDashboardInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getMarqueeDashboards({\u0027marqueeDashboardId\u0027: marqueeDashboardId}), 0)\n\t\n\tif value[\u0027marqueeDashboardId\u0027] is None:\n\t\tmarqueeDashboardInfo[\u0027duration\u0027] \u003d 30\n\t\tmarqueeDashboardInfo[\u0027sortOrder\u0027] \u003d 0\n\t\tmarqueeDashboardInfo[\u0027enabled\u0027] \u003d True\n\t\t\n\treturn marqueeDashboardInfo",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 220,
+      "width": 688
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblDashboard",
+              "name": "lblDashboard"
+            },
+            "position": {
+              "basis": "65px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "pre"
+              },
+              "text": "Dashboard"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "evTreeSelector",
+              "name": "evTreeSelector"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.selectedProducts": {
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\tsystem.perspective.print(\"prod sel %s\"%self.props.params.selectedProducts)\n\tselection \u003d self.props.params.selectedProducts\n\tif len(selection) \u003e 0:\n\t\tself.view.custom.info.itemId \u003d \u0027\u0027\n\t\tself.view.custom.info.itemName \u003d selection[\u0027id\u0027]\n\t\t\n\treturn"
+                }
+              },
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn system.kanoa.dashboard.getDashboards({\u0027enabled\u0027: True})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "dashboardSelected",
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "path": null,
+                  "selection": [],
+                  "style": {
+                    "iconColor": "",
+                    "iconPath": null,
+                    "tooltip": null
+                  },
+                  "treePath": "path"
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxDashboard",
+          "name": "flxDashboard"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblDuration",
+              "name": "lblDuration"
+            },
+            "position": {
+              "basis": "65px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Duration"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numDuration",
+              "name": "numDuration"
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.marqueeDashboardInfo.duration"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "format": 0,
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "domId": "lblDurationSecs",
+              "name": "lblDurationSecs"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "seconds"
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxDuration",
+          "name": "flxDuration"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblSortOrder",
+              "name": "lblSortOrder"
+            },
+            "position": {
+              "basis": "65px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Sort Order"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numSortOrder",
+              "name": "numSortOrder"
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.marqueeDashboardInfo.sortOrder"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "format": 0,
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxSortOrder",
+          "name": "flxSortOrder"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "65px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "Checkbox",
+              "name": "Checkbox"
+            },
+            "position": {
+              "basis": "56px"
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.marqueeDashboardInfo.enabled"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxEnabled",
+          "name": "flxEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.getChild(\"root\").saveData()\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save Production Order"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.marqueeDashboardInfo.dashboardId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "info": "{view.custom.info}",
+                      "workOrders": "{view.params.workOrders}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif len(value.workOrders) \u003e 1: return True\t#This is a bulk edit\n\tif (value.info.workOrderName or None) is None: return False\n\tif value.info.workOrderStatusId is None: return False\n\tif value.info.itemId is None: return False\n\tif value.info.modeId is None: return False\n\n\treturn True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn\n\t"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntActions",
+          "name": "flxCntActions"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "flex-end",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblDebug",
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "saveData",
+          "params": [],
+          "script": "\n\tmarqueeDashboardInfo \u003d dict(self.view.custom.marqueeDashboardInfo)\n\tsystem.perspective.print(\"saveData() called with %s\"%marqueeDashboardInfo)\n\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\t\n\n\tif marqueeDashboardInfo[\u0027marqueeDashboardId\u0027] is None:\n\t\tmarqueeDashboardInfo[\u0027marqueeId\u0027] \u003d self.view.params.value.marqueeId\n\t\tmarqueeDashboardId, msg \u003d system.kanoa.dashboard.addMarqueeDashboard(marqueeDashboardInfo, userId)\n\telse:\n\t\tretVal, msg \u003d system.kanoa.dashboard.updateMarqueeDashboard(marqueeDashboardInfo, userId)\n\n\tself.view.refreshBinding(\"custom.marqueeDashboardInfo\")\n\t\n\tif msg:\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, msg)\n\telse: system.perspective.sendMessage(\u0027showSuccessfulToast\u0027, \u0027Marquee has been saved\u0027)\n\t\n\timport time\n\ttime.sleep(1)\t#give a chance for the user to see the success popup\n\n\tsystem.perspective.sendMessage(\u0027marqueeDashboardUpdate\u0027, {})\n\treturn\t"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "dashboardSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\u0027dashboardSelected() msg rcvd with %s\u0027%payload)\n\tself.view.custom.marqueeDashboardInfo[\u0027dashboardId\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027dashboardId\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

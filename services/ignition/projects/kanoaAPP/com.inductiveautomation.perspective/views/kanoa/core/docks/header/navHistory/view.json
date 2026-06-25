@@ -1,0 +1,256 @@
+{
+  "custom": {},
+  "params": {},
+  "props": {
+    "defaultSize": {
+      "height": 408,
+      "width": 327
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onRowClick": {
+              "config": {
+                "script": "\t\n#\tsystem.perspective.print(\"onClick !!!!\")\n\n#\tsystem.perspective.print(self.props.data[event.row][\u0027navIndex\u0027])\n#\tindex \u003d self.props.data[event.row][\u0027navIndex\u0027]\n\tindex \u003d event.row\n#\tsystem.perspective.print(\"huh\", event)\n\tpageId \u003d self.page.props.pageId\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\tcurrentIndex \u003d self.session.custom.kanoa[pageId].navigation.currentIndex\n\tsystem.perspective.sendMessage(\u0027traverseNavigation\u0027, payload\u003d{\u0027direction\u0027: index - currentIndex})\n\t"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "Table",
+          "name": "tblNavHistory"
+        },
+        "position": {
+          "basis": "400px"
+        },
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "config": {
+                "path": "page.props.pageId"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\tpageId \u003d value\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\treturn self.session.custom.kanoa[pageId].navigation.history",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "columns": [
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "name",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "justify": "center",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": false,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": ""
+            }
+          ],
+          "enableHeader": false,
+          "footerStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "pager": {
+            "bottom": false
+          },
+          "rows": {
+            "striped": {
+              "enabled": false
+            }
+          },
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.display.table"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tpageId \u003d self.page.props.pageId\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\tnavHistory \u003d self.session.custom.kanoa[pageId].navigation \n\tnavHistory.history \u003d [navHistory.history[navHistory.currentIndex]]\n\tnavHistory.currentIndex \u003d 0\n\tself.parent.parent.getChild(\"Table\").refreshBinding(\"props.data\")"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClearHistory",
+              "name": "btnClearHistory",
+              "tooltip": {
+                "enabled": true,
+                "text": "Clear history"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcOnSurface",
+                  "path": "material/not_interested"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcOnSurface",
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntActions",
+          "name": "flxCntActions"
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "10px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "custom.pageId": {
+        "binding": {
+          "config": {
+            "path": "page.props.pageId"
+          },
+          "transforms": [
+            {
+              "code": "\treturn \u0027Designer\u0027 if \u0027/\u0027 in value else value",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcOnPrimary",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

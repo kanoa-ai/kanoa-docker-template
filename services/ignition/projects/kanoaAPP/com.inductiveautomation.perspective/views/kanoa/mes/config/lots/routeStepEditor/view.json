@@ -1,0 +1,572 @@
+{
+  "custom": {
+    "routeStepInfo": {
+      "changedBy": null,
+      "changedByUser": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdByUser": null,
+      "createdDate": null,
+      "enabled": true,
+      "hasStepParams": null,
+      "itemClassId": null,
+      "itemClassPath": null,
+      "itemColor": null,
+      "itemDescription": null,
+      "itemId": null,
+      "itemName": null,
+      "itemPath": null,
+      "lastUpdated": null,
+      "lotOperationId": null,
+      "lotOperationName": null,
+      "routeEnabled": null,
+      "routeId": null,
+      "routeName": null,
+      "routeStepId": null,
+      "stepDescription": "",
+      "stepNum": 1,
+      "stepParams": ""
+    }
+  },
+  "params": {
+    "value": {
+      "itemClassId": null,
+      "itemId": null,
+      "routeId": null,
+      "routeStepId": null
+    }
+  },
+  "propConfig": {
+    "custom.routeStepInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\trouteInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getRouteSteps({\u0027routeStepId\u0027:value[\u0027routeStepId\u0027] or -1}), 0)\n\trouteInfo[\u0027stepDescription\u0027] \u003d routeInfo[\u0027stepDescription\u0027] or \u0027\u0027\n\trouteInfo[\u0027stepParams\u0027] \u003d routeInfo[\u0027stepParams\u0027] or \u0027\u0027\n\trouteInfo[\u0027enabled\u0027] \u003d routeInfo[\u0027enabled\u0027] or True\n\trouteInfo[\u0027stepNum\u0027] \u003d routeInfo[\u0027stepNum\u0027] or 1\n\tif routeInfo[\u0027routeStepId\u0027] is None: \n\t\trouteInfo[\u0027routeId\u0027] \u003d value[\u0027routeId\u0027]\n\t\trouteSteps \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRouteSteps({\u0027routeId\u0027: value[\u0027routeId\u0027] or -1}))\n\t\trouteInfo[\u0027stepNum\u0027] \u003d max([routeStep[\u0027stepNum\u0027] for routeStep in routeSteps]) + 1 if len(routeSteps) \u003e 0 else 1\n\t\n\treturn routeInfo\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 406,
+      "width": 774
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblname",
+              "name": "lblname"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Step #"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numStepNum",
+              "name": "numStepNum"
+            },
+            "position": {
+              "basis": "50px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeStepInfo.stepNum"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxStepNum",
+          "name": "flxStepNum"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lbl",
+              "name": "lbl"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Operation"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "dropdown",
+              "name": "dropdown"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027value\u0027: row[\u0027lotOperationId\u0027], \u0027label\u0027: row[\u0027lotOperationName\u0027]} for row in system.kanoa.lot.getLotOperations({\u0027enabled\u0027: True})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeStepInfo.lotOperationId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default kanoa/border",
+                "minWidth": "200px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxLotOperation",
+          "name": "flxLotOperation"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblname-1",
+              "name": "lblname"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Description"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "txtDescription",
+              "name": "txtDescription"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeStepInfo.stepDescription"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-area"
+          }
+        ],
+        "meta": {
+          "domId": "flxDescription",
+          "name": "flxDescription"
+        },
+        "position": {
+          "basis": "100px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evStepParams",
+              "name": "evStepParams"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.value.stepParams": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.routeStepInfo.stepParams"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.routeStepInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027lotOperationAttributeValue\u0027, system.kanoa.lot.getLotOperationAttributes({\u0027lotOperationId\u0027: value[\u0027lotOperationId\u0027] or -1, \u0027lotOperationAttributeName\u0027: \u0027stepParamEditor\u0027})) or \u0027kanoa/mes/config/lots/stepParamEditor\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {}
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxStepParams",
+          "name": "flxStepParams"
+        },
+        "position": {
+          "basis": 120,
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeStepInfo.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxEnabled",
+          "name": "flxEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\trouteStepInfo \u003d dict(self.view.custom.routeStepInfo)\n\tif routeStepInfo[\u0027stepDescription\u0027] \u003d\u003d \u0027\u0027: routeStepInfo[\u0027stepDescription\u0027] \u003d None\n\tif routeStepInfo[\u0027stepParams\u0027] \u003d\u003d \u0027\u0027: routeStepInfo[\u0027stepParams\u0027] \u003d None\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif routeStepInfo[\u0027routeStepId\u0027] is not None: \t#If name has changed, we need to check that it doesn\u0027t already exist\n\t\tretVal, msg \u003d system.kanoa.lot.updateRouteStep(routeStepInfo, userId)\n\telse:\n\t\trouteStepId, msg \u003d system.kanoa.lot.addRouteStep(routeStepInfo, userId)\n\t\t\n\tif msg:\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \"Couldn\u0027t save this Route Step. %s\"%msg})\n\telse: system.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \"Route Step has been saved\"})\n\n\tsystem.perspective.sendMessage(\"updateRouteSteps\", {})\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.routeStepInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if (value[\u0027routeId\u0027] or None) is not None and (value[\u0027lotOperationId\u0027] or None) is not None else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "marginLeft": "5px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblDebug",
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "stepParamsUpdated",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\u0027stepParamsUpdated() msg rcvd with %s\u0027%payload)\n\t\n\tself.view.custom.routeStepInfo.stepParams \u003d payload[\u0027stepParams\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

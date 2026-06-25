@@ -1,0 +1,203 @@
+{
+  "custom": {
+    "filter": {
+      "endDate": null, 
+      "startDate": {
+        "$ts": 1736280000000, 
+        "$": [
+          "ts", 
+          192, 
+          1736294922319
+        ]
+      }
+    }
+  }, 
+  "params": {
+    "value": {
+      "assetId": 45
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 1041, 
+      "height": 775
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "classes": "kanoa/container", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "children": [
+          {
+            "type": "ia.display.view", 
+            "props": {
+              "params": {
+                "enabled": true, 
+                "selectedRange": "Current Shift"
+              }, 
+              "path": "kanoa/core/templates/selectors/liveDate/liveRangeShiftSelector"
+            }, 
+            "meta": {
+              "domId": "liveRangeSelector", 
+              "name": "liveRangeSelector"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.params.startDate": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.filter.startDate"
+                  }
+                }
+              }, 
+              "props.params.endDate": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.filter.endDate"
+                  }
+                }
+              }, 
+              "props.params.assetId": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.filter.assetId"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxHeader", 
+          "name": "flxHeader"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "params": {
+            "values": {
+              "eventTypes": {
+                "mode": false, 
+                "schedule": false, 
+                "state": true
+              }, 
+              "assetTypes": []
+            }, 
+            "update": {
+              "clear": false
+            }
+          }, 
+          "path": "kanoa/mes/analytics/runChart/equipmentSchedule"
+        }, 
+        "meta": {
+          "domId": "evRunChart", 
+          "name": "evRunChart"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.params.values.startDate": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.filter.startDate"
+              }
+            }
+          }, 
+          "props.params.update.refresh": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn True", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "this.props.params.values"
+              }
+            }
+          }, 
+          "props.params.values.eqPath": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\tif value is None: return None\n\treturn system.kanoa.utilities.getFieldValue('assetPath', system.kanoa.asset.getAssets({'assetId': value}))", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.filter.assetId"
+              }
+            }
+          }, 
+          "props.params.values.endDate": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value or system.date.now()", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.filter.endDate"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.filter.assetId": {
+      "binding": {
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value.assetId"
+        }
+      }
+    }
+  }
+}

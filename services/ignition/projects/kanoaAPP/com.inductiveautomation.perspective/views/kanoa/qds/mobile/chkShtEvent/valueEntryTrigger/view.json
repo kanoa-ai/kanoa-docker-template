@@ -1,0 +1,158 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "chkItemValue": "2022-07-10 03.21.12.jpg", 
+      "dataTypeName": "Image", 
+      "enabled": true, 
+      "chkItemStateId": null, 
+      "measNumber": 1, 
+      "chkItemStateName": null, 
+      "chkItemId": 1286, 
+      "chkItemStateColor": null, 
+      "measCount": 1, 
+      "chkItemTakenDate": {
+        "$ts": 1716261243877, 
+        "$": [
+          "ts", 
+          192, 
+          1716479012700
+        ]
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 249, 
+      "height": 44
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcOnPrimary", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "right"
+          }
+        }, 
+        "meta": {
+          "domId": "lblMeasNum", 
+          "name": "lblMeasNum"
+        }, 
+        "position": {
+          "basis": "32px"
+        }, 
+        "propConfig": {
+          "meta.visible": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value > 1", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.measCount"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn '#%s'%(value or 1)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.measNumber"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center"
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "style": {
+                "alignSelf": "center", 
+                "backgroundColor": "--kcPrimary", 
+                "color": "--kcOnPrimary", 
+                "classes": "kanoa/button/flat", 
+                "height": "35px"
+              }, 
+              "text": "Take Measurement"
+            }, 
+            "meta": {
+              "domId": "btnTrigger", 
+              "name": "btnTrigger"
+            }, 
+            "position": {
+              "basis": "110px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tpayload = {'value':True, 'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId}\n\tsystem.perspective.print(\"Sending ValuePicked message with %s from sendValue()\"%(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.enabled"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxTrigger", 
+          "name": "flxTrigger"
+        }, 
+        "position": {
+          "basis": "200px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

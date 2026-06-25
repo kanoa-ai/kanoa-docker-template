@@ -1,0 +1,1347 @@
+{
+  "custom": {
+    "action": "",
+    "activeChkShts": {},
+    "chkShtStates": {
+      "Approved": {
+        "chkShtStateColor": "--kcGreen-50",
+        "selected": true
+      },
+      "Canceled": {
+        "chkShtStateColor": "--kcGray-40",
+        "selected": true
+      },
+      "Coming Due": {
+        "chkShtStateColor": "--kcYellow-40",
+        "selected": true
+      },
+      "Disabled": {
+        "chkShtStateColor": "--kcGray-20",
+        "selected": true
+      },
+      "Due": {
+        "chkShtStateColor": "--kcYellow-50",
+        "selected": true
+      },
+      "Missed": {
+        "chkShtStateColor": "--kcOrange-40",
+        "selected": true
+      },
+      "Overdue": {
+        "chkShtStateColor": "--kcRed-50",
+        "selected": true
+      },
+      "Rejected": {
+        "chkShtStateColor": "--kcRed-60",
+        "selected": true
+      },
+      "Submitted": {
+        "chkShtStateColor": "--kcYellow-60",
+        "selected": true
+      }
+    },
+    "display": "list",
+    "filterOptions": {},
+    "filters": {
+      "assetGroupName": null
+    },
+    "map": {},
+    "security": {
+      "config": {
+        "allowGuest": "1",
+        "userSource": "default",
+        "userSources": "[\"default\"]"
+      },
+      "userCRUD": {
+        "approveQualityCheck": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "configureAssets": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "configureItems": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "configureLots": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "configureQuality": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "configureSecurity": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "editOperations": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "enterQualityCheck": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "isGatewayAdmin": true,
+        "operateAssets": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "scheduleOperations": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        },
+        "scheduleShifts": {
+          "assets": [
+            "Kanoa Box Co"
+          ],
+          "enabled": true
+        }
+      },
+      "userId": 35
+    },
+    "userAction": {
+      "canCreate": true,
+      "canDelete": false,
+      "canRead": true,
+      "canUpdate": false
+    }
+  },
+  "params": {
+    "selection": ""
+  },
+  "propConfig": {
+    "custom.action": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif self.custom.action \u003d\u003d \u0027Delete\u0027:\n\t\tsystem.perspective.print(\"sending showDeleteOption msg\")\n\t\tsystem.perspective.sendMessage(\u0027showDeleteOption\u0027, {})\n\telse:\n\t\tsystem.perspective.print(\"sending clearDeleteOption msg\")\n\t\tsystem.perspective.sendMessage(\u0027clearDeleteOption\u0027, {})\n\t\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.activeChkShts": {
+      "persistent": true
+    },
+    "custom.activeChkShts.chkShtEvents": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "direct",
+          "tagPath": "[Kanoa]kanoa/timers/qdsScheduleChecks/data"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tdata \u003d system.dataset.sort(value, \u0027scheduledDate\u0027, False)\n\tassetGroupName \u003d self.custom.filters.assetGroupName\n\tif assetGroupName: return [row for row in system.kanoa.utilities.convertDatasetToJSON(data) if row[\u0027assetGroupName\u0027] \u003d\u003d assetGroupName]\n\treturn system.kanoa.utilities.convertDatasetToJSON(data)",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      }
+    },
+    "custom.activeChkShts.qdsTagProvider": {
+      "binding": {
+        "config": {
+          "expression": "0"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.config.getTagProvider(\u0027QDS\u0027)",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.chkShtStates": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tstates \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getStates({}))\n\n\tchkStates \u003d {}\n\tfor state in states:\n\t\tchkStates[state[\u0027chkShtStateName\u0027]] \u003d {\u0027chkShtStateColor\u0027: state[\u0027chkShtStateColor\u0027], \u0027selected\u0027:True}\n\t\n\treturn chkStates\n#\treturn \tsystem.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({}), \u0027chkShtStateName\u0027, \u0027chkShtStateColor\u0027)",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.display": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn \u0027list\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.filterOptions": {
+      "persistent": true
+    },
+    "custom.filterOptions.assetGroupNames": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn [row[\u0027assetGroupName\u0027] for row in system.kanoa.asset.getAssetGroups({})]",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.filters": {
+      "persistent": true
+    },
+    "custom.filters.search": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.map": {
+      "persistent": true
+    },
+    "custom.map.markers": {
+      "binding": {
+        "config": {
+          "path": "view.custom.activeChkShts.chkShtEvents"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tdef createMarker(latitude, longitude, tooltip):\n\t\tif latitude is None or longitude is None: return {}\n\t\treturn\t{\n\t\t\t\t  \"geometry\": {\"coordinates\": [float(longitude), float(latitude)], \"type\": \"Point\"},\n\t\t\t\t  \"marker\": {\n\t\t\t\t    \"icon\": {\"color\": \"blue\", \"path\": \"material/location_on\", \"size\": {\"height\": 50, \"width\": 50}},\n\t\t\t\t    \"tooltip\": {\"content\": {\"text\": tooltip}\n\t\t\t\t    }\n\t\t\t\t  },\n\t\t\t\t  \"properties\": {}, \"type\": \"Feature\"\n\t\t\t\t}\n\t\n\tmarkers \u003d []\n\t\n\tchkShtIds \u003d list(set([chkShtEvent[\u0027chkShtId\u0027] for chkShtEvent in value]))\n\n\tchkItemIds \u003d []\n\tfor chkShtId in chkShtIds:\n\t\tchkItems \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.config.getChecks({\u0027chkShtId\u0027: chkShtId, \u0027dataTypeName\u0027: \u0027Geo Location\u0027, \u0027enabled\u0027: True}))\n\t\tchkItemIds +\u003d [chkItem[\u0027chkItemId\u0027] for chkItem in chkItems]\n\n\tfor chkShtEvent in value:\n\t\tfor chkItemId in chkItemIds:\n\t\t\tchkItemEvent \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.event.getChkShtItemEventValues(chkShtEvent[\u0027chkShtEventId\u0027], chkItemId),0)\n\t\t\tif chkItemEvent[\u0027chkItemValue\u0027] is None:continue\n\t\t\ttry:\n\t\t\t\tinfo \u003d system.util.jsonDecode(chkItemEvent[\u0027chkItemValue\u0027])\n\t\t\t\ttooltip \u003d \"Check Sheet %s scheduled on %s by %s\"%(chkShtEvent[\u0027chkShtName\u0027], chkShtEvent[\u0027scheduledDate\u0027], chkShtEvent[\u0027scheduledByUser\u0027])\n\t\t\t\tmarker \u003d createMarker(info[\u0027latitude\u0027], info[\u0027longitude\u0027], tooltip)\n\t\t\texcept:\n\t\t\t\tmarker \u003d {}\n\t\t\t\n\t\t\tif marker: markers.append(marker)\n\t\t\t\n\treturn markers\n\n\n#\tdef createMarker(latitude, longitude, tooltip):\n#\t\tif latitude is None or longitude is None: return {}\n#\t\treturn\t{\n#\t\t\t\t  \"geometry\": {\"coordinates\": [float(longitude), float(latitude)], \"type\": \"Point\"},\n#\t\t\t\t  \"marker\": {\n#\t\t\t\t    \"icon\": {\"color\": \"blue\", \"path\": \"material/location_on\", \"size\": {\"height\": 50, \"width\": 50}},\n#\t\t\t\t    \"tooltip\": {\"content\": {\"text\": tooltip}\n#\t\t\t\t    }\n#\t\t\t\t  },\n#\t\t\t\t  \"properties\": {}, \"type\": \"Feature\"\n#\t\t\t\t}\n#\t\n#\tmarkers \u003d []\n#\t\n#\tchkShtIds \u003d list(set([chkShtEvent[\u0027chkShtId\u0027] for chkShtEvent in value]))\n#\n#\tchkItemIds \u003d []\n#\tfor chkShtId in chkShtIds:\n#\t\tchkItems \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.config.getChecks({\u0027chkShtId\u0027: chkShtId, \u0027dataTypeName\u0027: \u0027Geo Location\u0027, \u0027enabled\u0027: True}))\n#\t\tchkItemIds +\u003d [chkItem[\u0027chkItemId\u0027] for chkItem in chkItems]\n#\t\n#\tchkShtEventIds \u003d [chkShtEvent[\u0027chkShtEventId\u0027] for chkShtEvent in value]\n#\t\t\n#\tfor chkShtEventId in chkShtEventIds:\n#\t\tfor chkItemId in chkItemIds:\n#\t\t\tchkItemEvent \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.event.getChkShtItemEventValues(chkShtEventId, chkItemId),0)\n#\n#\t\t\tsystem.perspective.print(\u0027%s %s %s\u0027%(chkShtEventId, chkItemId, chkItemEvent[\u0027chkItemValue\u0027]))\n#\t\t\tif chkItemEvent[\u0027chkItemValue\u0027] is None:continue\n#\t\t\ttry:\n#\t\t\t\tinfo \u003d system.util.jsonDecode(chkItemEvent[\u0027chkItemValue\u0027])\n#\t\t\t\tmarker \u003d createMarker(info[\u0027latitude\u0027], info[\u0027longitude\u0027], \u0027\u0027)\n#\t\t\texcept:\n#\t\t\t\tmarker \u003d {}\n#\t\t\t\n#\t\t\tif marker: markers.append(marker)\n#\t\t\t\n#\treturn markers\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.security": {
+      "binding": {
+        "config": {
+          "struct": {
+            "user": "{session.props.auth.user}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tuserId \u003d system.kanoa.security.getIDPUserId(value[\u0027user\u0027])\t\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "data": "{view.custom.table.selection.data}",
+            "security": "{view.custom.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecurity \u003d value[\u0027security\u0027]\n\tcanCreate \u003d False\n\tcanEdit \u003d False\n\tif security[\u0027userCRUD\u0027] is not None and security[\u0027userId\u0027] is not None:\n\t\tif security[\u0027userCRUD\u0027][\u0027isGatewayAdmin\u0027] or security[\u0027userCRUD\u0027][\u0027configureQuality\u0027][\u0027enabled\u0027]: \n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True if len(value[\u0027data\u0027] or []) \u003e 0 else False\n\t\n\treturn {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.refresh": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tif currentValue.value \u003d\u003d True:\n\t\tself.getChild(\"root\").getSecurity()\n\t\tself.getChild(\"root\").refreshView()\n\t\tself.params.refresh \u003d False\n\t\tsystem.perspective.print(\"Scheduled Checks parameter refresh change script\")"
+      },
+      "paramDirection": "inout",
+      "persistent": false
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 876,
+      "width": 432
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "TextArea",
+              "name": "TextArea"
+            },
+            "position": {
+              "display": false,
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.geolocation.data"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.input.text-area"
+          },
+          {
+            "meta": {
+              "domId": "TextArea_0",
+              "name": "TextArea_0"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.geolocation"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.input.text-area"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.session.props.geolocation.enabled \u003d True"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "Button",
+              "name": "Button"
+            },
+            "position": {
+              "basis": "34px"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "FlexContainer",
+          "name": "FlexContainer"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "classes": "kanoa/container"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "flxRepeater",
+              "name": "flxRepeater"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "chkShtEvents": "{view.custom.activeChkShts.chkShtEvents}",
+                      "chkShtStates": "{view.custom.chkShtStates}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tchkStateList \u003d [\u0027Approved\u0027, \u0027Overdue\u0027, \u0027Coming Due\u0027, \u0027Due\u0027, \u0027Submitted\u0027, \u0027Rejected\u0027, \u0027Missed\u0027, \u0027Canceled\u0027]\n\tchkStateCount \u003d [0] * len(chkStateList)\n\t\t\n\titems \u003d []\n\tfor chkShtEvent in value[\u0027chkShtEvents\u0027]:\n\t\tif chkShtEvent[\u0027chkShtStateName\u0027] in chkStateList: \n\t\t\tchkStateCount[chkStateList.index(chkShtEvent[\u0027chkShtStateName\u0027])] +\u003d 1\n\t\n\treturn [{\"value\": {\"selected\": value[\u0027chkShtStates\u0027][chkStateList[idx]][\u0027selected\u0027], \"bgColor\": value[\u0027chkShtStates\u0027][chkStateList[idx]][\u0027chkShtStateColor\u0027], \"foreColor\": \"#FFFFFF\", \"label\": chkStateList[idx], \"num\": chkStateCount[idx], \u0027popup\u0027:None}} for idx in range(len(chkStateList))]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "alignContent": "flex-start",
+              "alignItems": "flex-start",
+              "elementPosition": {
+                "grow": 0,
+                "shrink": 0
+              },
+              "justify": "center",
+              "path": "kanoa/qds/mobile/schedule/checks",
+              "wrap": "wrap"
+            },
+            "type": "ia.display.flex-repeater"
+          }
+        ],
+        "meta": {
+          "domId": "flxSummary",
+          "name": "flxSummary"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "direction": "column",
+          "style": {
+            "classes": "kanoa/container",
+            "padding": "5px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.action \u003d \u0027Add\u0027 if self.view.custom.action !\u003d \u0027Add\u0027 else None\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnAddCheck",
+              "name": "btnAddCheck",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Add a new check"
+              }
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.userAction.canCreate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/add"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "height": "40px"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.action \u003d \u0027Delete\u0027 if self.view.custom.action !\u003d \u0027Delete\u0027 else None\n\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnDeleteCheck",
+              "name": "btnDeleteCheck",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Delete this check"
+              }
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "action": "{view.custom.userAction}",
+                      "instances": "{.../flxBody/flxRptChecks.props.instances}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027action\u0027][\u0027canDelete\u0027] and len(value[\u0027instances\u0027] or []) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcRed-60",
+                  "path": "material/delete_forever"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "height": "40px"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "meta": {
+              "domId": "lblBlank",
+              "name": "lblBlank"
+            },
+            "position": {
+              "basis": "50px",
+              "grow": 1
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.display\u003d \u0027list\u0027\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnShowList",
+              "name": "btnShowList",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Show list"
+              }
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.display"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027--kcPrimaryContainer\u0027 if value \u003d\u003d \u0027list\u0027 else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/menu"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "height": "40px"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.display\u003d \u0027map\u0027\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnShowMap",
+              "name": "btnShowMap",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Show Map"
+              }
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.display"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027--kcPrimaryContainer\u0027 if value \u003d\u003d \u0027map\u0027 else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/location_on"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "height": "40px"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/container",
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evAddCheckEvent",
+              "name": "evAddCheckEvent"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.action"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027kanoa/qds/mobile/schedule/addCheckEvent\u0027 if value \u003d\u003d \u0027Add\u0027 else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "isPopup": false
+                }
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxSelector",
+          "name": "flxSelector"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.action"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Add\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/container"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblFilterBy",
+                  "name": "lblFilterBy"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Filter By"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "txtFilter",
+                  "name": "txtFilter"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.filters.search"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "deferUpdates": false,
+                  "rejectUpdatesWhileFocused": false
+                },
+                "type": "ia.input.text-field"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tself.view.custom.filters.search \u003d \u0027\u0027\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnClear",
+                  "name": "btnClear"
+                },
+                "position": {
+                  "basis": "30px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.visible": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.filters.search"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value !\u003d \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "height": 20,
+                    "icon": {
+                      "color": "--kcGray-50",
+                      "path": "material/close"
+                    },
+                    "width": 20
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "lblAssetGroup"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "Asset Group"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "ddAssetGroup"
+                    },
+                    "position": {
+                      "basis": "150px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.options": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.filterOptions.assetGroupNames"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn [{\u0027label\u0027: item, \u0027value\u0027: item} for item in value]",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.filters.assetGroupName"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "dropdownOptionStyle": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "showClearIcon": true,
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      }
+                    },
+                    "type": "ia.input.dropdown"
+                  }
+                ],
+                "meta": {
+                  "name": "flxAssetGroupName"
+                },
+                "position": {
+                  "basis": "240px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "padding": "0px 5px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxFilter",
+              "name": "flxFilter"
+            },
+            "position": {
+              "basis": "50px",
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "style": {
+                "gap": "5px",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "flxRptChecks",
+              "name": "flxRptChecks"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.display"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027list\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "chkShtEvents": "{view.custom.activeChkShts.chkShtEvents}",
+                      "chkShtStates": "{view.custom.chkShtStates}",
+                      "filter": "{view.custom.filters}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tchkShtEvents \u003d []\n\t\n\tchkShtStateNames \u003d [item for item in value[\u0027chkShtStates\u0027] if value[\u0027chkShtStates\u0027][str(item)][\u0027selected\u0027]]\n\tif len(dict(value[\u0027chkShtStates\u0027])) !\u003d len(chkShtStateNames):\n\t\tchkShtEvents \u003d [chkShtEvent for chkShtEvent in value[\u0027chkShtEvents\u0027] if chkShtEvent[\u0027chkShtStateName\u0027] in chkShtStateNames]\n\telse:\n\t\tchkShtEvents \u003d value[\u0027chkShtEvents\u0027]\n\n\tif (value[\u0027filter\u0027][\u0027search\u0027] or None) is None and (value[\u0027filter\u0027][\u0027assetGroupName\u0027] or None) is None:\n\t\treturn [{\u0027value\u0027: chkShtEvent} for chkShtEvent in chkShtEvents]\n\t\n\toptions \u003d []\n\tsearch \u003d value[\u0027filter\u0027][\u0027search\u0027].lower()\n\tassetGroupName \u003d value[\u0027filter\u0027][\u0027assetGroupName\u0027]\n\tfor chkShtEvent in chkShtEvents:\n\t\tif assetGroupName is not None and chkShtEvent[\u0027assetGroupName\u0027] \u003d\u003d assetGroupName and search in str(chkShtEvent[\u0027path\u0027]).lower() or search in str(chkShtEvent[\u0027assetPath\u0027]).lower() or search in str(chkShtEvent[\u0027chkShtStateName\u0027]).lower():\n\t\t\toptions.append({\u0027value\u0027: chkShtEvent})\n\t\n\treturn options\n",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "direction": "column",
+              "path": "kanoa/qds/mobile/schedule/chkShtEventStatus",
+              "useDefaultViewWidth": false
+            },
+            "type": "ia.display.flex-repeater"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblInfo",
+                      "name": "lblInfo"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "session.props.geolocation.data"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn \"%s %s %s\"%(value[\u0027latitude\u0027] or \u0027\u0027, value[\u0027longitude\u0027] or \u0027\u0027, value[\u0027altitude\u0027] or \u0027\u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "chkGeoEnabled",
+                      "name": "chkGeoEnabled"
+                    },
+                    "propConfig": {
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "session.props.geolocation.enabled"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "session.props.geolocation.enabled"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027Geo Location enabled\u0027 if value else \u0027Geo location disabled\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.input.checkbox"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxInfo",
+                  "name": "flxInfo"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "meta": {
+                  "domId": "Map",
+                  "name": "Map"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.init.center": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "device": "{session.props.geolocation.data}",
+                          "markers": "{view.custom.map.markers}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif len(value[\u0027markers\u0027]) \u003e 0 and value[\u0027markers\u0027][0].geometry.coordinates[0]:\n\t\treturn {\"lat\": value[\u0027markers\u0027][0].geometry.coordinates[1], \"lng\": value[\u0027markers\u0027][0].geometry.coordinates[0]}\n\t\t\n\treturn {\"lat\": self.session.props.geolocation.data.latitude, \"lng\": self.session.props.geolocation.data.longitude}",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.layers.other.geoJSON": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.map.markers"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "init": {
+                    "zoom": 13
+                  },
+                  "layers": {
+                    "other": {},
+                    "raster": {
+                      "tile": [
+                        {
+                          "WMS": {
+                            "format": "image/jpeg",
+                            "layers": "",
+                            "styles": "",
+                            "transparent": false,
+                            "uppercase": false,
+                            "version": "1.1.1"
+                          },
+                          "options": {
+                            "attribution": "Map data \u0026copy; \u003ca href\u003d\u0027https://www.openstreetmap.org/\u0027\u003eOpenStreetMap\u003c/a\u003e contributors, \u003ca href\u003d\u0027https://creativecommons.org/licenses/by-sa/2.0/\u0027\u003eCC-BY-SA\u003c/a\u003e",
+                            "crossOrigin": false,
+                            "detectRetina": false,
+                            "errorTileUrl": "",
+                            "opacity": 1,
+                            "subdomains": [
+                              "a",
+                              "b",
+                              "c"
+                            ],
+                            "tileSize": {
+                              "height": 256,
+                              "width": 256
+                            },
+                            "tms": false,
+                            "update": {
+                              "interval": 200,
+                              "whenIdle": false,
+                              "whenZooming": true
+                            },
+                            "zIndex": 1,
+                            "zoom": {
+                              "max": 18,
+                              "min": 0,
+                              "native": {
+                                "max": null,
+                                "min": null
+                              },
+                              "offset": 0,
+                              "reverse": false
+                            }
+                          },
+                          "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                          "urlTemplateParams": {}
+                        }
+                      ]
+                    }
+                  },
+                  "location": {
+                    "enabled": true
+                  },
+                  "trackResize": true
+                },
+                "type": "ia.display.map"
+              }
+            ],
+            "meta": {
+              "domId": "flxMap",
+              "name": "flxMap"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.display"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027map\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "direction": "column"
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.edit.chkShtEventId"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value is None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "justify": "center",
+          "style": {
+            "classes": "kanoa/container",
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcBackground",
+        "classes": "kanoa/font/default",
+        "gap": "3px",
+        "padding": "3px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "openEditor",
+          "params": [],
+          "script": "\n\tsystem.perspective.print(\"openEditor() called\")\n\tself.view.custom.edit.chkShtEventId \u003d self.view.custom.table.selection.data[0].chkShtEventId\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "setChkShtEventId",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"setChkShtEventId msg rcvd with %s\"%payload)\n\n\tparams\u003d {\n\t\t\t\t\"path\": \u0027kanoa/qds/mobile/chkShtEvent/editor\u0027,\n\t\t\t\t\"name\": \u0027Check Sheet Entry\u0027,\n\t\t\t\t\"type\": \u0027view\u0027,\n\t\t\t\t\"params\": {\u0027chkShtEventId\u0027: payload[\u0027chkShtEventId\u0027]}\n\t\t\t}\n\t\n\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "chkShtEventAdded",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"chkShtEventAdded() msg rcvd with %s\"%payload)\n\n\tself.view.custom.action \u003d None\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "chkShtStateSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"chkShtStateSelected() msg rcvd with %s\"%payload)\n\t\n\tself.view.custom.chkShtStates[payload[\u0027chkShtStateName\u0027]][\u0027selected\u0027] \u003d payload[\u0027selected\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

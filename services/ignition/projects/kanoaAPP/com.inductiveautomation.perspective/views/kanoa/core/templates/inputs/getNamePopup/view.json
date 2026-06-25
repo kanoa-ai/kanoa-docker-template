@@ -1,0 +1,172 @@
+{
+  "custom": {}, 
+  "params": {
+    "messageHandler": "", 
+    "label": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 420, 
+      "height": 39
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 5, 
+        "classes": "kanoa/container", 
+        "overflow": "hidden", 
+        "gap": 5
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.text-field", 
+        "props": {
+          "rejectUpdatesWhileFocused": false, 
+          "style": {
+            "classes": "kanoa/font/default"
+          }, 
+          "deferUpdates": false
+        }, 
+        "meta": {
+          "domId": "textField", 
+          "name": "textField"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "events": {
+          "system": {
+            "onStartup": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.focus()"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.label"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/save"
+            }
+          }, 
+          "style": {
+            "classes": "kanoa/button/filled"
+          }, 
+          "text": "Save"
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "enabled": true, 
+            "location": "bottom-right", 
+            "text": "Save"
+          }, 
+          "domId": "btnOK", 
+          "name": "btnOK"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tsystem.perspective.sendMessage(self.view.params.messageHandler, payload={'label':self.view.params.label})\n\tself.view.params.label = None\n\tsystem.perspective.closePopup('')"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn (value or None) is not None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.label"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/exit_to_app"
+            }
+          }, 
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "enabled": true, 
+            "location": "bottom-right", 
+            "text": "Close"
+          }, 
+          "domId": "btnClose", 
+          "name": "btnClose"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tsystem.perspective.closePopup('')"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.label": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.messageHandler": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

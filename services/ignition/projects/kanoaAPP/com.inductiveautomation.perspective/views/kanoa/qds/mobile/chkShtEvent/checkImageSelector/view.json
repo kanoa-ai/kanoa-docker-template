@@ -1,0 +1,100 @@
+{
+  "custom": {
+    "gettingImage": false,
+    "imageData": {
+      "chkItemId": null,
+      "createdBy": null,
+      "createdDate": null,
+      "filePath": null,
+      "image": null,
+      "imageDescription": "",
+      "imageId": null,
+      "imageName": "",
+      "imageType": "",
+      "thumbnail": null
+    }
+  },
+  "params": {
+    "value": {
+      "chkItemId": null,
+      "imageId": null,
+      "imageType": null
+    }
+  },
+  "propConfig": {
+    "custom.gettingImage": {
+      "persistent": true
+    },
+    "custom.imageData": {
+      "persistent": true
+    },
+    "params.value": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif self.params.value.has_key(\u0027imageId\u0027):\n\t\timageData \u003d system.kanoa.quality.image.getImageData({\u0027imageId\u0027: self.params.value.imageId or -1, \u0027includeThumbnail\u0027: True})\n\t\timageData \u003d system.kanoa.utilities.convertDatasetRowToJSON(imageData, 0)\n\t\timageData[\u0027filePath\u0027] \u003d None\n\t\tif imageData[\u0027imageDescription\u0027] is None: imageData[\u0027imageDescription\u0027] \u003d \u0027\u0027 \n\t\tif imageData[\u0027imageName\u0027] is None: imageData[\u0027imageName\u0027] \u003d \u0027\u0027 \n\t\tif imageData[\u0027imageType\u0027] is None: imageData[\u0027imageType\u0027] \u003d \u0027\u0027 \n\t\tself.custom.imageData \u003d imageData\n\t\n\tif self.custom.imageData[\u0027imageId\u0027] is None and self.params.value.has_key(\u0027imageType\u0027):\n\t\tself.custom.imageData.imageType \u003d self.params.value.imageType or \u0027\u0027\n\t\n\treturn"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 102,
+      "width": 458
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onFileReceived": {
+              "config": {
+                "script": "\t\n\tself.view.custom.gettingImage \u003d True\n\t\n\timport base64\n\tself.view.custom.imageData.image \u003d base64.b64encode(event.file.getBytes())\n\tself.view.custom.imageData.imageName \u003d event.file.name\n\t\n\tfilePath \u003d \u0027C:\\\\kanoaImages\\%s\u0027% event.file.name\n\tsystem.kanoa.file.deleteFile(filePath)\n\t\n\tlog \u003d system.util.getLogger(\"kanoaImage\")\n\tlog.info(\"Creating  %s\"%filePath)\n\t\n\tevent.file.copyTo(filePath) #We\u0027ll store this file on the gateway so we can convert and create thumbnails\n\tself.view.custom.imageData.filePath \u003d filePath\t\n\t\n\tself.view.custom.gettingImage \u003d False\n\t\n\timageData \u003d self.view.custom.imageData\n\tchkItemId \u003d self.view.params.value.chkItemId if self.view.params.value.has_key(\u0027chkItemId\u0027) else None\n\timageId \u003d self.view.params.value.imageId if self.view.params.value.has_key(\u0027imageId\u0027) else None\n\t\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tsystem.perspective.sendMessage(\"filePath %s, chkItemId %s, imageId %s, imageName %s, imageType %s, imageDescription %s, userId %s\"%(imageData[\u0027filePath\u0027], chkItemId, imageId, imageData[\u0027imageName\u0027], imageData[\u0027imageType\u0027], imageData[\u0027imageDescription\u0027] or None, userId))\n\t\n\timageId, msg \u003d system.kanoa.quality.image.processImage(imageData[\u0027filePath\u0027], chkItemId, imageId, imageData[\u0027imageName\u0027], imageData[\u0027imageType\u0027], imageData[\u0027imageDescription\u0027] or None, userId)\n\t\n\tif msg:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\treturn\n\n\tself.view.params.value.imageId \u003d imageId\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Image Added\u0027})\t\t\n\n\tif self.view.params.value.has_key(\u0027chkItemId\u0027) and self.view.params.value.chkItemId:\n\t\tpayload \u003d {\u0027chkItemId\u0027: chkItemId, \u0027value\u0027: imageData[\u0027imageName\u0027]}\n\t\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with %s\"%payload)\n\t\tlog.info(\"Sending \u0027ValuePicked\u0027 message with %s\"%payload)\n\t\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\t\n\tsystem.perspective.sendMessage(\u0027refreshImages\u0027, {})\t#Tell calling screen to update itself to show the new image\n\tsystem.perspective.sendMessage(\u0027refreshImage\u0027, {\u0027imageId\u0027: imageId})\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "FileUpload",
+          "name": "FileUpload"
+        },
+        "position": {
+          "basis": "100px",
+          "shrink": 0
+        },
+        "props": {
+          "fileUploadIcon": {
+            "style": {
+              "minHeight": "100px"
+            }
+          },
+          "maxUploads": 1,
+          "supportedFileTypes": [
+            "jpg",
+            "jpeg",
+            "png",
+            "bmp"
+          ]
+        },
+        "type": "ia.input.fileupload"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

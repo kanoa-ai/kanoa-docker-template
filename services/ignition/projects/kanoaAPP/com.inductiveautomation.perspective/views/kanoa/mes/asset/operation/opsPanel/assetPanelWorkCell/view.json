@@ -1,0 +1,536 @@
+{
+  "custom": {
+    "selectedTab": "State",
+    "showNavigation": true,
+    "tabInfo": {
+      "tabIndex": 1,
+      "tabs": [
+        "Counts",
+        "State",
+        "Metrics"
+      ]
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": 1955
+    }
+  },
+  "propConfig": {
+    "custom.selectedTab": {
+      "binding": {
+        "config": {
+          "path": "view.custom.tabInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value[\u0027tabs\u0027][value[\u0027tabIndex\u0027]]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tsystem.perspective.sendMessage(\u0027tabSelected\u0027, {\u0027tab\u0027: self.custom.selectedTab})\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.showNavigation": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif not value: return False\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))\n\treturn True if (system.kanoa.asset.getClosestAncestorAttribute(assetPath, \u0027_assetOperationNavLocation\u0027) or \u0027Right Panel\u0027) \u003d\u003d \u0027Right Panel\u0027 else False",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.tabInfo": {
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 938,
+      "width": 1593
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\tviewTitle \u003d \u0027Run Control\u0027\n\tviewPath \u003d \u0027kanoa/mes/asset/operation/runControl\u0027\n\t\n\tassetId \u003d self.view.params.value.assetId\n\tpayload \u003d {\u0027data\u0027: {\u0027assetPath\u0027: system.kanoa.utilities.getFieldValue(\u0027path\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: assetId})), \u0027assetId\u0027: assetId}}\n\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: payload})"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evRunControl",
+              "name": "evRunControl"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "material/play_circle_outline",
+                  "subTitle": "Start and stop Batch Tickets or put equipment into Manual Modes",
+                  "title": "Run Control"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\n\tviewTitle \u003d \u0027Downtime \u0026 States\u0027\n\tviewPath \u003d \u0027kanoa/mes/asset/operation/downtimeStates\u0027\n\t\n\tassetId \u003d self.view.params.value.assetId\n\tpayload \u003d {\u0027value\u0027: {\u0027assetId\u0027: assetId}}\n\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: payload})\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evDowntimeStates",
+              "name": "evDowntimeStates"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "material/warning",
+                  "subTitle": "View, edit, and manually enter Downtime and other States",
+                  "title": "Downtime \u0026 States"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\n\tpayload \u003d {\u0027value\u0027: {\"showAssetSelector\": False}}\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: \u0027kanoa/mes/asset/runReview/runTable\u0027, \u0027viewTitle\u0027: \u0027Run Review\u0027, \u0027payload\u0027: payload})\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evRunReview",
+              "name": "evRunReview"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "material/run_circle",
+                  "subTitle": "View, edit, and manually change previous Production Runs and Modes",
+                  "title": "Run Review"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\tviewTitle \u003d \u0027Schedule\u0027\n\tviewPath \u003d \u0027kanoa/scheduler/operations\u0027\n\t\n\tassetId \u003d self.view.params.value.assetId\n\t\n\tpayload \u003d {\u0027values\u0027: {\"assetPath\": system.kanoa.utilities.getFieldValue(\u0027path\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: assetId})), \"showAssetSelector\": False}}\n\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: payload})"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evSchedule",
+              "name": "evSchedule"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "material/today",
+                  "subTitle": "View the current Production Schedule",
+                  "title": "Schedule"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\tviewTitle \u003d \u0027Live Dashboards\u0027\n\tviewPath \u003d \u0027kanoa/mes/asset/operation/runMonitor\u0027\n\t\n\tassetId \u003d self.view.params.value.assetId\n\t\n\tpayload \u003d {\u0027data\u0027: {\u0027assetPath\u0027: system.kanoa.utilities.getFieldValue(\u0027path\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: assetId})), \u0027assetId\u0027: assetId}}\n\t\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: payload})"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evLiveDashboards",
+              "name": "evLiveDashboards"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "material/analytics",
+                  "subTitle": "Real-time OEE and performance analytics",
+                  "title": "Live Dashboards"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tviewTitle \u003d \u0027Stations\u0027\n\tviewPath \u003d \u0027kanoa/mes/asset/operation/multiItem/stationOverview\u0027\n\tassetId \u003d self.view.params.value.assetId\n\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: {\u0027value\u0027: {\u0027assetId\u0027: assetId}}})\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evStations",
+              "name": "evStations"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "kanoa/cell",
+                  "subTitle": "Production counts by station operation",
+                  "title": "Stations"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tviewTitle \u003d \u0027Production Orders\u0027\n\tviewPath \u003d \u0027kanoa/mes/workOrders/woMain\u0027\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: self.view.params.value.assetId or -1}))\n\tparams \u003d {\u0027value\u0027: {\"assetPath\": assetPath, \"showAssetSelector\": False}}\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: params})\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evOrders",
+              "name": "evOrders"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "material/article",
+                  "subTitle": "Active Production Orders",
+                  "title": "Production Orders"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tviewTitle \u003d \u0027Run Chart\u0027\n\tviewPath \u003d \u0027kanoa/mes/asset/operation/multiItem/runChartOverview\u0027\n\tparams \u003d {\u0027value\u0027: {\"assetId\": self.view.params.value.assetId}}\t\n\tsystem.perspective.sendMessage(\u0027updateAssetOpsNav\u0027, {\u0027viewPath\u0027: viewPath, \u0027viewTitle\u0027: viewTitle, \u0027payload\u0027: params})\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "evRunChart",
+              "name": "evRunChart"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "iconPath": "kanoa/production",
+                  "subTitle": "View Line and Station State History",
+                  "title": "Run Chart"
+                }
+              },
+              "path": "kanoa/mes/asset/operation/miniNavCard",
+              "useDefaultViewHeight": true,
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "domId": "lblBlank",
+              "name": "lblBlank"
+            },
+            "position": {
+              "basis": "360px",
+              "display": false,
+              "shrink": 0
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "Icon",
+              "name": "Icon"
+            },
+            "position": {
+              "basis": "30px",
+              "display": false
+            },
+            "props": {
+              "path": "kanoa/production"
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxNavigation",
+          "name": "flxNavigation"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.showNavigation"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "padding": "10px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\t\n\tself.props.currentTabIndex \u003d 1\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "tabCnt",
+              "name": "tabCnt"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.currentTabIndex": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.tabInfo.tabIndex"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.tabs": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.tabInfo.tabs"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "menuType": "modern",
+              "style": {
+                "borderStyle": "none"
+              },
+              "tabStyle": {
+                "active": {
+                  "classes": "kanoa/font/default"
+                },
+                "inactive": {
+                  "classes": "kanoa/font/default"
+                }
+              }
+            },
+            "type": "ia.container.tab"
+          },
+          {
+            "meta": {
+              "domId": "flxRptCells",
+              "name": "flxRptCells"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return []\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\"assetPath\", system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))\n\tassets \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \"\\\\%\"}))\n\tassets \u003d sorted(assets, key\u003dlambda d: d[\u0027sortOrder\u0027])\n\t\t\n\treturn [{\u0027value\u0027: {\u0027assetId\u0027: asset[\u0027assetId\u0027]}} for asset in assets]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "kanoa/mes/asset/operation/cells/cellCard",
+              "style": {
+                "gap": "5px"
+              },
+              "useDefaultViewHeight": false,
+              "wrap": "wrap"
+            },
+            "type": "ia.display.flex-repeater"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignItems": "flex-start",
+          "direction": "column",
+          "style": {
+            "classes": "kanoa/border",
+            "gap": "2px",
+            "padding": "10px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "navLocationUpdated",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\u0027navLocationUpdated() msg rcvd by assetWorkCell with %s\u0027%payload)\n\tself.view.refreshBinding(\"custom.showNavigation\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

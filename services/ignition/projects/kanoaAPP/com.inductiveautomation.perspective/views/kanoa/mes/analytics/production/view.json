@@ -1,0 +1,568 @@
+{
+  "custom": {
+    "assets": {
+      "$": [
+        "ds",
+        192,
+        1780243053586
+      ],
+      "$columns": []
+    },
+    "filter": {
+      "assetId": null,
+      "assetPath": null,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1780243054419
+        ],
+        "$ts": 1779519600000
+      },
+      "interval": null,
+      "oeeEnabled": null,
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1780243054419
+        ],
+        "$ts": 1779433200000
+      }
+    },
+    "instances": []
+  },
+  "params": {},
+  "propConfig": {
+    "custom.assets": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tsystem.perspective.print(\"assets() binding change\")\n\tif value is None: return system.dataset.toDataSet([],[])\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027:value}))\n\tdata \u003d system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027oeeEnabled\u0027: True, \u0027assetTypeName\u0027: \u0027line\u0027, \u0027enabled\u0027:True})\n\t\n\tif data.rowCount \u003d\u003d 0:\tdata \u003d system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027oeeEnabled\u0027: True, \u0027enabled\u0027:True})\n\t\n\treturn data",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.filter": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tself.custom.instances \u003d []\t#Clear the charts anytime a filter value changes\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.instances": {
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 856,
+      "width": 1500
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evAssetSelector",
+              "name": "evAssetSelector",
+              "tooltip": {
+                "location": "bottom-left"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.assetInfo.assetId": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.assetInfo.assetPath": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.assetPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "assetInfo": {
+                  "assetGroupColor": null,
+                  "assetGroupId": null,
+                  "assetGroupName": null,
+                  "assetName": null,
+                  "assetTypeId": null,
+                  "assetTypeName": null,
+                  "assetTypePath": null,
+                  "displayPath": null,
+                  "enabled": null,
+                  "iconPath": null,
+                  "oeeEnabled": null,
+                  "parentId": null,
+                  "path": null,
+                  "processTypeId": null,
+                  "processTypeName": null,
+                  "sortOrder": null,
+                  "tagPath": null,
+                  "timeZone": null
+                },
+                "value": {
+                  "assetPath": null,
+                  "assetTypeName": "line",
+                  "oeeEnabled": true,
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "parentPathList": [],
+                  "persistent": false,
+                  "useSessionValue": false
+                }
+              },
+              "path": "kanoa/core/templates/selectors/assetSelector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "domId": "evDateRangeSelector",
+              "name": "evDateRangeSelector"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.autoUpdate.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn not value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.dates.endDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.endDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.dates.startDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.value.assetPath": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.assetPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "dates": {
+                  "selectedRange": "Today"
+                },
+                "value": {
+                  "display": {
+                    "persistent": false,
+                    "showAutoRefresh": true,
+                    "showDateSelector": true,
+                    "showPeriodSelector": true
+                  },
+                  "enabled": true,
+                  "options": [
+                    {
+                      "enabled": true,
+                      "label": "Current Run"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Current Shift"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Previous Shift"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Today"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Yesterday"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Month"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Month"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Year To Date"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 24 Hrs"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 7 Days"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 14 Days"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Custom"
+                    }
+                  ]
+                }
+              },
+              "path": "kanoa/core/templates/selectors/dateSelector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\t\n\tself.props.value \u003d None\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "ddInterval",
+              "name": "ddInterval",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "You can select the time interval or leave as auto-range. Auto range will show data by hour, by day or by week based on the selected date range"
+              }
+            },
+            "position": {
+              "basis": "160px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.interval"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tfilter \u003d self.view.custom.filter\n\t\tself.view.custom.instances \u003d [{\u0027values\u0027: {\"assetId\": row[\u0027assetId\u0027], \"startDate\": filter[\u0027startDate\u0027],\"endDate\": filter[\u0027endDate\u0027], \"interval\": filter[\u0027interval\u0027]}} for row in self.view.custom.assets]\n\t\n\treturn"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "options": [
+                {
+                  "label": "Auto Range",
+                  "value": null
+                },
+                {
+                  "label": "By Hour",
+                  "value": "Hour"
+                },
+                {
+                  "label": "By Day",
+                  "value": "Day"
+                },
+                {
+                  "label": "By Week",
+                  "value": "Week"
+                }
+              ],
+              "placeholder": {
+                "text": "Group by..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "height": "30px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tfilter \u003d self.view.custom.filter\n\tself.view.custom.instances \u003d [\n\t\t{\u0027values\u0027: {\n\t\t\t\"assetId\": row[\u0027assetId\u0027], \n\t\t\t\"startDate\": filter[\u0027startDate\u0027],\n\t\t\t\"endDate\": filter[\u0027endDate\u0027],\n\t\t\t\"displayOptions\": {\"showInfeed\": True, \"showOutfeed\": True, \"showTarget\": True, \"showWaste\": True},\n\t\t\t\"interval\": filter[\u0027interval\u0027]\n\t\t\t}\n\t\t} for row in self.view.custom.assets]\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnGetData",
+              "name": "btnGetData",
+              "tooltip": {
+                "location": "bottom-left"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "filter": "{view.custom.filter}",
+                      "gettingData": "{view.custom.info.showBar}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn not value[\u0027gettingData\u0027] and value[\u0027filter\u0027][\u0027assetId\u0027] is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/play_arrow"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Go"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.instances \u003d []\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClear",
+              "name": "btnClear"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.instances"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.showBar"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn not value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/not_interested"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Clear"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "meta": {
+              "domId": "lblBlank",
+              "name": "lblBlank"
+            },
+            "position": {
+              "grow": 1
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "flxCountBars",
+          "name": "flxCountBars"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.instances"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "persistent": true
+          }
+        },
+        "props": {
+          "direction": "column",
+          "elementPosition": {
+            "basis": "auto",
+            "shrink": 0
+          },
+          "path": "kanoa/mes/analytics/widgets/productionCounts/countBarChart",
+          "style": {
+            "gap": "5px"
+          },
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "",
+        "gap": "3px",
+        "padding": "3px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getExportData",
+          "params": [],
+          "script": "\n\tsystem.perspective.print(\"exportData() called\")\n\t\n\toeeData \u003d None\n\t\n\tfor instance in self.getChild(\"FlexRepeater\").props.instances:\n\t\tif oeeData is None: oeeData \u003d instance.oeeData\n\t\telse: oeeData \u003d system.dataset.appendDataset(oeeData, instance.oeeData)\n\t\t\t\n\treturn oeeData"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,412 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "chkItemValue": "0", 
+      "dataTypeName": "Boolean", 
+      "enabled": true, 
+      "chkItemStateId": null, 
+      "measNumber": 1, 
+      "pickListValues": "", 
+      "chkItemEventId": 117601, 
+      "chkItemStateName": null, 
+      "chkItemId": 1284, 
+      "chkItemStateColor": null, 
+      "measCount": 1, 
+      "chkItemTakenDate": {
+        "$ts": 1717780459623, 
+        "$": [
+          "ts", 
+          192, 
+          1717781391385
+        ]
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 270, 
+      "height": 44
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcOnPrimary", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "right"
+          }
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "text": "Measurement number"
+          }, 
+          "domId": "lblMeasNum", 
+          "name": "lblMeasNum"
+        }, 
+        "position": {
+          "basis": "32px"
+        }, 
+        "propConfig": {
+          "meta.visible": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value > 1", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.measCount"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn '#%s'%(value or 1)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.measNumber"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.numeric-entry-field", 
+        "props": {
+          "align": "center", 
+          "style": {
+            "fontSize": "16px", 
+            "height": "30px"
+          }, 
+          "spinner": {
+            "enabled": false
+          }
+        }, 
+        "meta": {
+          "domId": "numValue", 
+          "name": "numValue"
+        }, 
+        "position": {
+          "grow": 1, 
+          "display": false
+        }, 
+        "events": {
+          "dom": {
+            "onFocus": {
+              "stopPropagation": true, 
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tsystem.perspective.print(\"valueEntryTxt - onFocus for chkItemId %s meas# %s\"%(self.view.params.value.chkItemId, self.view.params.value.measNumber))\n\tsystem.perspective.sendMessage(\"chkItemSelected\", {'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId})\n\t\n\treturn"
+              }
+            }, 
+            "onSelect": {
+              "type": "script", 
+              "enabled": false, 
+              "scope": "G", 
+              "config": {
+                "script": "\n#\tsystem.perspective.print(\"valueEntryNum - onSelect\")\n#\tsystem.perspective.sendMessage(\"chkItemSelected\", {'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId})\n#\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value or ''", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.chkItemStateColor"
+              }
+            }
+          }, 
+          "props.value": {
+            "onChange": {
+              "enabled": null, 
+              "script": "\n#\tsystem.perspective.print(\"valueEntry %s\"%origin)\n\t\n\tif origin == 'Browser':\n\t\tpayload = {'value':str(self.props.value), 'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId}\n\t\tsystem.perspective.print(\"Sending ValuePicked message with %s from sendValue()\"%(payload))\n\t\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\t\n\treturn"
+            }, 
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 0 if isinstance(value, str) else value", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.chkItemValue"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "gap": "3px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "style": {
+                "padding": "5px", 
+                "classes": "kanoa/button/flatIcon", 
+                "minWidth": "40px", 
+                "align": "center", 
+                "borderWidth": "1px", 
+                "justify": "center", 
+                "borderStyle": "solid"
+              }, 
+              "textStyle": {
+                "color": "--kcOnPrimaryContainer", 
+                "align": "center", 
+                "justify": "center"
+              }
+            }, 
+            "meta": {
+              "domId": "btnTrue", 
+              "name": "btnTrue"
+            }, 
+            "position": {
+              "grow": 1, 
+              "basis": "34px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tpayload = {'value': '1', 'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId}\n\tsystem.perspective.print(\"Sending ValuePicked message with %s from sendValue()\"%(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn '--kcPrimaryContainer' if value == '1' else ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.chkItemValue"
+                  }
+                }
+              }, 
+              "props.textStyle.fontSize": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "#\treturn len(value)\n\tif len(value) <= 40: return '12px'\n\tif len(value) <= 70: return '9px'\n\treturn '8px'\n\t", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\ttry:\n\t\treturn system.util.jsonDecode(value)['TRUE'][0] if value else 'True'\n\texcept:\n\t\treturn 'True'\n", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.pickListValues"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "style": {
+                "padding": "5px", 
+                "classes": "kanoa/button/flatIcon", 
+                "minWidth": "40px", 
+                "align": "center", 
+                "borderWidth": "1px", 
+                "justify": "center", 
+                "borderStyle": "solid"
+              }, 
+              "textStyle": {
+                "color": "--kcOnPrimaryContainer", 
+                "align": "center", 
+                "justify": "center"
+              }
+            }, 
+            "meta": {
+              "domId": "btnFalse", 
+              "name": "btnFalse"
+            }, 
+            "position": {
+              "grow": 1, 
+              "basis": "34px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tpayload = {'value': '0', 'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId}\n\tsystem.perspective.print(\"Sending ValuePicked message with %s from sendValue()\"%(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn '--kcPrimaryContainer' if value == '0' else ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.chkItemValue"
+                  }
+                }
+              }, 
+              "props.textStyle.fontSize": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "#\treturn len(value)\n\tif len(value) <= 40: return '12px'\n\tif len(value) <= 70: return '9px'\n\treturn '8px'\n\t", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.text"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\ttry:\n\t\treturn system.util.jsonDecode(value)['FALSE'][0] if value else 'False'\n\texcept:\n\t\treturn 'False'\n", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.pickListValues"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxButtons", 
+          "name": "flxButtons"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value is None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.pickList"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\n\tif payload.has_key('chkItemId') and payload.has_key('measNumber'):\n\t\tif payload['chkItemId'] == self.view.params.value.chkItemId and payload['measNumber'] == self.view.params.value.measNumber:\n\t\t\tsystem.perspective.print(\"valueNumEntry - setfocus msg rcvd with %s\"%payload)\n\t\t\tself.getChild(\"numValue\").focus()\n\t\n\treturn", 
+          "messageType": "setFocus", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n#\tif self.params.value.measNumber == 1: self.getChild(\"root\").getChild(\"numValue\").focus()\n\t\n\treturn"
+      }, 
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

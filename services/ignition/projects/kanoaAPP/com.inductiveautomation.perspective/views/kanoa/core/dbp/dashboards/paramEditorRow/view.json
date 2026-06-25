@@ -1,0 +1,332 @@
+{
+  "custom": {
+    "optionsList": [],
+    "type": "textField",
+    "values": {
+      "key": "topX",
+      "options": null,
+      "type": "Integer",
+      "value": 5
+    }
+  },
+  "params": {
+    "values": {
+      "key": "topX",
+      "options": null,
+      "type": "Integer",
+      "value": 5
+    }
+  },
+  "propConfig": {
+    "custom.optionsList": {
+      "binding": {
+        "config": {
+          "path": "view.custom.values.options"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif (value or None) is None: return []\n\treturn [{\u0027label\u0027: item.strip(), \u0027value\u0027: item.strip()} for item in value.split(\u0027,\u0027)]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.type": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value[\u0027options\u0027] is not None: return \u0027dropdown\u0027\n\tif value[\u0027type\u0027] \u003d\u003d \u0027Boolean\u0027: return \u0027checkbox\u0027\n\telse: return \u0027textField\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 60,
+      "width": 609
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "lblValueName"
+        },
+        "position": {
+          "basis": "200px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.key"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "lblValueType"
+        },
+        "position": {
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.type"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "chkValue"
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.values.value"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    },
+                    "onChange": {
+                      "enabled": null,
+                      "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tvalueInfo \u003d dict(self.view.params.values)\n\t\tvalueInfo[\u0027value\u0027] \u003d currentValue.value\n\t\tself.view.getChild(\"root\").updateParam(valueInfo)\n\treturn"
+                    }
+                  }
+                },
+                "props": {
+                  "text": ""
+                },
+                "type": "ia.input.checkbox"
+              }
+            ],
+            "meta": {
+              "name": "flxBool"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.type"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value \u003d\u003d \u0027Boolean\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "justify": "flex-end"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "txtValue"
+                },
+                "position": {
+                  "basis": "300px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.values.value"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    },
+                    "onChange": {
+                      "enabled": null,
+                      "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tvalueInfo \u003d dict(self.view.params.values)\n\t\tsystem.perspective.print(\u0027valueInfo %s\u0027%valueInfo)\n\t\tvalueInfo[\u0027value\u0027] \u003d currentValue.value\n\t\tvalueType \u003d self.view.params.values[\u0027type\u0027]\n\t\tif valueType \u003d\u003d \u0027Integer\u0027: valueInfo[\u0027value\u0027] \u003d int(valueInfo[\u0027value\u0027])\n\t\tself.view.getChild(\"root\").updateParam(valueInfo)\n\treturn"
+                    }
+                  }
+                },
+                "type": "ia.input.text-field"
+              }
+            ],
+            "meta": {
+              "name": "flxStr"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.type"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value \u003d\u003d \u0027textField\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "flex-end"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "ddValue"
+                },
+                "position": {
+                  "basis": "300px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.optionsList"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.values.value"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    },
+                    "onChange": {
+                      "enabled": null,
+                      "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tvalueInfo \u003d dict(self.view.params.values)\n\t\tvalueInfo[\u0027value\u0027] \u003d currentValue.value\n\t\tself.view.getChild(\"root\").updateParam(valueInfo)\n\treturn"
+                    }
+                  }
+                },
+                "type": "ia.input.dropdown"
+              }
+            ],
+            "meta": {
+              "name": "flxDropdown"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.type"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value \u003d\u003d \u0027dropdown\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "flex-end"
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "flxValuePicker"
+        },
+        "position": {
+          "grow": 1
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "justify": "space-between",
+      "style": {
+        "classes": "kanoa/font/default",
+        "padding": "5px 25px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "updateParam",
+          "params": [
+            "payload"
+          ],
+          "script": "\t\n\tsystem.perspective.sendMessage(\u0027updateWidgetParams\u0027, payload)\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

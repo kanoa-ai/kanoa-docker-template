@@ -1,0 +1,102 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": {
+      "color": "red", 
+      "iconPath": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 30, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "backgroundColor": "--kcSurface", 
+        "overflow": "hidden"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.icon", 
+        "meta": {
+          "domId": "icoColor", 
+          "name": "icoColor"
+        }, 
+        "position": {
+          "basis": "30px"
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss=True)\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.color": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn '' if (value.has_key('iconPath') and value['iconPath'] is not None) else value['color'] or ''", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }, 
+          "props.path": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['iconPath'] or '' if value.has_key('iconPath') else 'material/color_lens'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\n\tsystem.perspective.print(\"colorPicked message received with payload \" + str(payload))\n\tself.view.params.values.color = payload['color']\n\t\n\treturn", 
+          "messageType": "colorPicked", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.values": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

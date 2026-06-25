@@ -1,0 +1,429 @@
+{
+  "custom": {
+    "itemSelection": {
+      "itemId": null,
+      "scheduleId": null,
+      "workOrderId": null
+    }
+  },
+  "params": {
+    "value": {
+      "actualQty": null,
+      "assetId": null,
+      "assetPath": null,
+      "canExecute": true,
+      "canSchedule": true,
+      "changedBy": 5,
+      "changedByUser": "jason",
+      "changedDate": {
+        "$": [
+          "ts",
+          0,
+          1770215710509
+        ],
+        "$ts": 1769892006337
+      },
+      "createdBy": 5,
+      "createdByUser": "jason",
+      "createdDate": {
+        "$": [
+          "ts",
+          0,
+          1770215710509
+        ],
+        "$ts": 1767913713097
+      },
+      "dueDate": {
+        "$": [
+          "ts",
+          0,
+          1770215710509
+        ],
+        "$ts": 1767942000000
+      },
+      "isActive": true,
+      "itemClassColor": null,
+      "itemClassDescription": null,
+      "itemClassName": "Kanoa Box Co",
+      "itemColor": "#0000FF",
+      "itemDescription": "Boxes that are blue",
+      "itemId": 198,
+      "itemName": "Blue Boxes",
+      "itemPath": "Kanoa Box Co\\Blue Boxes",
+      "itemUnitId": 5,
+      "itemUnitName": "Cases",
+      "modeColor": "#00639a",
+      "modeId": 2,
+      "modeName": "Production",
+      "modeTypeName": "Production",
+      "note": null,
+      "parentId": null,
+      "reqdQty": 1000,
+      "schedQty": null,
+      "statusColor": "#00D9D9",
+      "workOrderId": 1141,
+      "workOrderName": "ABC123",
+      "workOrderSourceId": null,
+      "workOrderSourceImagePath": null,
+      "workOrderSourceName": null,
+      "workOrderStatusId": 3,
+      "workOrderStatusName": "In Progress",
+      "workOrderTitle": null
+    }
+  },
+  "propConfig": {
+    "custom.itemSelection": {
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 112,
+      "width": 256
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblWorkOrder",
+                  "name": "lblWorkOrder"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\titem \u003d \"%s - %s\"%(value[\u0027workOrderTitle\u0027], value[\u0027itemName\u0027]) if value[\u0027workOrderTitle\u0027] is not None else value[\u0027itemName\u0027] or \u0027\u0027\n\tqty \u003d \"%s %s\"%(value[\u0027schedQty\u0027] or \u0027\u0027, value[\u0027itemUnitName\u0027] or \u0027units\u0027) if value[\u0027schedQty\u0027] is not None else \u0027\u0027\n\treturn \"%s %s\"%(item, qty)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "fontWeight": "bold",
+                    "textAlign": "center"
+                  },
+                  "textStyle": {
+                    "classes": "kanoa/font/labelLarge"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "icoNotes",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "bottom",
+                    "sustain": 0
+                  }
+                },
+                "position": {
+                  "basis": "25px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.note"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \"note is %s\"%(value or \u0027\u0027)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.note"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn (value or None) is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "path": "material/speaker_notes"
+                },
+                "type": "ia.display.icon"
+              }
+            ],
+            "meta": {
+              "name": "flxWorkOrder"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value[\u0027itemColor\u0027] or value[\u0027itemClassColor\u0027] or \u0027#FFFFFF\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.style.backgroundColor"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn system.kanoa.utilities.getContrastingColor(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "justify": "center",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "minHeight": "30px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "lblDesc",
+              "name": "lblDesc"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027itemDescription\u0027] or \u0027\u0027\n",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignVertical": "top",
+              "style": {
+                "overflow": "hidden",
+                "textAlign": "center",
+                "white-space": "pre"
+              },
+              "textStyle": {
+                "classes": "kanoa/font/bodySmall"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblDue",
+              "name": "lblDue"
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.dueDate"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn \"Due %s\"%(system.date.format(value, \"MM-dd-YY hh:mma\")) if value else \u0027No due date set\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblWOStatus",
+                  "name": "lblWOStatus"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.workOrderStatusName"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "textAlign": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "flxStatus"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "justify": "center",
+              "style": {
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxInfo",
+          "name": "flxInfo"
+        },
+        "position": {
+          "basis": "200px"
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "3px",
+            "overflow": "hidden",
+            "padding": "3px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\t\n\tsystem.perspective.sendMessage(\u0027itemSelection\u0027, {\u0027workOrderId\u0027: self.view.params.value.workOrderId, \u0027itemId\u0027: self.view.params.value.itemId, \u0027scheduleId\u0027: None})\n\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "custom.selected": {
+        "binding": {
+          "config": {
+            "path": "view.custom.itemSelection"
+          },
+          "transforms": [
+            {
+              "code": "\n\treturn value and value.has_key(\u0027workOrderId\u0027) and value[\u0027workOrderId\u0027] \u003d\u003d self.view.params.value.workOrderId",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.borderColor": {
+        "binding": {
+          "config": {
+            "expression": "if({this.custom.selected}, \u0027--kcSecondary\u0027, \u0027--kcOutline\u0027)"
+          },
+          "type": "expr"
+        }
+      },
+      "props.style.borderWidth": {
+        "binding": {
+          "config": {
+            "expression": "if({this.custom.selected}, \u00274px\u0027, \u00272px\u0027)"
+          },
+          "type": "expr"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurfaceVariant",
+        "classes": "kanoa/border kanoa/font/default",
+        "padding": "2px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "itemSelection",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\u0027itemSelection msg rcvd with %s\u0027%payload)\n\tself.view.custom.itemSelection \u003d payload\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

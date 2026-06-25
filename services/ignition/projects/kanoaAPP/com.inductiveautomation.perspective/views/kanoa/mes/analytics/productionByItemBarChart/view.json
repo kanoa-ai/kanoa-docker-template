@@ -1,0 +1,2503 @@
+{
+  "custom": {
+    "countByItem": [],
+    "info": {
+      "showBar": false,
+      "text": "",
+      "type": "INFO"
+    },
+    "oeeData": [],
+    "showChart": true,
+    "usePackageCount": true
+  },
+  "params": {
+    "values": {
+      "assetId": 501,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1715173098007
+        ],
+        "$ts": 1715176800000
+      },
+      "interval": "Hour",
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1715173188049
+        ],
+        "$ts": 1714572000000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.countByItem": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oeeData"
+        },
+        "transforms": [
+          {
+            "code": "\toeeData \u003d value\n\titemList \u003d []\n\tfor event in oeeData:\n\t\tif event[\u0027itemName\u0027] is not None and event[\u0027itemName\u0027] not in itemList: itemList.append(event[\u0027itemName\u0027])\n\t\t\n\tcountsByItem \u003d []\n\tfor item in itemList:\n\t\tcountsByItem.append({\u0027itemName\u0027: item, \u0027infeedCount\u0027: 0.0, \u0027outfeedCount\u0027: 0.0, \u0027wasteCount\u0027: 0.0})\n\t\n\tfor event in oeeData:\n\t\tfor countItem in countsByItem:\n\t\t\tif event[\u0027itemName\u0027] \u003d\u003d countItem[\u0027itemName\u0027]:\n\t\t\t\tcountItem[\u0027infeedCount\u0027] +\u003d event[\u0027infeedCount\u0027] or 0.0\n\t\t\t\tcountItem[\u0027outfeedCount\u0027] +\u003d event[\u0027outfeedCount\u0027] or 0.0\n\t\t\t\tcountItem[\u0027wasteCount\u0027] +\u003d event[\u0027wasteCount\u0027] or 0.0\n\t\n\treturn countsByItem",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.info": {
+      "persistent": true
+    },
+    "custom.oeeData": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tif value[\u0027startDate\u0027] is None or value[\u0027endDate\u0027] is None or value[\u0027assetId\u0027] is None: return system.dataset.toPyDataSet(system.dataset.clearDataset(self.custom.oeeData))\n\tsystem.perspective.print(\"Here we are calling getOEEDataByInterval() with %s %s %s %s\"%(value[\u0027assetId\u0027], value[\u0027startDate\u0027], value[\u0027endDate\u0027], value[\u0027interval\u0027]))\n\tdata \u003d system.kanoa.event.getOEEDataByInterval(value[\u0027assetId\u0027], value[\u0027startDate\u0027], value[\u0027endDate\u0027], value[\u0027interval\u0027])\n\t#remove any rows that don\u0027t have an item\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(data)\n\titemData \u003d []\n\tfor element in data:\n\t\tif element[\u0027itemName\u0027] is not \u0027\u0027: itemData.append(element)\n\tself.custom.info \u003d {\"showBar\": False, \"text\": \"\", \"type\": \"INFO\"}\t\n\treturn itemData",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.showChart": {
+      "persistent": true
+    },
+    "custom.usePackageCount": {
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 330
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "evProgressBar",
+          "name": "evProgressBar"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.info"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value[\u0027text\u0027] !\u003d \u0027\u0027 or value[\u0027showBar\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.values": {
+            "binding": {
+              "config": {
+                "path": "view.custom.info"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/core/templates/displays/progressBar"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tfileName \u003d \"Production Data\"\n\tdataset \u003d self.view.custom.oeeData\n\tsystem.kanoa.utilities.exportToExcel(fileName, dataset)\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnExport",
+                  "name": "btnExport",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Export data"
+                  }
+                },
+                "position": {
+                  "basis": "24px",
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/save_alt"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tself.view.custom.showChart \u003d not self.view.custom.showChart"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnShowTable",
+                  "name": "btnShowTable",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "center-right"
+                  }
+                },
+                "position": {
+                  "basis": "24px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.showChart"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027Show table\u0027 if value else \u0027Show chart\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.image.icon.path": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.showChart"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027material/grid_on\u0027 if value else \u0027material/bar_chart\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {}
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              }
+            ],
+            "meta": {
+              "domId": "FlexCntActions",
+              "name": "FlexCntActions"
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.oeeData"
+                  },
+                  "enabled": false,
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/container",
+                "gap": "5px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "infeedByMaterial",
+                  "name": "infeedByMaterial"
+                },
+                "position": {
+                  "basis": "300px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options.xaxis.categories": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.countByItem"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\titemList \u003d []\n\tfor item in value:\n\t\titemList.append(item[\u0027itemName\u0027])\n\treturn itemList",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.countByItem"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\tseries \u003d [{\u0027name\u0027: \u0027infeed\u0027, \u0027data\u0027: []}, {\u0027name\u0027: \u0027outfeed\u0027, \u0027data\u0027: []}, {\u0027name\u0027: \u0027waste\u0027, \u0027data\u0027: []}]\n\tfor item in value:\n\t\tseries[0][\u0027data\u0027].append(item[\u0027infeedCount\u0027])\n\t\tseries[1][\u0027data\u0027].append(item[\u0027outfeedCount\u0027])\n\t\tseries[2][\u0027data\u0027].append(item[\u0027wasteCount\u0027])\n\treturn series",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "options": {
+                    "chart": {
+                      "dropShadow": {
+                        "blur": 10,
+                        "color": "#000",
+                        "enabled": true,
+                        "left": 7,
+                        "opacity": 0.2,
+                        "top": 18
+                      },
+                      "events": {
+                        "animationEnd": false,
+                        "beforeMount": false,
+                        "beforeResetZoom": false,
+                        "beforeZoom": false,
+                        "brushScrolled": false,
+                        "click": false,
+                        "dataPointMouseEnter": false,
+                        "dataPointMouseLeave": false,
+                        "dataPointSelection": false,
+                        "legendClick": false,
+                        "markerClick": false,
+                        "mounted": false,
+                        "mouseLeave": false,
+                        "mouseMove": false,
+                        "scrolled": false,
+                        "selection": false,
+                        "updated": false,
+                        "zoomed": false
+                      },
+                      "height": 350,
+                      "stacked": false,
+                      "toolbar": {
+                        "show": false
+                      },
+                      "type": "bar"
+                    },
+                    "colors": [
+                      "#00639a",
+                      "#006a60",
+                      "#ba1a1a"
+                    ],
+                    "dataLabels": {
+                      "enabled": true,
+                      "formatter": "function (val, opts) {       return val.toLocaleString();   }"
+                    },
+                    "grid": {
+                      "borderColor": "#e7e7e7",
+                      "row": {
+                        "colors": [
+                          "#f3f3f3",
+                          "transparent"
+                        ],
+                        "opacity": 0.5
+                      }
+                    },
+                    "key": {},
+                    "legend": {
+                      "floating": true,
+                      "horizontalAlign": "right",
+                      "offsetX": -5,
+                      "offsetY": -25,
+                      "position": "top"
+                    },
+                    "markers": {
+                      "size": 1
+                    },
+                    "stroke": {
+                      "curve": "smooth"
+                    },
+                    "title": {
+                      "align": "left",
+                      "text": "Production Count by Item"
+                    },
+                    "xaxis": {
+                      "title": {
+                        "text": ""
+                      }
+                    },
+                    "yaxis": {
+                      "min": 0,
+                      "title": {
+                        "text": "lbs"
+                      }
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/container"
+                  },
+                  "type": "bar"
+                },
+                "type": "kyvislabs.display.apexchart"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "chkPackageCount",
+                      "name": "chkPackageCount",
+                      "tooltip": {
+                        "enabled": true,
+                        "text": "Multiply outfeed count by package count to show infeed and outfeed counts in the same units"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.usePackageCount"
+                          },
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "checkedIcon": {
+                        "style": {
+                          "width": "16px"
+                        }
+                      },
+                      "text": "Use Package Count",
+                      "uncheckedIcon": {
+                        "style": {
+                          "width": "16px"
+                        }
+                      }
+                    },
+                    "type": "ia.input.checkbox"
+                  },
+                  {
+                    "meta": {
+                      "domId": "numTarget",
+                      "name": "numTarget"
+                    },
+                    "position": {
+                      "basis": "40px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.value.units": {
+                        "binding": {
+                          "config": {
+                            "path": "../numInfeed.props.params.value.units"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.params.value.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.oeeData"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\treturn value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "label": "Target"
+                        }
+                      },
+                      "path": "kanoa/core/templates/displays/numLabel"
+                    },
+                    "type": "ia.display.view"
+                  },
+                  {
+                    "meta": {
+                      "domId": "numInfeed",
+                      "name": "numInfeed"
+                    },
+                    "position": {
+                      "basis": "40px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.value.units": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.oeeData"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tunits \u003d list(set([value.getValueAt(i,\u0027infeedUnits\u0027) for i in range(value.rowCount)]))\n\n\tif len(units) \u003e 1: return \u0027mixed\u0027\n\tif len(units) \u003d\u003d 1: return units[0]\n\treturn \u0027\u0027\n\t",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.params.value.value": {
+                        "binding": {
+                          "config": {
+                            "expression": "sum({view.custom.oeeData}, \u0027infeedCount\u0027)"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027\u0027 if value is None else value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "label": "Infeed"
+                        }
+                      },
+                      "path": "kanoa/core/templates/displays/numLabel"
+                    },
+                    "type": "ia.display.view"
+                  },
+                  {
+                    "meta": {
+                      "domId": "numOutfeed",
+                      "name": "numOutfeed"
+                    },
+                    "position": {
+                      "basis": "40px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.value.units": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "data": "{view.custom.oeeData}",
+                              "usePackageCount": "{view.custom.usePackageCount}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value.usePackageCount: units \u003d list(set([value.data.getValueAt(i,\u0027infeedUnits\u0027) for i in range(value.data.rowCount)]))\n\telse: units \u003d list(set([value.data.getValueAt(i,\u0027outfeedUnits\u0027) for i in range(value.data.rowCount)]))\n\n\tif len(units) \u003e 1: return \u0027mixed\u0027\n\tif len(units) \u003d\u003d 1: return units[0]\n\treturn \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      },
+                      "props.params.value.value": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "data": "{view.custom.oeeData}",
+                              "usePackageCount": "{view.custom.usePackageCount}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value.data.rowCount \u003d\u003d 0: return \u0027\u0027\n\tcount \u003d 0.0\n\tfor row in range(value.data.rowCount):\n\t\tcount +\u003d (value.data.getValueAt(0,\u0027outfeedCount\u0027) or 0.0) * (value.data.getValueAt(0,\u0027packageCount\u0027) or 1.0) if value.usePackageCount else value.data.getValueAt(0,\u0027outfeedCount\u0027) or 0.0\n\t\n\treturn round(count,1)\n#\treturn value.data.getValueAt(0,\u0027Outfeed_Count\u0027) if value.usePackageCount else value.data.getValueAt(0,\u0027Outfeed_Count\u0027) * value.data.getValueAt(0,\u0027Package_Count\u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "label": "Outfeed"
+                        }
+                      },
+                      "path": "kanoa/core/templates/displays/numLabel"
+                    },
+                    "type": "ia.display.view"
+                  },
+                  {
+                    "meta": {
+                      "domId": "numWaste",
+                      "name": "numWaste"
+                    },
+                    "position": {
+                      "basis": "40px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.value.units": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.oeeData"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tunits \u003d list(set([value.getValueAt(i,\u0027wasteUnits\u0027) for i in range(value.rowCount)]))\n\n\tif len(units) \u003e 1: return \u0027mixed\u0027\n\tif len(units) \u003d\u003d 1: return units[0]\n\treturn \u0027\u0027\n\t",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.params.value.value": {
+                        "binding": {
+                          "config": {
+                            "expression": "sum({view.custom.oeeData}, \u0027wasteCount\u0027)"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027\u0027 if value is None else value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "label": "Waste"
+                        }
+                      },
+                      "path": "kanoa/core/templates/displays/numLabel"
+                    },
+                    "type": "ia.display.view"
+                  },
+                  {
+                    "meta": {
+                      "domId": "numTargetRate",
+                      "name": "numTargetRate"
+                    },
+                    "position": {
+                      "basis": "40px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.value.units": {
+                        "binding": {
+                          "config": {
+                            "path": "../numInfeed.props.params.value.units"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027%s per hr\u0027%value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.params.value.value": {
+                        "binding": {
+                          "config": {
+                            "expression": "round(sum({view.custom.oeeData}, \u0027targetCount\u0027) / (sum({view.custom.oeeData}, \u0027runtimeSecs\u0027) / 3600.0), 1)"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027\u0027 if value is None else value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "label": "Target Rate"
+                        }
+                      },
+                      "path": "kanoa/core/templates/displays/numLabel"
+                    },
+                    "type": "ia.display.view"
+                  },
+                  {
+                    "meta": {
+                      "domId": "numActualRate",
+                      "name": "numActualRate"
+                    },
+                    "position": {
+                      "basis": "40px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.value.units": {
+                        "binding": {
+                          "config": {
+                            "path": "../numInfeed.props.params.value.units"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027%s per hr\u0027%value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.params.value.value": {
+                        "binding": {
+                          "config": {
+                            "expression": "round(sum({view.custom.oeeData}, \u0027infeedCount\u0027) / (sum({view.custom.oeeData}, \u0027runtimeSecs\u0027) / 3600.0), 1)"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027\u0027 if value is None else value",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "label": "Actual Rate"
+                        }
+                      },
+                      "path": "kanoa/core/templates/displays/numLabel"
+                    },
+                    "type": "ia.display.view"
+                  }
+                ],
+                "meta": {
+                  "domId": "FlxCntDetails",
+                  "name": "FlxCntDetails"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "borderLeftColor": "#AAAAAA",
+                    "borderLeftStyle": "solid",
+                    "borderLeftWidth": "1px",
+                    "classes": "kanoa/font/default",
+                    "gap": 5,
+                    "marginBottom": "5px",
+                    "marginTop": "5px",
+                    "minWidth": "120px",
+                    "overflow": "hidden",
+                    "padding": 5
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxChart",
+              "name": "flxChart"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.showChart"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/container",
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "Table",
+                  "name": "Table"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.oeeData"
+                      },
+                      "type": "property"
+                    }
+                  },
+                  "props.pager.bottom": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.data"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn value.rowCount \u003e self.props.pager.initialOption",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "columns": [
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY hh:mm",
+                      "editable": false,
+                      "field": "hourTimeStamp",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Time"
+                      },
+                      "justify": "auto",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 140
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY hh:mm",
+                      "editable": false,
+                      "field": "itemName",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Item"
+                      },
+                      "justify": "auto",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 140
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "assetId",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Product"
+                      },
+                      "justify": "auto",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": false,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "targetCount",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Target Count"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 80
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "infeedCount",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Infeed Count"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 80
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "outfeedCount",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Outfeed Count"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 80
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "wasteCount",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Reject Count"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 80
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "runtimeSecs",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Runtime Secs"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 60
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "unplannedDowntimeSecs",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Downtime Secs"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 70
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "plannedDowntimeSecs",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Planned Down Secs"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 80
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "packageCount",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Package Count"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 80
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "infeedUnits",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Infeed Units"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "outfeedUnits",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Outfeed Units"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "wasteUnits",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Waste Units"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "standardRate",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Infeed Rate"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 60
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "period",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Rate Period"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 60
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "infeedRate",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Actual Rate"
+                      },
+                      "justify": "center",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 60
+                    }
+                  ],
+                  "filter": {
+                    "enabled": true
+                  },
+                  "headerStyle": {
+                    "fontWeight": "bold"
+                  },
+                  "nullFormat": {
+                    "includeNullStrings": true
+                  },
+                  "pager": {},
+                  "rows": {
+                    "striped": {
+                      "enabled": false
+                    },
+                    "style": {
+                      "padding": "0 5px"
+                    }
+                  }
+                },
+                "type": "ia.display.table"
+              }
+            ],
+            "meta": {
+              "domId": "flxTable",
+              "name": "flxTable"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.showChart"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn not value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxMain",
+          "name": "flxMain"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": "3px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "3px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "getProductionData",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.oeeData\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "clearProductionData",
+          "pageScope": true,
+          "script": "\n\tself.view.custom.oeeData \u003d system.dataset.clearDataset(self.view.custom.oeeData)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

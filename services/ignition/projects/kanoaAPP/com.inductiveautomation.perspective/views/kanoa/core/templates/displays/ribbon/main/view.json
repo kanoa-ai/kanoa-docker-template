@@ -1,0 +1,80 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": [
+      {
+        "color": null, 
+        "tooltip": "", 
+        "barValue": 2
+      }
+    ]
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 427, 
+      "height": 25
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "2px", 
+        "backgroundColor": "--kcSurface"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.flex-repeater", 
+        "props": {
+          "alignItems": "flex-start", 
+          "elementPosition": {
+            "grow": 0, 
+            "shrink": 0, 
+            "basis": "auto"
+          }, 
+          "useDefaultViewWidth": false, 
+          "path": "kanoa/core/templates/displays/ribbon/bar", 
+          "style": {
+            "overflow": "hidden"
+          }
+        }, 
+        "meta": {
+          "domId": "fprBars", 
+          "name": "fprBars"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\tinstances = []\n#\tallValues = [x['barValue'] for x in value]\n#\tmeanValue = system.math.mean(allValues)\n#\tvalues = [x for x in value if x['barValue'] >= meanValue] if len(allValues) > 150 else value\n#\tvalues = [x for x in value if x['barValue'] >= meanValue] if len(allValues) > 150 else value\n#\ttotal = sum([x['barValue'] for x in values])\n\ttotal = sum([x['barValue'] for x in value])\n\t\n#\tfor item in values:\n\tfor item in value:\n\t\tval = item['barValue']\n\t\tpercentage = float(val) / float(total)\n\t\tinstances.append({'values':{\"tooltip\": item['tooltip'], \"color\": item['color']}, \"instanceStyle\": {\"width\": \"{:%}\".format(percentage)}})\n\t\n\treturn instances", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.values": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

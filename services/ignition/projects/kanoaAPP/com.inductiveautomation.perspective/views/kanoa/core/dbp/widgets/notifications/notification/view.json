@@ -1,0 +1,156 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "bgColor": "-kcBlue-40",
+      "icon": "material/fact_check",
+      "iconColor": "--kcOrange-30",
+      "navInfo": {
+        "popup": false,
+        "viewName": "Scheduled Checks",
+        "viewParams": {
+          "value": {
+            "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 3",
+            "chkShtStates": [
+              "Due"
+            ]
+          }
+        },
+        "viewPath": "kanoa/qds/qdsDashboard"
+      },
+      "text": "1 Quality Check Due"
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 55,
+      "width": 414
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "ico",
+              "name": "ico"
+            },
+            "position": {
+              "basis": "30px"
+            },
+            "propConfig": {
+              "props.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.iconColor"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.icon"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "domId": "lblNotification",
+              "name": "lblNotification"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.text"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "color": "--kcGray-100"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxMain",
+          "name": "flxMain"
+        },
+        "position": {
+          "basis": "200px"
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\t\n\tparams \u003d self.view.params.value\n\t\n\tsystem.perspective.print(\u0027click %s\u0027%params[\u0027navInfo\u0027])\n\t\n\tif params.has_key(\u0027navInfo\u0027) and params[\u0027navInfo\u0027][\u0027viewPath\u0027]:\n\t\tnavInfo \u003d params[\u0027navInfo\u0027]\n\t\tif navInfo[\u0027popup\u0027]:\n\t\t\tsystem.perspective.openPopup(navInfo[\u0027viewName\u0027] + \u0027Popup\u0027, navInfo[\u0027viewPath\u0027], {\u0027value\u0027: dict(navInfo[\u0027viewParams\u0027])}, title\u003dnavInfo[\u0027viewName\u0027], draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue)\n\t\telse:\n\t\t\tviewParams \u003d system.util.jsonDecode(system.util.jsonEncode(navInfo[\u0027viewParams\u0027]))\n\t\t\tsystem.perspective.sendMessage(\"updateNavigation\", {\"path\": navInfo[\u0027viewPath\u0027], \"name\": \u0027Scheduled Checks\u0027, \"type\": \u0027view\u0027, \"params\": viewParams})\n\t\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.cursor": {
+        "binding": {
+          "config": {
+            "path": "view.params.value"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t\n\treturn \u0027pointer\u0027 if value.has_key(\u0027navInfo\u0027) and value[\u0027navInfo\u0027][\u0027viewPath\u0027] is not None else None",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcBlue-10",
+        "borderColor": "--kcBlue-10",
+        "classes": "kanoa/border kanoa/font/default",
+        "margin": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

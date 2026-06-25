@@ -1,0 +1,600 @@
+{
+  "custom": {
+    "procedureCategoryInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "enabled": null,
+      "parentId": null,
+      "procedureCategoryId": null,
+      "procedureCategoryName": "",
+      "procedureCategoryPath": null
+    }
+  },
+  "params": {
+    "values": {
+      "add": true,
+      "procedureCategoryId": null
+    }
+  },
+  "propConfig": {
+    "custom.procedureCategoryInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tprocedureCategoryInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getProcedureCategory({\u0027procedureCategoryId\u0027: value[\u0027procedureCategoryId\u0027] or -1}),0)\n\t\n\tif value[\u0027procedureCategoryId\u0027] is not None and value[\u0027add\u0027]:\n\t\tprocedureCategoryInfo[\u0027parentId\u0027] \u003d procedureCategoryInfo[\u0027procedureCategoryId\u0027]\t\t\n\t\tprocedureCategoryInfo[\u0027procedureCategoryId\u0027] \u003d None\n\t\tprocedureCategoryInfo[\u0027procedureCategoryName\u0027] \u003d None\n\n\tprocedureCategoryInfo[\u0027procedureCategoryName\u0027] \u003d procedureCategoryInfo[\u0027procedureCategoryName\u0027] or \u0027\u0027\n\t\n\treturn procedureCategoryInfo\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 158,
+      "width": 440
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "lblProcedureCategoryPath"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Category Path"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "lblPath"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.procedureCategoryInfo.procedureCategoryPath"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn \u0027 \u003e \u0027.join(value.split(\"\\\\\")[:-1]) if value and \"\\\\\" in value else value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.procedureCategoryInfo.parentId \u003d None\n\tself.view.custom.procedureCategoryInfo.procedureCategoryPath \u003d \u0027\u0027\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "icoClear",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "Clear category path"
+              }
+            },
+            "position": {
+              "basis": "15px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.procedureCategoryInfo.parentId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "material/close"
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxProcedureName",
+          "name": "flxProcedureCategoryPath"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "lblProcedureCategoryName"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Category Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\n\timport time\n\ttime.sleep(0.2)\n\tself.focus()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "TextField",
+              "name": "txtProcedureCategoryName"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.procedureCategoryInfo.procedureCategoryName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default kanoa/border"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxProcedureName",
+          "name": "flxProcedureCategoryName"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label",
+              "name": "label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Color"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").custom.selectedAttribute \u003d \u0027Color-Light\u0027\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss\u003dTrue)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "lblColor",
+              "name": "lblColor"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.procedureInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027procedureColor\u0027] or value[\u0027procedureTypeColor\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/input",
+                "height": "25px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.custom.procedureInfo.procedureColor \u003d None\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Clear overridden Procedure color"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.procedureInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027procedureColor\u0027] is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "height": 20,
+                "icon": {
+                  "path": "material/close"
+                },
+                "width": 20
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "marginLeft": "5px"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxColor",
+          "name": "flxColor"
+        },
+        "position": {
+          "basis": "30px",
+          "display": false,
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label-1",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "Checkbox",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.procedureCategoryInfo.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxProcedureEnabled",
+          "name": "flxProcedureEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tparams \u003d self.view.params.values\n\tprocedureCategoryInfo \u003d dict(self.view.custom.procedureCategoryInfo)\n\tprocedureCategoryId \u003d procedureCategoryInfo[\u0027procedureCategoryId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif params[\u0027add\u0027] or params[\u0027procedureCategoryId\u0027] is None:\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Adding procedure category\u0027})\t\n\t\tprocedureId, msg \u003d system.kanoa.cmms.addProcedureCategory(procedureCategoryInfo, userId)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Updating procedure category Id %s\u0027%procedureCategoryId})\t\t\t\n\t\tretVal, msg \u003d system.kanoa.cmms.updateProcedureCategory(procedureCategoryInfo, userId)\n\t\t\n\tsystem.perspective.sendMessage(\"updateProcedures\", {})\n\n\tif msg: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \"Couldn\u0027t save procedure category. %s\"%msg})\n\telse: \n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027procedure category as been saved.\u0027})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.procedureInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if (value[\u0027procedureName\u0027] or None) is not None and value[\u0027procedureTypeId\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose-1",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "marginLeft": "5px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "colorPicked",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"colorPicked msg rcvd with payload \" + str(payload))\n\tself.view.custom.procedureInfo.procedureColor \u003d payload[\u0027color\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "procedureCategorySelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"procedureCategorySelected msg rcvd with payload \" + str(payload))\n\t\n\tprocedureCategoryId \u003d None\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tprocedureCategoryId \u003d payload[\u0027selection\u0027][0][\u0027procedureCategoryId\u0027]\n\t\tprocedureCategoryName \u003d payload[\u0027selection\u0027][0][\u0027procedureCategoryName\u0027]\n\t\tprocedureCategoryPath \u003d payload[\u0027selection\u0027][0][\u0027procedureCategoryPath\u0027]\n\t\n\tself.view.custom.procedureInfo.procedureCategoryId \u003d procedureCategoryId\n\tself.view.custom.procedureInfo.procedureCategoryName \u003d procedureCategoryName\n\tself.view.custom.procedureInfo.procedureCategoryPath \u003d procedureCategoryPath\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

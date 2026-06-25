@@ -1,0 +1,308 @@
+{
+  "custom": {
+    "tagPath": "null",
+    "timeSeries": {
+      "plots": [],
+      "series": [
+        {
+          "data": [],
+          "name": "Ingot Width"
+        }
+      ]
+    }
+  },
+  "params": {
+    "value": {
+      "tagPath": "null"
+    }
+  },
+  "propConfig": {
+    "custom.tagPath": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value.get(\u0027tagPath\u0027)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.timeSeries.plots": {
+      "binding": {
+        "config": {
+          "path": "view.custom.tagPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\ttagPath \u003d value\n\tif (tagPath or None) is None: return []\n\tpaths \u003d [\n\t\ttagPath + \u0027/spec/lsl\u0027,\n\t\ttagPath + \u0027/spec/lcl\u0027,\n\t\ttagPath + \u0027/spec/tgt\u0027,\n\t\ttagPath + \u0027/spec/ucl\u0027,\n\t\ttagPath + \u0027/spec/usl\u0027,\n\t\ttagPath + \u0027/data\u0027\n\t]\n\tvals \u003d system.tag.readBlocking(paths)\n\tlsl \u003d vals[0].value\n\tlcl \u003d vals[1].value\n\ttgt \u003d vals[2].value\n\tucl \u003d vals[3].value\n\tusl \u003d vals[4].value\n\tdata \u003d vals[5].value\n\n\tvalueList \u003d [row[1] for row in system.dataset.toPyDataSet(data) if row[1] is not None]\n\tif not valueList: return []\n\n\tallVals \u003d valueList + [v for v in [lsl, lcl, tgt, ucl, usl] if v is not None]\n\tminRange \u003d min(allVals)\n\tmaxRange \u003d max(allVals)\n\tpadding \u003d (maxRange - minRange) * 0.1 if maxRange !\u003d minRange else 1.0\n\n\tdef buildMarker(name, val, color, dashArray, position):\n\t\treturn {\n\t\t\t\u0027visible\u0027: True,\n\t\t\t\u0027type\u0027: \u0027line\u0027,\n\t\t\t\u0027axis\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027value\u0027: val,\n\t\t\t\u0027line\u0027: {\n\t\t\t\t\u0027color\u0027: color,\n\t\t\t\t\u0027width\u0027: 1,\n\t\t\t\t\u0027opacity\u0027: 0.8,\n\t\t\t\t\u0027dashArray\u0027: dashArray,\n\t\t\t\t\u0027label\u0027: {\n\t\t\t\t\t\u0027text\u0027: name,\n\t\t\t\t\t\u0027position\u0027: position,\n\t\t\t\t\t\u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10},\n\t\t\t\t\t\u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\tmarkers \u003d []\n\tif lsl is not None: markers.append(buildMarker(\u0027LSL\u0027, lsl, \u0027#FF0000\u0027, 0, \u0027left\u0027))\n\tif lcl is not None: markers.append(buildMarker(\u0027LCL\u0027, lcl, \u0027#FF8C00\u0027, \u00275.5\u0027, \u0027left\u0027))\n\tif tgt is not None: markers.append(buildMarker(\u0027Target\u0027, tgt, \u0027#00AC00\u0027, 0, \u0027left\u0027))\n\tif ucl is not None: markers.append(buildMarker(\u0027UCL\u0027, ucl, \u0027#FF8C00\u0027, \u00275.5\u0027, \u0027right\u0027))\n\tif usl is not None: markers.append(buildMarker(\u0027USL\u0027, usl, \u0027#FF0000\u0027, 0, \u0027right\u0027))\n\n\treturn [{\n\t\t\u0027trends\u0027: [{\n\t\t\t\u0027visible\u0027: True,\n\t\t\t\u0027type\u0027: \u0027line\u0027,\n\t\t\t\u0027series\u0027: \u0027Ingot Width\u0027,\n\t\t\t\u0027interpolation\u0027: \u0027curveLinear\u0027,\n\t\t\t\u0027breakLine\u0027: True,\n\t\t\t\u0027stack\u0027: True,\n\t\t\t\u0027radius\u0027: 3,\n\t\t\t\u0027axis\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027columns\u0027: [],\n\t\t\t\u0027baselines\u0027: []\n\t\t}],\n\t\t\u0027axes\u0027: [{\n\t\t\t\u0027name\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027min\u0027: minRange - padding,\n\t\t\t\u0027max\u0027: maxRange + padding,\n\t\t\t\u0027alignment\u0027: \u0027right\u0027,\n\t\t\t\u0027width\u0027: 60,\n\t\t\t\u0027label\u0027: {\u0027visible\u0027: False, \u0027text\u0027: \u0027Value\u0027, \u0027offset\u0027: 1, \u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}},\n\t\t\t\u0027tick\u0027: {\u0027color\u0027: \u0027\u0027, \u0027label\u0027: {\u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}},\n\t\t\t\u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}\n\t\t}],\n\t\t\u0027markers\u0027: markers\n\t}]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.timeSeries.series": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "tagPath": "{view.custom.tagPath}"
+          },
+          "tagPath": "{tagPath}/data"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tif value is None: return [{\u0027name\u0027: \u0027Ingot Width\u0027, \u0027data\u0027: []}]\n\tchartList \u003d []\n\tfor row in system.dataset.toPyDataSet(value):\n\t\tif row[\u0027value\u0027] is not None:\n\t\t\tchartList.append({\u0027time\u0027: row[\u0027tStamp\u0027], \u0027value\u0027: row[\u0027value\u0027]})\n\treturn [{\u0027name\u0027: \u0027Ingot Width\u0027, \u0027data\u0027: chartList}]",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 394
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblTitle"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagPath"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif value is None: return \u0027\u0027\n\treturn value.split(\"/\")[-1]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "fontSize": "16px",
+                "fontWeight": "bold"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblOOC"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "fallbackDelay": 2.5,
+                    "mode": "indirect",
+                    "references": {
+                      "tagPath": "{view.custom.tagPath}"
+                    },
+                    "tagPath": "{tagPath}/outOfControl"
+                  },
+                  "overlayOptOut": true,
+                  "type": "tag"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "#c0392b",
+                "borderRadius": "4px",
+                "color": "white",
+                "fontSize": "12px",
+                "fontWeight": "bold",
+                "padding": "4px 10px"
+              },
+              "text": "OUT OF CONTROL"
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "Header"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "space-between",
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "TimeSeriesChart"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.plots": {
+            "binding": {
+              "config": {
+                "path": "view.custom.timeSeries.plots"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.timeSeries.series"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "flex": "1 1 auto",
+            "minHeight": "300px"
+          },
+          "timeAxis": {
+            "height": 30
+          },
+          "timeRange": {
+            "dateFormat": "MM-DD-YY",
+            "timeFormat": "h:mma"
+          },
+          "title": {
+            "font": {
+              "size": "12px"
+            }
+          }
+        },
+        "type": "ia.chart.timeseries"
+      },
+      {
+        "meta": {
+          "name": "lblViolations"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.custom.tagPath}"
+                },
+                "tagPath": "{tagPath}/outOfControl"
+              },
+              "overlayOptOut": true,
+              "type": "tag"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.custom.tagPath}"
+                },
+                "tagPath": "{tagPath}/ruleViolations"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027Violations: %s\u0027%\u0027, \u0027.join(value) if value else []",
+                  "type": "script"
+                }
+              ],
+              "type": "tag"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "color": "#c0392b"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

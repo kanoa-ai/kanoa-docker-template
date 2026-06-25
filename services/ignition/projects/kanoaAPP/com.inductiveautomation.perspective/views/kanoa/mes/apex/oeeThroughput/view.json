@@ -1,0 +1,253 @@
+{
+  "custom": {
+    "data": {},
+    "filter": {
+      "assetId": 510,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1772138404553
+        ],
+        "$ts": 1769457600000
+      },
+      "interval": "Hour",
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1772138404553
+        ],
+        "$ts": 1769385600000
+      }
+    },
+    "info": {
+      "showBar": false,
+      "text": "",
+      "type": "INFO"
+    },
+    "metrics": {
+      "actualRate": 47.67297959183674,
+      "infeedCount": 408.79580000000004,
+      "infeedUnits": "lbs",
+      "outfeedCount": 407.4542,
+      "outfeedUnits": "lbs",
+      "packageCounts": 1,
+      "rateUnits": "hr",
+      "runtimeSecs": 30870,
+      "targetCount": 514.49982,
+      "targetRate": 59.99997900874636,
+      "wasteCount": 1.3416000000000086,
+      "wasteUnits": "lbs"
+    },
+    "usePackageCount": false
+  },
+  "params": {
+    "data": {
+      "assetId": 510,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1772136924110
+        ],
+        "$ts": 1769457600000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1772136899014
+        ],
+        "$ts": 1769385600000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.chartData": {
+      "binding": {
+        "config": {
+          "struct": {
+            "data": "{view.custom.data.oeeData}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n#\tsystem.perspective.print(\"building chart Data\")\n\tusePackageCount \u003d self.view.custom.usePackageCount\n\t#displayOptions \u003d self.params.values.displayOptions\n\tmetrics \u003d {\u0027targetCount\u0027: 0, \u0027infeedCount\u0027: 0, \u0027outfeedCount\u0027: 0, \u0027wasteCount\u0027: 0, \u0027infeedUnits\u0027: \u0027\u0027, \u0027outfeedUnits\u0027: \u0027\u0027, \u0027wasteUnits\u0027: \u0027\u0027, \u0027targetRate\u0027: \u0027\u0027, \u0027actualRate\u0027: \u0027\u0027, \u0027rateUnits\u0027: \u0027hr\u0027, \u0027runtimeSecs\u0027: 0}\n\tinfeedUnits \u003d []\n\toutfeedUnits \u003d []\n\twasteUnits \u003d []\n\tpackageCount \u003d []\n\n\tif value[\u0027data\u0027] is None:\n\t\tself.custom.metrics \u003d metrics\n\t\treturn {}\n\t\n\tinfeed \u003d {}\n\toutfeed \u003d {}\n\twaste \u003d {}\n\ttarget \u003d {}\n\t\n\tfor row in value[\u0027data\u0027]:\n\t\tif row[\u0027infeedUnits\u0027]: infeedUnits.append(row[\u0027infeedUnits\u0027])\n\t\tinfeedCount \u003d row[\u0027infeedCount\u0027] or 0.0\n\t\tinfeed[row[\u0027hourTimeStamp\u0027]] \u003d infeed[row[\u0027hourTimeStamp\u0027]] + infeedCount if infeed.has_key(row[\u0027hourTimeStamp\u0027]) else infeedCount\n\t\tmetrics[\u0027infeedCount\u0027] +\u003d infeedCount\n\t\t\n\t\tif row[\u0027outfeedUnits\u0027]: outfeedUnits.append(row[\u0027outfeedUnits\u0027])\n\t\toutfeedCount \u003d (row[\u0027outfeedCount\u0027] or 0.0) * (row[\u0027packageCount\u0027] or 1.0) if usePackageCount else (row[\u0027outfeedCount\u0027] or 0.0)\n\t\toutfeed[row[\u0027hourTimeStamp\u0027]] \u003d outfeed[row[\u0027hourTimeStamp\u0027]] + outfeedCount if outfeed.has_key(row[\u0027hourTimeStamp\u0027]) else outfeedCount\n\t\tmetrics[\u0027outfeedCount\u0027] +\u003d outfeedCount\n\n\t\tif row[\u0027wasteUnits\u0027]: wasteUnits.append(row[\u0027wasteUnits\u0027])\n\t\twasteCount \u003d row[\u0027wasteCount\u0027] or 0.0\n\t\twaste[row[\u0027hourTimeStamp\u0027]] \u003d waste[row[\u0027hourTimeStamp\u0027]] + wasteCount if waste.has_key(row[\u0027hourTimeStamp\u0027]) else wasteCount\n\t\tmetrics[\u0027wasteCount\u0027] +\u003d wasteCount\n\t\t\n\t\ttargetCount \u003d row[\u0027targetCount\u0027] or 0.0\n\t\ttarget[row[\u0027hourTimeStamp\u0027]] \u003d target[row[\u0027hourTimeStamp\u0027]] + targetCount if target.has_key(row[\u0027hourTimeStamp\u0027]) else targetCount\n\t\tmetrics[\u0027targetCount\u0027] +\u003d targetCount\n\t\t\n\t\tpackageCount.append(row[\u0027packageCount\u0027] or 1)\n\t\t\n\t\tmetrics[\u0027runtimeSecs\u0027] +\u003d row[\u0027runtimeSecs\u0027] or 0\n\n\tdata \u003d {}\n\tdata[\u0027infeed\u0027] \u003d [{\"category\": count[0], \"value\": count[1]} for count in sorted(infeed.items())]\n\tdata[\u0027outfeed\u0027] \u003d [{\"category\": count[0], \"value\": count[1]} for count in sorted(outfeed.items())]\n\tdata[\u0027waste\u0027] \u003d [{\"category\": count[0], \"value\": count[1]} for count in sorted(waste.items())]\n\tdata[\u0027target\u0027] \u003d [{\"category\": count[0], \"value\": count[1]} for count in sorted(target.items())]\n\t\n\tinfeedUnits \u003d list(set(infeedUnits)) if len(infeedUnits) \u003e 0 else [\u0027\u0027]\n\tmetrics[\u0027infeedUnits\u0027] \u003d infeedUnits[0] if len(infeedUnits) \u003d\u003d 1 else \u0027mixed\u0027\n\t\n\toutfeedUnits \u003d list(set(outfeedUnits)) if len(outfeedUnits) \u003e 0 else [\u0027\u0027]\n\tmetrics[\u0027outfeedUnits\u0027] \u003d outfeedUnits[0] if len(outfeedUnits) \u003d\u003d 1 else \u0027mixed\u0027\n\t\n\twasteUnits \u003d list(set(wasteUnits)) if len(wasteUnits) \u003e 0 else [\u0027\u0027]\n\tmetrics[\u0027wasteUnits\u0027] \u003d wasteUnits[0] if len(wasteUnits) \u003d\u003d 1 else \u0027mixed\u0027\n\t\n\tpackageCounts \u003d list(set(packageCount)) if len(packageCount) \u003e 0 else [\u0027\u0027]\n\tmetrics[\u0027packageCounts\u0027] \u003d packageCounts[0] if len(packageCounts) \u003d\u003d 1 else \u0027mixed\u0027\n\t\n\tmetrics[\u0027targetRate\u0027] \u003d metrics[\u0027targetCount\u0027] / (metrics[\u0027runtimeSecs\u0027] / 3600.0) if metrics[\u0027targetCount\u0027] \u003e 0 and  metrics[\u0027runtimeSecs\u0027] \u003e 0 else 0\n\tmetrics[\u0027actualRate\u0027] \u003d metrics[\u0027infeedCount\u0027] / (metrics[\u0027runtimeSecs\u0027] / 3600.0) if metrics[\u0027infeedCount\u0027] \u003e 0 and  metrics[\u0027runtimeSecs\u0027] \u003e 0 else 0\n\t\n\tself.custom.metrics \u003d metrics\n\treturn data",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.data.oeeData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027startDate\u0027] is None or value[\u0027endDate\u0027] is None or value[\u0027assetId\u0027] is None: return system.dataset.toPyDataSet(system.dataset.clearDataset(self.custom.oeeData))\n#\tsystem.perspective.print(\"calling getOEEDataByInterval() with %s %s %s %s\"%(value[\u0027assetId\u0027], value[\u0027startDate\u0027], value[\u0027endDate\u0027], value[\u0027interval\u0027]))\n\tdata \u003d system.kanoa.event.getOEEDataByInterval(value[\u0027assetId\u0027], value[\u0027startDate\u0027], value[\u0027endDate\u0027], value[\u0027interval\u0027])\n\tself.custom.info \u003d {\"showBar\": False, \"text\": \"\", \"type\": \"INFO\"}\t\n\n\treturn system.kanoa.utilities.convertDatasetToJSON(data)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filter": {
+      "binding": {
+        "config": {
+          "path": "view.params.data"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tfilters \u003d dict(value)\n\tif not value.has_key(\u0027interval\u0027):\n\t\tfilters[\u0027interval\u0027] \u003d \u0027Hour\u0027\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.usePackageCount": {
+      "persistent": true
+    },
+    "params.data": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 358,
+      "width": 821
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "apexBar",
+          "name": "apexBar"
+        },
+        "position": {
+          "basis": "400px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.options.plotOptions.bar.colors": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.oeeSummary"
+              },
+              "transforms": [
+                {
+                  "code": "\tif value.getValueAt(0,value.getColumnIndex(\u0027tgtAvailability\u0027)) is None: return 0\n\t\n\ttarget \u003d value.getValueAt(0,value.getColumnIndex(\u0027tgtAvailability\u0027))\n\tthreshold \u003d value.getValueAt(0,value.getColumnIndex(\u0027tgtThreshold\u0027))\n\tranges \u003d [\n\t {\n\t \t\"from\": 0,\n\t \t\"to\": target - threshold,\n\t \t\"color\": kanoaScripts.colors.getCSSColor(\u0027--kcBad\u0027, self.session.props.theme)+\u0027ff\u0027\n\t }, \n\t {\n \t \t\"from\": target - threshold, \n \t \t\"to\": target,\n \t \t\"color\": kanoaScripts.colors.getCSSColor(\u0027--kcOK\u0027, self.session.props.theme)+\u0027ff\u0027\n \t }, \n \t {\n \t \t\"from\": target, \n \t \t\"to\": 1.0,\n \t \t\"color\": kanoaScripts.colors.getCSSColor(\u0027--kcGood\u0027, self.session.props.theme)+\u0027ff\u0027\n \t }\n\t]\n\t\n\tcolorDict \u003d {\n\t\t\"ranges\": ranges\n\t}\n\treturn colorDict",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.theme.mode": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.chartData"
+              },
+              "transforms": [
+                {
+                  "code": "\t\t\n\tinfeedData \u003d []\n\toutfeedData \u003d []\n\twasteData \u003d []\n\ttargetData \u003d []\n\n\tdateFormat \u003d \"MM/dd/YY HH:mm\" if self.view.custom.filter.interval \u003d\u003d \u0027Hour\u0027 else \"MM/dd\"\n\tgatewayOffSetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffsetMins \u003d int(self.session.props.device.timezone.utcOffset * 60)\n\toffsetMins \u003d clientOffsetMins - gatewayOffSetMins\n\n\tfor row in value[\u0027waste\u0027]:\n\t\t\n\t\twasteData.append({\"x\": system.date.format(system.date.addMinutes(row[\u0027category\u0027], offsetMins), dateFormat), \"y\": row[\u0027value\u0027]})\n\tfor row in value[\u0027infeed\u0027]:\n\t\tinfeedData.append({\"x\": system.date.format(system.date.addMinutes(row[\u0027category\u0027], offsetMins), dateFormat), \"y\": row[\u0027value\u0027]})\n\tfor row in value[\u0027outfeed\u0027]:\n\t\toutfeedData.append({\"x\": system.date.format(system.date.addMinutes(row[\u0027category\u0027], offsetMins), dateFormat), \"y\": row[\u0027value\u0027]})\n\tfor row in value[\u0027target\u0027]:\n\t\ttargetData.append({\"x\": system.date.format(system.date.addMinutes(row[\u0027category\u0027], offsetMins), dateFormat), \"y\": row[\u0027value\u0027]})\n\t\t\n\tiSeries \u003d {\"name\": \"Infeed Count\", \"data\": infeedData, \"type\": \"column\"}\n\toSeries \u003d {\"name\": \"Outfeed Count\",\t\"data\": outfeedData, \"type\": \"column\"}\n\twSeries \u003d {\"name\": \"Waste Count\", \"data\": wasteData, \"type\": \"column\"}\n\ttSeries \u003d {\"name\": \"Target Count\", \"data\": targetData, \"type\": \"line\"}\n\treturn [iSeries, oSeries, wSeries, tSeries]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "options": {
+            "chart": {
+              "height": 350,
+              "stacked": false,
+              "toolbar": {
+                "show": true
+              },
+              "type": "line"
+            },
+            "colors": [
+              "#489fe2",
+              "#117DBE",
+              "#FF6666",
+              "#3b3b3b"
+            ],
+            "dataLabels": {
+              "enabled": false
+            },
+            "fill": {
+              "opacity": 1
+            },
+            "markers": {
+              "size": 5
+            },
+            "stroke": {
+              "curve": "smooth",
+              "width": 3
+            },
+            "theme": {},
+            "title": {
+              "text": "Production Counts"
+            },
+            "xaxis": {},
+            "yaxis": {
+              "labels": {
+                "formatter": "function (val) {return val.toFixed(2); }"
+              },
+              "title": {
+                "text": "Units"
+              }
+            }
+          },
+          "style": {
+            "classes": "kanoa/container"
+          },
+          "type": "bar"
+        },
+        "type": "kyvislabs.display.apexchart"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "custom": {
+    "filter": {
+      "endDate": {
+        "$ts": 1705510639000, 
+        "$": [
+          "ts", 
+          192, 
+          1707234771632
+        ]
+      }, 
+      "startDate": {
+        "$ts": 1706374639017, 
+        "$": [
+          "ts", 
+          192, 
+          1706374649245
+        ]
+      }
+    }
+  }, 
+  "params": {
+    "data": {
+      "currentMode": "Production", 
+      "assetId": 18, 
+      "assetPath": "Kanoa Industries\\Adelaide Hills\\Packaging\\Line 1"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 1006
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcSurface", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/bodySmall"
+              }
+            }, 
+            "meta": {
+              "domId": "lblAsset", 
+              "name": "lblAsset"
+            }, 
+            "position": {
+              "display": false
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.data.assetPath"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "text": "Manual Entry", 
+              "textStyle": {
+                "classes": "kanoa/font/titleLarge"
+              }
+            }, 
+            "meta": {
+              "domId": "lblPageTitle", 
+              "name": "lblPageTitle"
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxHeader", 
+          "name": "flxHeader"
+        }
+      }, 
+      {
+        "type": "ia.container.tab", 
+        "props": {
+          "menuStyle": {
+            "backgroundColor": "--kcSurface", 
+            "borderBottomColor": "--kcInverseOnSurface", 
+            "borderBottomStyle": "solid", 
+            "borderBottomWidth": 1
+          }, 
+          "contentStyle": {
+            "paddingTop": "5px", 
+            "borderStyle": "none"
+          }, 
+          "tabSize": {
+            "width": 192, 
+            "height": 64
+          }, 
+          "menuType": "modern", 
+          "tabStyle": {
+            "active": {
+              "backgroundColor": "--kcSurfaceVariant", 
+              "color": "--kcPrimary", 
+              "borderRightStyle": "solid", 
+              "borderLeftStyle": "solid", 
+              "borderTopColor": "--kcOutline", 
+              "borderTopLeftRadius": "10px", 
+              "borderBottomColor": "--kcPrimary", 
+              "borderTopStyle": "solid", 
+              "borderLeftWidth": 1, 
+              "borderRightWidth": 1, 
+              "borderTopWidth": 1, 
+              "borderBottomStyle": "solid", 
+              "borderRightColor": "--kcOutline", 
+              "borderTopRightRadius": "10px", 
+              "borderLeftColor": "--kcOutline"
+            }, 
+            "inactive": {
+              "borderBottomColor": "--kcOutline", 
+              "borderBottomStyle": "solid", 
+              "borderBottomWidth": "1px"
+            }
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.display.view", 
+            "props": {
+              "params": {
+                "update": "", 
+                "value": {}
+              }, 
+              "path": "kanoa/mes/asset/operation/downtimeTable", 
+              "style": {
+                "classes": "kanoa/containerVariant"
+              }
+            }, 
+            "meta": {
+              "domId": "evDowntimeAndStates", 
+              "name": "evDowntimeAndStates"
+            }, 
+            "propConfig": {
+              "props.params.value.assetId": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.data.assetId"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.view", 
+            "props": {
+              "params": {
+                "data": {}, 
+                "value": {
+                  "showAssetSelector": true, 
+                  "initializeAssetSelector": true
+                }
+              }, 
+              "path": "kanoa/mes/asset/runReview/runTable"
+            }, 
+            "meta": {
+              "domId": "evRunReview", 
+              "name": "evRunReview"
+            }, 
+            "position": {
+              "tabIndex": 1
+            }, 
+            "propConfig": {
+              "props.params.data.assetId": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.data.assetId"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.view", 
+            "meta": {
+              "domId": "evManualEntry", 
+              "name": "evManualEntry"
+            }, 
+            "position": {
+              "tabIndex": 2
+            }, 
+            "propConfig": {
+              "props.params": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn {'data': {'assetId': value['assetId']}}", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.data"
+                  }
+                }
+              }, 
+              "props.path": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tattributes = system.kanoa.asset.getAssetAttributes({'assetId': value})\n\tfor row in range(attributes.getRowCount()):\n\t\tif attributes.getValueAt(row, 'assetAttrName') == '_manualDataView':\n\t\t\treturn attributes.getValueAt(row, 'assetAttrValue')\n\n\treturn ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.data.assetId"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxContent", 
+          "name": "flxContent"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "300px"
+        }, 
+        "propConfig": {
+          "props.tabs": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tmanualEntry = {\"viewParams\": {\"icon\": \"material/edit\", \"label\": \"Manual Data Entry\", \"selected\": False}, \"viewPath\": \"kanoa/core/templates/tabs/tabWIcon\"}\n\tdowntime = {\"viewParams\": {\"icon\": \"material/warning\", \"label\": \"Downtime & States\", \"selected\": False}, \"viewPath\": \"kanoa/core/templates/tabs/tabWIcon\"}\n\trun = {\"viewParams\": {\"icon\": \"material/run_circle\", \"label\": \"Run Review\", \"selected\": False}, \"viewPath\": \"kanoa/core/templates/tabs/tabWIcon\"}\n\t\n\ttabs = [downtime, run]\n\t\n\tattributes = system.kanoa.asset.getAssetAttributes({'assetId': value})\n\tfor row in range(attributes.getRowCount()):\n\t\tif attributes.getValueAt(row, 'assetAttrName') == '_manualDataView':\n\t\t\ttabs.append(manualEntry)\n\t\n\t\n\treturn tabs", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.data.assetId"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    }, 
+    "custom.filter.assetId": {
+      "binding": {
+        "type": "property", 
+        "config": {
+          "path": "view.params.data.assetId"
+        }
+      }
+    }, 
+    "params.data": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

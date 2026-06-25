@@ -1,0 +1,944 @@
+{
+  "custom": {
+    "alert": {
+      "msg": null
+    },
+    "itemInfo": {
+      "changedBy": null,
+      "changedDate": {
+        "$": [
+          "ts",
+          192,
+          1770398962026
+        ],
+        "$ts": 1769980948800
+      },
+      "createdBy": 22,
+      "createdDate": {
+        "$": [
+          "ts",
+          192,
+          1770398962026
+        ],
+        "$ts": 1769980948800
+      },
+      "enabled": true,
+      "groupCode": null,
+      "groupName": null,
+      "itemClassColor": "#FF8AFF",
+      "itemClassEnabled": true,
+      "itemClassId": 2,
+      "itemClassName": "RM",
+      "itemClassPath": "RM",
+      "itemColor": null,
+      "itemDescription": "Boxes of 4 helmets HK",
+      "itemId": 5560,
+      "itemName": "CH170023",
+      "itemPath": "RM\\CH170023",
+      "path": "RM\\CH170023"
+    },
+    "lotConfig": {
+      "captureNonLots": true,
+      "inputScan": "lotName",
+      "outputLot": "selectPart",
+      "serialId": null,
+      "updateLotName": true
+    },
+    "lots": {
+      "index": 1
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": 175,
+      "itemDescription": "Boxes of 4 helmets HK",
+      "itemId": 5560,
+      "itemName": "CH170023",
+      "itemUnitName": "EA",
+      "lineItemInfo": {
+        "activity": "400",
+        "backflush": "X",
+        "bomItem": "15",
+        "bulkMaterial": "",
+        "configurableItem": "",
+        "deleted": "",
+        "distribution": "",
+        "item": 15,
+        "material": "CH170023",
+        "materialDescription": "Boxes of 4 helmets HK",
+        "missingPart": "",
+        "open": 0,
+        "order": "999999999",
+        "peggedReqt": "999999999",
+        "phantomItem": "",
+        "plant": "FRM3",
+        "procurementType": "F",
+        "qtyWithdrawn": 0.25,
+        "reqtDate": "2025-06-30T00:00:00-04:00",
+        "reqtQty": 0.25,
+        "reserveNumber": "470257200",
+        "sortString": "",
+        "storageLocation": "MAIN",
+        "systemStatus": "PRT  REL",
+        "unit": "EA",
+        "workCenter": "562"
+      },
+      "lotConfig": {
+        "captureNonLots": true,
+        "inputScan": "lotName",
+        "outputLot": "selectPart",
+        "serialId": null,
+        "updateLotName": true
+      },
+      "qty": 0.25
+    }
+  },
+  "propConfig": {
+    "custom.alert": {
+      "binding": {
+        "config": {
+          "struct": {
+            "itemInfo": "{view.custom.itemInfo}",
+            "lots": "{view.custom.lots}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tmsg \u003d None\n\tif value[\u0027itemInfo\u0027][\u0027itemId\u0027] is None: msg \u003d \u0027This part does not exist in MES\u0027\n\telif len(value[\u0027lots\u0027][\u0027lotOptions\u0027]) \u003d\u003d 0: msg \u003d \u0027No lots found for this part\u0027\n\telif len(value[\u0027lots\u0027][\u0027lotOptions\u0027]) \u003e 0 and value[\u0027lots\u0027][\u0027index\u0027] is None: msg \u003d \u0027No lot selected\u0027\n\t\n\treturn {\u0027msg\u0027: msg}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.itemInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.item.getItems({\u0027itemId\u0027: value[\u0027itemId\u0027] or -1}), 0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.lotConfig": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn value[\u0027lotConfig\u0027] if value.has_key(\u0027lotConfig\u0027) else {\"captureNonLots\": True, \u0027outputLot\u0027: None}\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.lots": {
+      "persistent": true
+    },
+    "custom.lots.lotOptions": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\thasQty \u003d False if self.params.value.lotConfig.outputLot \u003d\u003d \u0027selectPart\u0027 else True\n\tlots \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotActivity({\u0027itemId\u0027: value[\u0027itemId\u0027] or -1, \u0027hasQty\u0027: hasQty}))\n\toptions \u003d []\n\tfor i, row in enumerate(lots):\t\t\t\n\t\tlotStatus \u003d row[\u0027lotStateName\u0027] or \u0027\u0027\n\t\tif lotStatus !\u003d (row[\u0027lotStateReasonName\u0027] or lotStatus): lotStatus \u003d \"%s (%s)\"%(lotStatus, row[\u0027lotStateReasonName\u0027])\n\t\toptions.append(\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\u0027label\u0027: \"%s | %s | %s %s | %s\"%(row[\u0027lotName\u0027], row[\u0027assetName\u0027], row[\u0027lotEventQty\u0027], row[\u0027itemUnitName\u0027] or \u0027\u0027, lotStatus),\n\t\t\t\t\t\t\t\u0027lotId\u0027: row[\u0027lotId\u0027],\n\t\t\t\t\t\t\t\u0027assetId\u0027: row[\u0027assetId\u0027],\n\t\t\t\t\t\t\t\u0027itemUnitId\u0027: row[\u0027itemUnitId\u0027],\n\t\t\t\t\t\t\t\u0027lotEventQty\u0027: row[\u0027lotEventQty\u0027],\n\t\t\t\t\t\t\t\u0027lotName\u0027: row[\u0027lotName\u0027],\n\t\t\t\t\t\t\t\u0027itemId\u0027: row[\u0027itemId\u0027],\n\t\t\t\t\t\t\t\u0027itemName\u0027: row[\u0027itemName\u0027],\n\t\t\t\t\t\t\t\u0027itemPath\u0027: row[\u0027itemPath\u0027],\n\t\t\t\t\t\t\t\u0027itemUnitId\u0027: row[\u0027itemUnitId\u0027],\n\t\t\t\t\t\t\t\u0027itemUnitName\u0027: row[\u0027itemUnitName\u0027],\n\t\t\t\t\t\t\t\u0027lotStateId\u0027: row[\u0027lotStateId\u0027],\n\t\t\t\t\t\t\t\u0027lotStateName\u0027: row[\u0027lotStateName\u0027],\n\t\t\t\t\t\t\t\u0027lotStateReasonName\u0027: row[\u0027lotStateReasonName\u0027],\n\t\t\t\t\t\t\t\u0027lotStateReasonId\u0027: row[\u0027lotStateReasonId\u0027],\n\t\t\t\t\t\t\t\u0027value\u0027: i\n\t\t\t\t\t\t})\n\n\treturn options",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.lots.selection": {
+      "binding": {
+        "config": {
+          "struct": {
+            "index": "{view.custom.lots.index}",
+            "lotOptions": "{view.custom.lots.lotOptions}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tlotEventInfo \u003d {\n\t\t\t\t\u0027assetId\u0027: self.params.value.assetId,\n\t\t\t\t\u0027lotId\u0027: None,\n\t\t\t\t\u0027lotName\u0027: None,\n\t\t\t\t\u0027itemId\u0027: self.params.value.itemId,\n\t\t\t\t\u0027itemName\u0027: self.params.value.itemName,\n\t\t\t\t\u0027itemUnitId\u0027: None,\n\t\t\t\t\u0027itemUnitName\u0027: self.params.value.itemUnitName,\n\t\t\t\t\u0027lotEventQty\u0027: self.params.value.qty,\n\t\t\t\t\u0027lotStateId\u0027: None,\n\t\t\t\t\u0027lotStateName\u0027: None,\n\t\t\t\t\u0027lotStateReasonId\u0027: None,\n\t\t\t\t\u0027lotStateReasonName\u0027: None\n\t\t\t}\n\n\tif len(value[\u0027lotOptions\u0027]) \u003d\u003d 0 or value[\u0027index\u0027] is None: return lotEventInfo\n\n\tlotInfo \u003d value[\u0027lotOptions\u0027][value[\u0027index\u0027]]\n\n\tlotEventInfo[\u0027assetId\u0027] \u003d lotInfo[\u0027assetId\u0027]\n\tlotEventInfo[\u0027lotId\u0027] \u003d lotInfo[\u0027lotId\u0027]\n\tlotEventInfo[\u0027lotName\u0027] \u003d lotInfo[\u0027lotName\u0027]\n\tlotEventInfo[\u0027itemId\u0027] \u003d lotInfo[\u0027itemId\u0027]\n\tlotEventInfo[\u0027itemName\u0027] \u003d lotInfo[\u0027itemName\u0027]\n\tlotEventInfo[\u0027itemPath\u0027] \u003d lotInfo[\u0027itemPath\u0027]\t\t\t\n\tlotEventInfo[\u0027itemUnitId\u0027] \u003d lotInfo[\u0027itemUnitId\u0027]\n\tlotEventInfo[\u0027itemUnitName\u0027] \u003d lotInfo[\u0027itemUnitName\u0027]\n\tlotEventInfo[\u0027lotEventQty\u0027] \u003d self.params.value.qty\n\tlotEventInfo[\u0027lotStateId\u0027] \u003d lotInfo[\u0027lotStateId\u0027]\n\tlotEventInfo[\u0027lotStateName\u0027] \u003d lotInfo[\u0027lotStateName\u0027]\n\tlotEventInfo[\u0027lotStateReasonId\u0027] \u003d lotInfo[\u0027lotStateReasonId\u0027]\n\tlotEventInfo[\u0027lotStateReasonName\u0027] \u003d lotInfo[\u0027lotStateReasonName\u0027]\n\n\treturn lotEventInfo",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 44,
+      "width": 1317
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblItem"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027itemName\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblItemDescription"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027itemDescription\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblQty"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027qty\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblUnits"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027itemUnitName\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "icoLineItemInfo",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "sustain": 0
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value[\u0027lineItemInfo\u0027]) or \u0027\u0027 if value.has_key(\u0027lineItemInfo\u0027) else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "meta.visible": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027lineItemInfo\u0027) and (value[\u0027lineItemInfo\u0027] or None) is not None else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "color": "--kcBlue-50",
+              "path": "material/info"
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxLot",
+          "name": "flxItem"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "minWidth": "20px",
+            "overflow": "visible",
+            "padding": "5px",
+            "position": "relative"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblLot",
+              "name": "lblLot"
+            },
+            "position": {
+              "display": false,
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "Dropdowns/default",
+                "textAlign": "right"
+              },
+              "text": "Lot #"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblLotLabel",
+              "name": "lblLotLabel"
+            },
+            "position": {
+              "display": false,
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lotEventInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \"%s | %s | %s %s\"%(value[\u0027lotName\u0027], value[\u0027itemPath\u0027], value[\u0027lotEventQty\u0027] or \u0027\u0027, value[\u0027itemUnitName\u0027] or \u0027\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddLots",
+              "name": "ddLots",
+              "tooltip": {
+                "sustain": 0
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lots.lotOptions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lots.lotOptions"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\n\t#Set the selected lot to the last entry which is current value\n\tif self.props.options and len(self.props.options) \u003e 0: self.props.value \u003d self.props.options[len(self.props.options)-1].value\n\t\n\treturn"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.lots.index"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select lot..."
+              },
+              "search": {
+                "enabled": false
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "height": "30px",
+                "width": "350px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "lblQty",
+              "name": "lblQty"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "Dropdowns/default",
+                "textAlign": "right"
+              },
+              "text": "Qty Used"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numQty"
+            },
+            "position": {
+              "basis": "50px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lots"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.lots.selection.lotEventQty"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "30px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "name": "lblUnits"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027itemUnitName\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxLot",
+          "name": "flxLot"
+        },
+        "position": {
+          "basis": "550px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden",
+            "paddingRight": "8px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "icoAlert",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-left"
+          }
+        },
+        "position": {
+          "basis": "25px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.alert"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value[\u0027msg\u0027] or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "meta.visible": {
+            "binding": {
+              "config": {
+                "path": "view.custom.alert"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value[\u0027msg\u0027] is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "color": "--kcRed-50",
+          "path": "material/warning"
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.openPopup(\u0027receiveLot\u0027, \u0027kanoa/mes/lots/lotExecutor/receiveLot\u0027, {\u0027value\u0027: {\u0027assetId\u0027: self.view.params.value.assetId, \u0027itemId\u0027: self.view.params.value.itemId}})\n\t\n\treturn\n"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "button",
+              "name": "btnReceive",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom",
+                "tail": false,
+                "text": "Receive a lot of this material"
+              }
+            },
+            "position": {
+              "basis": "70px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.style.backgroundColor"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": null
+                }
+              },
+              "style": {
+                "backgroundColor": "#8AFFFF",
+                "classes": "kanoa/button/filled",
+                "height": "30px"
+              },
+              "text": "Receive"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tlotEventInfo \u003d dict(self.view.custom.lots.selection)\n\tlotEventInfo[\u0027itemDescription\u0027] \u003d self.view.params.value.itemDescription\n\tsystem.perspective.sendMessage(\u0027inputLotEventSelected\u0027, lotEventInfo)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "button",
+              "name": "btnUse",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom",
+                "tail": false,
+                "text": "Consume"
+              }
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "alert": "{view.custom.alert}",
+                      "lotConfig": "{view.custom.lotConfig}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027alert\u0027][\u0027msg\u0027] is None or value[\u0027lotConfig\u0027][\u0027captureNonLots\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.style.backgroundColor"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/input"
+                }
+              },
+              "style": {
+                "backgroundColor": "--kcGreen-50",
+                "classes": "kanoa/button/filled",
+                "height": "30px"
+              },
+              "text": "Use"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tlotEventInfo \u003d dict(self.view.custom.lots.selection)\n\tlotEventInfo[\u0027itemDescription\u0027] \u003d self.view.params.value.itemDescription\n\tlotEventInfo[\u0027lotEventQty\u0027] \u003d 0\n\tsystem.perspective.sendMessage(\u0027outputLotEventSelected\u0027, lotEventInfo)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "button",
+              "name": "btnFill",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom",
+                "tail": false,
+                "text": "Package"
+              }
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "alert": "{view.custom.alert}",
+                      "lotConfig": "{view.custom.lotConfig}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027alert\u0027][\u0027msg\u0027] is None and value[\u0027lotConfig\u0027][\u0027outputLot\u0027] \u003d\u003d \u0027selectPart\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.style.backgroundColor"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/move_to_inbox"
+                }
+              },
+              "style": {
+                "backgroundColor": "--kcOrange-50",
+                "classes": "kanoa/button/filled",
+                "height": "30px"
+              },
+              "text": "Fill"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxActions"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "icoDebug",
+          "tooltip": {
+            "enabled": true,
+            "sustain": 0
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "display": false
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "material/bug_report"
+        },
+        "type": "ia.display.icon"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      },
+      "wrap": "wrap"
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "lotReceived",
+          "pageScope": true,
+          "script": "\n\tif payload[\u0027itemId\u0027] \u003d\u003d self.view.custom.itemInfo.itemId: self.view.refreshBinding(\"custom.lots.lotOptions\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

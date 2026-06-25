@@ -1,0 +1,81 @@
+[
+  {
+    "typeColor": -16733184,
+    "name": "counter",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "expression": "{PathToParentFolder}",
+        "dataType": "Int4",
+        "name": "assetId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "reference",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tcountInfo \u003d {\n\t\t\t\t\t\t\u0027counterId\u0027: system.tag.read(\"[.]counterId\").value,\n\t\t\t\t\t\t\u0027itemId\u0027: system.tag.read(\"[.]itemId\").value,\n\t\t\t\t\t\t\u0027workOrderId\u0027: system.tag.read(\"[.]workOrderId\").value,\n\t\t\t\t\t\t\u0027itemStateId\u0027: system.tag.read(\"[.]itemStateId\").value,\n\t\t\t\t\t\t\u0027deltaValue\u0027: deltaValue,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t}\n\t\t\n\t\tuserId \u003d None\n\t\tsystem.kanoa.event.addCounterEvent(countInfo, userId)\n\t\t\n\t\treturn"
+          }
+        ],
+        "dataType": "Float4",
+        "name": "countValue",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "counterId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "String",
+        "name": "counterType",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "expr",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tsystem.tag.write(\"[.]update\", 1)\n\t\n\treturn"
+          }
+        ],
+        "expression": "now(0)",
+        "dataType": "DateTime",
+        "name": "initialize",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "itemId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "itemStateId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tlog \u003d system.util.getLogger(\u0027kanoa_tags\u0027)\n\t\n\tif not currentValue.value:\n\t\tparentTagPath \u003d tagPath.rsplit(\u0027/\u0027, 1)[0]\n\t\tcounterName \u003d parentTagPath.rsplit(\u0027/\u0027, 1)[-1]\n\t\tassetTagPath \u003d tagPath.rsplit(\u0027/\u0027, 2)[0]\n\t\tassetPath \u003d assetTagPath.replace(\"/\", \"\\\\\").replace(\u0027[Kanoa]\u0027, \u0027\u0027)\n\t\tassetPath \u003d assetPath.replace(\"\\\\counters\", \"\")\n\t\tsystem.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath}))\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath}))\n\t\tsystem.tag.write(parentTagPath + \u0027/assetId\u0027, assetId)\n\t\tif assetId is None:\n\t\t\tlog.trace(\"Invalid asset\")\n\t\telse:\n\t\t\tcounterType \u003d system.tag.read(parentTagPath + \u0027/counterType\u0027).value\n\t\t\tlog.trace(\"Initializing counter instance %s %s\"%(counterName, counterType))\n\t\t\tcounterTypeId \u003d system.kanoa.utilities.getFieldValue(\u0027counterTypeId\u0027, system.kanoa.asset.getCounterType({\u0027counterTypeName\u0027: counterType}))\n\t\t\tif counterTypeId:\n\t\t\t\tuserId \u003d system.kanoa.utilities.getFieldValue(\u0027userId\u0027, system.kanoa.security.getUsers({\u0027userName\u0027: \u0027SYSTEM\u0027}))\n\t\t\t\tcounterId \u003d system.kanoa.asset.addCounter(assetId, counterName, counterType, userId)\n\t\t\t\tlog.trace(\"Found counterId %s for %s\"%(counterId, parentTagPath))\n\t\t\t\tsystem.tag.write(parentTagPath + \u0027/counterId\u0027, counterId)\n\t\t\telse:\n\t\t\t\tlog.trace(\"Invalid counter type\")\n\t\t\n\timport time\n\ttime.sleep(0.5)\n\tsystem.tag.write(tagPath, False)\n\t\n\treturn"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "update",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "workOrderId",
+        "tagType": "AtomicTag"
+      }
+    ]
+  }
+]

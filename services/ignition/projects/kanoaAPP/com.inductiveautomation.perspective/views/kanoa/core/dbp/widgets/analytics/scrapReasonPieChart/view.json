@@ -1,0 +1,635 @@
+{
+  "custom": {
+    "chart": {},
+    "data": [],
+    "filters": {
+      "assetId": 2531,
+      "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2",
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1779331230480
+          ],
+          "$ts": 1779408000000
+        },
+        "selectedRange": "Today",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1779331230480
+          ],
+          "$ts": 1779285600000
+        }
+      },
+      "groupBy": "Reason",
+      "metricType": "Duration",
+      "showAssetPath": true,
+      "showGroupBySelector": true,
+      "showMetricSelector": true,
+      "showShowBySelector": true,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "groupBy": "Reason",
+      "metricType": "Duration",
+      "showAssetPath": true,
+      "showGroupBySelector": true,
+      "showMetricSelector": true,
+      "showShowBySelector": true
+    }
+  },
+  "propConfig": {
+    "custom.chart": {
+      "persistent": true
+    },
+    "custom.chart.series": {
+      "binding": {
+        "config": {
+          "path": "view.custom.data"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tfrom collections import defaultdict\n\t\n\tif len(value) \u003d\u003d 0:\n\t\treturn {\"series\": [], \"labels\": []}\n\t\n\tmetricType \u003d self.view.custom.filters[\u0027metricType\u0027]  # \"Duration\" or \"Occurrence\"\n\tgroupBy \u003d self.view.custom.filters[\u0027groupBy\u0027]        # \"Asset\", \"Reason\", \"Work Order\", \"Item\", \"Line\"\n\t\n\t# Define grouping field\n\tgroupKeyMap \u003d {\n\t\t\"Asset\": \"assetPath\",\n\t\t\"Reason\": \"itemStateName\",\n\t\t\"Line\": \"assetName\"\n\t}\n\t\n\tgroupKey \u003d groupKeyMap.get(groupBy, \"itemStateName\")\n\tvalueKey \u003d \"value\" if metricType \u003d\u003d \"Duration\" else None\n\t\n\t# Aggregate values by group\n\tgroupTotals \u003d defaultdict(float)\n\t\n\tfor entry in value:\n\t\tkey \u003d entry.get(groupKey) or \"Unspecified\"\n\t\tval \u003d entry.get(valueKey, 1) if valueKey else 1\n\t\tgroupTotals[key] +\u003d val\n\t\n\t# Sort groups by value descending\n\tsortedGroups \u003d sorted(groupTotals.items(), key\u003dlambda x: x[1], reverse\u003dTrue)\n\t\n\t# Build Apex pie chart data\n\tlabels \u003d [k for k, _ in sortedGroups]\n\tseries \u003d [v for _, v in sortedGroups]\n\t\n\treturn {\n\t\t\"labels\": labels,\n\t\t\"series\": series\n\t}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027], \u0027counterTypeName\u0027: \u0027waste\u0027}\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.data.perfEvents": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027], \u0027downtimeOnly\u0027: True}\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetStateEventsSummary(paramsDict))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027showAssetPath\u0027): filters[\u0027showAssetPath\u0027] \u003d True\n\tif not filters.has_key(\u0027showGroupBySelector\u0027): filters[\u0027showGroupBySelector\u0027] \u003d True\n\tif not filters.has_key(\u0027showMetricSelector\u0027): filters[\u0027showMetricSelector\u0027] \u003d True\n\tif not filters.has_key(\u0027groupBy\u0027): filters[\u0027groupBy\u0027] \u003d \"Reason\"\n\tif not filters.has_key(\u0027metricType\u0027): filters[\u0027metricType\u0027] \u003d \"Duration\"\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 450,
+      "width": 926
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblAsset",
+              "name": "lblAsset"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tassetPath \u003d system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}) if value[\u0027showAssetPath\u0027] else \u0027\u0027\n\treturn \u0027%s\u0027%(assetPath)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge"
+              },
+              "text": "Scrap Reasons"
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxTitle",
+          "name": "flxTitle"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblMetric",
+              "name": "lblMetric"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tmetricType \u003d value[\u0027metricType\u0027] if value.has_key(\u0027showMetricSelector\u0027) and not value[\u0027showMetricSelector\u0027] else \u0027\u0027\n\treturn \u0027Summarize by %s\u0027%(metricType)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddMetric",
+              "name": "ddMetric"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showMetricSelector\u0027) and value[\u0027showMetricSelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027Duration\u0027, \u0027value\u0027: \u0027Duration\u0027}, \n\t{\u0027label\u0027: \u0027Occurrence\u0027, \u0027value\u0027: \u0027Occurrence\u0027}]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.metricType"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "lblGroupBy",
+              "name": "lblGroupBy"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tgroupBy \u003d value[\u0027groupBy\u0027] if value.has_key(\u0027showGroupBySelector\u0027) and not value[\u0027showGroupBySelector\u0027] else \u0027\u0027\n\treturn \u0027Group by %s\u0027%(groupBy)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddGroup",
+              "name": "ddGroup"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showGroupBySelector\u0027) and value[\u0027showGroupBySelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027Asset\u0027, \u0027value\u0027: \u0027Asset\u0027}, \n\t{\u0027label\u0027: \u0027Reason\u0027, \u0027value\u0027: \u0027Reason\u0027}, \n\t{\u0027label\u0027: \u0027Work Order\u0027, \u0027value\u0027: \u0027Work Order\u0027},\n\t{\u0027label\u0027: \u0027Item\u0027, \u0027value\u0027: \u0027Item\u0027},\n\t{\u0027label\u0027: \u0027Line\u0027, \u0027value\u0027: \u0027Line\u0027}]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.groupBy"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions",
+          "visible": false
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "visible"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "apexPie",
+              "name": "apexPie"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options.labels": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.series.labels"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.series.series"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "options": {
+                "chart": {
+                  "fontFamily": "Roboto",
+                  "height": 350,
+                  "stacked": false,
+                  "toolbar": {
+                    "show": false
+                  },
+                  "type": "pie"
+                },
+                "colors": [
+                  "var(--kcChart-01)",
+                  "var(--kcChart-02)",
+                  "var(--kcChart-03)",
+                  "var(--kcChart-04)",
+                  "var(--kcChart-05)",
+                  "var(--kcChart-06)",
+                  "var(--kcChart-07)",
+                  "var(--kcChart-08)"
+                ],
+                "dataLabels": {
+                  "enabled": true
+                },
+                "fill": {
+                  "opacity": 1
+                },
+                "legend": {
+                  "position": "bottom"
+                },
+                "markers": {
+                  "size": 5
+                },
+                "plotOptions": {},
+                "stroke": {
+                  "colors": [
+                    "#000000"
+                  ],
+                  "curve": "monotoneCubic",
+                  "width": 1
+                },
+                "theme": {},
+                "title": {
+                  "text": ""
+                },
+                "tooltip": {
+                  "y": {
+                    "formatter": {
+                      "y": {
+                        "formatter": "function(val) { return val.toFixed(1) ; }"
+                      }
+                    }
+                  }
+                },
+                "xaxis": {
+                  "labels": {
+                    "formatter": "function(val) { if (!val) return \u0027\u0027; var parts \u003d val.split(\u0027\\\\\u0027); return parts[parts.length - 1]; }"
+                  },
+                  "type": "category"
+                }
+              },
+              "type": "pie"
+            },
+            "type": "kyvislabs.display.apexchart"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblFilter",
+              "name": "lblFilter"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_0",
+              "name": "lblFilter_0"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_1",
+              "name": "lblFilter_1"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo.params[0].enabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxDebug",
+          "name": "flxDebug"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 3
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

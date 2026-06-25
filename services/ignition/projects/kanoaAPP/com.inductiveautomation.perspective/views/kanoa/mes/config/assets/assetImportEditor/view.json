@@ -1,0 +1,714 @@
+{
+  "custom": {
+    "createOptions": {},
+    "errorMessage": "No name provided.",
+    "hasName": false,
+    "newPath": "",
+    "oldPath": "",
+    "pathCorrect": true,
+    "unique": false
+  },
+  "params": {
+    "assetPath": "",
+    "createItems": true,
+    "createModes": true,
+    "createStates": true
+  },
+  "propConfig": {
+    "custom.createOptions.createItems": {
+      "binding": {
+        "config": {
+          "path": "view.params.createItems"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "custom.createOptions.createModes": {
+      "binding": {
+        "config": {
+          "path": "view.params.createModes"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "custom.createOptions.createStates": {
+      "binding": {
+        "config": {
+          "path": "view.params.createStates"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "custom.errorMessage": {
+      "binding": {
+        "config": {
+          "struct": {
+            "hasName": "{view.custom.hasName}",
+            "pathCorrect": "{view.custom.pathCorrect}",
+            "unique": "{view.custom.unique}"
+          },
+          "waitOnAll": true
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tif not value.hasName: return \u0027No name provided.\u0027\n\t\n\tif not value.unique: return \u0027The provided name must be unique within the parent path.\u0027\n\t\n\tif not value.pathCorrect: return \u0027The parent path must be at the same level as the imported file.\u0027\n\t\n\treturn \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.folder": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oldPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn \u0027\\\\\u0027.join(value.split(\u0027\\\\\u0027)[:-1])\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.hasName": {
+      "binding": {
+        "config": {
+          "path": "view.custom.name"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tname \u003d value or None\n\t\n\treturn name is not None\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.name": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oldPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn value.split(\u0027\\\\\u0027)[-1]\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.newPath": {
+      "binding": {
+        "config": {
+          "struct": {
+            "folder": "{view.custom.folder}",
+            "name": "{view.custom.name}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027\\\\\u0027.join(value.folder.split(\u0027\\\\\u0027) + [value.name]) if value.folder else value.name",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.oldPath": {
+      "binding": {
+        "config": {
+          "path": "view.params.assetPath"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.pathCorrect": {
+      "binding": {
+        "config": {
+          "struct": {
+            "newPath": "{view.custom.newPath}",
+            "oldPath": "{view.custom.oldPath}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn len(value.oldPath.split(\u0027\\\\\u0027)) \u003d\u003d len(value.newPath.split(\u0027\\\\\u0027))",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.unique": {
+      "binding": {
+        "config": {
+          "path": "view.custom.newPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tnewPath \u003d value or None\n\t\n\tif newPath is None: return False\n\t\n\tunique \u003d len(system.kanoa.asset.getAssets({\u0027assetPath\u0027: newPath})) \u003d\u003d 0\n\t\n\treturn unique\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.assetPath": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.createItems": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.createModes": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.createStates": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 199,
+      "width": 350
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblInfo",
+          "name": "lblInfo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "marginBottom": 5
+          },
+          "text": "All asset names must be unique within its parent. Please update the current name.",
+          "textStyle": {
+            "fontWeight": "bold"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label",
+              "name": "label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Name",
+              "textStyle": {
+                "textAlignLast": "right"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "textBox",
+              "name": "textBox"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.name"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxName",
+          "name": "flxName"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label-1",
+              "name": "label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Parent Path",
+              "textStyle": {
+                "textAlignLast": "right"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "textBox-1",
+              "name": "textBox",
+              "tooltip": {
+                "delay": 0,
+                "location": "top",
+                "sustain": 0,
+                "tail": false,
+                "text": "The asset is a root element. It cannot have a parent."
+              }
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "meta.tooltip.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn not value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.oldPath"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value and len(value.split(\u0027\\\\\u0027)) \u003e 1",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.folder"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxParent",
+          "name": "flxParent"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "custom": {
+              "name": "mode"
+            },
+            "meta": {
+              "domId": "cbxCreateModes",
+              "name": "cbxCreateModes",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "top",
+                "sustain": 0,
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.selected"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tname \u003d self.custom.name\n\t\n\treturn \u0027If the %s can be created, then create it.\u0027%name if value else \u0027Even if the %s can be created, do not create it.\u0027%name",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.createOptions.createModes"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "style": {
+                  "marginRight": -6
+                }
+              },
+              "style": {
+                "fontWeight": "bold"
+              },
+              "text": "Create Modes",
+              "uncheckedIcon": {
+                "style": {
+                  "marginRight": -6
+                }
+              }
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "custom": {
+              "name": "state"
+            },
+            "meta": {
+              "domId": "cbxCreateStates",
+              "name": "cbxCreateStates",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "top",
+                "sustain": 0,
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.selected"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tname \u003d self.custom.name\n\t\n\treturn \u0027If the %s can be created, then create it.\u0027%name if value else \u0027Even if the %s can be created, do not create it.\u0027%name",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.createOptions.createStates"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "style": {
+                  "marginRight": -6
+                }
+              },
+              "style": {
+                "fontWeight": "bold"
+              },
+              "text": "Create States",
+              "uncheckedIcon": {
+                "style": {
+                  "marginRight": -6
+                }
+              }
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "custom": {
+              "name": "item"
+            },
+            "meta": {
+              "domId": "cbxCreateItems",
+              "name": "cbxCreateItems",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "top",
+                "sustain": 0,
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.selected"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tname \u003d self.custom.name\n\t\n\treturn \u0027If the %s can be created, then create it.\u0027%name if value else \u0027Even if the %s can be created, do not create it.\u0027%name",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.createOptions.createItems"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "style": {
+                  "marginRight": -6
+                }
+              },
+              "style": {
+                "fontWeight": "bold"
+              },
+              "text": "Create Items",
+              "uncheckedIcon": {
+                "style": {
+                  "marginRight": -6
+                }
+              }
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxCreateOptions",
+          "name": "flxCreateOptions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": 10
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.print(\u0027Confirm button pressed\u0027)\n\tif not self.view.custom.hasName:\n\t\tsystem.perspective.sendMessage(\u0027ShowWarningToast\u0027, \u0027No name was provided.\u0027)\n\t\treturn\n\t\n\tif not self.view.custom.unique: \n\t\tsystem.perspective.sendMessage(\u0027ShowWarningToast\u0027, \u0027The name is not unique within the parent path.\u0027)\n\t\treturn\n\t\n\tnewPath \u003d self.view.custom.newPath\t\n\toldPath \u003d self.view.custom.oldPath\n\t\n\tcreateModes \u003d self.view.custom.createOptions.createModes\n\tcreateStates \u003d self.view.custom.createOptions.createStates\n\tcreateItems \u003d self.view.custom.createOptions.createItems\n\t\n\tsystem.perspective.print(\u0027Sending message assetImportUpdate\u0027)\n\t\n\tsystem.perspective.sendMessage(\n\t\tmessageType \u003d \u0027assetImportUpdate\u0027, \n\t\tpayload \u003d { \n\t\t\t\u0027oldPath\u0027: oldPath, \n\t\t\t\u0027newPath\u0027: newPath, \n\t\t\t\u0027createModes\u0027: createModes,\n\t\t\t\u0027createStates\u0027: createStates,\n\t\t\t\u0027createItems\u0027: createItems,\n\t\t}\n\t)\n\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn\n\t"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnConfirm",
+              "name": "btnConfirm",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "top",
+                "sustain": 0,
+                "tail": false
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.errorMessage"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.errorMessage"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Confirm"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "primary": false,
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": 5,
+            "marginTop": "auto"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcGray-0",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

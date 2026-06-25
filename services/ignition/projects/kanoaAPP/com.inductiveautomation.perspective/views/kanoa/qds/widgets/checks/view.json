@@ -1,0 +1,201 @@
+{
+  "custom": {
+    "bgColor": "--kcRed-60"
+  }, 
+  "params": {
+    "value": {
+      "num": 5, 
+      "label": "Submitted", 
+      "foreColor": "--kcGray-0", 
+      "enabled": true, 
+      "popup": "kanoa/qds/schedule/addCheckEvent", 
+      "bgColor": "--kcRed-60"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 137, 
+      "height": 105
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "cursor": "pointer", 
+        "padding": "5px", 
+        "backgroundColor": "", 
+        "overflow": "hidden"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "center", 
+          "justify": "center", 
+          "style": {
+            "classes": "kanoa/border", 
+            "overflow": "hidden"
+          }, 
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "textAlign": "center"
+              }, 
+              "textStyle": {
+                "fontSize": "3em"
+              }
+            }, 
+            "meta": {
+              "domId": "lblNum", 
+              "name": "lblNum"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.textStyle.color": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn '--kcGray-40' if value != self.view.params.value.bgColor else self.view.params.value.foreColor", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.bgColor"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.num"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "textAlign": "center"
+              }, 
+              "textStyle": {
+                "fontSize": "1.2em"
+              }
+            }, 
+            "meta": {
+              "domId": "lblText", 
+              "name": "lblText"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.textStyle.color": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn '--kcGray-40' if value != self.view.params.value.bgColor else self.view.params.value.foreColor", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.bgColor"
+                  }
+                }
+              }, 
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value.label"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxBody", 
+          "name": "flxBody"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tif self.view.params.value.popup is not None:\n\t\tsystem.perspective.openPopup('checkPopup', self.view.params.value.popup, {'value': {'isPopup': True}}, resizable=True, draggable=True, showCloseIcon=True)\n\telse:\n\t\tself.view.params.value.enabled = not self.view.params.value.enabled\t\t\n\t\tsystem.perspective.sendMessage('chkStateSelected', self.view.params.value)\n\t\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.bgColor"
+              }
+            }
+          }, 
+          "props.style.borderColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.bgColor"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.bgColor": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\treturn value['bgColor'] if value['enabled'] else '--kcGray-10'", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

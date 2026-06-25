@@ -1,0 +1,536 @@
+{
+  "custom": {
+    "clearSelection": false,
+    "data": {
+      "$": [
+        "ds",
+        192,
+        1780243524679
+      ],
+      "$columns": [
+        {
+          "data": [],
+          "name": "chkShtTypeId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "chkShtTypeName",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "parentId",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "path",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "enabled",
+          "type": "Boolean"
+        },
+        {
+          "data": [],
+          "name": "description",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "createdBy",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "createdDate",
+          "type": "Date"
+        },
+        {
+          "data": [],
+          "name": "changedBy",
+          "type": "Integer"
+        },
+        {
+          "data": [],
+          "name": "changedDate",
+          "type": "Date"
+        }
+      ]
+    },
+    "values": {
+      "changedBy": null,
+      "changedDate": null,
+      "chkShtTypeId": null,
+      "chkShtTypeName": null,
+      "createdBy": null,
+      "createdDate": null,
+      "description": null,
+      "enabled": null,
+      "parentId": null,
+      "path": null
+    }
+  },
+  "params": {
+    "value": {
+      "chkShtTypeId": null
+    }
+  },
+  "propConfig": {
+    "custom.clearSelection": {
+      "persistent": true
+    },
+    "custom.data": {
+      "binding": {
+        "config": {
+          "expression": "1"
+        },
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.quality.sheet.getSheetTypes({})",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.chkShtTypeId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.sheet.getSheetTypes({\u0027chkShtTypeId\u0027: value or -1}), 0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.equipId": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.value": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tif not self.params.value.chkShtTypeId: self.custom.clearSelection \u003d True"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 482,
+      "width": 358
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evTreeSelector",
+              "name": "evTreeSelector"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.refresh": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.clearSelection"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "chkShtTypeEditor",
+                  "options": {
+                    "expand": true,
+                    "multiSelect": false,
+                    "selectable": []
+                  },
+                  "selection": [
+                    {
+                      "path": "SSS"
+                    }
+                  ],
+                  "style": {
+                    "backgroundColor": "",
+                    "icoPath": null,
+                    "iconColor": ""
+                  }
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/treeSelector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tpayload \u003d {\u0027chkShtTypeId\u0027:self.view.custom.values.chkShtTypeId, \u0027path\u0027:self.view.custom.values.path}\n\tsystem.perspective.print(\"Sending msg \u0027chkShtTypeSelected\u0027 with payload %s\"%payload)\n\tsystem.perspective.sendMessage(\u0027chkShtTypeSelected\u0027, payload)\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnSelect",
+                  "name": "btnSelect",
+                  "tooltip": {
+                    "location": "top-left"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.values.chkShtTypeId"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn value is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/check_box"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/filled",
+                    "height": "30px"
+                  },
+                  "text": "Select"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tself.view.params.value.chkShtTypeId \u003d None\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnClear",
+                  "name": "btnClear",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Clear selection"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.chkShtTypeId"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn value is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/blur_off"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined",
+                    "height": "30px"
+                  },
+                  "text": "Clear"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tself.view.getChild(\"root\").delete()\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnDelete",
+                  "name": "btnDelete",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Delete a Check Sheet Type"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.chkShtTypeId"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn value is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcRed-60",
+                      "path": "material/delete_forever"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined",
+                    "height": "30px"
+                  },
+                  "text": "Delete"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tpayload \u003d {\u0027value\u0027: {\u0027chkShtTypeId\u0027: self.view.params.value.chkShtTypeId, \u0027action\u0027: \u0027add\u0027}}\n\tsystem.perspective.openPopup(\u0027addChkShtType\u0027, \u0027kanoa/qds/config/checks/addChkShtType\u0027, params\u003dpayload, title\u003d\u0027Add folder\u0027, draggable\u003dTrue, closable\u003dTrue, resizeable\u003dTrue)\n\t\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnAdd",
+                  "name": "btnAdd",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Add a new Check Sheet Type"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcGray-100",
+                      "path": "material/add"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined",
+                    "height": "30px"
+                  },
+                  "text": "Add"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tpayload \u003d {\u0027value\u0027: {\u0027chkShtTypeId\u0027: self.view.params.value.chkShtTypeId, \u0027action\u0027: \u0027edit\u0027}}\n\tsystem.perspective.openPopup(\u0027addChkShtType\u0027, \u0027kanoa/qds/config/checks/addChkShtType\u0027, params\u003dpayload, title\u003d\u0027Edit folder\u0027, draggable\u003dTrue, closable\u003dTrue, resizeable\u003dTrue)\n\t\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnEdit",
+                  "name": "btnEdit",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top-left",
+                    "text": "Edit Check Sheet Type"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.chkShtTypeId"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn value is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcGray-100",
+                      "path": "material/edit"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined",
+                    "height": "30px"
+                  },
+                  "text": "Edit"
+                },
+                "type": "ia.input.button"
+              }
+            ],
+            "meta": {
+              "domId": "flxCntActions",
+              "name": "flxCntActions"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "center",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden",
+                "padding": "5px"
+              },
+              "wrap": "wrap"
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntTree",
+          "name": "flxCntTree"
+        },
+        "position": {
+          "basis": "350px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "backgroundColor": "--kcBlue-0",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\n\tsystem.perspective.print(\"save() called\")\n\tinfo \u003d self.view.custom.values\n\tchkShtTypeId \u003d info[\u0027chkShtTypeId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\n\tif chkShtTypeId is None:\n\t\tif system.kanoa.quality.sheet.getSheets({\u0027chkShtTypeName\u0027: info[\u0027chkShtTypeName\u0027], \u0027parentId\u0027: info[\u0027parentId\u0027]}).rowCount \u003e 0:\n\t\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027This Type already exists\u0027})\n\t\t\treturn\n\t\n\t\tchkShtTypeId \u003d system.kanoa.quality.sheet.addSheetType(info, userId)\n\t\tmsg \u003d \u0027Check Sheet Type added\u0027\n\telse:\n\t\tsystem.kanoa.quality.sheet.updateSheetType(info, userId)\n\t\tmsg \u003d \u0027Check Sheet Type updated\u0027\n\t\t\n\tself.view.params.value.chkShtTypeId \u003d chkShtTypeId\n\tself.view.refreshBinding(\"custom.data\")\t #Update the Tree Selector\n\t\n\tsystem.perspective.sendMessage(\"refreshChkShtTypes\", {})\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: msg})\n\t\n\treturn"
+        },
+        {
+          "name": "delete",
+          "params": [],
+          "script": "\n\tsystem.perspective.print(\"delete() called\")\n\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tretVal, msg \u003d system.kanoa.quality.sheet.deleteSheetType(self.view.params.value.chkShtTypeId, userId)\n\tif retVal \u003d\u003d False:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\telse:\n\t\tself.view.params.value.chkShtTypeId \u003d None\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: msg})\t\t\n\n\tself.view.refreshBinding(\"custom.data\")\t #Update the Tree Selector\n\tsystem.perspective.sendMessage(\"refreshChkShtTypes\", {})\t\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "colorPicked",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"colorPicked message received with payload \" + str(payload))\n\n\tself.view.custom.values.itemClassColor \u003d payload[\u0027color\u0027]\n\n\treturn\n",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshChkShtTypes",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"refreshChkShtTypes msg rcvd by chkShtTypeEditor with %s\"%payload)\n\tself.view.refreshBinding(\"custom.data\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "updatePopupSelection",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"updatePopupSelection msg rcvd with %s\"%payload)\n\t\n\tif len(payload[\u0027selection\u0027]) \u003d\u003d 0: return\n\t\n\tself.view.params.value.chkShtTypeId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027chkShtTypeId\u0027]\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

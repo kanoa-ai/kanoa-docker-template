@@ -1,0 +1,96 @@
+{
+  "custom": {
+    "options": null
+  }, 
+  "params": {
+    "value": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 200, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "style": {
+            "classes": "kanoa/font/default"
+          }, 
+          "allowCustomOptions": true, 
+          "placeholder": {
+            "text": "Select Work Order..."
+          }
+        }, 
+        "meta": {
+          "domId": "dropdown", 
+          "name": "dropdown"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0, 
+          "basis": "150px"
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.options"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.options": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\treturn [{\"value\": row['workOrderId'], \"label\": row['workOrderName']} for row in system.kanoa.order.getProductionOrders({'statusList':['In Progress', 'Released']})]", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.selectedWorkOrder": {
+      "persistent": false
+    }, 
+    "params.value": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.inWorkOrder": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

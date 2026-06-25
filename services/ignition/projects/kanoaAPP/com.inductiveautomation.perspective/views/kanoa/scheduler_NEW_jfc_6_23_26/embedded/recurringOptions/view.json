@@ -1,0 +1,1344 @@
+{
+  "custom": {
+    "ends": {
+      "count": 6,
+      "selection": "never"
+    },
+    "monthly": "{\"dayOfMonth\":5,\"choice\":\"nth day of month\"}",
+    "rruleStr": "FREQ\u003dWEEKLY;INTERVAL\u003d1;BYWEEKDAY\u003dTU,MO,SU,TH,FR,SA,WE",
+    "values": {
+      "BYMONTHDAY": null,
+      "FREQ": "WEEKLY",
+      "INTERVAL": 1,
+      "monthly": null
+    },
+    "weekdays": {
+      "FR": true,
+      "MO": true,
+      "SA": true,
+      "SU": true,
+      "TH": true,
+      "TU": true,
+      "WE": true
+    }
+  },
+  "params": {
+    "values": {
+      "assetId": 900,
+      "assetPath": "Kanoa Box Co\\Box Plant",
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "crewSize": null,
+      "end": "2025-03-31 06:00:00",
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1743729500434
+        ],
+        "$ts": 1743426000000
+      },
+      "rruleStr": null,
+      "shiftBlockId": null,
+      "shiftColor": null,
+      "shiftId": null,
+      "shiftName": null,
+      "shiftNameId": null,
+      "start": "2025-03-31 03:00:00",
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1743729500434
+        ],
+        "$ts": 1743415200000
+      },
+      "timezone": null,
+      "uuid": null
+    }
+  },
+  "propConfig": {
+    "custom.ends": {
+      "onChange": {
+        "enabled": null,
+        "script": "\n\tif origin \u003d\u003d \u0027BindingWriteback\u0027:\n\t\t\n\t\tstartDate \u003d self.params.values.startDate\n\t\tcutoffDate \u003d system.date.setTime(self.custom.ends.cutoffDate, 23, 59, 59)\n\t\tvals \u003d self.custom.values\n\t\tends \u003d self.custom.ends.selection\n\t\tcount \u003d self.custom.ends.count or 1\n\t\tuntilDate \u003d None\n\t\tif cutoffDate is None: pass\n\t\telif ends \u003d\u003d \u0027on\u0027: untilDate \u003d system.kanoa.utilities.javaDateToPython(cutoffDate).strftime(\u0027%Y%m%dT%H%M%S\u0027)\n\t\telif ends \u003d\u003d \u0027after\u0027:\n\t\t\tif vals[\u0027FREQ\u0027] \u003d\u003d \u0027DAILY\u0027: untilDate \u003d system.date.addDays(startDate, count)\n\t\t\telif vals[\u0027FREQ\u0027] \u003d\u003d \u0027WEEKLY\u0027: untilDate \u003d system.date.addWeeks(startDate, count)\n\t\t\telif vals[\u0027FREQ\u0027] \u003d\u003d \u0027MONTHLY\u0027: untilDate \u003d system.date.addMonths(startDate, count)\n\t\t\telif vals[\u0027FREQ\u0027] \u003d\u003d \u0027YEARLY\u0027: untilDate \u003d system.date.addYears(startDate, count)\n\t\t\n\t\t\tuntilDate \u003d system.date.midnight(untilDate)\n\t\t\tuntilDate \u003d system.kanoa.utilities.javaDateToPython(untilDate).strftime(\u0027%Y%m%dT%H%M%S\u0027)\n\t\t\n\t\tvals[\u0027UNTIL\u0027] \u003d untilDate\n\t\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.ends.cutoffDate": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn system.date.setTime(system.date.now(), 18, 0, 0)",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.frequency": {
+      "persistent": true
+    },
+    "custom.monthly": {
+      "persistent": true
+    },
+    "custom.rruleStr": {
+      "binding": {
+        "config": {
+          "path": "view.custom.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tvals \u003d value\n\trruleStr \u003d \u0027FREQ\u003d\u0027 + str(vals[\u0027FREQ\u0027]) + \u0027;INTERVAL\u003d\u0027 + str(vals[\u0027INTERVAL\u0027])\n\t\n\tif vals[\u0027FREQ\u0027] \u003d\u003d \u0027WEEKLY\u0027 and vals[\u0027BYWEEKDAY\u0027]: rruleStr +\u003d \u0027;BYWEEKDAY\u003d\u0027 + vals[\u0027BYWEEKDAY\u0027]\n\telif vals[\u0027FREQ\u0027] \u003d\u003d \u0027MONTHLY\u0027 and vals[\u0027monthly\u0027]:\n\t\tmonthly \u003d system.util.jsonDecode(vals[\u0027monthly\u0027])\n\t\tif monthly[\u0027choice\u0027] \u003d\u003d \u0027nth day of month\u0027:\n\t\t\trruleStr +\u003d \u0027;BYMONTHDAY\u003d\u0027 + str(monthly[\u0027dayOfMonth\u0027])\n\t\telif monthly[\u0027choice\u0027] \u003d\u003d \u0027nth weekday of month\u0027:\n\t\t\tweekdayAbbrevs \u003d {\u00271\u0027: \u0027SU\u0027, \u00272\u0027: \u0027MO\u0027, \u00273\u0027: \u0027TU\u0027, \u00274\u0027: \u0027WE\u0027, \u00275\u0027: \u0027TH\u0027, \u00276\u0027: \u0027FR\u0027, \u00277\u0027: \u0027SA\u0027}\n\t\t\tweekOfMonth \u003d str(monthly[\u0027weekOfMonth\u0027])\n\t\t\tdayOfWeek \u003d str(monthly[\u0027dayOfWeek\u0027])\n\t\t\tbyWeekDay \u003d weekdayAbbrevs[dayOfWeek] + \"(\" + weekOfMonth + \")\"\n\t\t\trruleStr +\u003d \u0027;BYWEEKDAY\u003d\u0027 + byWeekDay\n\n\tif value[\u0027UNTIL\u0027]: \trruleStr +\u003d \u0027;UNTIL\u003d\u0027 + (vals[\u0027UNTIL\u0027] or \u0027\u0027)\n\t\t\n\treturn rruleStr\n\n#\tvals \u003d value\n#\trruleStr \u003d \u0027FREQ\u003d\u0027 + str(vals[\u0027FREQ\u0027]) + \u0027;INTERVAL\u003d\u0027 + str(vals[\u0027INTERVAL\u0027])\n#\t\n#\tif vals[\u0027FREQ\u0027] \u003d\u003d \u0027WEEKLY\u0027 and vals[\u0027BYWEEKDAY\u0027]: rruleStr +\u003d \u0027;BYWEEKDAY\u003d\u0027 + vals[\u0027BYWEEKDAY\u0027]\n#\telif vals[\u0027FREQ\u0027] \u003d\u003d \u0027MONTHLY\u0027 and vals[\u0027BYMONTHDAY\u0027]:\n#\t\tif vals[\u0027BYMONTHDAY\u0027][\u0027choice\u0027] \u003d\u003d \u0027nth day of month\u0027:\n#\t\t\trruleStr +\u003d \u0027;BYMONTHDAY\u003d\u0027 + str(vals[\u0027BYMONTHDAY\u0027][\u0027dayOfMonth\u0027])\n#\t\telif vals[\u0027BYMONTHDAY\u0027][\u0027choice\u0027] \u003d\u003d \u0027nth weekday of month\u0027:\n#\t\t\tweekdayAbbrevs \u003d {\u00271\u0027: \u0027SU\u0027, \u00272\u0027: \u0027MO\u0027, \u00273\u0027: \u0027TU\u0027, \u00274\u0027: \u0027WE\u0027, \u00275\u0027: \u0027TH\u0027, \u00276\u0027: \u0027FR\u0027, \u00277\u0027: \u0027SA\u0027}\n#\t\t\tweekOfMonth \u003d str(vals[\u0027BYMONTHDAY\u0027][\u0027weekOfMonth\u0027])\n#\t\t\tdayOfWeek \u003d str(vals[\u0027BYMONTHDAY\u0027][\u0027dayOfWeek\u0027])\n#\t\t\tbyWeekDay \u003d weekdayAbbrevs[dayOfWeek] + \"(\" + weekOfMonth + \")\"\n#\t\t\trruleStr +\u003d \u0027;BYWEEKDAY\u003d\u0027 + byWeekDay\n#\n#\tif value[\u0027UNTIL\u0027]: \trruleStr +\u003d \u0027;UNTIL\u003d\u0027 + (vals[\u0027UNTIL\u0027] or \u0027\u0027)\n#\t\t\n#\treturn rruleStr",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.s": {
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\trruleParams \u003d {\"FREQ\": \u0027WEEKLY\u0027, \"INTERVAL\": 1, \"BYWEEKDAY\": None, \"BYMONTHDAY\": None, \"UNTIL\": None, \u0027monthly\u0027: None}\n\tweekDays \u003d {\u0027MO\u0027: False, \u0027TU\u0027: False, \u0027WE\u0027: False, \u0027TH\u0027: False, \u0027FR\u0027: False, \u0027SA\u0027: False, \u0027SU\u0027: False}\t\n\tweekdayMap \u003d {\u00271\u0027: \u0027SU\u0027, \u00272\u0027: \u0027MO\u0027, \u00273\u0027: \u0027TU\u0027, \u00274\u0027: \u0027WE\u0027, \u00275\u0027: \u0027TH\u0027, \u00276\u0027: \u0027FR\u0027, \u00277\u0027: \u0027SA\u0027}\n\tweekdayList \u003d [\u0027MO\u0027, \u0027TU\u0027, \u0027WE\u0027, \u0027TH\u0027, \u0027FR\u0027, \u0027SA\u0027, \u0027SU\u0027]\n\t\n\trruleStr \u003d self.view.params.values.rruleStr\n\tif rruleStr or None is not None:\n\t\trruleSections \u003d rruleStr.split(\";\")\n\t\tfor rruleSection in rruleSections:\n\t\t\tk, v \u003d rruleSection.split(\"\u003d\")\n\t\t\trruleParams[k] \u003d v\n\t\n\tif rruleParams[\u0027FREQ\u0027] \u003d\u003d \u0027MONTHLY\u0027:\n\t\tif rruleParams[\"BYMONTHDAY\"]:\n\t\t\trruleParams[\u0027monthly\u0027] \u003d system.util.jsonEncode({\"dayOfMonth\": int(rruleParams[\"BYMONTHDAY\"]), \"choice\": \"nth day of month\"})\n\t\telif rruleParams[\"BYWEEKDAY\"]:\n\t\t\tbyWeekDaySplit \u003d rruleParams[\"BYWEEKDAY\"].split(\"(\")\n\t\t\tweekOfMonth \u003d int(byWeekDaySplit[1][:-1])\n\t\t\tdayOfWeek \u003d int(weekdayMap.keys()[weekdayMap.values().index(byWeekDaySplit[0])])\n\t\t\trruleParams[\u0027monthly\u0027] \u003d system.util.jsonEncode({\"weekOfMonth\": weekOfMonth, \"dayOfWeek\": dayOfWeek, \"choice\": \"nth weekday of month\"})\n\telif rruleParams[\u0027FREQ\u0027] \u003d\u003d \u0027WEEKLY\u0027:\n\t\tif rruleParams[\u0027BYWEEKDAY\u0027] is None:\n\t\t\trruleParams[\u0027BYWEEKDAY\u0027] \u003d \",\".join([k for k,v in self.custom.weekdays.items() if v])\n\t\n\tif rruleParams.has_key(\"UNTIL\") and rruleParams[\"UNTIL\"] is not None:\n\t\tself.custom.ends.selection \u003d \u0027on\u0027\n\t\tassetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027: value[\u0027assetPath\u0027]}), 0)\n\t\tcutoffDate \u003d system.date.parse(rruleParams[\u0027UNTIL\u0027], \"yyyyMMdd\u0027T\u0027HHmmss\")\n\t\ttzOffsetMins \u003d system.kanoa.date.getTimeZoneOffsetMins(assetInfo[\u0027timeZone\u0027], cutoffDate)\n\t\tself.custom.ends.cutoffDate \u003d system.date.addMinutes(cutoffDate, -tzOffsetMins)\n\telse:\n\t\tself.custom.ends.selection \u003d \u0027never\u0027\n\t\t\n\t#Now initialize the weekday selector\n\tstartDate \u003d self.view.params.values.startDate\n\tdayOfWeek \u003d str(system.date.getDayOfWeek(startDate))\n\tbyWeekDay \u003d rruleParams[\u0027BYWEEKDAY\u0027]\n\t\n\tfor weekday in weekdayList:\n\t\tif weekdayMap[dayOfWeek] \u003d\u003d weekday: weekDays[weekday] \u003d True\n\t\telif rruleParams[\u0027FREQ\u0027] \u003d\u003d \u0027WEEKLY\u0027 and (rruleParams[\"BYWEEKDAY\"] is None or weekday in rruleParams[\"BYWEEKDAY\"]): weekDays[weekday] \u003d True\n\n\tself.custom.weekdays \u003d weekDays\n\t\n\treturn rruleParams",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.values.BYWEEKDAY": {
+      "persistent": false
+    },
+    "custom.values.UNTIL": {
+      "persistent": false
+    },
+    "custom.weekdays": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\t\n\tif origin \u003d\u003d \u0027BindingWriteback\u0027:\n\t\tself.custom.values.BYWEEKDAY \u003d \",\".join([k for k,v in self.custom.weekdays.items() if v])\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.weekdays.FR": {
+      "persistent": true
+    },
+    "custom.weekdays.MO": {
+      "persistent": true
+    },
+    "custom.weekdays.SA": {
+      "persistent": true
+    },
+    "custom.weekdays.SU": {
+      "persistent": true
+    },
+    "custom.weekdays.TH": {
+      "persistent": true
+    },
+    "custom.weekdays.TU": {
+      "persistent": true
+    },
+    "custom.weekdays.WE": {
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 151,
+      "width": 571
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblHeader",
+              "name": "lblHeader"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Repeat every"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "numFrequency",
+              "name": "numFrequency"
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.INTERVAL"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "left",
+              "inputBounds": {
+                "minimum": 1
+              },
+              "spinner": {
+                "enabled": false
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "domId": "ddPeriod",
+              "name": "ddPeriod"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.INTERVAL"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tvalue \u003d int(value)\n\treturn [\n\t\t{\u0027label\u0027: \u0027Day\u0027 if value \u003d\u003d 1 else \u0027Days\u0027, \u0027value\u0027: \u0027DAILY\u0027},\n\t\t{\u0027label\u0027: \u0027Week\u0027 if value \u003d\u003d 1 else \u0027Weeks\u0027, \u0027value\u0027: \u0027WEEKLY\u0027},\n\t\t{\u0027label\u0027: \u0027Month\u0027 if value \u003d\u003d 1 else \u0027Months\u0027, \u0027value\u0027: \u0027MONTHLY\u0027},\n\t\t{\u0027label\u0027: \u0027Year\u0027 if value \u003d\u003d 1 else \u0027Years\u0027, \u0027value\u0027: \u0027YEARLY\u0027}\n\t]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.FREQ"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "persistent": true
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "width": "150px"
+              },
+              "value": "WEEKLY"
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "children": [
+              {
+                "custom": {
+                  "dayIndex": 0
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Sun",
+                  "name": "cbxWeekDay_Sun"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.SU"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "S",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "custom": {
+                  "dayIndex": 1
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Mon",
+                  "name": "cbxWeekDay_Mon"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.MO"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "M",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "custom": {
+                  "dayIndex": 2
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Tue",
+                  "name": "cbxWeekDay_Tue"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.TU"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "T",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "custom": {
+                  "dayIndex": 3
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Wed",
+                  "name": "cbxWeekDay_Wed"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.WE"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "W",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "custom": {
+                  "dayIndex": 4
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Thr",
+                  "name": "cbxWeekDay_Thr"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.TH"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "T",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "custom": {
+                  "dayIndex": 5
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Fri",
+                  "name": "cbxWeekDay_Fri"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.FR"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "F",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              },
+              {
+                "custom": {
+                  "dayIndex": 6
+                },
+                "meta": {
+                  "domId": "cbxWeekDay_Sat",
+                  "name": "cbxWeekDay_Sat"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.weekdays.SA"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcBlue-50\u0027 if value else \u0027--kcGray-20\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn \u0027--kcGray-10\u0027 if value else \u0027--kcGray-50\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "checkedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  },
+                  "indeterminateIcon": {
+                    "path": ""
+                  },
+                  "style": {
+                    "borderRadius": 15,
+                    "cursor": "pointer",
+                    "fontWeight": "bold",
+                    "height": 30,
+                    "padding": 15,
+                    "width": 30
+                  },
+                  "text": "S",
+                  "textPosition": "left",
+                  "uncheckedIcon": {
+                    "path": "",
+                    "style": {
+                      "display": "none"
+                    }
+                  }
+                },
+                "type": "ia.input.checkbox"
+              }
+            ],
+            "meta": {
+              "domId": "flxRow",
+              "name": "flxRow"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.FREQ"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027WEEKLY\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "justify": "center",
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "ddMonthly",
+              "name": "ddMonthly"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.FREQ"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027MONTHLY\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tstartDate \u003d value or None\n\tif startDate is None: return []\n\t\n\tdayOfMonth \u003d system.date.getDayOfMonth(startDate)\n\t\n\tweekdayNames \u003d [\"Sunday\", \"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\", \"Saturday\"]\n\tdayOfWeek \u003d system.date.getDayOfWeek(startDate)\n\tweekdayName \u003d weekdayNames[dayOfWeek-1]\n\tlastDayOfMonth \u003d system.date.getDayOfMonth(system.date.addDays(system.date.addMonths(startDate, 1), -dayOfMonth - 1))\n\t\n\tweeksOfMonth \u003d [\u00271st\u0027, \u00272nd\u0027, \u00273rd\u0027, \u00274th\u0027, \u00275th\u0027]\n\tweekOfMonth \u003d dayOfMonth // 7\n\t\n\toptions \u003d []\n\toptions.append({\u0027label\u0027: \u0027Monthly on day %d\u0027 % dayOfMonth, \u0027value\u0027: system.util.jsonEncode({\u0027choice\u0027: \u0027nth day of month\u0027, \u0027dayOfMonth\u0027: dayOfMonth})})\n\toptions.append({\u0027label\u0027: \u0027Monthly on the %s %s\u0027 % (weeksOfMonth[weekOfMonth], weekdayName), \u0027value\u0027: system.util.jsonEncode({\u0027choice\u0027: \u0027nth weekday of month\u0027, \u0027weekOfMonth\u0027: weekOfMonth + 1, \u0027dayOfWeek\u0027: dayOfWeek})})\n\n\treturn options\n\n#\tisLastWeekOfMonth \u003d dayOfMonth \u003e lastDayOfMonth - 6\n#\tif weekOfMonth \u003c 4: \n#\t\toptions.append({\n#\t\t\t\u0027label\u0027: \u0027Monthly on the %s %s\u0027 % (weeksOfMonth[weekOfMonth], weekdayName), \n#\t\t\t\u0027value\u0027: {\u0027choice\u0027: \u0027nth weekday of month\u0027, \u0027weekOfMonth\u0027: weekOfMonth + 1, \u0027dayOfWeek\u0027: dayOfWeek}\n#\t\t})\n#\tif isLastWeekOfMonth: \n#\t\toptions.append({\n#\t\t\t\u0027label\u0027: \u0027Monthly on the last %s\u0027 % weekdayName, \n#\t\t\t\u0027value\u0027: {\u0027choice\u0027: \u0027last weekday of month\u0027, \u0027dayOfWeek\u0027: dayOfWeek}\n#\t\t})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.monthly"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "250px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxFrequency",
+          "name": "flxFrequency"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblHeader-1",
+              "name": "lblHeader"
+            },
+            "position": {
+              "basis": "70px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Ends"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "rdoEnd",
+              "name": "rdoEnd"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.ends.selection"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "radios": [
+                {
+                  "selected": true,
+                  "text": "Never",
+                  "value": "never"
+                },
+                {
+                  "selected": false,
+                  "text": "On",
+                  "value": "on"
+                },
+                {
+                  "selected": false,
+                  "text": "After",
+                  "value": "after"
+                }
+              ]
+            },
+            "type": "ia.input.radio-group"
+          },
+          {
+            "meta": {
+              "domId": "dateInputOn",
+              "name": "dateInputOn"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.ends.selection"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027on\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.ends.cutoffDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "format": "ll",
+              "formattedValue": "Feb 22, 2026",
+              "pickerType": "date",
+              "style": {
+                "height": "30px",
+                "width": "180px"
+              }
+            },
+            "type": "ia.input.date-time-input"
+          },
+          {
+            "meta": {
+              "domId": "numPeriods",
+              "name": "numPeriods"
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.ends.selection"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027after\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.ends.count"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "30px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "domId": "lblUnits",
+              "name": "lblUnits"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.ends.selection"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027after\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.FREQ"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tlabels \u003d {\u0027DAILY\u0027: \u0027days\u0027, \u0027WEEKLY\u0027: \u0027weeks\u0027, \u0027MONTHLY\u0027: \u0027months\u0027, \u0027YEARLY\u0027: \u0027years\u0027}\n\treturn labels[value]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxEnd",
+          "name": "flxEnd"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblDebug",
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.rruleStr"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").save()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnOK",
+              "name": "btnOK"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "ends": "{view.custom.ends}",
+                      "rrule": "{view.custom.values}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\trrule \u003d value[\u0027rrule\u0027]\n\tif rrule[\u0027FREQ\u0027] \u003d\u003d \u0027WEEKLY\u0027 and rrule[\u0027BYWEEKDAY\u0027] is None: return False\n\tif value[\u0027ends\u0027][\u0027selection\u0027] !\u003d \u0027never\u0027 and rrule[\u0027UNTIL\u0027] is None: return False\n\tif rrule[\u0027FREQ\u0027] \u003d\u003d \u0027MONTHLY\u0027 and rrule[\u0027monthly\u0027] is None: return False\n\t\n\treturn True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/repeat"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled",
+                "height": "40px"
+              },
+              "text": "Set"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.rruleStr \u003d None\n\tself.view.getChild(\"root\").save()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClear",
+              "name": "btnClear"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.rruleStr"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/delete_outline"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "height": "40px"
+              },
+              "text": "Clear"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxButtons",
+          "name": "flxButtons"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "flex-end",
+          "justify": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default kanoa/popup",
+        "gap": 10,
+        "overflow": "hidden",
+        "padding": 10
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\t\n\tsystem.perspective.print(\"Sending updateRecurrence() msg\")\n\tsystem.perspective.sendMessage(\u0027updateRecurringOption\u0027, {\u0027uuid\u0027: self.view.params.values.uuid, \u0027rruleStr\u0027: self.view.custom.rruleStr})\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

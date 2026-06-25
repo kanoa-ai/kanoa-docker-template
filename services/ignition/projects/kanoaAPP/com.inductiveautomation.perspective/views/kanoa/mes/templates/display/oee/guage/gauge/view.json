@@ -1,0 +1,308 @@
+{
+  "custom": {
+    "color": "#FF0000", 
+    "tooltip": ": 880%", 
+    "value": 8.8
+  }, 
+  "params": {
+    "color": "", 
+    "ranges": [
+      {
+        "color": "#FF0000", 
+        "max": 0.3
+      }, 
+      {
+        "color": "#EFB110", 
+        "max": 0.6
+      }, 
+      {
+        "color": "#0099EC", 
+        "max": 1
+      }
+    ], 
+    "showToolTip": true, 
+    "label": "", 
+    "name": "", 
+    "value": 8.8, 
+    "fontColor": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 60, 
+      "height": 60
+    }
+  }, 
+  "root": {
+    "type": "ia.container.coord", 
+    "props": {
+      "mode": "percent", 
+      "style": {
+        "overflow": "hidden"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.chart.pie", 
+        "props": {
+          "data": [
+            {
+              "label": "Value"
+            }, 
+            {
+              "label": "BG"
+            }
+          ], 
+          "cutoutRadius": 55, 
+          "showLegend": false, 
+          "valueFormat": {
+            "showPercentSymbol": false, 
+            "showValueAsPercent": false
+          }, 
+          "colors": [
+            null, 
+            null
+          ], 
+          "enableTransitions": false, 
+          "labels": {
+            "showName": false, 
+            "align": false, 
+            "inside": {
+              "radius": 0
+            }, 
+            "showValue": false
+          }, 
+          "showLabels": false
+        }, 
+        "meta": {
+          "domId": "display", 
+          "name": "display"
+        }, 
+        "position": {
+          "width": 1, 
+          "height": 1
+        }, 
+        "propConfig": {
+          "props.colors[1]": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn kanoaScripts.colors.getCSSColor('--kcSurfaceVariant', value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "session.props.theme"
+              }
+            }
+          }, 
+          "props.colors[0]": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.color"
+              }
+            }
+          }, 
+          "props.data[0].value": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn min(value.value, 1)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr-struct", 
+              "config": {
+                "struct": {
+                  "value": "{view.custom.value}"
+                }, 
+                "waitOnAll": true
+              }
+            }
+          }, 
+          "props.data[1].value": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 1 - value", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "this.props.data[0].value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "center", 
+            "fontSize": "100%", 
+            "fontWeight": "bold"
+          }
+        }, 
+        "meta": {
+          "domId": "lblValue", 
+          "name": "lblValue"
+        }, 
+        "position": {
+          "width": 1, 
+          "height": 1
+        }, 
+        "propConfig": {
+          "props.style.color": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.fontColor"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.label"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "tooltip": {
+        "tail": false, 
+        "enabled": true, 
+        "delay": 0, 
+        "location": "top"
+      }, 
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "propConfig": {
+      "meta.tooltip.text": {
+        "binding": {
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "bidirectional": true, 
+            "path": "view.custom.tooltip"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.label": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.val": {
+      "persistent": true
+    }, 
+    "custom.color": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\tcolor = value.color or None\n\t\n\tif color is not None: return color\n\t\n\tranges = sorted(value.ranges, key = lambda a: a.max)\n\tvalue = value.value\n\t\n\tfor range in ranges:\n\t\tif value <= range.max: return range.color\n\t\n\treturn '#FF0000'", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "color": "{view.params.color}", 
+            "ranges": "{view.params.ranges}", 
+            "value": "{view.custom.value}"
+          }, 
+          "waitOnAll": true
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.ranges": {
+      "persistent": true
+    }, 
+    "params.color": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.showToolTip": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.tooltip": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\tif not value.show: return ''\n\t\n\tname = value.name if value.name != '' else value.label\n\tvalue = value.value * 100\n\t\n\treturn '%s: %d%%' % (name, round(value))", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "overlayOptOut": true, 
+        "config": {
+          "struct": {
+            "show": "{view.params.showToolTip}", 
+            "label": "{view.params.label}", 
+            "name": "{view.params.name}", 
+            "value": "{view.custom.value}"
+          }, 
+          "waitOnAll": true
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.fontColor": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.ranges": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.value": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn value or 0", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.showAsRing": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.textColor": {
+      "persistent": true
+    }, 
+    "params.name": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

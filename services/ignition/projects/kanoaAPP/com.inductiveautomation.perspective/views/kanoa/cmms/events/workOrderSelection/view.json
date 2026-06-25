@@ -1,0 +1,249 @@
+{
+  "custom": {
+    "filter": {
+      "assetPath": null
+    },
+    "selection": {
+      "workOrderId": null
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.selection": {
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 512,
+      "width": 507
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "flxWorkOrders"
+        },
+        "position": {
+          "basis": "200px",
+          "display": false
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "evAssetSelector"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.assetInfo.assetPath": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.assetPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "assetInfo": {
+                  "assetGroupColor": null,
+                  "assetGroupId": null,
+                  "assetGroupName": null,
+                  "assetId": null,
+                  "assetName": null,
+                  "assetTypeId": null,
+                  "assetTypeName": null,
+                  "assetTypePath": null,
+                  "displayPath": null,
+                  "enabled": null,
+                  "iconPath": null,
+                  "oeeEnabled": null,
+                  "parentId": null,
+                  "path": null,
+                  "processTypeId": null,
+                  "processTypeName": null,
+                  "sortOrder": null,
+                  "tagPath": null,
+                  "timeZone": null
+                },
+                "value": {
+                  "assetPath": null,
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "parentPathList": [],
+                  "persistent": false,
+                  "useSessionValue": false
+                }
+              },
+              "path": "kanoa/core/templates/selectors/assetSelector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "name": "flxAsset"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "evWorkSelector"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.params.values.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn system.kanoa.cmms.getWorkOrders({\u0027workOrderStatusName\u0027: \u0027Released\u0027, \u0027enabled\u0027: True, \u0027assetPath\u0027: value[\u0027assetPath\u0027]})",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "refresh": false,
+            "values": {
+              "msgHandler": "workOrderSelected",
+              "options": {
+                "dragDrop": false,
+                "expand": true,
+                "multiSelect": false,
+                "selectable": []
+              },
+              "selection": [],
+              "selectorId": null,
+              "style": {
+                "backgroundColor": "",
+                "icoPath": null,
+                "iconColor": ""
+              },
+              "treePath": "workOrderPath"
+            }
+          },
+          "path": "kanoa/core/templates/selectors/tree/treeSelector"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\t\n\tsystem.perspective.sendMessage(\u0027openWorkOrderEvent\u0027, {\u0027workOrderId\u0027: self.view.custom.selection.workOrderId})\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnSelect"
+            },
+            "position": {
+              "basis": "100px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection.workOrderId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027New\u0027 if value is None else \u0027Select\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "kanoa/maintenance"
+                }
+              },
+              "style": {
+                "height": "40px"
+              }
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxButtons"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "updatePopupSelection",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\"updatePopupSelection msg rcvd with %s\"%payload)\n\n\tif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027workOrderSelected\u0027:\n\t\tself.view.custom.selection.workOrderId  \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027workOrderId\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

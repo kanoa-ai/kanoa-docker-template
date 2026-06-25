@@ -1,0 +1,241 @@
+{
+  "custom": {
+    "selected": false
+  }, 
+  "params": {
+    "value": {
+      "itemColor": null, 
+      "assetTypeId": 5, 
+      "endDate": {
+        "$ts": 1747848936443, 
+        "$": [
+          "ts", 
+          192, 
+          1747852585578
+        ]
+      }, 
+      "assetTypeName": "line", 
+      "itemClassName": null, 
+      "itemStateClassPath": null, 
+      "units": null, 
+      "counterName": "infeed", 
+      "itemName": null, 
+      "assetId": 902, 
+      "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2", 
+      "counterTypeName": "infeed", 
+      "itemStateClassName": null, 
+      "itemStatePath": null, 
+      "value": null, 
+      "itemStateClassId": null, 
+      "itemStateId": null, 
+      "counterId": 132379, 
+      "itemId": null, 
+      "itemClassPath": null, 
+      "itemPath": null, 
+      "workOrderName": null, 
+      "assetName": "Box Line 2", 
+      "itemClassColor": null, 
+      "workOrderId": null, 
+      "assetTypePath": "enterprise\\site\\area\\line", 
+      "itemStateName": null, 
+      "startDate": {
+        "$ts": 1747576800000, 
+        "$": [
+          "ts", 
+          192, 
+          1747852585578
+        ]
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 96, 
+      "height": 46
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "justify": "center", 
+      "style": {
+        "padding": "5px", 
+        "margin": "8px", 
+        "classes": "kanoa/border kanoa/font/default", 
+        "overflow": "visible", 
+        "gap": "5px", 
+        "position": "relative"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "backgroundColor": "--kcSurface", 
+            "paddingRight": "5px", 
+            "top": -6, 
+            "left": 10, 
+            "fontSize": "10px", 
+            "position": "absolute", 
+            "paddingLeft": "5px"
+          }
+        }, 
+        "meta": {
+          "domId": "lblItemState", 
+          "name": "lblItemState"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn \"%s\"%(value['itemStateName'] or '')", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "center"
+          }
+        }, 
+        "meta": {
+          "domId": "lblCount", 
+          "name": "lblCount"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn \"{:,.1f} {}\".format(value['value'] or 0, value['units'] or '')", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "backgroundColor": "--kcSurface", 
+            "bottom": -6, 
+            "paddingRight": "5px", 
+            "left": 10, 
+            "fontSize": "10px", 
+            "position": "absolute", 
+            "paddingLeft": "5px"
+          }
+        }, 
+        "meta": {
+          "domId": "lblItemOrder", 
+          "name": "lblItemOrder"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn \"%s\"%(value['workOrderName'] or value['itemName'] or '')", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "events": {
+      "dom": {
+        "onMouseOver": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\n\tself.view.custom.selected = True\n\t\n\treturn"
+          }
+        }, 
+        "onMouseEnter": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\t\n#\tself.view.custom.selected = True\n\t\n\treturn"
+          }
+        }, 
+        "onMouseLeave": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\n\tself.view.custom.selected = False\n\t\n\treturn"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "custom.selected": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\n\tcountInfo = self.params.value if self.custom.selected else None\n\tsystem.perspective.sendMessage(\"itemStateCountSelected\", {'value': countInfo})\n\t\n\treturn"
+      }, 
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn False", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "now(0)"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.value": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tif origin == 'BindingWriteback':\n\t\tsystem.perspective.print(\"sending itemStateCountUpdated msg\")\n\t\tsystem.perspective.sendMessage(\"itemStateCountUpdated\", {'change': 'update', 'value': self.params.value})\n\t\n\treturn"
+      }, 
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

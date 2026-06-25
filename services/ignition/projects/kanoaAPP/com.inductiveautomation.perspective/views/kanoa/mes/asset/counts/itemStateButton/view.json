@@ -1,0 +1,195 @@
+{
+  "custom": {},
+  "params": {
+    "enabled": true,
+    "value": {
+      "assetId": 899,
+      "assetPath": "Kanoa Box Co",
+      "changedBy": 5,
+      "changedByUser": "jason",
+      "changedDate": {
+        "$": [
+          "ts",
+          0,
+          1741027650594
+        ],
+        "$ts": 1741019782360
+      },
+      "counterTypeId": 2,
+      "counterTypeName": "outfeed",
+      "createdBy": 5,
+      "createdByUser": "jason",
+      "createdDate": {
+        "$": [
+          "ts",
+          0,
+          1741027650594
+        ],
+        "$ts": 1740973435250
+      },
+      "enabled": true,
+      "itemStateClassId": 12,
+      "itemStateClassName": "Outfeed",
+      "itemStateClassPath": "Outfeed",
+      "itemStateColor": "#FFCA8A",
+      "itemStateId": 11,
+      "itemStateName": "Hold",
+      "itemStatePath": "Outfeed\\Hold"
+    }
+  },
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 60,
+      "width": 130
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.sendMessage(\u0027itemStateSelected\u0027, {\u0027itemStateInfo\u0027: self.view.params.value})\n\n\treturn\n"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "button",
+          "name": "button",
+          "tooltip": {
+            "delay": 0,
+            "location": "top",
+            "tail": false
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.image.icon.path": {
+            "binding": {
+              "config": {
+                "path": "view.custom.modeInfo.iconPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "enabled": "{view.params.enabled}",
+                  "value": "{view.params.value}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tif value[\u0027enabled\u0027]: return value[\u0027value\u0027][\u0027itemStateColor\u0027] or \u0027#FFFFFF\u0027\n\treturn \u0027#D5D5D5\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.style.borderStyle": {
+            "binding": {
+              "config": {
+                "path": "this.props.style.backgroundColor"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn \u0027solid\u0027 if value \u003d\u003d \u0027#FFFFFF\u0027 else \u0027none\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "path": "this.props.style.backgroundColor"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value[\u0027itemStateName\u0027] or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {}
+          },
+          "style": {
+            "borderColor": "#D5D5D5",
+            "borderWidth": "1px",
+            "classes": "kanoa/button/filled"
+          },
+          "textStyle": {
+            "classes": "kanoa/font/titleMedium"
+          }
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "center",
+      "style": {
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

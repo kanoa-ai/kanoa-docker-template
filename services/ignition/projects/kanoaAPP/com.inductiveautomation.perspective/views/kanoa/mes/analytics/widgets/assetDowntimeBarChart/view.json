@@ -1,0 +1,437 @@
+{
+  "custom": {
+    "data": {}, 
+    "filter": {
+      "endDate": {
+        "$ts": 1720742400000, 
+        "$": [
+          "ts", 
+          192, 
+          1749597619814
+        ]
+      }, 
+      "params": {
+        "downtimeBy": "Reason"
+      }, 
+      "assetId": null, 
+      "assetPath": null, 
+      "startDate": {
+        "$ts": 1717200000000, 
+        "$": [
+          "ts", 
+          192, 
+          1749597619814
+        ]
+      }
+    }
+  }, 
+  "params": {
+    "value": {
+      "endDate": {
+        "$ts": 1720742400000, 
+        "$": [
+          "ts", 
+          0, 
+          1720707264885
+        ]
+      }, 
+      "params": {
+        "downtimeBy": "Reason"
+      }, 
+      "assetPath": null, 
+      "startDate": {
+        "$ts": 1717200000000, 
+        "$": [
+          "ts", 
+          0, 
+          1720707280376
+        ]
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 892, 
+      "height": 471
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 3, 
+        "classes": "kanoa/container kanoa/font/default", 
+        "overflow": "hidden", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "center", 
+          "justify": "center", 
+          "style": {
+            "padding": "5px", 
+            "overflow": "hidden", 
+            "gap": "5px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblTitle", 
+              "name": "lblTitle"
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn '%s Downtime Minutes'%(system.kanoa.utilities.formatPath(value['assetPath'], {}))", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.filter"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.dropdown", 
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              }, 
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            }, 
+            "meta": {
+              "domId": "ddDowntimeBy", 
+              "name": "ddDowntimeBy"
+            }, 
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn [{'label': 'By Reason', 'value': 'Reason'}, {'label': 'By Category', 'value': 'Category'}, {'label': 'By Interval', 'value': 'Interval'}]", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr", 
+                  "config": {
+                    "expression": "now(0)"
+                  }
+                }
+              }, 
+              "props.value": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.filter.params.downtimeBy"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxOptions", 
+          "name": "flxOptions"
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        }, 
+        "children": [
+          {
+            "type": "kyvislabs.display.apexchart", 
+            "props": {
+              "type": "bar", 
+              "options": {
+                "fill": {
+                  "opacity": 1
+                }, 
+                "title": {
+                  "text": ""
+                }, 
+                "stroke": {
+                  "curve": "monotoneCubic", 
+                  "colors": [
+                    "#000000"
+                  ], 
+                  "width": 0.2
+                }, 
+                "dataLabels": {
+                  "enabled": false
+                }, 
+                "xaxis": {}, 
+                "theme": {}, 
+                "markers": {
+                  "size": 5
+                }, 
+                "chart": {
+                  "stacked": true, 
+                  "type": "line", 
+                  "toolbar": {
+                    "show": false
+                  }, 
+                  "fontFamily": "Roboto", 
+                  "height": 350
+                }
+              }
+            }, 
+            "meta": {
+              "domId": "apexChart", 
+              "name": "apexChart"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.options.plotOptions.bar.colors": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tif value.getValueAt(0,value.getColumnIndex('tgtAvailability')) is None: return 0\n\t\n\ttarget = value.getValueAt(0,value.getColumnIndex('tgtAvailability'))\n\tthreshold = value.getValueAt(0,value.getColumnIndex('tgtThreshold'))\n\tranges = [\n\t {\n\t \t\"from\": 0,\n\t \t\"to\": target - threshold,\n\t \t\"color\": kanoaScripts.colors.getCSSColor('--kcBad', self.session.props.theme)+'ff'\n\t }, \n\t {\n \t \t\"from\": target - threshold, \n \t \t\"to\": target,\n \t \t\"color\": kanoaScripts.colors.getCSSColor('--kcOK', self.session.props.theme)+'ff'\n \t }, \n \t {\n \t \t\"from\": target, \n \t \t\"to\": 1.0,\n \t \t\"color\": kanoaScripts.colors.getCSSColor('--kcGood', self.session.props.theme)+'ff'\n \t }\n\t]\n\t\n\tcolorDict = {\n\t\t\"ranges\": ranges\n\t}\n\treturn colorDict", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.custom.data.oeeSummary"
+                  }
+                }
+              }, 
+              "props.options.yaxis": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\taxes = [{\"title\": {\"text\": \"Duration (min)\"}, \"labels\": {\"formatter\": \"function (value) {       return value;     }\"}}]\n\t\n\tif value != 'Interval':\n\t\t\taxes.append({\n\t\t\t    \"min\": 0, \"max\": 105, \"seriesName\": \"Pareto\", \"opposite\": True,\n\t\t\t    \"title\": {\"text\": \"% Pareto\"},\n\t\t\t    \"labels\": {\"formatter\": \"function (value) {       return value.toFixed(1);     }\"}\n\t\t\t  })\n\t\n\treturn axes", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.filters.downtimeBy"
+                  }
+                }
+              }, 
+              "props.series": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\n\tstateData = []\n\ttotalData = []\n\tdata = system.dataset.toPyDataSet(value)\n\tdefaultColors = ['var(--kcChart-01)','var(--kcChart-02)','var(--kcChart-03)','var(--kcChart-04)','var(--kcChart-05)','var(--kcChart-06)','var(--kcChart-07)','var(--kcChart-08)','var(--kcChart-09)']\n\tif len(data) == 0: return []\n\n\tdowntimeBy = self.view.custom.filter['params']['downtimeBy']\t\n\tintervalData = []\n\tseries = []\t\n\t\n\tif downtimeBy == 'Interval':\n\t\tcolors = system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getStates({}), 'stateName', None)\n\t\treasonCodes = system.dataset.getColumnHeaders(value)\n\t\treasonCodes.remove('interval')\n\t\t\n\t\tcolorIndex = 0\n\t\tfor reasonCode in reasonCodes:\n#\t\t\tif self.view.custom.filter['params']['colorBy'] == \"State\":\n\t\t\tif 1:\n\t\t\t\tstateName = reasonCode.split(\" - \", 1)[1] if \" - \" in reasonCode else \"\"\n\t\t\t\tcolor = colors[stateName]['stateColor'] or colors[stateName]['stateTypeColor']\n\t\t\t\tif color is None: color = defaultColors[colorIndex]\n\t\t\t\tseries.append({\"name\": reasonCode, \"data\": [], \"type\": \"column\", 'color': color})\n\t\t\telse:\n\t\t\t\tseries.append({\"name\": reasonCode, \"data\": [], \"type\": \"column\", 'color': defaultColors[colorIndex]})\n\t\t\t\tcolorIndex = colorIndex + 1 if colorIndex < len(defaultColors) else 0\n\t\t\n\t\tfor row in data:\n\t\t\tintervalLabel = row['interval']\n\t\t\tfor index in range(len(row)):\n\t\t\t\tif index != 0:\n\t\t\t\t\tseries[index-1]['data'].append({'x': intervalLabel, 'y': row[index]})\t\n\t\treturn series\n\t\t\n\tif downtimeBy == 'Reason':\n\t\tcolors = system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getStates({}), 'stateName', None)\t\t\t\n#\t\treasonCodes = list(set([row['assetName'] + ' - ' + row['stateName'] for row in data]))\n#\t\treasonCodes = [row['assetName'] + ' - ' + row['stateName'] for row in data]\n\t\treasonCodes = []\n\t\tfor row in data:\n\t\t\tstateType = ' (Planned)' if row['stateTypeName'] == 'Planned Downtime' else ''\n\t\t\treasonCodes.append(row['assetName'] + ' - ' + row['stateName'] + stateType)\n\telif downtimeBy == 'Category':\n\t\tcolors = defaultColors\n\t\treasonCodes = []\n\t\tfor row in data:\n\t\t\tstateType = ' (Planned)' if row['stateTypeName'] == 'Planned Downtime' else ''\n\t\t\treasonCodes.append(row['assetName'] + ' - ' + row['stateCategoryName'] + stateType)\n\t\n\tcolorIndex = 0\n\tfor reasonCode in reasonCodes:\n\t\tif downtimeBy == 'Reason':\n\t\t\tstateName = reasonCode.split(\" - \", 1)[1] if \" - \" in reasonCode else \"\"\n\t\t\ttry:\n\t\t\t\tcolor = colors[stateName]['stateColor'] or colors[stateName]['stateTypeColor']\n\t\t\texcept:\n\t\t\t\tcolor = defaultColors[colorIndex]\n\t\t\t\t\n\t\t\tif color is None: color = defaultColors[colorIndex]\n\t\t\tseries.append({\"name\": reasonCode, \"data\": [], \"type\": \"column\", 'color': color})\n\t\telse:\n\t\t\tseries.append({\"name\": reasonCode, \"data\": [], \"type\": \"column\", 'color': defaultColors[colorIndex]})\n\t\t\tcolorIndex = colorIndex + 1 if colorIndex < len(defaultColors) else 0\n\n\tfor reasonCode in reasonCodes:\n\t\tcount = len(data) if downtimeBy == 'Category' else len(data)\n\t\tfor y in range(count):\n\t\t\tseries[y]['data'].append({'x': reasonCode, 'y': 0})\t\n\n\n\tfor row in data:\n\t\tname = row['stateName'] if downtimeBy == 'Reason' else row['stateCategoryName']\n\t\tstateType = ' (Planned)' if row['stateTypeName'] == 'Planned Downtime' else ''\n\t\tintervalLabel = row['assetName'] + ' - ' + name + stateType\n\t\tindex = reasonCodes.index(intervalLabel)\n\t\tseries[index]['data'][index] = {'x': intervalLabel, 'y': round(row['durationSecs']/60.0,1)}\n\n\ttotalMins = system.math.sum([row['durationSecs'] or 0 for row in data])/60.0\n\tdurationMins = 0\t\t\n\t\n\tif downtimeBy == 'Reason':\tcolName = 'stateName'\n\telif downtimeBy == 'Category':\tcolName = 'stateCategoryName'\n\t\n\tfor row in data:\n\t\tdurationMins += row['durationSecs']/60.0\n\t\ttotalData.append({\"x\": row[colName], \"y\": round((durationMins/totalMins)*100.0,1)})\n\n\tfor item in series:\n\t\titem['total'] = sum([row['y'] for row in item['data']])\n#\t\titem['data'] = sorted(item['data'], key=lambda x: x['y'], reverse=True)\n\t\t\n\tseries = sorted(series, key=lambda x: x['total'], reverse=True)\n\n\treturn series + [{\"name\": \"Pareto\",\t\"data\": totalData, \"type\": \"line\", 'color': 'var(--kcBad)'}]", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.custom.data.dtData"
+                  }
+                }
+              }, 
+              "props.options.theme.mode": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tif 'dark' in value: return 'dark'\n\telse: return 'light'", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "session.props.theme"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxBody", 
+          "name": "flxBody"
+        }, 
+        "position": {
+          "grow": 1
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblFilter", 
+              "name": "lblFilter"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.filter"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblFilter_0", 
+              "name": "lblFilter_0"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.value"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblFilter_1", 
+              "name": "lblFilter_1"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.widgetInfo.params[0].enabled"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxDebug", 
+          "name": "flxDebug"
+        }, 
+        "position": {
+          "grow": 1, 
+          "display": false
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn", 
+          "messageType": "widgetAssetSelected", 
+          "sessionScope": false, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": false, 
+          "script": "\n\tsystem.perspective.print(\"refreshWidgetParams msg rcvd with %s\"%payload)\t\n\t\n\tif self.view.params.value.dashboardWidgetId == payload['dashboardWidgetId']:\n\t\tsystem.perspective.print(\"refreshing widgetInfo\")\n\t\tself.view.refreshBinding(\"custom.widgetInfo\")\n\t\n\treturn", 
+          "messageType": "refreshWidgetParams", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "custom.data.dtData": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tdowntimeBy = value['params']['downtimeBy']\n\tparamsDict = {'assetId': value['assetId'], 'startDate': value['startDate'], 'endDate': value['endDate'], 'showDowntimeOnly': True, 'showChanged': None, 'durationSecs': 0}\n\n\tif downtimeBy == 'Category':\n\t\tdata = system.dataset.sort(system.kanoa.event.getAssetStateEventsByCategory(paramsDict), 'durationSecs', False)\n\telif downtimeBy == 'Interval':\n\t\tparamsDict['interval'] = None\n\t\tparamsDict['deviceUTCOffsetMins'] = self.session.props.device.timezone.utcOffset * 60\n\t\tdata = system.kanoa.event.getAssetStateEventsByInterval(paramsDict)\n\telse: data = system.kanoa.event.getAssetStateEventsSummary(paramsDict)\n\t\n\treturn data", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.custom.filter"
+        }
+      }
+    }, 
+    "custom.filter": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tfilterInfo = dict(value)\n\tfilterInfo['assetId'] = system.kanoa.utilities.getFieldValue('assetId', system.kanoa.asset.getAssets({'assetPath': value['assetPath']})) or -1\n\treturn filterInfo", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.data": {
+      "persistent": true
+    }
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "custom": {
+    "asset": {},
+    "data": {
+      "selected": {}
+    },
+    "filters": {
+      "assetId": null,
+      "assetPath": null,
+      "autoUpdateTimerSeconds": null,
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777651887238
+          ],
+          "$ts": 1777705200000
+        },
+        "selectedRange": "Today",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777651887238
+          ],
+          "$ts": 1777618800000
+        }
+      },
+      "showAssetPath": true,
+      "showBorder": true,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "autoUpdateTimerSeconds": null,
+      "selectedRange": "Today",
+      "showAssetPath": true,
+      "showBorder": true
+    }
+  },
+  "propConfig": {
+    "custom.asset": {
+      "persistent": true
+    },
+    "custom.asset.tagInfo": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.asset.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value.OEE",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      }
+    },
+    "custom.asset.tagPath": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters.assetPath"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.asset.getAssetTagPath({\u0027assetPath\u0027: value})",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.chkShtData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters.assetPath"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tparamsDict \u003d {\u0027assetPath\u0027: value, \u0027enabled\u0027: True, \u0027chkShtVersionStateName\u0027: \u0027Released\u0027}\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getSheetsByAsset(paramsDict))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 274,
+      "width": 619
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "marginRight": "auto"
+              },
+              "text": "Checks",
+              "textStyle": {
+                "classes": "kanoa/font/titleLarge",
+                "color": "--kcOnSurface"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "events": {
+                  "dom": {
+                    "onClick": {
+                      "config": {
+                        "script": "\n\t\tsystem.kanoa.utilities.storeAssetPath(self, self.view.custom.filters.assetPath)\n\t\n\t\tparams\u003d {\n\t\t\t\t\t\"path\": \"kanoa/scheduler/operations\",\n\t\t\t\t\t\"name\": \"Schedule\",\n\t\t\t\t\t\"type\": \"view\",\n\t\t\t\t\t\"params\": {}\n\t\t\t\t}\n\t\n\t\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams, scope\u003d\u0027page\u0027)"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnSchedule",
+                  "name": "btnSchedule"
+                },
+                "position": {
+                  "basis": "30px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "parent.custom.showNav"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/today"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": 30,
+                    "width": 30
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              }
+            ],
+            "custom": {
+              "showNav": true
+            },
+            "meta": {
+              "domId": "flxCntNav",
+              "name": "flxCntNav"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "style": {
+                "gap": "5px",
+                "overflow": "visible"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "space-between",
+          "style": {
+            "gap": "10px",
+            "overflow": "visible"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "flxAssetChecks",
+              "name": "flxAssetChecks"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "data": "{view.custom.data.chkShtData}",
+                      "selected": "{view.custom.data.selected}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\t\n\treturn [{\u0027value\u0027: row, \u0027selected\u0027: True if (value[\u0027selected\u0027] and value[\u0027selected\u0027][\u0027chkShtId\u0027] \u003d\u003d row[\u0027chkShtId\u0027]) else False} for row in value[\u0027data\u0027]]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "center",
+              "elementPosition": {
+                "basis": "40%"
+              },
+              "elementStyle": {
+                "height": "50px"
+              },
+              "path": "kanoa/core/dbp/widgets/analytics/assetCheckItem",
+              "style": {
+                "overflow": "scroll"
+              },
+              "useDefaultViewHeight": false,
+              "useDefaultViewWidth": false,
+              "wrap": "wrap"
+            },
+            "type": "ia.display.flex-repeater"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "path": "view.custom.filters"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn \u0027kanoa/container\u0027 if value.has_key(\u0027showBorder\u0027) and value[\u0027showBorder\u0027] else \u0027\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetCheckSelected",
+          "pageScope": true,
+          "script": "\t\n\t\n\tself.view.custom.data.selected \u003d payload[\u0027chkShtInfo\u0027] if payload[\u0027selected\u0027] else {}\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

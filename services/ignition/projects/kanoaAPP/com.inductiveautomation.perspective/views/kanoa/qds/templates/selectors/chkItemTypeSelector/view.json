@@ -1,0 +1,158 @@
+{
+  "custom": {}, 
+  "params": {
+    "enabled": false, 
+    "chkItemType": {}, 
+    "chkItemTypeId": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 187, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "overflow": "hidden", 
+        "gap": "5px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/border kanoa/font/default", 
+            "minWidth": "150px"
+          }, 
+          "placeholder": {
+            "text": "Select Check Type..."
+          }
+        }, 
+        "meta": {
+          "domId": "dropdown", 
+          "name": "dropdown"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\t\n\treturn [{\"value\": row['chkItemTypeId'], \"label\": row['chkItemTypeName']} for row in system.kanoa.quality.config.getCheckItemTypes({'enabled': True})]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr", 
+              "config": {
+                "expression": "now(0)"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.chkItemTypeId"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.icon", 
+        "props": {
+          "color": "--kcBlue-60", 
+          "path": "material/help_center"
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom-right", 
+            "style": {
+              "whiteSpace": "pre", 
+              "textAlign": "left"
+            }
+          }, 
+          "domId": "icoHelp", 
+          "name": "icoHelp"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "24px"
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tsystem.perspective.navigate(url = 'https://docs.kanoa.ai/configuration/quality/checkSheets', newTab=True)\n\t\n\treturn\n\t"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "\"Check - Value is manually entered or automatically pulled from a defined data source\\n\" +\r\n\"Calculated - Value is calculated from a list of other check values. Calculated checks can be nested\\n\" +\r\n\"Trigger - Value acts as a trigger used to capture other check values that have an associated data source\" "
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.chkItemType": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\tfor item in self.getChild(\"root\").getChild(\"dropdown\").props.options:\n\t\tif item['value'] == value: return item\n\treturn {}", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "/root/dropdown.props.value"
+        }
+      }, 
+      "paramDirection": "output", 
+      "persistent": true
+    }, 
+    "params.chkItemTypeId": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

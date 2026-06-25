@@ -1,0 +1,139 @@
+{
+  "custom": {
+    "data": [
+      {
+        "label": "Packaging > Box Line 1", 
+        "value": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1"
+      }, 
+      {
+        "label": "Packaging > Box Line 2", 
+        "value": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+      }, 
+      {
+        "label": "Packaging > Box Line 3", 
+        "value": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 3"
+      }, 
+      {
+        "label": "Packaging > Box line 4", 
+        "value": "Kanoa Box Co\\Box Plant\\Packaging\\Box line 4"
+      }, 
+      {
+        "label": "Packaging > Box line 5", 
+        "value": "Kanoa Box Co\\Box Plant\\Packaging\\Box line 5"
+      }, 
+      {
+        "label": "Processing > Line 1", 
+        "value": "Kanoa Box Co\\Box Plant\\Processing\\Line 1"
+      }
+    ]
+  }, 
+  "params": {
+    "selectedPath": null, 
+    "value": {
+      "parentPath": "Kanoa Box Co\\Box Plant", 
+      "showPath": true, 
+      "options": {
+        "selectable": {
+          "area": false, 
+          "oeeEnabled": false, 
+          "cellGroup": false, 
+          "enterprise": false, 
+          "line": true, 
+          "cell": false, 
+          "site": false, 
+          "oeeCalculated": false
+        }
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 402, 
+      "height": 33
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/font/default"
+          }, 
+          "placeholder": {
+            "text": "Select Asset..."
+          }
+        }, 
+        "meta": {
+          "domId": "dropdown", 
+          "name": "dropdown"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "36px"
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.data"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.selectedPath"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.inputPath": {
+      "paramDirection": "input"
+    }, 
+    "params.showPath": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.data": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tparentPath = value.parentPath or ''\t\n\tassetTypeIdList = [system.kanoa.utilities.getFieldValue('assetTypeId', system.kanoa.asset.getAssetTypes({'assetTypeName':k})) for k,v in value.options.selectable.items() if v]\n\tdata = system.kanoa.asset.getAssets({'assetPath': parentPath + '%', 'assetTypeIdList':assetTypeIdList})\n\t\n\toptions = []\n\tfor row in data:\n\t\tassetPath = row['assetPath']\n\t\tdrop = parentPath  if value.showPath and assetPath != parentPath else \"\\\\\".join(assetPath.split(\"\\\\\")[:-1])\n\t\tlabel = system.kanoa.utilities.formatPath(assetPath, {'drop': drop})\t\t\t\t\t\n\t\toptions.append({\"value\": assetPath, \"label\": label})\n\t\n\treturn options", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.selectedPath": {
+      "paramDirection": "inout"
+    }
+  }
+}

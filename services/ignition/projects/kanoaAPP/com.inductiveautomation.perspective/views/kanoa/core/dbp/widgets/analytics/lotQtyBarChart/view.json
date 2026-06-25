@@ -1,0 +1,586 @@
+{
+  "custom": {
+    "data": {},
+    "filters": {
+      "assetId": null,
+      "assetPath": "",
+      "colorBy": "Default",
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "includeChildren": false,
+      "lotQtyBy": "State",
+      "showAssetPath": true,
+      "showLotQtyBySelector": 1,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    },
+    "filtersshowAssetPath": true,
+    "series": []
+  },
+  "params": {
+    "value": {
+      "assetPath": "",
+      "includeChildren": false,
+      "lotQtyBy": "State",
+      "showAssetPath": true,
+      "showLotQtyBySelector": 1
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.lotQtyData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tlotQtyBy \u003d value[\u0027lotQtyBy\u0027]\n\tassetId \u003d value[\u0027assetId\u0027]\n\tstartDate \u003d value[\u0027dateRange\u0027][\u0027startDate\u0027]\n\tendDate \u003d value[\u0027dateRange\u0027][\u0027endDate\u0027]\n\t\n\tif value[\u0027assetId\u0027] is None: return system.dataset.toDataSet([],[])\n\t\n\tif value.has_key(\u0027includeChildren\u0027) and value[\u0027includeChildren\u0027] is not None and value[\u0027includeChildren\u0027]:\n\t\tassetList \u003d []\n\t\tassetId \u003d value[\u0027assetId\u0027]\n\n\t\tdef recursiveFind(currentId):\n\t\t\t\u0027\u0027\u0027\n\t\t\t    Recursively find all children of a given asset ID using the getChildren function.\n\t\t\t    Args:\n\t\t\t        assetId (str): The ID of the parent asset to find children for.\n\t\t\t    Returns:\n\t\t\t        list: A list of all child asset IDs, including descendants\n\t\t\t\u0027\u0027\u0027\n\t\t\t        \n\t\t\tchildren \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027parentId\u0027: currentId, \u0027enabled\u0027: True}))\n\t\t\tallDescendants \u003d []\n\t\t\tfor child in children:\n\t\t\t\tallDescendants.append(child[\u0027assetId\u0027])\n\t\t\t\tallDescendants.extend(recursiveFind(child[\u0027assetId\u0027]))\n\t\t\treturn allDescendants\n\t\n\t    # Start the recursion with the provided assetId\n\t\tassetList \u003d recursiveFind(assetId)\n\t\t\n\t\tdata \u003d system.kanoa.lot.getLotQty({\u0027assetId\u0027: assetId, \u0027hasQty\u0027: True})\n\t\tfor asset in assetList:\n\t\t\tif asset !\u003d assetId:\n\t\t\t\tdata \u003d system.dataset.appendDataset(data, system.kanoa.lot.getLotQty({\u0027assetId\u0027: asset, \u0027hasQty\u0027: True}))\n\telse:\n\t\tdata \u003d system.kanoa.lot.getLotQty({\u0027assetId\u0027: assetId, \u0027hasQty\u0027: True})\n\t\n\treturn data",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027lotQtyBy\u0027): filters[\u0027lotQtyBy\u0027] \u003d \u0027Item\u0027\n\tif not filters.has_key(\u0027colorBy\u0027): filters[\u0027colorBy\u0027] \u003d \u0027Default\u0027\n\tif not filters.has_key(\u0027showAssetPath\u0027): filters[\u0027showAssetPath\u0027] \u003d False\n\tif not filters.has_key(\u0027includeChildren\u0027): filters[\u0027includeChildren\u0027] \u003d False\n\t\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.series": {
+      "binding": {
+        "config": {
+          "struct": {
+            "filters": "{view.custom.filters}",
+            "lotQtyData": "{view.custom.data.lotQtyData}"
+          },
+          "waitOnAll": true
+        },
+        "transforms": [
+          {
+            "code": "\t# Perspective Transform (script)\n\t# Input: value (dict) with keys: lotQtyData (Dataset), filters { lotQtyBy, colorBy }\n\t# Output: list[dict] - Apex series array\n\t\n\t# --- setup ---\n\tdefaultColors \u003d [\n\t    \u0027var(--kcChart-01)\u0027,\u0027var(--kcChart-02)\u0027,\u0027var(--kcChart-03)\u0027,\u0027var(--kcChart-04)\u0027,\n\t    \u0027var(--kcChart-05)\u0027,\u0027var(--kcChart-06)\u0027,\u0027var(--kcChart-07)\u0027,\u0027var(--kcChart-08)\u0027,\u0027var(--kcChart-09)\u0027\n\t]\n\tdefaultColorIndex \u003d 0\n\t\n\t# Never mutate value; copy/convert first\n\tfilters \u003d dict(value.get(\u0027filters\u0027) or {})\n\tlotQtyBy \u003d filters.get(\u0027lotQtyBy\u0027) or \u0027Item\u0027\n\tcolorBy \u003d filters.get(\u0027colorBy\u0027) or \u0027Default\u0027\n\t\n\t# Convert dataset -\u003e list[dict]\n\tlotQtyData \u003d system.kanoa.utilities.convertDatasetToJSON(value.get(\u0027lotQtyData\u0027))\n\t\n\t# Helper to coalesce strings (UI-safe)\n\tdef s(x):\n\t    return x if (x is not None) else \u0027\u0027\n\t\n\t# --- category list ---\n\tif lotQtyBy \u003d\u003d \u0027Asset\u0027:\n\t    categoryList \u003d sorted(list(set(s(lot.get(\u0027assetPath\u0027)) for lot in lotQtyData)))\n\telif lotQtyBy \u003d\u003d \u0027State\u0027:\n\t    categoryList \u003d sorted(list(set(s(lot.get(\u0027lotStateName\u0027)) for lot in lotQtyData)))\n\telif lotQtyBy \u003d\u003d \u0027State and Reason\u0027:\n\t    categoryList \u003d sorted(list(set(\n\t        (s(lot.get(\u0027lotStateName\u0027)) + \u0027 - \u0027 + (s(lot.get(\u0027lotStateReasonName\u0027)) or \u0027None\u0027)) for lot in lotQtyData\n\t    )))\n\telse:\n\t    categoryList \u003d sorted(list(set(s(lot.get(\u0027itemName\u0027)) for lot in lotQtyData)))\n\t\n\t# --- color map (if by Asset) ---\n\tassetColorDict \u003d {}\n\tif colorBy \u003d\u003d \u0027Asset\u0027:\n\t    assetList \u003d sorted(list(set(s(lot.get(\u0027assetPath\u0027)) for lot in lotQtyData)))\n\t    idx \u003d 0\n\t    for asset in assetList:\n\t        assetColorDict[asset] \u003d defaultColors[idx]\n\t        idx \u003d idx + 1 if idx \u003c len(defaultColors) - 1 else 0\n\t\n\t# --- build series ---\n\tseries \u003d []\n\tfor lot in lotQtyData:\n\t    lotName \u003d s(lot.get(\u0027lotName\u0027))\n\t    lotStateName \u003d s(lot.get(\u0027lotStateName\u0027))\n\t    lotStateReasonName \u003d s(lot.get(\u0027lotStateReasonName\u0027))\n\t    itemName \u003d s(lot.get(\u0027itemName\u0027))\n\t    assetPath \u003d s(lot.get(\u0027assetPath\u0027))\n\t    # Keep timestamp shape intact (could be epoch, { $ts }, or Ignition ts tuple)\n\t    tStamp \u003d lot.get(\u0027tStamp\u0027)\n\t\n\t    data \u003d []\n\t    for category in categoryList:\n\t        if lotQtyBy \u003d\u003d \u0027Asset\u0027:\n\t            yValue \u003d float(lot.get(\u0027lotEventQty\u0027) or 0.0) if assetPath \u003d\u003d category else 0.0\n\t            xValue \u003d category.rsplit(\"\\\\\", 1)[-1]\n\t        elif lotQtyBy \u003d\u003d \u0027State\u0027:\n\t            yValue \u003d float(lot.get(\u0027lotEventQty\u0027) or 0.0) if lotStateName \u003d\u003d category else 0.0\n\t            xValue \u003d category\n\t        elif lotQtyBy \u003d\u003d \u0027State and Reason\u0027:\n\t            key \u003d (lotStateName + \u0027 - \u0027 + (lotStateReasonName or \u0027None\u0027))\n\t            yValue \u003d float(lot.get(\u0027lotEventQty\u0027) or 0.0) if key \u003d\u003d category else 0.0\n\t            xValue \u003d category\n\t        else:\n\t            yValue \u003d float(lot.get(\u0027lotEventQty\u0027) or 0.0) if itemName \u003d\u003d category else 0.0\n\t            xValue \u003d category\n\t\n\t        # Attach all “extra” fields to the point so Apex won’t drop them\n\t        data.append({\n\t            \u0027x\u0027: xValue,\n\t            \u0027y\u0027: yValue,\n\t            \u0027meta\u0027: {\n\t                \u0027assetPath\u0027: assetPath,\n\t                \u0027lotStateName\u0027: lotStateName,\n\t                \u0027lotStateReasonName\u0027: lotStateReasonName,\n\t                \u0027itemName\u0027: itemName,\n\t                \u0027tStamp\u0027: tStamp\n\t            }\n\t        })\n\t\n\t    newSeries \u003d {\n\t        \u0027name\u0027: lotName,\n\t        \u0027type\u0027: \u0027column\u0027,\n\t        \u0027data\u0027: data\n\t    }\n\t\n\t    # Color selection\n\t    if colorBy \u003d\u003d \u0027Asset\u0027:\n\t        newSeries[\u0027color\u0027] \u003d assetColorDict.get(assetPath) or defaultColors[defaultColorIndex]\n\t    elif colorBy \u003d\u003d \u0027Item\u0027:\n\t        newSeries[\u0027color\u0027] \u003d s(lot.get(\u0027itemColor\u0027)) or defaultColors[defaultColorIndex]\n\t    else:\n\t        newSeries[\u0027color\u0027] \u003d defaultColors[defaultColorIndex]\n\t\n\t    defaultColorIndex \u003d defaultColorIndex + 1 if defaultColorIndex \u003c len(defaultColors) - 1 else 0\n\t    series.append(newSeries)\n\t\n\treturn series",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 471,
+      "width": 892
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tlotQtyBy \u003d value[\u0027lotQtyBy\u0027] if value.has_key(\u0027showLotQtyBySelector\u0027) and not value[\u0027showLotQtyBySelector\u0027] else \u0027\u0027\n\tassetPath \u003d system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}) if value[\u0027showAssetPath\u0027] else \u0027\u0027\n\treturn \u0027%s Lot Quantity %s\u0027%(assetPath, lotQtyBy)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddLotQtyBy",
+              "name": "ddLotQtyBy"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showLotQtyBySelector\u0027) and value[\u0027showLotQtyBySelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027By Item\u0027, \u0027value\u0027: \u0027Item\u0027}, {\u0027label\u0027: \u0027By Asset\u0027, \u0027value\u0027: \u0027Asset\u0027}, {\u0027label\u0027: \"By State\", \u0027value\u0027: \"State\"}, {\u0027label\u0027: \"By State and Reason\", \u0027value\u0027: \"State and Reason\"}]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.lotQtyBy"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "150px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "lblTitle_0",
+              "name": "lblTitle_0"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showLotQtyBySelector\u0027) and value[\u0027showLotQtyBySelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": "Color by"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddColorBy",
+              "name": "ddColorBy"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showLotQtyBySelector\u0027) and value[\u0027showLotQtyBySelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \"Default\", \u0027value\u0027: \"Default\"}, {\u0027label\u0027: \u0027By Item\u0027, \u0027value\u0027: \u0027Item\u0027}, {\u0027label\u0027: \u0027By Asset\u0027, \u0027value\u0027: \u0027Asset\u0027}]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.colorBy"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "apexChart",
+              "name": "apexChart"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options.plotOptions.bar.colors": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.oeeSummary"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif value.getValueAt(0,value.getColumnIndex(\u0027tgtAvailability\u0027)) is None: return 0\n\t\n\ttarget \u003d value.getValueAt(0,value.getColumnIndex(\u0027tgtAvailability\u0027))\n\tthreshold \u003d value.getValueAt(0,value.getColumnIndex(\u0027tgtThreshold\u0027))\n\tranges \u003d [\n\t {\n\t \t\"from\": 0,\n\t \t\"to\": target - threshold,\n\t \t\"color\": kanoaScripts.colors.getCSSColor(\u0027--kcBad\u0027, self.session.props.theme)+\u0027ff\u0027\n\t }, \n\t {\n \t \t\"from\": target - threshold, \n \t \t\"to\": target,\n \t \t\"color\": kanoaScripts.colors.getCSSColor(\u0027--kcOK\u0027, self.session.props.theme)+\u0027ff\u0027\n \t }, \n \t {\n \t \t\"from\": target, \n \t \t\"to\": 1.0,\n \t \t\"color\": kanoaScripts.colors.getCSSColor(\u0027--kcGood\u0027, self.session.props.theme)+\u0027ff\u0027\n \t }\n\t]\n\t\n\tcolorDict \u003d {\n\t\t\"ranges\": ranges\n\t}\n\treturn colorDict",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options.yaxis": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.downtimeBy"
+                  },
+                  "enabled": false,
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\taxes \u003d [{\"title\": {\"text\": \"Duration (min)\"}, \"labels\": {\"formatter\": \"function (value) {       return value;     }\"}}]\n\t\n\tif value !\u003d \u0027Interval\u0027:\n\t\t\taxes.append({\n\t\t\t    \"min\": 0, \"max\": 105, \"seriesName\": \"Pareto\", \"opposite\": True,\n\t\t\t    \"title\": {\"text\": \"% Pareto\"},\n\t\t\t    \"labels\": {\"formatter\": \"function (value) {       return value;     }\"}\n\t\t\t  })\n\t\n\treturn axes",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.series"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "options": {
+                "chart": {
+                  "fontFamily": "Roboto",
+                  "height": 350,
+                  "stacked": true,
+                  "toolbar": {
+                    "show": false
+                  },
+                  "type": "bar"
+                },
+                "colors": [
+                  "var(--kcChart-01)",
+                  "var(--kcChart-02)",
+                  "var(--kcChart-03)",
+                  "var(--kcChart-04)",
+                  "var(--kcChart-05)",
+                  "var(--kcChart-06)",
+                  "var(--kcChart-07)",
+                  "var(--kcChart-08)",
+                  "var(--kcChart-09)"
+                ],
+                "dataLabels": {
+                  "enabled": true,
+                  "formatter": "function(value, { seriesIndex, dataPointIndex, w }) {\n    const formatNumber \u003d (number) \u003d\u003e {\n        return number.toLocaleString();\n    };\n\n    return [w.config.series[seriesIndex].name, formatNumber(value)];\n}\n"
+                },
+                "fill": {
+                  "opacity": 1
+                },
+                "stroke": {
+                  "width": 0
+                },
+                "theme": {},
+                "title": {
+                  "text": ""
+                },
+                "tooltip": {
+                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) {\n  // ---------- helpers ----------\n  const n \u003d (v) \u003d\u003e (v \u003d\u003d null || v \u003d\u003d\u003d \u0027\u0027 ? null : Number(v));\n  const formatNumber \u003d (v) \u003d\u003e (n(v) \u003d\u003d null ? \u0027\u0027 : n(v).toLocaleString());\n\n  // Accept: number | string | bigint | { $ts:number|string|bigint } | { $:[ \u0027ts\u0027,*, ms ] }\n  const coerceEpochMs \u003d (ts) \u003d\u003e {\n    if (ts \u003d\u003d null) return null;\n\n    // plain number/string/bigint\n    if (typeof ts \u003d\u003d\u003d \u0027number\u0027 || typeof ts \u003d\u003d\u003d \u0027string\u0027 || typeof ts \u003d\u003d\u003d \u0027bigint\u0027) {\n      const num \u003d Number(ts);\n      return isFinite(num) ? num : null;\n    }\n\n    // object with $ts\n    if (typeof ts \u003d\u003d\u003d \u0027object\u0027 \u0026\u0026 ts.hasOwnProperty(\u0027$ts\u0027)) {\n      const num \u003d Number(ts[\u0027$ts\u0027]);\n      return isFinite(num) ? num : null;\n    }\n\n    // object with $ array: [\"ts\", zone, ms]\n    if (typeof ts \u003d\u003d\u003d \u0027object\u0027 \u0026\u0026 ts.hasOwnProperty(\u0027$\u0027) \u0026\u0026 Array.isArray(ts[\u0027$\u0027]) \u0026\u0026 ts[\u0027$\u0027].length \u003e\u003d 3) {\n      const num \u003d Number(ts[\u0027$\u0027][2]);\n      return isFinite(num) ? num : null;\n    }\n\n    return null;\n  };\n\n  const formatDate \u003d (ts) \u003d\u003e {\n    const ms \u003d coerceEpochMs(ts);\n    if (ms \u003d\u003d null) return \u0027—\u0027;\n    const d \u003d new Date(ms);\n    if (isNaN(d.getTime())) return \u0027—\u0027;\n    return d.toLocaleString(\u0027en-US\u0027, {\n      year: \u00272-digit\u0027, month: \u00272-digit\u0027, day: \u00272-digit\u0027,\n      hour: \u00272-digit\u0027, minute: \u00272-digit\u0027, hour12: false\n    }).replace(\u0027,\u0027, \u0027\u0027);\n  };\n\n  // ---------- sources ----------\n  const s \u003d (w \u0026\u0026 w.config \u0026\u0026 w.config.series) ? (w.config.series[seriesIndex] || {}) : {};\n  const dp \u003d (s.data \u0026\u0026 s.data[dataPointIndex]) ? s.data[dataPointIndex] : {};\n  const meta \u003d dp.meta || {};\n\n  const lotName \u003d s.name || \u0027\u0027;\n  const qty \u003d (series \u0026\u0026 series[seriesIndex]) ? series[seriesIndex][dataPointIndex] : dp.y;\n  const asset \u003d meta.assetPath || s.assetPath || \u0027\u0027;\n  const state \u003d meta.lotStateName || s.lotStateName || \u0027\u0027;\n  const reason \u003d meta.lotStateReasonName || s.lotStateReasonName || \u0027\u0027;\n  const item \u003d meta.itemName || s.itemName || \u0027\u0027;\n\n  // \u003c- the important bit: prefer meta.tStamp, then series tStamp\n  const tsText \u003d formatDate(meta.tStamp !\u003d null ? meta.tStamp : s.tStamp);\n\n  return (\n    \"\u003cdiv style\u003d\u0027padding:5px\u0027\u003e\" +\n      \"\u003cb\u003eLot Name:\u003c/b\u003e \" + lotName + \"\u003cp\u003e\" +\n      \"\u003cb\u003eQty:\u003c/b\u003e \" + formatNumber(qty) + \"\u003cp\u003e\" +\n      \"\u003cb\u003eAsset:\u003c/b\u003e \" + (asset || \u0027\u0027) + \"\u003cp\u003e\" +\n      \"\u003cb\u003eState:\u003c/b\u003e \" + (state || \u0027\u0027) + \"\u003cp\u003e\" +\n      \"\u003cb\u003eReason:\u003c/b\u003e \" + (reason || \u0027\u0027) + \"\u003cp\u003e\" +\n      \"\u003cb\u003eItem:\u003c/b\u003e \" + (item || \u0027\u0027) + \"\u003cp\u003e\" +\n    \"\u003c/div\u003e\"\n  );\n}\n",
+                  "enabled": true
+                },
+                "xaxis": {},
+                "yaxis": [
+                  {
+                    "labels": {
+                      "formatter": "function (value) {       return value;     }"
+                    },
+                    "title": {
+                      "text": "Lot Qty"
+                    }
+                  }
+                ]
+              },
+              "type": "bar"
+            },
+            "type": "kyvislabs.display.apexchart"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblFilter",
+              "name": "lblFilter"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_0",
+              "name": "lblFilter_0"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_1",
+              "name": "lblFilter_1"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo.params[0].enabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxDebug",
+          "name": "flxDebug"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 3
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "lotUpdate",
+          "pageScope": true,
+          "script": "\tself.view.refreshBinding(\"custom.data.lotQtyData\")",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

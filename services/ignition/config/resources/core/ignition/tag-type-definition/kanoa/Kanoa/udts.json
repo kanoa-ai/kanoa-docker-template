@@ -1,0 +1,1512 @@
+[
+  {
+    "typeColor": -431872,
+    "name": "lotTracker",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "reference",
+        "sourceTagPath": "[.]../Line/EquipID",
+        "name": "assetId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "debug",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "reference",
+        "dataType": "String",
+        "sourceTagPath": "[.]../Line/OEE/itemName",
+        "name": "itemName",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tdebug \u003d system.tag.read(\"[.]debug\").value\n\tlog \u003d system.util.getLogger(\u0027lotTrackerUDT\u0027)\n\tif debug: log.info(\u0027tag change script triggered\u0027)\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and (currentValue.value or None) is not None:\n\t\tif debug: log.info(\u0027lotTracker change with lotName %s\u0027%currentValue.value)\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \"SYSTEM\"})\n\t\t\n\t\t# get key tag values\n\t\tlotName \u003d currentValue.value.strip()\n\t\ttagPaths \u003d [\"[.]lotOperationName\", \"[.]itemName\", \"[.]assetId\"]\n\t\ttagData \u003d system.tag.readBlocking(tagPaths)\n\t\tlotOperationName \u003d tagData[0].value\n\t\titemName \u003d tagData[1].value\n\t\tassetId \u003d tagData[2].value\n\t\t\n\t\tif (lotOperationName or None) is None: \n\t\t\tmsg \u003d \u0027Invalid lot operation\u0027\n\t\t\tlog.error(msg)\n\t\t\tsystem.tag.write(\"[.]message\", msg)\n\t\t\treturn\n\n\t\tif assetId is None: \n\t\t\tmsg \u003d \u0027Invalid assetId\u0027\n\t\t\tlog.error(msg)\n\t\t\tsystem.tag.write(\"[.]message\", msg)\t\t\t\n\t\t\treturn\n\t\t\t\n\t\tif (lotName or None) is None or lotName \u003d\u003d \u0027null\u0027 : \n\t\t\tmsg \u003d \u0027Invalid lotName\u0027\n\t\t\tlog.error(msg)\n\t\t\tsystem.tag.write(\"[.]message\", msg)\t\t\t\n\t\t\treturn\n\n\t\t# construct lot operation event\t\t\t\n\t\tlotOperationId \u003d system.kanoa.utilities.getFieldValue(\u0027lotOperationId\u0027, system.kanoa.lot.getLotOperations({\u0027lotOperationName\u0027: lotOperationName}))\n\t\tif lotOperationId is None:\n\t\t\tlotOperationInfo \u003d {\u0027lotOperationName\u0027: lotOperationName, \u0027lotOperationColor\u0027: None, \u0027allowInputLots\u0027: True, \u0027allowOutputLots\u0027: True, \u0027enabled\u0027: True}\n\t\t\tlotOperationId, msg \u003d system.kanoa.lot.addLotOperation(lotOperationInfo, userId)\t\t\t\n\t\t\tif msg: \n\t\t\t\tmsg \u003d \u0027Could not create lot operation named %s. %s\u0027%(lotOperationName, msg)\n\t\t\t\tlog.error(msg)\n\t\t\t\tsystem.tag.write(\"[.]message\", msg)\t\t\t\t\n\t\t\t\treturn\n\t\t\t\n\t\tlotOperationEventInfo \u003d {\u0027lotOperationEventId\u0027: None, \u0027lotOperationId\u0027: lotOperationId, \u0027assetId\u0027: assetId, \u0027tStamp\u0027: system.date.now(), \u0027enabled\u0027: True}\n\t\tif debug: log.info(\u0027constructed lot operation event info %s\u0027%lotOperationEventInfo)\n\t\t\n\t\t# if this lot name already exists, use that lot; otherwise make a new one\n\t\tif debug: log.info(\u0027looking for lot name %s\u0027%lotName)\n\t\tlotInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLots({\u0027lotName\u0027: lotName}), 0)\n\t\tif lotInfo[\u0027lotId\u0027] is None:\n\t\t\tif (itemName or None) is None: \n\t\t\t\tmsg \u003d \u0027Invalid itemName. Canot create new lot\u0027\n\t\t\t\tlog.error(msg)\n\t\t\t\tsystem.tag.write(\"[.]message\", msg)\n\t\t\t\treturn\n\t\t\tlotInfo \u003d {\u0027lotName\u0027: lotName, \u0027itemId\u0027: system.kanoa.utilities.getFieldValue(\u0027itemId\u0027, system.kanoa.item.getItems({\u0027itemName\u0027: itemName})), \u0027itemUnitId\u0027: system.kanoa.utilities.getFieldValue(\u0027itemUnitId\u0027, system.kanoa.item.getItemUnits({\u0027itemUnitName\u0027: \u0027units\u0027}))}\n\t\t\tif debug: log.info(\u0027lot not found, making lot with info %s\u0027%lotInfo)\n\t\t\tlotId, msg \u003d system.kanoa.lot.addLot(lotInfo, userId)\n\t\t\tif msg: \n\t\t\t\tmsg \u003d \u0027Could not create lot named %s. %s\u0027%(lotName, msg)\n\t\t\t\tlog.error(msg)\n\t\t\t\tsystem.tag.write(\"[.]message\", msg)\n\t\t\t\treturn\t\t\t\n\t\t\n\t\t# grab any lot events associated with this lot\n\t\t# if you don\u0027t find any; keep our inputLotEvent set to None and we\u0027ll create the new lot event from scratch\n\t\t# if you do find one; get the most recent and copy over its appropriate properties to the new output lot event; and save it for use as the inputLotEvent in executeLotOperation\n\t\titemSources \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.item.getItemSource({\u0027enabled\u0027: True}), \u0027itemSourceName\u0027, \u0027itemSourceId\u0027)\n\t\tokLotStateId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateId\u0027, system.kanoa.lot.getLotStates({\u0027lotStateName\u0027: \"OK\"}))\n\t\t\n\t\tlastLotEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLotEvents({\u0027lotId\u0027: lotInfo[\u0027lotId\u0027], \u0027itemSourceId\u0027: itemSources[\u0027output\u0027], \u0027getLastEvent\u0027: True}), 0)\n\t\tif lastLotEventInfo[\u0027lotEventId\u0027] is None:\n\t\t\tinputLotEvents \u003d []\n\t\telse:\n\t\t\tif debug: log.info(\u0027found last lot event %s\u0027%lastLotEventInfo)\n\t\t\tinputLotEventInfo \u003d dict(lastLotEventInfo)\t\t\t\n\t\t\tinputLotEventInfo[\u0027lotEventId\u0027] \u003d None\n\t\t\tinputLotEventInfo[\u0027itemSourceId\u0027] \u003d itemSources[\u0027input\u0027]\n\t\t\tinputLotEventInfo[\u0027tStamp\u0027] \u003d system.date.now()\n\t\t\tinputLotEvents \u003d [inputLotEventInfo]\n\t\t\t\n\t\toutputLotEventInfo \u003d dict(inputLotEventInfo)\n\t\tif debug: log.info(\"outputLotEventInfo was %s\"%(outputLotEventInfo))\t\t\n\t\toutputLotEventInfo[\u0027lotEventId\u0027] \u003d None\n\t\toutputLotEventInfo[\u0027assetId\u0027] \u003d assetId\n\t\toutputLotEventInfo[\u0027itemSourceId\u0027] \u003d itemSources[\u0027output\u0027]\n\t\toutputLotEventInfo[\u0027tStamp\u0027] \u003d system.date.now()\t\t\t\n\n\t\t# set up all of our lot event and operation event info for execution\n\t\tif debug: log.info(\u0027Calling executeLotOperation() with %s\u0027%(lotOperationEventInfo))\n\t\tif debug: log.info(\u0027inputLotEventInfo() %s\u0027%(inputLotEventInfo))\n\t\tif debug: log.info(\"outputLotEventInfo[\u0027assetId\u0027] %s\"%(outputLotEventInfo[\u0027assetId\u0027]))\n\t\trecords, msg \u003d system.kanoa.lot.executeLotOperation(lotOperationEventInfo, inputLotEvents, [outputLotEventInfo], userId)\n\t\t\n\t\tif msg is not None: \n\t\t\tlog.error(msg)\n\t\t\tsystem.tag.write(\"[.]message\", msg)\n\t\telse:\n\t\t\tif debug: log.info(\u0027success\u0027)\n\t\t\tsystem.tag.write(\"[.]message\", \u0027success\u0027)\n\n\t\treturn"
+          }
+        ],
+        "dataType": "String",
+        "name": "lotName",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "String",
+        "name": "lotOperationName",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "String",
+        "name": "message",
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -16733012,
+    "name": "assetInputs",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "name": "Inputs",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "memory",
+            "name": "Mode",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "Product Code",
+            "value": "",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "expr",
+            "expression": "if({[~]Simulators/_GenSimulator_/Random/RandomInteger1} \u003e 0 \u0026\u0026 {[~]Simulators/_GenSimulator_/Random/RandomInteger1}\u003c\u003d 100, 1,\r\n\tif({[~]]Simulators/_GenSimulator_/Random/RandomInteger1}, 3, 2))",
+            "name": "State",
+            "executionMode": "TagGroupRate",
+            "value": 4,
+            "tagGroup": "Every 30 seconds",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "expr",
+            "expression": "({[.]Infeed Count}/30) * 0.9",
+            "dataType": "Float4",
+            "name": "Outfeed Count",
+            "executionMode": "TagGroupRate",
+            "value": 0.0,
+            "tagGroup": "Every 30 seconds",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Boolean",
+            "name": "Part Required",
+            "value": false,
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "Waste Count",
+            "tagGroup": "Every 30 seconds",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "Work Order",
+            "value": "",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "expr",
+            "expression": "{[~]Simulators/_GenSimulator_/Ramp/Ramp9} / 9",
+            "dataType": "Float4",
+            "name": "Infeed Count",
+            "executionMode": "TagGroupRate",
+            "value": 0.0,
+            "tagGroup": "Every 30 seconds",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "name": "Machine ID",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "Tooling",
+            "tagType": "AtomicTag"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "typeColor": -16733184,
+    "name": "tagTimer",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "dataType": "DataSet",
+        "name": "data",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "debug",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "String",
+        "name": "description",
+        "value": "",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "enable",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "String",
+        "name": "error",
+        "value": "",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "intervalSecs",
+        "value": 60,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "DateTime",
+        "name": "lastUpdated",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tpass\t#execute some function here\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "update",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "expr",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\ttagPaths \u003d [\"[.]enable\", \"[.]update\", \"[.]lastUpdated\", \"[.]intervalSecs\"]\n\ttagValues \u003d system.tag.readBlocking(tagPaths)\n\n\tenabled \u003d tagValues[0].value\n\tupdating \u003d tagValues[1].value\n\tlastUpdated \u003d tagValues[2].value\n\tintervalSecs \u003d tagValues[3].value or 60\n \n\tif enabled and not updating:\n\t\tif lastUpdated is None or system.date.secondsBetween(lastUpdated, system.date.now()) \u003e\u003d intervalSecs: \n\t\t\tsystem.tag.writeBlocking([\"[.]update\"], [True])\n\t\t\n\treturn"
+          }
+        ],
+        "expression": "now({[.]intervalSecs} * 1000)",
+        "dataType": "DateTime",
+        "name": "updateTrigger",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -16733184,
+    "dataType": "Int4",
+    "name": "assetOEE",
+    "value": 0,
+    "parameters": {
+      "MQTTPath": {
+        "dataType": "String",
+        "value": ""
+      }
+    },
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "name": "Configuration",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "expr",
+            "expression": "runScript(\"system.kanoa.asset.addCounter\", 0 , {[.]../EquipID}, \u0027outfeed\u0027, \u0027outfeed\u0027, null)",
+            "name": "outfeedCounterId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "expr",
+            "expression": "runScript(\"system.kanoa.asset.addCounter\", 0 , {[.]../EquipID}, \u0027waste\u0027, \u0027waste\u0027, null)",
+            "name": "wasteCounterId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "name": "userId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "expr",
+            "expression": "runScript(\"system.kanoa.asset.addCounter\", 0 , {[.]../EquipID}, \u0027infeed\u0027, \u0027infeed\u0027, null)",
+            "name": "infeedCounterId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "expr",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tsystem.tag.write(\"[.]refresh\", 1)\n\t\n\treturn"
+              }
+            ],
+            "expression": "now(0)",
+            "dataType": "DateTime",
+            "name": "initializeTags",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif currentValue.value:\n\t\tuserId \u003d system.kanoa.utilities.getFieldValue(\u0027userId\u0027, system.kanoa.security.getUsers({\u0027userName\u0027: \u0027tagChange\u0027}))\n\t\tsystem.tag.write(\"[.]userId\", userId)\n\t\timport time\n\t\ttime.sleep(0.2)\n\t\t\n\t\tsystem.tag.write(tagPath, 0)\n\t\n\treturn"
+              }
+            ],
+            "expression": "now(0)",
+            "dataType": "Boolean",
+            "name": "refresh",
+            "value": false,
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "Enable Quality",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "expression": "",
+        "datasource": "IGN_CUSTOM",
+        "query": "SELECT id FROM mes.Line_Config\r\nWHERE eqPath \u003d \u0027{[.]eqPath}\u0027",
+        "name": "EquipID",
+        "enabled": true,
+        "tagType": "AtomicTag"
+      },
+      {
+        "name": "Inputs",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n\t###################################################################\n\t###################################################################\n\tdef stateChange(stateInfo, userId):\n\t\n\t\t\u0027\u0027\u0027\n\t\tThis function can be overridden to customize it based on a clients needs.\n\t\t\n\t\tThe example implementation here was specific for a client. \n\t\tChange state logic so that a new downtime code entered when state is already down will over-write current state rather than adding a new state change.\n\t\tClient has their operator code downtime events before they allow the line to start up. \n\t\tIf the current state is \u0027unplanned downtime\u0027, then update the current state record when it changes to a different state that is not \u0027Running\u0027 (or \u0027Idle\u0027?)\t\n\t\n\t\tExample stateInfo dictionary\n\t\tstateInfo \u003d {\u0027assetId\u0027: assetId, \u0027assetStateId\u0027: assetId, \u0027stateCode\u0027: stateCode, \u0027partReqd\u0027: tagValues[2].value, \u0027tStamp\u0027: currentValue.timestamp, \u0027assetPath\u0027: tagValues[3].value}\t\n\t\t\n\t\tUpdated:\n\t\t\tjfc: 1/27/24 Missing origStatecode param in updateStateEvent() call\n\t\t\tjfc: 8/18/25 Modified to check if a downtime event has been updated by a user before overriding the previous event if downtime events are contiguous\n\t\t\tjfc: 11/26/25 Fixed issue where updating a downtime event would also update its timestamp to current time\n\t\t\u0027\u0027\u0027\n\t\n\t\tdbName \u003d system.kanoa.config.getDBName(\u0027MES\u0027)\n\t\tmesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\n\t\tlog \u003d system.util.getLogger(\u0027kanoaTags\u0027)\n\t\n\t\tdebug \u003d system.tag.read(mesTagProvider + \u0027kanoa/debug/tags/debugFlag\u0027).value\n\t\tif debug: log.info(\u0027stateChange() called with %s\u0027%stateInfo)\n\t\t\n\t\tstateEventId \u003d None\t\n\t\tif stateInfo[\u0027assetId\u0027] is None or stateInfo[\u0027assetStateId\u0027] is None or stateInfo[\u0027stateCode\u0027] is None:\n\t\t \tlog.error(\"Invalid parameters passed to kanoaScripts.custom.ops.stateChange() - %s\"%stateInfo)\n\t\t\treturn None\n\t\t\n\t\tstateInfo[\u0027stateType\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027stateTypeName\u0027, system.kanoa.asset.getAssetStates({\u0027assetId\u0027: stateInfo[\u0027assetStateId\u0027], \u0027stateCode\u0027: stateInfo[\u0027stateCode\u0027]}))\n\t\tif stateInfo[\u0027stateType\u0027] is None: log.warn(\"No state information configured for this stateCode - %s\"%stateInfo)\n\t\telif debug: log.info(\"state information configured for this stateCode - %s\"%stateInfo)\n\t\t\t\n\t\tprevStateEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getPreviousStateEvent(stateInfo[\u0027assetId\u0027], stateInfo[\u0027tStamp\u0027]),0)\n\t\tif prevStateEventInfo[\u0027stateEventId\u0027]: #We have an entry prior to this timestamp\n\t\t\tif stateInfo[\u0027stateCode\u0027] \u003d\u003d prevStateEventInfo[\u0027stateCode\u0027] and stateInfo[\u0027assetStateId\u0027] \u003d\u003d prevStateEventInfo[\u0027assetStateId\u0027]: return None#\"State and assetId is the same as the last entry. Do nothing\n\t\t\telif stateInfo[\u0027stateType\u0027] \u003d\u003d \u0027Running\u0027: \n\t\t\t\tif debug: log.info(\u0027New state type is running.  Calling addState()\u0027)\n\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\t\telif prevStateEventInfo[\u0027stateTypeName\u0027] \u003d\u003d \u0027Running\u0027 and stateInfo[\u0027stateType\u0027] !\u003d prevStateEventInfo[\u0027stateTypeName\u0027]: \n\t\t\t\tif debug: log.info(\u0027Last state type is running.  Calling addState()\u0027)\n\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\t\telse: #If we are here, then old and new state must be downtime. #In this case we will update the last downtime event to what has just been passed in. This is the operator coding the downtime event before starting the line back up\n\t\t\t\tif prevStateEventInfo[\u0027changedBy\u0027] is not None: #User has already coded this downtime event, we will ignore the new downtime event and keep accruing time\n\t\t\t\t\tif debug: log.info(\u0027Previous and current events are downtime and user has already coded this downtime event. Doing nothing.\u0027)\n\t\t\t\t\treturn None\n\t\t\t\tif debug: log.info(\u0027Previous state and current state are both downtime.\u0027)\n\t\t\t\tif system.date.minutesBetween(prevStateEventInfo[\u0027tStamp\u0027], stateInfo[\u0027tStamp\u0027]) \u003e 300: \n\t\t\t\t\tif debug: log.info(\"It\u0027s been more than 300 minutes since the last state event. Adding a new state event\")\n\t\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId) #More than five hours, should we just add a new downtime state?\n\t\t\t\telse:\n\t\t\t\t\tif debug: log.info(\"Updating current state event\")\n\t\t\t\t\tstateInfo[\u0027stateEventId\u0027] \u003d prevStateEventInfo[\u0027stateEventId\u0027]\n\t\t\t\t\tstateInfo[\u0027origAssetId\u0027] \u003d prevStateEventInfo[\u0027assetStateId\u0027]\n\t\t\t\t\tstateInfo[\u0027origStateCode\u0027] \u003d prevStateEventInfo[\u0027stateCode\u0027]\n\t\t\t\t\tstateInfo[\u0027tStamp\u0027] \u003d prevStateEventInfo[\u0027tStamp\u0027]\n\t\t\t\t\tsystem.kanoa.event.updateStateEvent(stateInfo, None)\n\t\t\t\t\tstateEventId \u003d prevStateEventInfo[\u0027stateEventId\u0027]\n\t\telse: stateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId) #if debug: log.info(\u0027No data found for last state\u0027)\n\t\n\t\tif stateInfo[\u0027partReqd\u0027] and stateInfo[\u0027stateType\u0027] !\u003d \u0027Running\u0027: system.kanoa.event.updateStateEventInfo(stateEventId, \u0027partReqd\u0027, stateInfo[\u0027partReqd\u0027], userId)\n\t\t\n\t\treturn stateEventId\n\t\n\t###################################################################\n\t###################################################################\n\n\tif currentValue.value !\u003d previousValue.value and currentValue.value is not None:\n\t\t#State interface is entirely customizable. You can pass whatever values you want to the system.kanoa.asset.custom.stateChange() function\n\t\t#which can be overridden in the runable project to add any cunstomization required\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../EquipID\", \"[.]Machine ID\", \"[.]Part Required\", \"[.]../eqPath\"])\n\t\tassetId \u003d tagValues[0].value\n\t\tmachineId \u003d tagValues[1].value\n\t\tassetStateId \u003d machineId or assetId\t#The stateCode can come from a cell of the asset that has its own states defined. This tells us the lookup for the stateCode\n#\t\tuserId \u003d system.kanoa.utilities.getFieldValue(\u0027userId\u0027, system.kanoa.security.getUsers({\u0027userName\u0027: \u0027tagChange\u0027}))\n\t\tuserId \u003d system.tag.read(\"[.]../Configuration/userId\").value\n\t\t\n\t\tif currentValue.quality.isGood(): stateCode \u003d currentValue.value \n\t\telse: stateCode \u003d system.kanoa.utilities.getFieldValue(\u0027stateCode\u0027, system.kanoa.asset.getAssetStates({\u0027assetId\u0027: assetId, \u0027stateName\u0027: \u0027Off Line\u0027}))\n\t\t\n\t\tstateChange({\u0027assetId\u0027: assetId, \u0027assetStateId\u0027: assetStateId, \u0027stateCode\u0027: stateCode, \u0027partReqd\u0027: tagValues[2].value, \u0027tStamp\u0027: currentValue.timestamp, \u0027note\u0027:None, \u0027assetPath\u0027: tagValues[3].value}, userId)\n\n\t\t#We\u0027ll update the OEE state values for display purposes\n\t\tstateInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetStates({\u0027assetId\u0027: assetStateId, \u0027stateCode\u0027:stateCode}),0)\n\t\tsystem.tag.write(\"[.]../OEE/stateName\", stateInfo[\u0027stateName\u0027] or str(currentValue.value))\n\t\tsystem.tag.write(\"[.]../OEE/stateTypeName\", stateInfo[\u0027stateTypeName\u0027] or \u0027\u0027)\n\t\tsystem.tag.write(\"[.]../OEE/stateTypeColor\", stateInfo[\u0027stateTypeColor\u0027] or \u0027\u0027)\n\t\tsystem.tag.write(\"[.]../OEE/stateColor\", stateInfo[\u0027stateColor\u0027] or stateInfo[\u0027stateTypeColor\u0027] or \u0027\u0027)\n\t\tsystem.tag.write(\"[.]../OEE/stateIconPath\", stateInfo[\u0027iconPath\u0027] or \u0027\u0027)\n\n\treturn"
+              }
+            ],
+            "valueSource": "reference",
+            "expression": "tag({[.]../MQTT Path} + \u0027/Inputs/\u0027 + {TagName})",
+            "dataType": "Int4",
+            "name": "State",
+            "executionMode": "TagGroupRate",
+            "value": 0,
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "Tooling",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "valueSource": "reference",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n#\tlog \u003d system.util.getLogger(\u0027TAGS\u0027)\t\n\tassetId \u003d system.tag.read(\"[.]../EquipID\").value\t\n#\tlog.warn(\"assetOEE mode tag for equipId %s changed with initialChange %s currentValue \u003d %s previousValue \u003d %s\"%(assetId, initialChange, currentValue, previousValue))\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.value is not None and currentValue.value !\u003d previousValue.value:\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027tagChange\u0027})\n\t\tmodeSourceId \u003d system.kanoa.asset.getModeSourceId(\u0027PLC\u0027)\n\t\ttStamp \u003d currentValue.timestamp\n\t\tworkOrderName \u003d system.tag.read(\"[.]Work Order\").value or None\n\t\tworkOrderId \u003d system.kanoa.utilities.getFieldValue(\"workOrderId\", system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: workOrderName})) if workOrderName else None\n\t\tmodeCode \u003d currentValue.value\n\t\titemName \u003d system.tag.read(\"[.]Product Code\").value or None\n\t\tif itemName \u003d\u003d \u0027null\u0027: itemName \u003d None\t\t\n\t\titemId \u003d system.kanoa.utilities.getFieldValue(\"itemId\", system.kanoa.item.getItems({\u0027itemName\u0027: itemName})) if itemName else None\n\t\n\t\tassetOperationInfo \u003d {\u0027assetId\u0027: assetId, \u0027modeCode\u0027: modeCode, \u0027workOrderId\u0027: workOrderId, \u0027itemId\u0027: itemId, \u0027standardRate\u0027: None, \u0027modeSourceId\u0027: modeSourceId, \u0027tStamp\u0027: tStamp, \u0027includeChildren\u0027: True}\n\t\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\t\t\n\t\t\n\treturn"
+              }
+            ],
+            "name": "Mode",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "valueSource": "reference",
+            "expression": "tag({[.]../MQTT Path} + \u0027/Inputs/\u0027 + {TagName})",
+            "dataType": "Int4",
+            "name": "Machine ID",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "valueSource": "reference",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.value is not None and currentValue.value !\u003d previousValue.value:\n\t\tassetId \u003d system.tag.read(\"[.]../EquipID\").value\n\t\tuserId \u003d system.tag.read(\"[.]../Configuration/userId\").value\n\t\ttStamp \u003d currentValue.timestamp\n\t\titemName \u003d currentValue.value or None\n\t\tif itemName \u003d\u003d \u0027null\u0027: itemName \u003d None\n\t\tworkOrderName \u003d system.tag.read(\"[.]Work Order\").value or None\n\t\tif workOrderName \u003d\u003d \u0027null\u0027: itemName \u003d None\n\t\tmodeSourceId \u003d system.kanoa.asset.getModeSourceId(\u0027PLC\u0027)\n\t\tmodeName \u003d \u0027Production\u0027 if itemName is not None else \u0027Idle\u0027\n\t\tmodeCode \u003d system.kanoa.utilities.getFieldValue(\u0027modeCode\u0027, system.kanoa.asset.getAssetModes({\u0027assetId\u0027:assetId, \u0027modeName\u0027: modeName}))\n\t\tworkOrderId, itemId \u003d system.kanoa.event.checkItemInfo(assetId, workOrderName, itemName, userId) #See if this workorder or product exists and if not create it\n\n\t\tassetOperationInfo \u003d {\u0027assetId\u0027: assetId, \u0027modeCode\u0027: modeCode, \u0027workOrderId\u0027: workOrderId, \u0027itemId\u0027: itemId, \u0027standardRate\u0027: None, \u0027modeSourceId\u0027: modeSourceId, \u0027tStamp\u0027: tStamp, \u0027includeChildren\u0027: True}\n\t\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\t\n\n\t\treturn\t"
+              }
+            ],
+            "dataType": "String",
+            "name": "Product Code",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tif deltaValue !\u003d 0:\n\t\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/infeedCounterId\", \"[.]../Configuration/userId\"])\n\t\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027deltaValue\u0027: deltaValue, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t\tuserId \u003d tagValues[1].value\n\t\t\tsystem.kanoa.event.addCounterEvent(counterInfo, userId)\n\t\t\n\t\treturn"
+              }
+            ],
+            "valueSource": "reference",
+            "expression": "tag({[.]../MQTT Path} + \u0027/Inputs/\u0027 + {TagName})",
+            "dataType": "Float4",
+            "name": "Infeed Count",
+            "executionMode": "TagGroupRate",
+            "value": 0.0,
+            "tagGroup": "Every 5 seconds",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "valueSource": "reference",
+            "expression": "tag({[.]../MQTT Path} + \u0027/Inputs/\u0027 + {TagName})",
+            "dataType": "Boolean",
+            "name": "Part Required",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tif deltaValue !\u003d 0:\n\t\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/wasteCounterId\", \"[.]../Configuration/userId\"])\n\t\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027deltaValue\u0027: deltaValue, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t\tuserId \u003d tagValues[1].value\n\t\t\tsystem.kanoa.event.addCounterEvent(counterInfo, userId)\n\t\t\n\treturn"
+              }
+            ],
+            "valueSource": "reference",
+            "expression": "tag({[.]../MQTT Path} + \u0027/Inputs/\u0027 + {TagName})",
+            "dataType": "Float4",
+            "name": "Waste Count",
+            "executionMode": "TagGroupRate",
+            "value": 0.0,
+            "tagGroup": "Every 5 seconds",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "valueSource": "reference",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n#\tlog \u003d system.util.getLogger(\u0027TAGS\u0027)\t\n\tassetId \u003d system.tag.read(\"[.]../EquipID\").value\t\n#\tlog.warn(\"assetOEE mode tag for equipId %s changed with initialChange %s currentValue \u003d %s previousValue \u003d %s\"%(assetId, initialChange, currentValue, previousValue))\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.value is not None and currentValue.value !\u003d previousValue.value:\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027tagChange\u0027})\n\t\tmodeSourceId \u003d system.kanoa.asset.getModeSourceId(\u0027PLC\u0027)\n\t\ttStamp \u003d currentValue.timestamp\n\t\tworkOrderName \u003d currentValue.value\n\t\tworkOrderId \u003d system.kanoa.utilities.getFieldValue(\"workOrderId\", system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: workOrderName})) if workOrderName else None\n\t\tmodeCode \u003d  system.tag.read(\"[.]Mode\").value\n\t\titemName \u003d system.tag.read(\"[.]Product Code\").value or None\n\t\tif itemName \u003d\u003d \u0027null\u0027: itemName \u003d None\t\t\n\t\titemId \u003d system.kanoa.utilities.getFieldValue(\"itemId\", system.kanoa.item.getItems({\u0027itemName\u0027: itemName})) if itemName else None\n\t\n\t\tassetOperationInfo \u003d {\u0027assetId\u0027: assetId, \u0027modeCode\u0027: modeCode, \u0027workOrderId\u0027: workOrderId, \u0027itemId\u0027: itemId, \u0027standardRate\u0027: None, \u0027modeSourceId\u0027: modeSourceId, \u0027tStamp\u0027: tStamp, \u0027includeChildren\u0027: True}\n\t\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\t\t\n\t\t\n\treturn"
+              }
+            ],
+            "dataType": "String",
+            "name": "Work Order",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tif deltaValue !\u003d 0:\n\t\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/outfeedCounterId\", \"[.]../Configuration/userId\"])\n\t\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027deltaValue\u0027: deltaValue, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t\tuserId \u003d tagValues[1].value\n\t\t\tsystem.kanoa.event.addCounterEvent(counterInfo, userId)\n\t\t\n\treturn"
+              }
+            ],
+            "valueSource": "reference",
+            "expression": "tag({[.]../MQTT Path} + \u0027/Inputs/\u0027 + {TagName})",
+            "dataType": "Float4",
+            "name": "Outfeed Count",
+            "executionMode": "TagGroupRate",
+            "value": 0.0,
+            "tagGroup": "Every 5 seconds",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "name": "OEE",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "packageCount",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "DateTime",
+            "name": "shiftStart",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "infeedCount",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "DateTime",
+            "name": "endDate",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "stateTypeName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "standardRate",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "wasteCount",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "DateTime",
+            "name": "scheduleStart",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "performance",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "modeName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "modeTypeName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "runtimeSecs",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "outfeedRatePerMinute",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "workOrderName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "stateName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "DateTime",
+            "name": "startDate",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n\tif not system.tag.read(\"[.]../Enable Quality\").value: return\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value is not None:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../EquipId\", \"[.]shiftNameId\", \"[.]itemId\", \"[.]modeId\", \"[.]toolingId\"])\n\t\tstateInfo \u003d {\n\t\t\t\t\t\t\u0027assetId\u0027: tagValues[0].value,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: tagValues[1].value,\n\t\t\t\t\t\t\u0027itemId\u0027: tagValues[2].value,\n\t\t\t\t\t\t\u0027modeId\u0027: tagValues[3].value,\n\t\t\t\t\t\t\u0027toolingId\u0027: tagValues[4].value,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t\t\u0027changeType\u0027: \u0027Shift Change\u0027\n\t\t\t\t\t}\n\t\n\t\tif stateInfo[\u0027assetId\u0027] is None: return\n\t\tsystem.kanoa.quality.schedule.assetChangeEvent(stateInfo)\n\n\treturn"
+              }
+            ],
+            "name": "shiftNameId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "stateColor",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "userName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "reqdQty",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "outfeedUnits",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "woRemainingMinutes",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "modeSourceName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "name": "scheduleBlockId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "itemName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "DateTime",
+            "name": "scheduleEnd",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "targetCount",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "woActualQty",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n\tif not system.tag.read(\"[.]../Enable Quality\").value: return\n\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value is not None:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../EquipId\", \"[.]shiftNameId\", \"[.]itemId\", \"[.]modeId\", \"[.]toolingId\"])\n\t\tstateInfo \u003d {\n\t\t\t\t\t\t\u0027assetId\u0027: tagValues[0].value,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: tagValues[1].value,\n\t\t\t\t\t\t\u0027itemId\u0027: tagValues[2].value,\n\t\t\t\t\t\t\u0027modeId\u0027: tagValues[3].value,\n\t\t\t\t\t\t\u0027toolingId\u0027: tagValues[4].value,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t\t\u0027changeType\u0027: \u0027Product Change\u0027\n\t\t\t\t\t}\n\t\n\t\tif stateInfo[\u0027assetId\u0027] is None: return\n\t\tsystem.kanoa.quality.schedule.assetChangeEvent(stateInfo)\n\n\treturn"
+              }
+            ],
+            "name": "itemId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "shiftName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "workOrderTitle",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "name": "workOrderId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "DateTime",
+            "name": "shiftEnd",
+            "formatString": "yyyy-MM-dd h:mm:ss aa",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "name": "shiftId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "quality",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "itemDescription",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n\tif not system.tag.read(\"[.]../Enable Quality\").value: return\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value is not None:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../EquipId\", \"[.]shiftNameId\", \"[.]itemId\", \"[.]modeId\", \"[.]toolingId\"])\n\t\tstateInfo \u003d {\n\t\t\t\t\t\t\u0027assetId\u0027: tagValues[0].value,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: tagValues[1].value,\n\t\t\t\t\t\t\u0027itemId\u0027: tagValues[2].value,\n\t\t\t\t\t\t\u0027modeId\u0027: tagValues[3].value,\n\t\t\t\t\t\t\u0027toolingId\u0027: tagValues[4].value,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t\t\u0027changeType\u0027: \u0027Mode Change\u0027\n\t\t\t\t\t}\n\t\n\t\tif stateInfo[\u0027assetId\u0027] is None: return\n\t\tsystem.kanoa.quality.schedule.assetChangeEvent(stateInfo)\n\n\treturn"
+              }
+            ],
+            "name": "modeId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "availability",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "iconPath",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "plannedDowntimeSecs",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "period",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "unplannedDowntimeSecs",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "outfeedCount",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "stateIconPath",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "modeColor",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "infeedUnits",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "wasteUnits",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\n\tif currentValue.value:\n\t\n\t\ttry:\n\t\t\tassetId \u003d system.tag.read(\"[.]../EquipId\").value\n\t\t\tworkOrderId \u003d system.tag.read(\"[.]workOrderId\").value\n\t\t\t\n\t\t\tvalueNames \u003d [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027startDate\u0027, \u0027modeSourceName\u0027,  \u0027userName\u0027, \u0027workOrderId\u0027, \u0027workOrderName\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027, \u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027runtimeSecs\u0027, \u0027packageCount\u0027, \u0027targetCount\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027, \u0027wasteCount\u0027, \u0027standardRate\u0027, \u0027period\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027durationSecs\u0027, \u0027infeedRateSecs\u0027, \u0027iconPath\u0027]\n\t\t\ttagPaths \u003d [\"[.]\" + col for col in valueNames]\t\n\t\t\ttagValues \u003d [None for col in valueNames]\n\t\t\t\n\t\t\tdata \u003d system.kanoa.event.getAssetProductionEvents({\u0027assetId\u0027: assetId or -1, \u0027activeModeOnly\u0027:True})\n\t\t\tdata \u003d system.dataset.filterColumns(data, valueNames)\n\t\t\teventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(data, 0)\n\t\t\ttagValues \u003d [eventInfo[col] for col in valueNames]\n\t\t\t\t\t\t\n\t\t\t#work order stuff\n\t\t\ttagPaths.append(\"[.]woRemainingMinutes\")\n\t\t\ttagPaths.append(\"[.]outfeedRatePerMinute\")\n\t\t\tif workOrderId is None or eventInfo[\u0027modeTypeName\u0027] !\u003d \u0027Production\u0027:\n\t\t\t\ttagValues.append(None)\n\t\t\t\ttagValues.append(None)\n\t\t\telse:\n\t\t\t\tstdRate \u003d eventInfo[\u0027standardRate\u0027]\n\t\t\t\tif eventInfo[\u0027durationSecs\u0027] is None or eventInfo[\u0027outfeedCount\u0027] is None: \n\t\t\t\t\tactualOutfeedRatePerMin \u003d None\n\t\t\t\t\tremainingMins \u003d None\n\t\t\t\telse:\n\t\t\t\t\tactualOutfeedRatePerMin \u003d eventInfo[\u0027outfeedCount\u0027] / (eventInfo[\u0027durationSecs\u0027]/ 60.0)\n\t\t\t\t\tremainingMins \u003d (eventInfo[\u0027reqdQty\u0027] - eventInfo[\u0027woActualQty\u0027]) / actualOutfeedRatePerMin if eventInfo[\u0027reqdQty\u0027] is not None and actualOutfeedRatePerMin \u003e 0 else None\n\n\t\t\t\ttagValues.append(remainingMins)\n\t\t\t\ttagValues.append(actualOutfeedRatePerMin)\n\t\n\t\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\t\texcept:\n\t\t\tpass\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\t\n\tsystem.tag.write(tagPath, False)\n\t\n\treturn"
+              }
+            ],
+            "dataType": "Boolean",
+            "name": "refresh",
+            "value": false,
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "infeedRateSecs",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "durationSecs",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "stateTypeColor",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "valueSource": "expr",
+        "expression": "replace(left({PathToParentFolder}, len({PathToParentFolder}) - len(\u0027/Line\u0027)), \u0027/\u0027, \u0027\\\\\u0027)",
+        "dataType": "String",
+        "name": "eqPath",
+        "tagType": "AtomicTag"
+      },
+      {
+        "name": "oeeThresholds",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "pTolerance",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "aTolerance",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "a",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "p",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif initialChange or currentValue.value:\n\t\tassetPath \u003d system.tag.read(\"[.]../eqPath\").value\n\t\tinfo \u003d system.kanoa.asset.getAssetOEEThresholds({\u0027assetPath\u0027: assetPath})\n\t\ttagPaths \u003d [\"[.]a\", \"[.]p\", \"[.]q\", \"[.]oee\", \"[.]oeeTolerance\", \"[.]aTolerance\", \"[.]pTolerance\", \"[.]qTolerance\"]\n\t\ttagValues \u003d [info[\u0027a\u0027], info[\u0027p\u0027], info[\u0027q\u0027], info[\u0027oee\u0027], info[\u0027oeeTolerance\u0027], info[\u0027aTolerance\u0027], info[\u0027pTolerance\u0027], info[\u0027qTolerance\u0027]]\n\t\t \n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tsystem.tag.write(tagPath, False)\n\t\t\n\t\treturn"
+              }
+            ],
+            "dataType": "Boolean",
+            "name": "update",
+            "value": false,
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "oee",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "qTolerance",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "oeeTolerance",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "q",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tif currentValue.value:\n\t\tassetPath \u003d system.tag.read(\"[.]eqPath\").value\n\t\tcurrentAssetId \u003d system.tag.read(\"[.]equipID\").value #in case db connection is FAULTED, we\u0027ll re-use the persistent tag value\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath}))\n\t\tsystem.tag.write(\"[.]EquipID\", assetId or currentAssetId)\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\t\n\tsystem.tag.write(\"[.]refresh\", 0)\n\t\n\treturn"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "refresh",
+        "value": false,
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -16733184,
+    "name": "generalCounter",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "reference",
+        "sourceTagPath": "[.]../Line/EquipID",
+        "name": "assetId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tif currentValue.value:\n\t\t\n\t\tassetId \u003d system.tag.read(\"[.]assetId\").value\n\t\tcounterName \u003d system.tag.read(\"[.]counterName\").value\t\t\n\t\tif assetId:\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId({\"userName\":\"SYSTEM\"})\n\t\t\tcounterId \u003d system.kanoa.asset.addCounter(assetId,counterName,\"general\",userId)\n\t\t\tsystem.tag.write(\"[.]counterId\", counterId)\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tsystem.tag.write(tagPath, False)\n\t\t\n\treturn"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "configure",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "counterId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "expr",
+        "expression": "{InstanceName}",
+        "dataType": "String",
+        "name": "counterName",
+        "value": "",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "reference",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tcounterId \u003d system.tag.read(\"[.]counterId\").value\n\t\t\n\t\tif counterId and deltaValue !\u003d 0:\n\t\t\t\n\t\t\tsystem.kanoa.event.addCountEvent(counterId, deltaValue, currentValue.timestamp)\n\t\t\n\t\treturn\t\t"
+          }
+        ],
+        "dataType": "Float4",
+        "name": "counterValue",
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -16733184,
+    "name": "counter",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "reference",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tcountInfo \u003d {\n\t\t\t\t\t\t\u0027counterId\u0027: system.tag.read(\"[.]counterId\").value,\n\t\t\t\t\t\t\u0027itemId\u0027: system.tag.read(\"itemId\").value,\n\t\t\t\t\t\t\u0027workOrderId\u0027: system.tag.read(\"workOrderId\").value,\n\t\t\t\t\t\t\u0027itemStateId\u0027: system.tag.read(\"itemStateId\").value,\n\t\t\t\t\t\t\u0027deltaValue\u0027: deltaValue,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t}\n\t\t\n\t\tuserId \u003d None\n\t\tsystem.kanoa.event.addCounterEvent(countInfo, userId)\n\t\t\n\t\treturn"
+          }
+        ],
+        "dataType": "Float4",
+        "name": "countValue",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "counterId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "itemId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "itemStateId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "workOrderId",
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -16733184,
+    "name": "measure",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tdef spcCheck(values, chartType\u003d\"individuals\", ruleSet\u003d\"both\", subgroupSize\u003d5, usl\u003dNone, lsl\u003dNone):\n\t\timport math\n\t\n\t\t#X-bar chart control limits UCL/LCL \u003d X̄ ± A2 × R̄ — scales the average range into 3-sigma limits for subgroup means\n\t\ta2 \u003d {2: 1.880, 3: 1.023, 4: 0.729, 5: 0.577, 6: 0.483, 7: 0.419, 8: 0.373, 9: 0.337, 10: 0.308}\n\t\t\n\t\t#Estimating process sigma σ \u003d R̄ / d2 — converts average range into an estimate of the process standard deviation\n\t\td2 \u003d {2: 1.128, 3: 1.693, 4: 2.059, 5: 2.326, 6: 2.534, 7: 2.704, 8: 2.847, 9: 2.970, 10: 3.078}\n\t\t#Range chart lower limit LCL_R \u003d D3 × R̄ — is 0 for small subgroups (n ≤ 6) because range can\u0027t go negative\n\t\td3 \u003d {2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0.076, 8: 0.136, 9: 0.184, 10: 0.223}\n\t\t\n\t\t#Range chart upper limit UCL_R \u003d D4 × R̄ — flags when within-subgroup variation is unusually high\n\t\td4 \u003d {2: 3.267, 3: 2.575, 4: 2.282, 5: 2.114, 6: 2.004, 7: 1.924, 8: 1.864, 9: 1.816, 10: 1.777}\n\t\n\t\tdef emptyResult(error\u003dNone):\n\t\t\tresult \u003d {\n\t\t\t\t\"outOfControl\": False,\n\t\t\t\t\"chartType\":    chartType,\n\t\t\t\t\"ruleSet\":      ruleSet,\n\t\t\t\t\"mean\":         None,\n\t\t\t\t\"sigma\":        None,\n\t\t\t\t\"ucl\":          None,\n\t\t\t\t\"lcl\":          None,\n\t\t\t\t\"usl\":          usl,\n\t\t\t\t\"lsl\":          lsl,\n\t\t\t\t\"uclRange\":     None,\n\t\t\t\t\"lclRange\":     None,\n\t\t\t\t\"rangeBar\":     None,\n\t\t\t\t\"aboveUCL\":     [],\n\t\t\t\t\"belowLCL\":     [],\n\t\t\t\t\"aboveUSL\":     [],\n\t\t\t\t\"belowLSL\":     [],\n\t\t\t\t\"violations\":   {},\n\t\t\t\t\"points\":       [],\n\t\t\t}\n\t\t\tif error:\n\t\t\t\tresult[\"error\"] \u003d error\n\t\t\treturn result\n\t\n\t\tif len(values) \u003c 2:\n\t\t\treturn emptyResult(\"Need at least 2 data points\")\n\t\n\t\tif chartType \u003d\u003d \"xbar\":\n\t\t\tn \u003d subgroupSize\n\t\t\tif n not in a2:\n\t\t\t\treturn emptyResult(\"subgroupSize must be 2-10 for xbar chart\")\n\t\t\tnumGroups \u003d len(values) // n\n\t\t\tif numGroups \u003c 2:\n\t\t\t\treturn emptyResult(\"Not enough data for even 2 complete subgroups\")\n\t\t\tgroups   \u003d [values[i*n:(i+1)*n] for i in range(numGroups)]\n\t\t\tpoints   \u003d [sum(g) / n for g in groups]\n\t\t\tranges   \u003d [max(g) - min(g) for g in groups]\n\t\t\trBar     \u003d sum(ranges) / len(ranges)\n\t\t\tmean     \u003d sum(points) / len(points)\n\t\t\tsigma    \u003d rBar / d2[n]\n\t\t\thalfBand \u003d a2[n] * rBar\n\t\t\tucl      \u003d mean + halfBand\n\t\t\tlcl      \u003d mean - halfBand\n\t\t\tzone     \u003d halfBand / 3.0\n\t\t\tuclRange \u003d d4[n] * rBar\n\t\t\tlclRange \u003d d3[n] * rBar\n\t\telse:\n\t\t\tpoints       \u003d list(values)\n\t\t\tmean         \u003d sum(points) / len(points)\n\t\t\tmovingRanges \u003d [abs(points[i] - points[i-1]) for i in range(1, len(points))]\n\t\t\tmrBar        \u003d sum(movingRanges) / len(movingRanges)\n\t\t\tsigma        \u003d mrBar / d2[2]\n\t\t\tucl          \u003d mean + 3 * sigma\n\t\t\tlcl          \u003d mean - 3 * sigma\n\t\t\tzone         \u003d sigma\n\t\t\tuclRange     \u003d d4[2] * mrBar\n\t\t\tlclRange     \u003d 0.0\n\t\t\trBar         \u003d mrBar\n\t\n\t\tif sigma \u003d\u003d 0:\n\t\t\tresult \u003d emptyResult(\"Zero process sigma - all values identical\")\n\t\t\tresult.update({\n\t\t\t\t\"mean\":     mean,\n\t\t\t\t\"sigma\":    0.0,\n\t\t\t\t\"ucl\":      mean,\n\t\t\t\t\"lcl\":      mean,\n\t\t\t\t\"uclRange\": uclRange,\n\t\t\t\t\"lclRange\": lclRange,\n\t\t\t\t\"rangeBar\": rBar,\n\t\t\t\t\"points\":   points,\n\t\t\t})\n\t\t\treturn result\n\t\n\t\tdef zoneOf(x):\n\t\t\tdelta \u003d x - mean\n\t\t\tif   delta \u003e  3 * zone: return  4\n\t\t\telif delta \u003e  2 * zone: return  3\n\t\t\telif delta \u003e      zone: return  2\n\t\t\telif delta \u003e 0:         return  1\n\t\t\telif delta \u003e\u003d -zone:    return -1\n\t\t\telif delta \u003e\u003d -2*zone:  return -2\n\t\t\telif delta \u003e\u003d -3*zone:  return -3\n\t\t\telse:                   return -4\n\t\n\t\tzones \u003d [zoneOf(x) for x in points]\n\t\tn     \u003d len(points)\n\t\n\t\taboveUCL \u003d [i for i, x in enumerate(points) if x \u003e ucl]\n\t\tbelowLCL \u003d [i for i, x in enumerate(points) if x \u003c lcl]\n\t\taboveUSL \u003d [i for i, x in enumerate(points) if usl is not None and x \u003e usl]\n\t\tbelowLSL \u003d [i for i, x in enumerate(points) if lsl is not None and x \u003c lsl]\n\t\n\t\tviolations \u003d {}\n\t\n\t\tif aboveUCL: violations[\"aboveUCL\"] \u003d aboveUCL\n\t\tif belowLCL: violations[\"belowLCL\"] \u003d belowLCL\n\t\tif aboveUSL: violations[\"aboveUSL\"] \u003d aboveUSL\n\t\tif belowLSL: violations[\"belowLSL\"] \u003d belowLSL\n\t\n\t\t# \u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\n\t\t# WESTERN ELECTRIC RULES\n\t\t# \u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\n\t\trunWE \u003d ruleSet in (\"western_electric\", \"both\")\n\t\n\t\tif runWE:\n\t\t\thits \u003d [i for i, z in enumerate(zones) if abs(z) \u003e\u003d 4]\n\t\t\tif hits: violations[\"WE1_beyond_3sigma\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 2):\n\t\t\t\tw \u003d zones[i:i+3]\n\t\t\t\tif sum(1 for z in w if z \u003e\u003d 3) \u003e\u003d 2 or sum(1 for z in w if z \u003c\u003d -3) \u003e\u003d 2:\n\t\t\t\t\thits.append(i)\n\t\t\tif hits: violations[\"WE2_2of3_beyond_2sigma\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 4):\n\t\t\t\tw \u003d zones[i:i+5]\n\t\t\t\tif sum(1 for z in w if z \u003e\u003d 2) \u003e\u003d 4 or sum(1 for z in w if z \u003c\u003d -2) \u003e\u003d 4:\n\t\t\t\t\thits.append(i)\n\t\t\tif hits: violations[\"WE3_4of5_beyond_1sigma\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 7):\n\t\t\t\tw \u003d zones[i:i+8]\n\t\t\t\tif all(z \u003e 0 for z in w) or all(z \u003c 0 for z in w): hits.append(i)\n\t\t\tif hits: violations[\"WE4_8_same_side\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 5):\n\t\t\t\tw \u003d points[i:i+6]\n\t\t\t\tif all(w[j] \u003c w[j+1] for j in range(5)) or all(w[j] \u003e w[j+1] for j in range(5)): hits.append(i)\n\t\t\tif hits: violations[\"WE5_6_trending\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 14):\n\t\t\t\tw \u003d zones[i:i+15]\n\t\t\t\tif all(z in (-1, 1) for z in w): hits.append(i)\n\t\t\tif hits: violations[\"WE6_15_within_1sigma\"] \u003d hits\n\t\n\t\t# \u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\n\t\t# NELSON RULES\n\t\t# \u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\u003d\n\t\trunNelson \u003d ruleSet in (\"nelson\", \"both\")\n\t\n\t\tif runNelson:\n\t\t\tif ruleSet \u003d\u003d \"nelson\":\n\t\t\t\thits \u003d [i for i, z in enumerate(zones) if abs(z) \u003e\u003d 4]\n\t\t\t\tif hits: violations[\"N1_beyond_3sigma\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 8):\n\t\t\t\tw \u003d zones[i:i+9]\n\t\t\t\tif all(z \u003e 0 for z in w) or all(z \u003c 0 for z in w): hits.append(i)\n\t\t\tif hits: violations[\"N2_9_same_side\"] \u003d hits\n\t\n\t\t\tif ruleSet \u003d\u003d \"nelson\":\n\t\t\t\thits \u003d []\n\t\t\t\tfor i in range(n - 5):\n\t\t\t\t\tw \u003d points[i:i+6]\n\t\t\t\t\tif all(w[j] \u003c w[j+1] for j in range(5)) or all(w[j] \u003e w[j+1] for j in range(5)): hits.append(i)\n\t\t\t\tif hits: violations[\"N3_6_trending\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 13):\n\t\t\t\tw \u003d points[i:i+14]\n\t\t\t\talternating \u003d all(\n\t\t\t\t\t(w[j] \u003c w[j+1]) !\u003d (w[j+1] \u003c w[j+2])\n\t\t\t\t\tfor j in range(12)\n\t\t\t\t)\n\t\t\t\tif alternating: hits.append(i)\n\t\t\tif hits: violations[\"N4_14_alternating\"] \u003d hits\n\t\n\t\t\tif ruleSet \u003d\u003d \"nelson\":\n\t\t\t\thits \u003d []\n\t\t\t\tfor i in range(n - 2):\n\t\t\t\t\tw \u003d zones[i:i+3]\n\t\t\t\t\tif sum(1 for z in w if z \u003e\u003d 3) \u003e\u003d 2 or sum(1 for z in w if z \u003c\u003d -3) \u003e\u003d 2: hits.append(i)\n\t\t\t\tif hits: violations[\"N5_2of3_beyond_2sigma\"] \u003d hits\n\t\n\t\t\t\thits \u003d []\n\t\t\t\tfor i in range(n - 4):\n\t\t\t\t\tw \u003d zones[i:i+5]\n\t\t\t\t\tif sum(1 for z in w if z \u003e\u003d 2) \u003e\u003d 4 or sum(1 for z in w if z \u003c\u003d -2) \u003e\u003d 4: hits.append(i)\n\t\t\t\tif hits: violations[\"N6_4of5_beyond_1sigma\"] \u003d hits\n\t\n\t\t\t\thits \u003d []\n\t\t\t\tfor i in range(n - 14):\n\t\t\t\t\tw \u003d zones[i:i+15]\n\t\t\t\t\tif all(z in (-1, 1) for z in w): hits.append(i)\n\t\t\t\tif hits: violations[\"N7_15_within_1sigma\"] \u003d hits\n\t\n\t\t\thits \u003d []\n\t\t\tfor i in range(n - 7):\n\t\t\t\tw \u003d zones[i:i+8]\n\t\t\t\tif all(abs(z) \u003e\u003d 2 for z in w): hits.append(i)\n\t\t\tif hits: violations[\"N8_8_none_within_1sigma\"] \u003d hits\n\t\n\t\treturn {\n\t\t\t\"outOfControl\": len(violations) \u003e 0,\n\t\t\t\"chartType\":    chartType,\n\t\t\t\"ruleSet\":      ruleSet,\n\t\t\t\"mean\":         mean,\n\t\t\t\"sigma\":        sigma,\n\t\t\t\"ucl\":          ucl,\n\t\t\t\"lcl\":          lcl,\n\t\t\t\"usl\":          usl,\n\t\t\t\"lsl\":          lsl,\n\t\t\t\"uclRange\":     uclRange,\n\t\t\t\"lclRange\":     lclRange,\n\t\t\t\"rangeBar\":     rBar,\n\t\t\t\"aboveUCL\":     aboveUCL,\n\t\t\t\"belowLCL\":     belowLCL,\n\t\t\t\"aboveUSL\":     aboveUSL,\n\t\t\t\"belowLSL\":     belowLSL,\n\t\t\t\"violations\":   violations,\n\t\t\t\"points\":       points,\n\t\t}\n\n\tif currentValue.value:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]data\", \"[.]maxSampleCount\", \"[.]maxSampleDurationSecs\", \"[.]spec/usl\", \"[.]spec/lsl\", \"[.]spcCheckEnabled\"])\n\t\tdata \u003d tagValues[0].value\n\t\tmaxSampleCount \u003d tagValues[1].value\n\t\tmaxSampleDurationSecs \u003d tagValues[2].value\n\t\tusl \u003d tagValues[3].value\n\t\tlsl \u003d tagValues[4].value\n\t\tspcCheckEnabled \u003d tagValues[5].value\n\t\n\t\tif spcCheckEnabled:\n\t\t\tvalues \u003d [row[\u0027value\u0027] for row in system.kanoa.utilities.convertDatasetToJSON(data)]\n\t\t\tinfo \u003d spcCheck(values, chartType\u003d\"individuals\", ruleSet\u003d\"both\", subgroupSize\u003d5, usl\u003dusl, lsl\u003dlsl)\n\t\t\tlog \u003d system.util.getLogger(\u0027spcCheck\u0027)\n\t\t\tlog.trace(\"%s\" % info)\n\t\telse:\n\t\t\tinfo \u003d {\u0027outOfControl\u0027: False, \u0027violations\u0027: {}}\n\t\n\t\ttagPaths  \u003d [\"[.]outOfControl\", \"[.]ruleViolations\"]\n\t\ttagValues \u003d [info[\u0027outOfControl\u0027], list(info[\u0027violations\u0027].keys())]\n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\n\t\trowCount \u003d data.rowCount\n\t\tshouldTrigger \u003d False\n\t\n\t\tif maxSampleCount and rowCount \u003e\u003d maxSampleCount: shouldTrigger \u003d True\n\t\telif maxSampleDurationSecs and rowCount \u003e 1:\n\t\t\tfirstTStamp  \u003d data.getValueAt(0, \u0027tStamp\u0027)\n\t\t\tlastTStamp   \u003d data.getValueAt(rowCount - 1, \u0027tStamp\u0027)\n\t\t\tdurationSecs \u003d system.date.secondsBetween(firstTStamp, lastTStamp)\n\t\t\tif durationSecs \u003e\u003d maxSampleDurationSecs: \tshouldTrigger \u003d True\n\t\n\t\tif shouldTrigger: system.tag.writeBlocking([\"[.]update\"], [1])\n\n\treturn"
+          }
+        ],
+        "dataType": "DataSet",
+        "name": "data",
+        "value": "{\"columns\":[{\"name\":\"tStamp\",\"type\":\"java.util.Date\"},{\"name\":\"value\",\"type\":\"java.lang.Float\"}],\"rows\":[]}",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "debug",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "enabled",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "String",
+        "name": "error",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "DateTime",
+        "name": "lastUpdated",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "maxSampleCount",
+        "value": 100,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "name": "maxSampleDurationSecs",
+        "value": 100,
+        "tagType": "AtomicTag"
+      },
+      {
+        "executionMode": {
+          "bindType": "parameter",
+          "binding": "runScript(\"system.kanoa.asset.setAttributeAssetLink\", 0 , {[.]../EquipID}, {ParentInstanceName}, {PathToTag})"
+        },
+        "valueSource": "memory",
+        "expression": "runScript(\"system.kanoa.attribute.setAttributeAssetLinkFromTag\", 0 , coalesce({[.]../EquipID}, {[.]../Line/EquipID}), {ParentInstanceName}, {PathToTag})",
+        "name": "measureId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tif currentValue.value:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]enabled\", \"[.]data\"])\n\t\tenabled \u003d tagValues[0].value\n\t\tif enabled:\n\t\t\tdata \u003d tagValues[1].value\n\t\t\tnewData \u003d system.dataset.addRow(data, [currentValue.timestamp, currentValue.value])\n\t\t\tsystem.tag.writeBlocking([\"[.]data\"], [newData])\n\t\t\n\t\treturn"
+          }
+        ],
+        "valueSource": "memory",
+        "dataType": "Float4",
+        "historyProvider": "MES",
+        "historicalDeadbandStyle": "Discrete",
+        "historyEnabled": false,
+        "name": "measureValue",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "outOfControl",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "StringArray",
+        "name": "ruleViolations",
+        "value": [],
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "spcCheckEnabled",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "name": "spec",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "ucl",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tif currentValue.value:\n\t\t\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../measureId\", \"[.]attributeId\", \"[.]itemId\"])\n\t\tmeasureId \u003d tagValues[0].value\n\t\tattributeId \u003d tagValues[1].value\n\t\titemId \u003d tagValues[2].value\n\t\t\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.measures.getMeasures({\u0027measureId\u0027: measureId}))\n\t\t\n\t\ttolInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getToleranceData(attributeId, assetId, itemId),0)\n\t\t\n\t\timport time\n\t\ttime.sleep(0.1)\n\t\t\n\t\ttagPaths \u003d [\"[.]lsl\", \"[.]lcl\", \"[.]tgt\", \"[.]ucl\", \"[.]usl\", \"[.]refresh\"]\n\t\ttagValues \u003d [tolInfo[\u0027lsl\u0027], tolInfo[\u0027lcl\u0027], tolInfo[\u0027tgt\u0027], tolInfo[\u0027ucl\u0027], tolInfo[\u0027usl\u0027], False]\n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\t\t\n\treturn"
+              }
+            ],
+            "dataType": "Boolean",
+            "name": "refresh",
+            "value": false,
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "usl",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "reference",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t\n\tsystem.tag.writeBlocking([\"[.]refresh\"], [True])\n\t\n\treturn"
+              }
+            ],
+            "sourceTagPath": "[.]../../../Line/OEE/itemId",
+            "name": "itemId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "lsl",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "lcl",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "name": "attributeId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "Float4",
+            "name": "tgt",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif currentValue.value:\n\t\timport java.lang\n\t\timport math\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]measureId\", \"[.]data\"])\n\t\tdebug \u003d tagValues[0].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\tuserId \u003d None\n\t\n\t\ttry:\n\t\t\tdata \u003d tagValues[2].value\n\t\t\tsampleCount \u003d data.rowCount\n\t\n\t\t\tif sampleCount \u003d\u003d 0:\n\t\t\t\traise Exception(\"data tag is empty, nothing to record\")\n\t\n\t\t\tvalues     \u003d [data.getValueAt(i, \u0027value\u0027) for i in range(sampleCount)]\n\t\t\ttimestamps \u003d [data.getValueAt(i, \u0027tStamp\u0027) for i in range(sampleCount)]\n\t\n\t\t\tmeasureValue \u003d sum(values) / sampleCount\n\t\t\tminValue     \u003d min(values)\n\t\t\tmaxValue     \u003d max(values)\n\t\t\tvariance     \u003d sum((v - measureValue) ** 2 for v in values) / sampleCount\n\t\t\tstdDev       \u003d math.sqrt(variance)\n\t\t\tdurationSecs \u003d system.date.secondsBetween(timestamps[0], timestamps[-1])\n\t\n\t\t\tmeasureEventInfo \u003d {\n\t\t\t\t\u0027measureId\u0027:    tagValues[1].value,\n\t\t\t\t\u0027tStamp\u0027:       currentValue.timestamp,\n\t\t\t\t\u0027measureValue\u0027: measureValue,\n\t\t\t\t\u0027sampleCount\u0027:  sampleCount,\n\t\t\t\t\u0027minValue\u0027:     minValue,\n\t\t\t\t\u0027maxValue\u0027:     maxValue,\n\t\t\t\t\u0027stdDev\u0027:       stdDev,\n\t\t\t\t\u0027durationSecs\u0027: durationSecs\n\t\t\t}\n\t\n\t\t\tmeasureEventId, msg \u003d system.kanoa.measures.addMeasureEvent(measureEventInfo, userId)\n\t\t\tif msg:\n\t\t\t\tlog.error(\"addMeasureEvent() called with %s returned %s %s\" % (measureEventInfo, measureEventId, msg))\n\t\t\t\terrorMsg \u003d msg\n\t\t\telse:\n\t\t\t\tsystem.tag.writeBlocking([\"[.]data\"], system.dataset.clearDataset(data))\n\t\t\t\t\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept Exception, e:\n\t\t\terrorMsg \u003d str(e)\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\" % (tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [currentValue.timestamp, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\" % (tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "update",
+        "value": false,
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -431872,
+    "name": "lotQueueFIFO",
+    "parameters": {
+      "inputAssetId": {
+        "dataType": "Integer",
+        "value": null
+      },
+      "assetPath": {
+        "dataType": "String",
+        "value": null
+      },
+      "countOnIncrease": {
+        "dataType": "Integer",
+        "value": 1
+      },
+      "lotOperationPath": {
+        "dataType": "String",
+        "value": null
+      }
+    },
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "name": "counterValue",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "enabled",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "name": "inputLotEventFilter",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "lotStateReasonName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "lotStateName",
+            "value": "",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "name": "inputLotEventInfo",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/OEE/{TagName}"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "shiftName",
+            "value": "",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/OEE/{TagName}"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "workOrderName",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "sourceTagPath": {
+          "bindType": "parameter",
+          "binding": "{lotOperationPath}/{TagName}"
+        },
+        "valueSource": "reference",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\tsystem.tag.write(\"[.]counterValue\", 0)"
+          }
+        ],
+        "name": "lotOperationEventId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "reference",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value \u003e 0 and system.tag.getTagValue(\"[.]enabled\"):\n\t\t# UPDATE COUNTER\n\t\tlogging \u003d False\n\t\tif logging: log\u003d system.util.getLogger(\u0027lotQueueFIFO\u0027)\n\t\tif logging: log.info(\"lotQueueFIFO tag change script for {}\".format(tagPath))\n\t\tpmCount \u003d system.tag.getTagValue(\"[.]counterValue\")\n\t\tif pmCount is None: pmCount \u003d 0\n\t\t\t\t\t\t\t\n\t\tif tag[\u0027parameters\u0027][\u0027countOnIncrease\u0027] \u003d\u003d 1:\n\t\t\tif currentValue.value \u003e previousValue.value:\n\t\t\t\tdelta \u003d currentValue.value - previousValue.value\n\t\t\telse: return\n\t\telse:\n\t\t\tif currentValue.value \u003c previousValue.value:\n\t\t\t\tdelta \u003d previousValue.value - currentValue.value\n\t\t\telse: return\n\t\t\n\t\tpmCount \u003d pmCount + delta\n\t\t\t\n\t\tsystem.tag.write(\"[.]counterValue\", pmCount)\n\t\t\n\t\t# UPDATE LOT EVENTS FOR THE CURRENT LOT OPERATION\n\t\tlotOperationEventId \u003d system.tag.getTagValue(\"[.]lotOperationEventId\")\n\t\tif lotOperationEventId is None: return\n\t\t\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027SYSTEM\u0027})\n\t\tnow \u003d system.date.now()\n\t\t\n\t\t# INPUT THE DELTA FROM THE FIFO QUEUE ON OUR INPUT ASSET\n\t\tinputAssetId \u003d tag[\u0027parameters\u0027][\u0027inputAssetId\u0027]\n\t\tinputLotEvents \u003d sorted(system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotEvents({\u0027lotOperationEventId\u0027: lotOperationEventId, \u0027assetId\u0027: inputAssetId, \u0027itemSourceName\u0027: \"input\"})), key\u003dlambda x: x[\u0027tStamp\u0027], reverse \u003d True)\n\t\tinputLotEvent \u003d inputLotEvents[0] if len(inputLotEvents) \u003e 0 else system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLotEvents({\u0027lotOperationEventId\u0027: -1}), 0)\n\t\t\n\t\tinputFifoLotFilter \u003d {\u0027assetId\u0027: inputAssetId, \u0027hasQty\u0027: True}\n\t\t\n\t\tlotStateName \u003d system.tag.getTagValue(\"[.]inputLotEventFilter/lotStateName\")\n\t\tlotStateReasonName \u003d system.tag.getTagValue(\"[.]inputLotEventFilter/lotStateReasonName\")\n\t\tif lotStateName is not None and lotStateName !\u003d \u0027\u0027:\n\t\t\tinputFifoLotFilter[\u0027lotStateName\u0027] \u003d lotStateName\n\t\tif lotStateReasonName is not None and lotStateReasonName !\u003d \u0027\u0027:\n\t\t\tinputFifoLotFilter[\u0027lotStateReasonName\u0027] \u003d lotStateReasonName\n\t\t\n\t\tinputFifoLots \u003d sorted(system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotQty(inputFifoLotFilter)), key\u003dlambda x: x[\u0027tStamp\u0027], reverse \u003d False)\n\t\t\n\t\tamountToDraw \u003d delta\n\t\t\n\t\tif logging: log.info(\"About to draw {} from FIFO queue\".format(amountToDraw))\n\t\t#if logging: log.info(\"inputFIFOLots {}\".format(inputFifoLots))\n\t\t\n\t\twhile amountToDraw \u003e 0 and len(inputFifoLots) \u003e 0:\n\t\t\t# if we don\u0027t have an active inputLotEvent, find the next one from the fifo queue and create a new input lot event\n\t\t\tif inputLotEvent[\u0027lotEventId\u0027] is None:\n\t\t\t\tnextLotId \u003d inputFifoLots[0][\u0027lotId\u0027]\n\t\t\t\tif logging: log.info(\"Using Lot Id {}\".format(nextLotId))\n\t\t\t\t# get the most recent lotEvent for this lot so we can copy some of its properties\n\t\t\t\t#   lastLotEventInfo \u003d sorted(system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotEvents({\u0027lotId\u0027: nextLotId, \u0027assetId\u0027: inputAssetId})), key\u003dlambda x: x[\u0027tStamp\u0027], reverse \u003d True)[0]\n\t\t\t\t# sr241220-most recent lotEvent that fits our input parameters\n\t\t\t\tfilterParams \u003d dict(inputFifoLotFilter)\n\t\t\t\tfilterParams[\u0027lotId\u0027] \u003d nextLotId\n\t\t\t\tlastLotEventInfo \u003d sorted(system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotEvents(filterParams)), key\u003dlambda x: x[\u0027tStamp\u0027], reverse \u003d True)[0]\n\t\t\t\tif logging: log.info(\"LotEventInfo {}\".format(lastLotEventInfo))\n\t\t\t\tinputLotEvent \u003d dict(lastLotEventInfo)\n\t\t\t\tinputLotEvent[\u0027lotEventId\u0027] \u003d None\n\t\t\t\tinputLotEvent[\u0027tStamp\u0027] \u003d now\n\t\t\t\tinputLotEvent[\u0027itemSourceId\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: \u0027input\u0027}))\n\t\t\t\tinputLotEvent[\u0027lotEventQty\u0027] \u003d 0\n\t\t\t\tinputLotEvent[\u0027lotOperationEventId\u0027] \u003d lotOperationEventId\n\t\t\t\t\n\t\t\t\tinputLotEvent[\u0027shiftId\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027shiftId\u0027, system.kanoa.shift.getShifts({\u0027shiftName\u0027: system.tag.getTagValue(\"[.]inputLotEventInfo/shiftName\")}))\n\t\t\t\tinputLotEvent[\u0027workOrderId\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027workOrderId\u0027, system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: system.tag.getTagValue(\"[.]inputLotEventInfo/workOrderName\")}))\n\t\t\t\tinputLotEventId, msg \u003d system.kanoa.lot.addLotEvent(inputLotEvent, userId)\n\t\t\t\tinputLotEvent \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLotEvents({\u0027lotEventId\u0027: inputLotEventId}), 0)\n\t\t\t\t\n\t\t\t# draw as much of our amountToDraw as we can\n\t\t\tinputLotTotal \u003d system.kanoa.utilities.getFieldValue(\u0027lotEventQty\u0027, system.kanoa.lot.getLotQty({\u0027assetId\u0027: inputAssetId, \u0027hasQty\u0027: True, \u0027lotId\u0027: inputLotEvent[\u0027lotId\u0027]})) or 0\n\t\t\tif inputLotTotal \u003e\u003d amountToDraw:\n\t\t\t\tsystem.kanoa.lot.adjustLotEventQty(inputLotEvent[\u0027lotEventId\u0027], amountToDraw, userId)\n\t\t\t\tamountToDraw \u003d 0\n\t\t\telse:\n\t\t\t\tsystem.kanoa.lot.adjustLotEventQty(inputLotEvent[\u0027lotEventId\u0027], inputLotTotal, userId)\n\t\t\t\tamountToDraw \u003d amountToDraw - inputLotTotal\n\t\t\t\t# if we exhausted that lot from the fifo queue, refresh the queue and reset the inputLotEvent so we grab a new one\n\t\t\t\tinputFifoLots \u003d sorted(system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotQty(inputFifoLotFilter)), key\u003dlambda x: x[\u0027tStamp\u0027], reverse \u003d False)\n\t\t\t\tinputLotEvent \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLotEvents({\u0027lotOperationEventId\u0027: -1}), 0)"
+          }
+        ],
+        "name": "sourceTag",
+        "tagGroup": "Every 30 seconds",
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -16733184,
+    "name": "timer",
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "enabled",
+        "value": true,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "DateTime",
+        "name": "lastUpdated",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\t\t\n\t\t\n\t\ttry:\n\t\t\tpass\t#execute some function here\n\t\texcept java.lang.Exception, e:\n\t\t\tlog.warn(\"%s timer script failed with %s\"%(tagPath, e.cause))\n\t\texcept:\n\t\t\tlog.warn(\"%s timer script failed\"%(tagPath))\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tsystem.tag.write(\"[.]lastUpdated\", system.date.now())\n\t\tsystem.tag.write(\"[.]update\", 0)\n\t\n\treturn"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "update",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "expr",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t\n\tif system.tag.read(\"[.]enabled\").value:\n\t\tsystem.tag.write(\"[.]update\", True)\n\t\t\n\treturn"
+          }
+        ],
+        "expression": "now(60000)",
+        "dataType": "DateTime",
+        "name": "updateTrigger",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -431872,
+    "name": "lotOperationManager",
+    "parameters": {
+      "lotOperationName": {
+        "dataType": "String",
+        "value": null
+      },
+      "assetId": {
+        "dataType": "Integer",
+        "value": null
+      }
+    },
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "name": "lotOperationEventId",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\t# create a new lotOperationEvent with the specified assetId and lotOperation when the setupLotOperation tag changes\n\t\n\tassetId \u003d tag[\u0027parameters\u0027][\u0027assetId\u0027]\n\tlotOperationName \u003d tag[\u0027parameters\u0027][\u0027lotOperationName\u0027]\n\t\n\tif assetId is None or lotOperationName is None or currentValue.value is None:\n\t\t# if this source tag is set to None, or we don\u0027t have one of the parameters we need, set the lotOperationEventId to None\n\t\tsystem.tag.writeAsync([\"[.]lotOperationEventId\"], None)\n\telse:\n\t\t# otherwise, make a new lotOperationEvent of the specified type and asset with no input or output lots\n\t\ttStamp \u003d system.date.now()\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027SYSTEM\u0027})\n\t\tlotOperationId \u003d system.kanoa.utilities.getFieldValue(\u0027lotOperationId\u0027, system.kanoa.lot.getLotOperations({\u0027lotOperationName\u0027: lotOperationName}))\n\t\tlotOperationEventInfo \u003d {\u0027lotOperationEventId\u0027: None, \u0027lotOperationId\u0027: lotOperationId, \u0027tStamp\u0027: tStamp, \u0027enabled\u0027: True, \u0027assetId\u0027: assetId}\n\t\tlotOperationEventId, msg \u003d system.kanoa.lot.executeLotOperation(lotOperationEventInfo, [], [], userId)\n\t\t\t\n\t\tsystem.tag.writeAsync([\"[.]lotOperationEventId\"], lotOperationEventId)"
+          }
+        ],
+        "dataType": "Boolean",
+        "name": "setupLotOperation",
+        "value": false,
+        "tagType": "AtomicTag"
+      }
+    ]
+  },
+  {
+    "typeColor": -431872,
+    "name": "lotAccumulator",
+    "parameters": {
+      "assetPath": {
+        "dataType": "String",
+        "value": null
+      },
+      "alwaysMakeNewOutputLot": {
+        "dataType": "Integer",
+        "value": 0
+      },
+      "countOnIncrease": {
+        "dataType": "Integer",
+        "value": 1
+      },
+      "lotOperationPath": {
+        "dataType": "String",
+        "value": null
+      }
+    },
+    "tagType": "UdtType",
+    "tags": [
+      {
+        "valueSource": "memory",
+        "name": "counterValue",
+        "tagType": "AtomicTag"
+      },
+      {
+        "valueSource": "memory",
+        "dataType": "Boolean",
+        "name": "enabled",
+        "value": false,
+        "tagType": "AtomicTag"
+      },
+      {
+        "name": "outputLotEventInfo",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/OEE/{TagName}"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "workOrderName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{lotOperationPath}/{TagName}"
+            },
+            "valueSource": "reference",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\tsystem.tag.write(\"[.]../counterValue\", 0)"
+              }
+            ],
+            "name": "lotOperationEventId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "lotStateName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/EquipID"
+            },
+            "valueSource": "reference",
+            "name": "assetId",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "lotStateReasonName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/OEE/{TagName}"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "shiftName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "valueSource": "memory",
+            "dataType": "String",
+            "name": "comment",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "name": "outputLotInfo",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "valueSource": "expr",
+            "dataType": "String",
+            "name": "lotName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/OEE/{TagName}"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "itemName",
+            "tagType": "AtomicTag"
+          },
+          {
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{assetPath}/OEE/outfeedUnits"
+            },
+            "valueSource": "reference",
+            "dataType": "String",
+            "name": "itemUnitName",
+            "tagType": "AtomicTag"
+          }
+        ]
+      },
+      {
+        "valueSource": "reference",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value \u003e 0 and system.tag.getTagValue(\"[.]enabled\"):\n\t\t# UPDATE COUNTER\n\t\tpmCount \u003d system.tag.getTagValue(\"[.]counterValue\")\n\t\tif pmCount is None: pmCount \u003d 0\n\t\t\t\t\t\t\t\n\t\tif tag[\u0027parameters\u0027][\u0027countOnIncrease\u0027] \u003d\u003d 1:\n\t\t\tif currentValue.value \u003e previousValue.value:\n\t\t\t\tdelta \u003d currentValue.value - previousValue.value\n\t\t\telse: return\n\t\telse:\n\t\t\tif currentValue.value \u003c previousValue.value:\n\t\t\t\tdelta \u003d previousValue.value - currentValue.value\n\t\t\telse: return\n\t\t\n\t\tpmCount \u003d pmCount + delta\n\t\t\t\n\t\tsystem.tag.write(\"[.]counterValue\", pmCount)\n\t\t\n\t\t# UPDATE LOT EVENTS FOR THE CURRENT LOT OPERATION\n\t\tlotOperationEventId \u003d system.tag.getTagValue(\"[.]outputLotEventInfo/lotOperationEventId\")\n\t\tif lotOperationEventId is None: return\n\t\t\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027SYSTEM\u0027})\n\t\tnow \u003d system.date.now()\n\t\t\n\t\t# OUTPUT THE DELTA TO THE OUTPUT ASSET ID\n\t\t# use the lotInfo and lotEventInfo data provided in the outputLotInfo and outputLotEventInfo parameters\n\t\toutputAssetId \u003d system.tag.getTagValue(\"[.]outputLotEventInfo/assetId\")\n\t\tlotStateId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateId\u0027, system.kanoa.lot.getLotStates({\u0027lotStateName\u0027: system.tag.getTagValue(\"[.]outputLotEventInfo/lotStateName\")}))\n\t\t\n\t\tif tag[\u0027parameters\u0027][\u0027alwaysMakeNewOutputLot\u0027] !\u003d 1:\n\t\t\toutputLotEventId \u003d system.kanoa.utilities.getFieldValue(\u0027lotEventId\u0027, system.kanoa.lot.getLotEvents({\u0027lotOperationEventId\u0027: lotOperationEventId, \u0027assetId\u0027: outputAssetId, \u0027lotStateId\u0027: lotStateId}))\n\t\telse:\n\t\t\toutputLotEventId \u003d None\n\t\t\n\t\tif outputLotEventId is None:\n\t\t\toutputLotInfo \u003d {\n\t\t\t\t\u0027lotName\u0027: system.tag.getTagValue(\"[.]outputLotInfo/lotName\"),\n\t\t\t\t\u0027itemId\u0027: system.kanoa.utilities.getFieldValue(\u0027itemId\u0027, system.kanoa.item.getItems({\u0027itemName\u0027: system.tag.getTagValue(\"[.]outputLotInfo/itemName\")})),\n\t\t\t\t\u0027itemUnitId\u0027: system.kanoa.utilities.getFieldValue(\u0027itemUnitId\u0027, system.kanoa.item.getItemUnits({\u0027itemUnitName\u0027: system.tag.getTagValue(\"[.]outputLotInfo/itemUnitName\")}))\n\t\t\t}\n\t\t\t\n\t\t\tlotNumber \u003d 1\n\t\t\twhile lotNumber \u003e 0:\n\t\t\t\t#todo: for now, just send what you want the \"root\" lot number to be and we\u0027ll find the right 3-digit code for it\n\t\t\t\tlotName \u003d outputLotInfo[\u0027lotName\u0027] + \"-\"+ str(lotNumber).zfill(3)\n\t\t\t\tif system.kanoa.lot.getLots({\u0027lotName\u0027: lotName}).getRowCount()\u003e0:\n\t\t\t\t\tlotNumber \u003d lotNumber + 1\n\t\t\t\telse: lotNumber \u003d-1\n\t\t\toutputLotInfo[\u0027lotName\u0027] \u003d lotName\n\t\t\toutputLotId, msg \u003d system.kanoa.lot.addLot(outputLotInfo, userId)\n\t\t\t\n\t\t\toutputLotEventInfo \u003d {\n\t\t\t\t\u0027lotId\u0027: outputLotId,\n\t\t\t\t\u0027assetId\u0027: outputAssetId,\n\t\t\t\t\u0027comment\u0027: system.tag.getTagValue(\"[.]outputLotEventInfo/comment\"),\n\t\t\t\t\u0027lotStateId\u0027: lotStateId,\n\t\t\t\t\u0027lotStateReasonId\u0027: system.kanoa.utilities.getFieldValue(\u0027lotStateReasonId\u0027, system.kanoa.lot.getLotStateReasons({\u0027lotStateReasonName\u0027: system.tag.getTagValue(\"[.]outputLotEventInfo/lotStateReasonName\")})),\n\t\t\t\t\u0027shiftId\u0027: system.kanoa.utilities.getFieldValue(\u0027shiftId\u0027, system.kanoa.shift.getShifts({\u0027shiftName\u0027: system.tag.getTagValue(\"[.]outputLotEventInfo/shiftName\")})),\n\t\t\t\t\u0027workOrderId\u0027: system.kanoa.utilities.getFieldValue(\u0027workOrderId\u0027, system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: system.tag.getTagValue(\"[.]outputLotEventInfo/workOrderName\")})),\n\t\t\t\t\u0027lotEventId\u0027: None,\n\t\t\t\t\u0027lotEventQty\u0027: 0,\n\t\t\t\t\u0027itemSourceId\u0027: system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: \u0027output\u0027})),\n\t\t\t\t\u0027lotOperationEventId\u0027: lotOperationEventId,\n\t\t\t\t\u0027tStamp\u0027: now\n\t\t\t}\n\t\t\toutputLotEventId, msg \u003d system.kanoa.lot.addLotEvent(outputLotEventInfo, userId)\n\t\t\t\n\t\t\toutputLotEventInfo[\u0027lotEventId\u0027] \u003d outputLotEventId\n\t\t\n\t\tsystem.kanoa.lot.adjustLotEventQty(outputLotEventId, delta, userId)\n\t\t"
+          }
+        ],
+        "name": "sourceTag",
+        "tagGroup": "Every 30 seconds",
+        "tagType": "AtomicTag"
+      }
+    ]
+  }
+]

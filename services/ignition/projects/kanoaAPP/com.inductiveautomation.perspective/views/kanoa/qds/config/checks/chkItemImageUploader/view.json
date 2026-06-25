@@ -1,0 +1,590 @@
+{
+  "custom": {
+    "gettingImage": false,
+    "imageData": {
+      "chkItemId": null,
+      "createdBy": null,
+      "createdDate": null,
+      "filePath": null,
+      "image": null,
+      "imageDescription": "",
+      "imageId": null,
+      "imageName": "",
+      "imageType": "",
+      "thumbnail": null
+    }
+  },
+  "events": {
+    "system": {
+      "onShutdown": {
+        "config": {
+          "script": "\t\n\tif (self.custom.imageData.filePath or None) is not None: system.kanoa.file.deleteFile(self.custom.imageData.filePath)\n\t\n\treturn"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "chkItemId": null,
+      "chkItemImageId": null,
+      "imageType": null
+    }
+  },
+  "propConfig": {
+    "custom.gettingImage": {
+      "persistent": true
+    },
+    "custom.imageData": {
+      "persistent": true
+    },
+    "params.value": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif self.params.value.has_key(\u0027imageId\u0027):\n\t\timageData \u003d system.kanoa.quality.config.getChkItemImageData({\u0027chkItemImageId\u0027: self.params.value.chkItemImageId or -1, \u0027includeThumbnail\u0027: True})\n\t\timageData \u003d system.kanoa.utilities.convertDatasetRowToJSON(imageData, 0)\n\t\timageData[\u0027filePath\u0027] \u003d None\n\t\tif imageData[\u0027imageDescription\u0027] is None: imageData[\u0027imageDescription\u0027] \u003d \u0027\u0027 \n\t\tif imageData[\u0027imageName\u0027] is None: imageData[\u0027imageName\u0027] \u003d \u0027\u0027 \n\t\tif imageData[\u0027imageType\u0027] is None: imageData[\u0027imageType\u0027] \u003d \u0027\u0027 \n\t\tself.custom.imageData \u003d imageData\n\t\n\tif self.custom.imageData[\u0027imageId\u0027] is None and self.params.value.has_key(\u0027imageType\u0027):\n\t\tself.custom.imageData.imageType \u003d self.params.value.imageType or \u0027\u0027\n\t\n\treturn"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 511,
+      "width": 456
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onFileReceived": {
+                  "config": {
+                    "script": "\n\tlog \u003d system.util.getLogger(\"kanoaImage\")\n\tlog.info(\"onFileReceived event\")\n\n\tself.view.custom.gettingImage \u003d True\n\t\n\tfrom java.io import File\n\timport base64\n\t\n\tdirPath \u003d \"C:\\\\kanoaImages\"\n\tdirectory \u003d File(dirPath)\n\tif not directory.exists(): directory.mkdirs()\n\t\n\tfilePath \u003d \"%s\\\\%s\" % (dirPath, event.file.name)\t\n\t\n\tself.view.custom.imageData.image \u003d base64.b64encode(event.file.getBytes())\n\tself.view.custom.imageData.imageName \u003d event.file.name\n\n\tsystem.kanoa.file.deleteFile(filePath)\n\tevent.file.copyTo(filePath) #We\u0027ll store this file on the gateway so we can convert and create thumbnails\n\tself.view.custom.imageData.filePath \u003d filePath\t\t\n\tself.view.custom.gettingImage \u003d False\n\t\n\treturn\n"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                },
+                "onUploadsCleared": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").clearImageData()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "FileUpload",
+              "name": "FileUpload"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.supportedFileTypes": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn [\"jpg\", \"jpeg\", \"png\", \"bmp\"]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "maxUploads": 1
+            },
+            "type": "ia.input.fileupload"
+          }
+        ],
+        "meta": {
+          "domId": "flxUpload",
+          "name": "flxUpload"
+        },
+        "position": {
+          "basis": "100px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Progress",
+              "name": "Progress"
+            },
+            "position": {
+              "basis": "10px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.gettingImage"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "mode": "indeterminate",
+              "track": {
+                "indeterminate": {
+                  "style": {
+                    "borderStyle": "none"
+                  }
+                }
+              }
+            },
+            "type": "ia.display.progress"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\n\tdata \u003d dict(self.view.custom.imageData)\n\tdata.pop(\u0027image\u0027)\n\tdata.pop(\u0027thumbnail\u0027)\n\t\n\tsystem.perspective.openPopup(\u0027Image Popup\u0027, \u0027kanoa/qds/images/imageViewer\u0027, params\u003d{\u0027imageData\u0027: data} , title \u003d \u0027%s\u0027% data[\u0027imageName\u0027], resizable\u003dTrue, showCloseIcon\u003dTrue, draggable\u003dTrue)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "image",
+              "name": "image"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.source"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value !\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.source": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "image": "{view.custom.imageData.image}",
+                      "thumbnail": "{view.custom.imageData.thumbnail}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\timage \u003d value[\u0027image\u0027] or value[\u0027thumbnail\u0027]\n\tif (image or None) is None: return \u0027\u0027\n\t\n\treturn \"data:imagef;base64,%s\" %image",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "fit": {
+                "height": 150,
+                "mode": "contain",
+                "width": 150
+              },
+              "style": {
+                "cursor": "pointer"
+              }
+            },
+            "type": "ia.display.image"
+          }
+        ],
+        "meta": {
+          "domId": "flxImage",
+          "name": "flxImage"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl",
+                  "name": "lbl"
+                },
+                "position": {
+                  "basis": "80px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Image Name"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "txtName",
+                  "name": "txtName"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.imageData.imageName"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "deferUpdates": false
+                },
+                "type": "ia.input.text-field"
+              }
+            ],
+            "meta": {
+              "domId": "flxImageName",
+              "name": "flxImageName"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl-1",
+                  "name": "lbl"
+                },
+                "position": {
+                  "basis": "80px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Image Type"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "txtType",
+                  "name": "txtType"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.imageData.imageType"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "deferUpdates": false
+                },
+                "type": "ia.input.text-field"
+              }
+            ],
+            "meta": {
+              "domId": "flxImageType",
+              "name": "flxImageType"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lbl-2",
+                  "name": "lbl"
+                },
+                "position": {
+                  "basis": "80px",
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "Description"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "txtAreaDescription",
+                  "name": "txtAreaDescription"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.imageData.imageDescription"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "deferUpdates": false,
+                  "style": {
+                    "fontSize": "12px"
+                  }
+                },
+                "type": "ia.input.text-area"
+              }
+            ],
+            "meta": {
+              "domId": "flxImageDescription",
+              "name": "flxImageDescription"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxMetaData",
+          "name": "flxMetaData"
+        },
+        "position": {
+          "basis": "125px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\timageData \u003d self.view.custom.imageData\n\tparams \u003d self.view.params.value\n\t\t\n\tif imageData.image is None: \n\t\tsystem.perspective.print(\u0027ERROR: No image selected!\u0027)\n\t\treturn\n\tif imageData.imageType is None: \n\t\tsystem.perspective.print(\u0027ERROR: No type selected!\u0027)\n\t\treturn\n\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\timageId, msg \u003d system.kanoa.quality.config.processImage(imageData[\u0027filePath\u0027], params[\u0027chkItemId\u0027], params[\u0027chkItemImageId\u0027], imageData[\u0027imageName\u0027], imageData[\u0027imageType\u0027], imageData[\u0027imageDescription\u0027] or None, userId)\n\tsystem.kanoa.file.deleteFile(imageData[\u0027filePath\u0027])\n\t\n\tif msg:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\treturn\n\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Image Added\u0027})\t\t\n\t\n\tself.view.getChild(\"root\").clearImageData()\t\n\t\n\tsystem.perspective.closePopup(\u0027Image Popup\u0027)\t#If we are uploading an image from the imagePopup, we need it to update\n\tsystem.perspective.sendMessage(\u0027refreshImages\u0027, {})\t#Tell calling screen to update itself to show the new image\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnAddImage",
+              "name": "btnAddImage"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "image": "{view.custom.imageData}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\thasImage \u003d value[\u0027image\u0027].get(\u0027image\u0027) is not None\n\thasName \u003d value[\u0027image\u0027].get(\u0027imageName\u0027) is not None\n\t\n\treturn hasImage and hasType and hasName",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Add Image"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "clearImageData",
+          "params": [],
+          "script": "\n\tself.view.custom.imageData \u003d {\n\t\t\"imageDescription\": \u0027\u0027,\n\t\t\"imageName\": \u0027\u0027,\n\t\t\"imageType\": \u0027\u0027,\n\t\t\"image\": None,\n\t\t\"thumbnail\": None,\n\t\t\"imageId\": None,\n\t\t\"createdDate\": None,\n\t\t\"createdBy\": \u0027\u0027,\n\t\t\"chkItemId\": None,\n\t\t\"filePath\": None\n\t\t}\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "setImageOptions",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\u0027setImageOptions() msg rcvd with %s\u0027%payload)\n\t\n\tself.view.params.value \u003d payload[\u0027value\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

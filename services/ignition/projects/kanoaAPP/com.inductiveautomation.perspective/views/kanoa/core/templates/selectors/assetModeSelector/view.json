@@ -1,0 +1,91 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": {
+      "canSchedule": null, 
+      "type": null, 
+      "enabled": true, 
+      "assetPath": "Kanoa Industries\\Adelaide Hills\\Packaging\\Line 1", 
+      "canSelect": true
+    }, 
+    "modeId": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 187, 
+      "height": 33
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "backgroundColor": "--kcSurface"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/border kanoa/font/default", 
+            "height": 30
+          }
+        }, 
+        "meta": {
+          "domId": "ddEventType", 
+          "name": "ddEventType"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [{\"value\": row['modeId'], \"label\": row['modeName']} for row in system.kanoa.asset.getAssetModes({'assetPath': value['assetPath'] or -1, 'enabled': True, 'canSelect': value['canSelect'], 'canSchedule': value['canSchedule']})]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.modeId"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.modeId": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.values": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

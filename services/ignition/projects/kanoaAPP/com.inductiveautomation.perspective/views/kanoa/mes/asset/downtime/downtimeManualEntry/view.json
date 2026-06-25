@@ -1,0 +1,991 @@
+{
+  "custom": {
+    "filter": {
+      "stateCategoryId": null
+    },
+    "stateEvents": {
+      "$": [
+        "ds",
+        192,
+        1769198123716
+      ],
+      "$columns": []
+    },
+    "stateInfo": {
+      "assetId": null,
+      "assetStateId": null,
+      "endDate": null,
+      "note": "",
+      "startDate": null,
+      "stateCode": null,
+      "stateName": null,
+      "stateTypeColor": null
+    },
+    "validationCheck": "Asset not set"
+  },
+  "params": {
+    "values": {
+      "assetId": null,
+      "endDate": {
+        "$": [
+          "ts",
+          0,
+          1744664854914
+        ],
+        "$ts": 1712646000000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          0,
+          1744664811519
+        ],
+        "$ts": 1711954800000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.stateEvents": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetId\u0027] is None: return system.dataset.toDataSet([],[])\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027], \u0027showDowntimeOnly\u0027: True, \u0027showChanged\u0027: None, \u0027durationSecs\u0027: 0}\t\n\treturn system.kanoa.event.getAssetStateEvents(paramsDict)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.stateInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\treturn {\"assetId\": value[\u0027assetId\u0027], \"assetStateId\": value[\u0027assetId\u0027], \"stateCode\": None, \"stateName\": None, \"stateTypeColor\": None, \"startDate\": None, \u0027endDate\u0027: None, \u0027note\u0027: \u0027\u0027}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.validationCheck": {
+      "binding": {
+        "config": {
+          "struct": {
+            "stateInfo": "{view.custom.stateInfo}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tstateInfo \u003d value[\u0027stateInfo\u0027]\n\t\n\tif stateInfo[\u0027assetStateId\u0027] is None: return \u0027Asset not set\u0027\n\tif stateInfo[\u0027stateName\u0027] is None: return \u0027State not set\u0027\n\tif stateInfo[\u0027stateCode\u0027] is None: return \u0027No state code configured for this state\u0027\n\tif stateInfo[\u0027startDate\u0027] is None or stateInfo[\u0027endDate\u0027] is None: return \u0027Times not set\u0027\n\tif stateInfo[\u0027startDate\u0027] \u003c self.params.values.startDate: return \u0027start is outside of range\u0027\n\tif stateInfo[\u0027endDate\u0027] \u003e self.params.values.endDate: return \u0027End is outside of range\u0027\n\tif stateInfo[\u0027startDate\u0027] \u003e\u003d stateInfo[\u0027endDate\u0027]: return \u0027Invalid date range selected\u0027\n\tif (stateInfo[\u0027note\u0027] or None) is None: return \u0027No comment provided\u0027\n\treturn \u0027\u0027\n#\tstateEvents \u003d self.custom.stateEvents\n#\tfor row in stateEvents:\n#\t\tif stateInfo[\u0027startDate\u0027] \u003e row[\u0027startDate\u0027] and stateInfo[\u0027endDate\u0027] \u003c row[\u0027endDate\u0027]:\treturn \u0027\u0027\n#\t\n#\treturn \u0027state dates not ok\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 525,
+      "width": 470
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "title",
+          "name": "title"
+        },
+        "position": {
+          "display": false
+        },
+        "props": {
+          "text": "Manual Downtime Entry",
+          "textStyle": {
+            "classes": "kanoa/font/titleMedium"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "path",
+          "name": "path"
+        },
+        "position": {
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.data.assetId"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "textStyle": {
+            "classes": "kanoa/font/bodySmall"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "stateRibbon",
+              "name": "stateRibbon"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.params.values"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.values": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateEvents"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tinstances \u003d []\n\tgatewayOffsetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffsetMins \u003d self.session.props.device.timezone.utcOffset * 60\n\toffsetMins \u003d clientOffsetMins - gatewayOffsetMins\n\tfor row in value:\n\t\tstart \u003d system.date.format(system.date.addMinutes(row[\u0027startDate\u0027], offsetMins), \u0027MM/dd HH:mm\u0027)\n\t\tend \u003d system.date.format(system.date.addMinutes(row[\u0027endDate\u0027], offsetMins), \u0027MM/dd HH:mm\u0027)\n\t\ttooltip \u003d \"%s %s mins %s to %s\"%(row[\u0027stateName\u0027], round(row[\u0027stateDurationSecs\u0027] / 60.0,1), start, end)\n\t\tinstances.append({\"barValue\": float(row[\u0027stateDurationSecs\u0027]) / 60.0, \"tooltip\": tooltip, \"color\": row[\u0027stateTypeColor\u0027] or \u0027#FFFFFF\u0027})\n\n\treturn instances",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "kanoa/core/templates/displays/ribbon/main",
+              "style": {
+                "borderRadius": 3,
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxState",
+          "name": "flxState"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "space-between",
+          "style": {
+            "gap": 5,
+            "padding": 5
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "stateRibbonNew",
+              "name": "stateRibbonNew"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.params.values"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.values": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tinstances \u003d []\n\t\n\tstart \u003d self.view.params.values.startDate\n\tend \u003d self.view.params.values.endDate\n\tstateStart \u003d value[\u0027startDate\u0027]\n\tstateEnd \u003d value[\u0027endDate\u0027]\n\n\tif stateStart is None and stateEnd is None: return []\n\tif stateEnd is None: stateEnd \u003d system.date.addMinutes(stateStart, 10)\t\n\tif stateStart \u003c start: return []\n\tif stateEnd \u003e end: return []\n\tif stateStart \u003e\u003d stateEnd: return []\n\n#\t\ttooltip \u003d \"%s %s mins %s to %s\"%(row[\u0027stateName\u0027], row[\u0027stateDurationSecs\u0027] / 60.0, system.date.format(row[\u0027startDate\u0027], \u0027MM/dd HH:mm:ss\u0027), system.date.format(row[\u0027endDate\u0027], \u0027MM/dd HH:mm:ss\u0027))\n\n\tinstances.append({\"barValue\": float(system.date.secondsBetween(start, stateStart)) / 60.0, \"tooltip\": \u0027\u0027, \"color\": \u0027--kcGray-0\u0027})\n\tinstances.append({\"barValue\": float(system.date.secondsBetween(stateStart, stateEnd)) / 60.0, \"tooltip\": \u0027\u0027, \"color\": value[\u0027stateTypeColor\u0027] or \u0027--kcGray-100\u0027})\n\tinstances.append({\"barValue\": float(system.date.secondsBetween(stateEnd, end)) / 60.0, \"tooltip\": \u0027\u0027, \"color\": \u0027--kcGray-0\u0027})\n\n\treturn instances",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "kanoa/core/templates/displays/ribbon/main",
+              "style": {
+                "borderRadius": 3,
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxStateNew",
+          "name": "flxStateNew"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "space-between",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden",
+            "padding": 5
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblAsset",
+              "name": "lblAsset"
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Asset",
+              "textStyle": {
+                "classes": "kanoa/font/labelMedium",
+                "textAlign": "right"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddCell",
+              "name": "ddCell"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo.assetId"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\tif value is None: return []\n\t\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))\n\tdata \u003d system.dataset.toPyDataSet(system.dataset.sort(system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027enabled\u0027:True}), \u0027assetPath\u0027))\n\treturn [{\u0027value\u0027: row[\u0027assetId\u0027], \u0027label\u0027:row[\u0027assetName\u0027] + \u0027 (\u0027 + row[\u0027assetTypeName\u0027] + \u0027)\u0027} for row in data]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.stateInfo.assetStateId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "persistent": false
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default",
+                "textAlign": "left"
+              },
+              "placeholder": {
+                "text": "Select Asset..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "left"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxAssetSelector",
+          "name": "flxAssetSelector"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblState",
+              "name": "lblState"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "State"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "evStateSelector",
+              "name": "evStateSelector"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo.assetStateId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return []\n\tdata \u003d system.kanoa.asset.getAssetStates({\u0027assetId\u0027: value, \u0027enabled\u0027: True, \u0027selectable\u0027: True})\n\treturn system.kanoa.utilities.createTreeHierarchy(data, [\u0027stateCategoryName\u0027, \u0027stateName\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "assetStateSelected",
+                  "options": {
+                    "expand": false,
+                    "multiSelect": false,
+                    "selectable": [
+                      0,
+                      1,
+                      2
+                    ]
+                  },
+                  "selection": [],
+                  "showClear": true,
+                  "style": {
+                    "backgroundColor": "",
+                    "iconColor": "",
+                    "iconPath": "kanoa/maintenance",
+                    "position": {
+                      "width": "450px"
+                    },
+                    "tooltip": null
+                  }
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxStateSelector",
+          "name": "flxStateSelector"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblStart",
+              "name": "lblStart"
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "From",
+              "textStyle": {
+                "classes": "kanoa/font/labelMedium",
+                "textAlign": "right"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "dtiStart",
+              "name": "dtiStart"
+            },
+            "position": {
+              "basis": "185px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.stateInfo.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dismissOnSelect": false,
+              "formattedValue": null,
+              "inputProps": {
+                "style": {
+                  "classes": "kanoa/font/default"
+                }
+              },
+              "modalStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": "Select start",
+              "style": {
+                "classes": "kanoa/font/default",
+                "height": "35px"
+              }
+            },
+            "type": "ia.input.date-time-input"
+          },
+          {
+            "meta": {
+              "domId": "lblTo",
+              "name": "lblTo"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "To",
+              "textStyle": {
+                "classes": "kanoa/font/labelMedium",
+                "textAlign": "right"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "dtiEnd",
+              "name": "dtiEnd",
+              "tooltip": {
+                "enabled": true
+              }
+            },
+            "position": {
+              "basis": "185px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.stateInfo.endDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dismissOnSelect": false,
+              "formattedValue": null,
+              "placeholder": "Select end",
+              "style": {
+                "height": "35px"
+              }
+            },
+            "type": "ia.input.date-time-input"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.stateInfo.startDate \u003d None\n\tself.view.custom.stateInfo.endDate \u003d None\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClear",
+              "name": "btnClear",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "Clear selected dates"
+              }
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/close"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxTime",
+          "name": "flxTime",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tgatewayOffsetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffSetMin \u003d int(self.session.props.device.timezone.utcOffset * 60.0)\n\t\n\toffsetMins \u003d clientOffSetMin - gatewayOffsetMins\n\t\n\tstart \u003d system.date.format(system.date.addMinutes(value[\u0027startDate\u0027], offsetMins), \u0027MM/dd/YY HH:mm\u0027)\n\tend \u003d system.date.format(system.date.addMinutes(value[\u0027endDate\u0027], offsetMins), \u0027MM/dd/YY HH:mm\u0027)\n\n\treturn \"Valid range from %s to %s\"%(start, end)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblComments",
+          "name": "lblComments"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "text": "Comments",
+          "textStyle": {
+            "classes": "kanoa/font/labelMedium"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "txtComments",
+          "name": "txtComments"
+        },
+        "position": {
+          "basis": "80px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.custom.stateInfo.note"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "deferUpdates": false,
+          "rejectUpdatesWhileFocused": false
+        },
+        "type": "ia.input.text-area"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "icoCheck",
+              "name": "icoCheck",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Validation check info"
+              }
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": ""
+            },
+            "props": {
+              "color": "--kcOrange-60",
+              "path": "material/info"
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "domId": "lblValidationCheck",
+              "name": "lblValidationCheck"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.validationCheck"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "",
+                "textAlign": "center"
+              },
+              "textStyle": {
+                "color": ""
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.refreshBinding(\"custom.stateInfo\")\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClear-1",
+              "name": "btnClear",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "Clear form to enter a new state"
+              }
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/close"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxInfo",
+          "name": "flxInfo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.validationCheck"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value !\u003d \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/border",
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tmsg \u003d \"This change will override any state events found during the time period defined for the new state. This action cannot be undone. Are you sure you want to save this change?\"\n\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\", {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027userResponseAddState\u0027}, title\u003d\u0027Add State Event\u0027, modal\u003dTrue, overlayDismiss\u003dTrue, draggable\u003dTrue)\n\t\n#\tself.view.getChild(\"root\").addStateEvent()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave"
+            },
+            "position": {
+              "basis": "128px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.validationCheck"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save",
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup(\"\")\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "basis": "128px"
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close",
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "basis": "42px"
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container kanoa/font/default",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "addStateEvent",
+          "params": [],
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tstateInfo \u003d dict(self.view.custom.stateInfo)\n\tlastStateEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getPreviousStateEvent(stateInfo[\u0027assetId\u0027], stateInfo[\u0027endDate\u0027]),0)\n\n\t#Number of things have to happen here\n\t#1. We delete all state events that occurred between the start and upto the end date (but not including)\n\tsystem.kanoa.event.deleteStateEvents({\u0027assetId\u0027: stateInfo[\u0027assetId\u0027], \u0027startDate\u0027: stateInfo[\u0027startDate\u0027], \u0027endDate\u0027: stateInfo[\u0027endDate\u0027]}, userId)\n\n\t#2. We add or update the stateEvent at the start time\n\tstateInfo[\u0027tStamp\u0027] \u003d stateInfo[\u0027startDate\u0027]\n\tsystem.perspective.print(\"adding new state event %s\"%(stateInfo))\n\tsystem.kanoa.event.addStateEvent(stateInfo, userId)\n\t\n\t#2. We change the tStamp of the last event that falls within the start and end of this new stateEvent to be the end date\n\tif lastStateEventInfo[\u0027stateEventId\u0027]:\n\t\tlastStateEventInfo[\u0027stateEventId\u0027] \u003d None\n\t\tlastStateEventInfo[\u0027tStamp\u0027] \u003d stateInfo[\u0027endDate\u0027]\n\t\t\n\tsystem.perspective.print(\"adding last state event %s\"%(lastStateEventInfo))\n\tsystem.kanoa.event.addStateEvent(lastStateEventInfo, userId)\n\t\n\tsystem.perspective.sendMessage(\"DTUpdated\", {})\n\tself.view.refreshBinding(\"custom.stateEvents\")\n\tself.view.custom.validationCheck \u003d \u0027State has been added\u0027\n\tself.getChild(\"flxStateNew\").getChild(\"stateRibbonNew\").props.params.values \u003d []\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetStateSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"assetStateSelected() msg rcvd with %s\"%payload)\n\t\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tself.view.custom.stateInfo[\u0027stateName\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]\n\t\tself.view.custom.stateInfo[\u0027stateCode\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027stateCode\u0027]\n\t\tself.view.custom.stateInfo[\u0027stateTypeColor\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027stateTypeColor\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "userResponseAddState",
+          "pageScope": true,
+          "script": "\n\tself.addStateEvent()\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

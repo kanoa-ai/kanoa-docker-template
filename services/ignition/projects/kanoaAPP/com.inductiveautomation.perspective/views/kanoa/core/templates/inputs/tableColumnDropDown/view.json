@@ -1,0 +1,199 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "editable": true,
+      "msgHandler": null,
+      "options": [
+        {
+          "color": "--kcBlue-20",
+          "label": "Draft",
+          "value": 1
+        },
+        {
+          "color": "--kcGreen-20",
+          "label": "Released",
+          "value": 2
+        },
+        {
+          "color": "--kcOrange-20",
+          "label": "In Revision",
+          "value": 3
+        },
+        {
+          "color": "--kcGray-20",
+          "label": "Archived",
+          "value": 4
+        }
+      ],
+      "value": 4
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 34,
+      "width": 184
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "label",
+          "name": "label"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "propConfig": {
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.foreColor"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.label"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "ddInput",
+          "name": "ddInput"
+        },
+        "position": {
+          "basis": "256px"
+        },
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.options"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tmatch \u003d next((d for d in value[\u0027options\u0027] if d.get(\u0027value\u0027) \u003d\u003d value[\u0027value\u0027]), None)\n\treturn match[\u0027color\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.value": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.value.value"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\t\n\tparams \u003d self.view.params.value\n\tif origin \u003d\u003d \u0027Browser\u0027 and params.has_key(\u0027msgHandler\u0027) and params[\u0027msgHandler\u0027]:\n\t\tsystem.perspective.sendMessage(self.view.params.value.msgHandler, {\u0027value\u0027: self.props.value, \u0027params\u0027: self.view.params.value})\n\t\t\n\treturn"
+            }
+          }
+        },
+        "props": {
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "style": {
+            "classes": "kanoa/font/default kanoa/dropdown/blackText"
+          }
+        },
+        "type": "ia.input.dropdown"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "enabled": true
+      }
+    },
+    "propConfig": {
+      "meta.tooltip.text": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.tooltip"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t\n\treturn value or \u0027\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.color"
+          },
+          "overlayOptOut": true,
+          "type": "property"
+        }
+      },
+      "props.style.color": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.foreColor"
+          },
+          "overlayOptOut": true,
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "borderBottomLeftRadius": "5px",
+        "borderBottomRightRadius": "5px",
+        "borderTopLeftRadius": "5px",
+        "borderTopRightRadius": "5px",
+        "classes": "kanoa/font/default",
+        "margin": "2px",
+        "paddingLeft": "2px",
+        "paddingRight": "5px",
+        "textAlign": "center"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

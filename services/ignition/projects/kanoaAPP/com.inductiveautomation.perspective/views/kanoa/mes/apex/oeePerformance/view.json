@@ -1,0 +1,388 @@
+{
+  "custom": {
+    "data": {
+      "interval": "Day"
+    },
+    "filter": {
+      "assetId": null,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1749150314450
+        ],
+        "$ts": 1749193200000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1749150442528
+        ],
+        "$ts": 1748761200000
+      }
+    },
+    "oeeThresholds": {
+      "a": 0.8,
+      "aTolerance": 0.1,
+      "oee": 0.6,
+      "oeeTolerance": 0.1,
+      "p": 0.8,
+      "pTolerance": 0.1,
+      "q": 0.8,
+      "qTolerance": 0.1
+    }
+  },
+  "params": {
+    "data": {
+      "assetId": null,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1749150314450
+        ],
+        "$ts": 1749193200000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1749150442528
+        ],
+        "$ts": 1748761200000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.oeeData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tnumHours \u003d system.date.hoursBetween(value[\u0027startDate\u0027], value[\u0027endDate\u0027])\n\tself.custom.data.interval \u003d \u0027Hour\u0027 if numHours \u003c\u003d 60 else \u0027Day\u0027\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getOEEDataByInterval(value.assetId, value.startDate, value.endDate, self.custom.data.interval))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.oeeSummary": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getOEESummary({\u0027assetId\u0027:value.assetId or -1, \u0027startDate\u0027: value.startDate, \u0027endDate\u0027: value.endDate}),0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filter": {
+      "binding": {
+        "config": {
+          "path": "view.params.data"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.oeeThresholds": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.asset.getAssetOEEThresholds({\u0027assetId\u0027: value})",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.data": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 826,
+      "width": 821
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "apexBarPerformance",
+          "name": "apexBarPerformance"
+        },
+        "position": {
+          "basis": "400px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.options.plotOptions.bar.colors": {
+            "binding": {
+              "config": {
+                "path": "view.custom.oeeThresholds"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\ttarget \u003d value[\u0027p\u0027]\n\ttgtThreshold \u003d value[\u0027targetThreshold\u0027]\n\tif target is None: return 0\n\t\n\tminTarget \u003d (target - tgtThreshold) * 100.0\n\tmaxTarget \u003d target * 100.0\n\t\t\n\ttheme \u003d self.session.props.theme\n\treturn {\"ranges\": [\n\t\t\t\t\t\t{\"from\": 0, \"to\": minTarget, \"color\": kanoaScripts.colors.getCSSColor(\u0027--kcBad\u0027, theme)+\u0027ff\u0027}, \n\t\t\t\t\t\t{\"from\": minTarget, \"to\": maxTarget, \"color\": kanoaScripts.colors.getCSSColor(\u0027--kcOK\u0027, theme)+\u0027ff\u0027}, \n\t\t\t\t\t \t{\"from\": maxTarget, \"to\": 100.0, \"color\": kanoaScripts.colors.getCSSColor(\u0027--kcGood\u0027, theme)+\u0027ff\u0027}\n\t\t\t\t\t\t]\n\t\t\t}",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.theme.mode": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.oeeData"
+              },
+              "transforms": [
+                {
+                  "code": "\n\tdateFormat \u003d \"MM/dd/YY HH:mm\" if self.view.custom.data.interval \u003d\u003d \u0027Hour\u0027 else \"MM/dd\"\n\tgatewayOffSetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffsetMins \u003d int(self.session.props.device.timezone.utcOffset * 60)\n\toffsetMins \u003d clientOffsetMins - gatewayOffSetMins\n\n\tpData \u003d []\n\tfor row in value:\n\t\ttStamp \u003d system.date.format(system.date.addMinutes(row[\u0027hourTimeStamp\u0027], offsetMins), dateFormat)\t\n\t\tpData.append({\"x\": tStamp, \"y\": (row[\u0027performance\u0027] or 0) * 100.0})\n\t\t\n\treturn [{\"name\": \"Performance\", \"data\": pData}]\n\t\n\t# need to return an array with 3 objects\n\t# each object includes a \"name\" with the series label\n\t# each object includes a data array; which is an array of dictionaires\n\t# each dictionary in the data array should have a t_stamp and a realistic0 value for plotting",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "options": {
+            "chart": {
+              "events": {
+                "animationEnd": false,
+                "beforeMount": false,
+                "beforeResetZoom": false,
+                "beforeZoom": false,
+                "brushScrolled": false,
+                "click": false,
+                "dataPointMouseEnter": false,
+                "dataPointMouseLeave": false,
+                "dataPointSelection": false,
+                "legendClick": false,
+                "markerClick": false,
+                "mounted": false,
+                "mouseLeave": false,
+                "mouseMove": false,
+                "scrolled": false,
+                "selection": false,
+                "updated": false,
+                "zoomed": false
+              },
+              "height": 350,
+              "stacked": true,
+              "toolbar": {
+                "show": false
+              },
+              "type": "bar"
+            },
+            "dataLabels": {
+              "enabled": false
+            },
+            "legend": {
+              "floating": true,
+              "horizontalAlign": "right",
+              "offsetX": -5,
+              "offsetY": -25,
+              "position": "top"
+            },
+            "markers": {
+              "size": 1
+            },
+            "plotOptions": {
+              "bar": {
+                "borderRadius": 2
+              }
+            },
+            "stroke": {
+              "curve": "smooth"
+            },
+            "theme": {},
+            "title": {
+              "align": "left",
+              "text": "OEE Performance"
+            },
+            "yaxis": {
+              "labels": {
+                "formatter": "function (value) {return value.toFixed(1);}"
+              },
+              "max": 100,
+              "min": 0,
+              "title": {
+                "text": "OEE Performance (%)"
+              }
+            }
+          },
+          "style": {
+            "classes": "kanoa/container"
+          },
+          "type": "bar"
+        },
+        "type": "kyvislabs.display.apexchart"
+      },
+      {
+        "meta": {
+          "domId": "apexBarThroughput",
+          "name": "apexBarThroughput"
+        },
+        "position": {
+          "basis": "400px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.options.colors[0]": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn kanoaScripts.colors.getCSSColor(\u0027--kcSecondary\u0027, value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.colors[1]": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn kanoaScripts.colors.getCSSColor(\u0027--kcPrimary\u0027, value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.theme.mode": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.oeeData"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\ttargetData \u003d []\n\tperfData \u003d []\n\tdateFormat \u003d \"MM/dd/YY HH:mm\" if self.view.custom.data.interval \u003d\u003d \u0027Hour\u0027 else \"MM/dd\"\n\tgatewayOffSetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffsetMins \u003d int(self.session.props.device.timezone.utcOffset * 60)\n\toffsetMins \u003d clientOffsetMins - gatewayOffSetMins\n\tinfeedUnits \u003d []\n\t\t\n\tfor row in value:\n\t\tinfeedUnits.append(row[\u0027infeedUnits\u0027])\n\t\tperiod \u003d row[\u0027period\u0027]\n\t\trateFactor \u003d 1 if row[\u0027period\u0027] \u003d\u003d \u0027Hour\u0027 else 60\n\t\ttStamp \u003d system.date.format(system.date.addMinutes(row[\u0027hourTimeStamp\u0027], offsetMins), dateFormat)\t\t\t\n\t\ttargetData.append({\"x\": tStamp, \"y\": (row[\u0027standardRate\u0027] or 0) * rateFactor})\n\t\tperfData.append({\"x\": tStamp, \"y\": (row[\u0027infeedRateSecs\u0027] or 0) * 3600.0})\n\n\ttSeries \u003d {\"name\": \"Target Rate\", \"data\": targetData}\n\tpSeries \u003d {\"name\": \"Infeed Rate\", \"data\": perfData}\t\n\n\tif len(list(set(infeedUnits))) \u003e 1: infeedUnit \u003d \u0027Mixed\u0027\n\telif len(value) \u003e 0: infeedUnit \u003d value[0][\u0027infeedUnits\u0027] or \u0027\u0027\n\telse: infeedUnit \u003d \u0027\u0027\n\t\n\tself.props.options.yaxis.title.text \u003d \u0027Infeed Rate (%s per Hr)\u0027%(infeedUnit or \u0027Units\u0027) \n\n\treturn [tSeries, pSeries]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "options": {
+            "chart": {
+              "height": 350,
+              "stacked": false,
+              "toolbar": {
+                "show": true
+              },
+              "type": "line"
+            },
+            "colors": [
+              null,
+              null
+            ],
+            "dataLabels": {
+              "enabled": false
+            },
+            "fill": {
+              "opacity": 1
+            },
+            "markers": {
+              "size": 5
+            },
+            "stroke": {
+              "curve": "smooth",
+              "width": 3
+            },
+            "theme": {},
+            "title": {
+              "text": "Performance Rate"
+            },
+            "xaxis": {
+              "type": "string"
+            },
+            "yaxis": {
+              "labels": {
+                "formatter": "function (val) {return val.toFixed(2); }"
+              },
+              "title": {
+                "text": "Infeed Rate (Units per Hr)"
+              }
+            }
+          },
+          "style": {
+            "classes": "kanoa/container"
+          }
+        },
+        "type": "kyvislabs.display.apexchart"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

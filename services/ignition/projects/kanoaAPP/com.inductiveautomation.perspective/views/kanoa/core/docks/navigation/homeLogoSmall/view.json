@@ -1,0 +1,139 @@
+{
+  "custom": {
+    "logoPath": "/system/images/Logos/primary_favicon.png",
+    "programName": "MES"
+  },
+  "params": {},
+  "propConfig": {
+    "custom.logoPath": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tdata \u003d system.kanoa.config.getConfig({\u0027project\u0027: system.util.getProjectName(), \u0027configName\u0027:\u0027logoMobile\u0027})\n\tif data.rowCount \u003d\u003d 0: \tdata \u003d system.kanoa.config.getConfig({\u0027project\u0027: \u0027kanoaCore\u0027, \u0027configName\u0027: \u0027logoMobile\u0027})\n\treturn \u0027/system/images/\u0027 + data.getValueAt(0, \u0027configValue\u0027) if data and data.rowCount else \u0027/system/images/Logos/primary_favicon.png\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.programName": {
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 50,
+      "width": 100
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "icoLogo",
+              "name": "icoLogo"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.source": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.logoPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "fit": {
+                "aspectRatio": 1,
+                "mode": "contain"
+              },
+              "style": {
+                "height": 35,
+                "padding": 3,
+                "width": "auto"
+              }
+            },
+            "type": "ia.display.image"
+          }
+        ],
+        "meta": {
+          "domId": "flxLogo",
+          "name": "flxLogo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "backgroundColor": "#FFFFFF",
+            "borderRadius": 50,
+            "height": "100%",
+            "overflow": "hidden",
+            "padding": 3
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "session.props.theme"
+          },
+          "enabled": false,
+          "transforms": [
+            {
+              "code": "\t\n\treturn system.kanoa.config.getBackgroundColor(self.session.props.theme)",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "alignContent": "center",
+      "alignItems": "center",
+      "justify": "center",
+      "style": {
+        "backgroundColor": "--kcDockBackground",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "configUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.logoPath\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

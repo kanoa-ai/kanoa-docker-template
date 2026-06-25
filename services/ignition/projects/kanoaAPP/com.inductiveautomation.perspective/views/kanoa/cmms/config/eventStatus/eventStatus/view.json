@@ -1,0 +1,1768 @@
+{
+  "custom": {
+    "security": {
+      "config": {
+        "allowGuest": "1",
+        "userSource": "default",
+        "userSources": "[\"default\"]"
+      },
+      "userCRUD": {
+        "approveQualityCheck": {
+          "assets": [],
+          "enabled": false
+        },
+        "approveWorkOrders": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureAssets": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureItems": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureLots": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureMaintenance": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureQuality": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureSecurity": {
+          "assets": [],
+          "enabled": false
+        },
+        "editOperations": {
+          "assets": [],
+          "enabled": false
+        },
+        "enterQualityCheck": {
+          "assets": [],
+          "enabled": false
+        },
+        "enterWorkOrders": {
+          "assets": [],
+          "enabled": false
+        },
+        "isGatewayAdmin": true,
+        "operateAssets": {
+          "assets": [],
+          "enabled": false
+        },
+        "scheduleOperations": {
+          "assets": [],
+          "enabled": false
+        },
+        "scheduleShifts": {
+          "assets": [],
+          "enabled": false
+        }
+      },
+      "userId": 6
+    },
+    "workOrderEventStatus": {
+      "col": null,
+      "row": null,
+      "selectedData": []
+    },
+    "workOrderEventStatusCategories": {}
+  },
+  "params": {},
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "config": {
+          "struct": {
+            "user": "{session.props.auth.user}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tuserId \u003d system.kanoa.security.getIDPUserId(value[\u0027user\u0027])\t\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.workOrderEventStatus": {
+      "persistent": true
+    },
+    "custom.workOrderEventStatus.data": {
+      "binding": {
+        "config": {
+          "path": "view.custom.workOrderEventStatusCategories.selected.workOrderEventStatusCategoryId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tparams \u003d {\u0027workOrderEventStatusCategoryId\u0027: value} if value is not None else {}\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getWorkOrderEventStatus(params))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.workOrderEventStatus.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "data": "{view.custom.workOrderEventStatus.selectedData}",
+            "security": "{view.custom.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecurity \u003d value[\u0027security\u0027]\n\tcanCreate \u003d False\n\tcanEdit \u003d False\n\tif security[\u0027userCRUD\u0027] is not None and security[\u0027userId\u0027] is not None:\n\t\tif security[\u0027userCRUD\u0027][\u0027isGatewayAdmin\u0027] or security[\u0027userCRUD\u0027][\u0027configureMaintenance\u0027][\u0027enabled\u0027]: \n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True if len(value[\u0027data\u0027]) \u003e 0 else False\n\t\t\t\n\treturn {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.workOrderEventStatusCategories": {
+      "persistent": true
+    },
+    "custom.workOrderEventStatusCategories.data": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\n\treturn system.kanoa.cmms.getWorkOrderEventStatusCategory({})",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.workOrderEventStatusCategories.selected": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn {\n\t\t\t\t\"changedBy\": None,\n\t\t\t\t\"changedDate\": None,\n\t\t\t\t\"createdBy\": None,\n\t\t\t\t\"createdDate\": None,\n\t\t\t\t\"enabled\": True,\n\t\t\t\t\"isActive\": True,\n\t\t\t\t\"label\": \"\",\n\t\t\t\t\"path\": \"\",\n\t\t\t\t\"pathLength\": 0,\n\t\t\t\t\"treeLevel\": 0,\n\t\t\t\t\"workOrderEventStatusCategoryId\": None,\n\t\t\t\t\"workOrderEventStatusCategoryName\": \"\"\n\t\t\t\t}",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.workOrderEventStatusCategories.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "data": "{view.custom.workOrderEventStatusCategories.selected}",
+            "security": "{view.custom.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tsecurity \u003d value[\u0027security\u0027]\n\tcanCreate \u003d False\n\tcanEdit \u003d False\n\tif security[\u0027userCRUD\u0027] is not None and security[\u0027userId\u0027] is not None:\n\t\tif security[\u0027userCRUD\u0027][\u0027isGatewayAdmin\u0027] or security[\u0027userCRUD\u0027][\u0027configureItems\u0027][\u0027enabled\u0027]: \n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True if value[\u0027data\u0027][\u0027workOrderEventStatusCategoryId\u0027] is not None else False\n\t\t\t\n\treturn {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 701,
+      "width": 1278
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle-4",
+              "name": "lblTitle"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "color": "--kcOnPrimaryContainer",
+                "marginLeft": "3px",
+                "paddingLeft": "10px",
+                "paddingRight": "10px",
+                "position": "absolute",
+                "textAlign": "center",
+                "top": -5,
+                "width": "auto"
+              },
+              "text": "Categories",
+              "textStyle": {
+                "fontSize": 10
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tself.view.getChild(\"root\").openWorkOrderEventStatusCategoryEditor(self.view.custom.workOrderEventStatusCategories.selected.workOrderEventStatusCategoryId)\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnEditWorkOrderEventStatusCategories",
+                  "name": "btnEditCategories",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "top"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.workOrderEventStatusCategories.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn \u0027Edit Category\u0027 if value[\u0027workOrderEventStatusCategoryId\u0027] is not None else \u0027Add Category\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.workOrderEventStatusCategories.userAction"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn value[\u0027canCreate\u0027] or self.view.custom.security.userCRUD.configureItems.enabled",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.image.icon.path": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.workOrderEventStatusCategories.selected"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn \u0027material/edit\u0027 if value[\u0027workOrderEventStatusCategoryId\u0027] is not None else \u0027material/add\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {}
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": "25px"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tself.view.getChild(\"root\").deleteWorkOrderEventStatusCategories()\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnDeleteWorkOrderEventStatusCategories",
+                  "name": "btnDeleteWorkOrderEventStatusCategories",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top",
+                    "text": "Delete Category"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.workOrderEventStatusCategories.userAction"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value[\u0027canDelete\u0027] and value[\u0027canUpdate\u0027]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcRed-60",
+                      "path": "material/delete_forever"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": "25px"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\t\n\tself.view.refreshBinding(\"custom.workOrderEventStatusCategories.data\")\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnRefresh",
+                  "name": "btnRefresh",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "top",
+                    "text": "Refresh"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/autorenew"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": "25px"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              }
+            ],
+            "meta": {
+              "domId": "flxAction",
+              "name": "flxAction",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Edit Item Classes"
+              }
+            },
+            "position": {
+              "basis": "35px",
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "center",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "margin": "15px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "evTreeSelector",
+              "name": "evTreeSelector"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatusCategories.data"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "refresh": false,
+                "values": {
+                  "msgHandler": "eventStatusCategorySelected",
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "selectable": []
+                  },
+                  "selection": [],
+                  "selectorId": null,
+                  "style": {
+                    "backgroundColor": "",
+                    "icoPath": null,
+                    "iconColor": ""
+                  },
+                  "treePath": "workOrderEventStatusCategoryName"
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/treeSelector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxWorkOrderEventStatusCategorieses",
+          "name": "flxWorkOrderEventStatusCategories"
+        },
+        "position": {
+          "basis": "330px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/border",
+            "gap": 5,
+            "overflow": "visible",
+            "position": "relative"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.refreshBinding(\"custom.workOrderEventStatus.data\")\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnGetData",
+              "name": "btnGetData",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right",
+                "text": "Get data"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/motion_photos_on"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "custom": {
+              "gettingData": false
+            },
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.workOrderEventStatus.data \u003d []\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClear",
+              "name": "btnClear",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "center-right",
+                "text": "Clear table"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.data"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/not_interested"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").openWorkOrderEventStatusEditor(None)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnAdd",
+              "name": "btnAdd",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "center-right",
+                "text": "Add"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.userAction"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027canCreate\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/add"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tworkOrderEventStatusId \u003d self.view.custom.workOrderEventStatus.selectedData[0][\u0027workOrderEventStatusId\u0027]\n\tself.view.getChild(\"root\").openWorkOrderEventStatusEditor(workOrderEventStatusId)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnEdit",
+              "name": "btnEdit",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "center-right",
+                "text": "Edit"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.userAction"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027canUpdate\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/edit"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tmsg \u003d \"Are you sure you want to delete this status?\"\n#\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"Templates/Utilities/Confirm Popup\",  {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027userResponseDelete\u0027}, title\u003d\u0027Delete Check Sheet\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\tself.view.getChild(\"root\").deleteWorkOrderEventStatus()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnDelete",
+              "name": "btnDelete",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "center-right",
+                "tail": false,
+                "text": "Delete"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.userAction"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027canDelete\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcRed-60",
+                  "path": "material/delete_forever"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.workOrderEventStatus.col \u003d None\n\tself.view.custom.workOrderEventStatus.row \u003d None\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClearSelection-1",
+              "name": "btnClearSelection",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "center-right",
+                "tail": false,
+                "text": "Clear selection"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.row"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/blur_off"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions-1",
+          "name": "flxActions"
+        },
+        "position": {
+          "basis": "35px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onEditCellCommit": {
+                  "config": {
+                    "script": "\n\tif self.view.custom.workOrderEventStatus.userAction.canUpdate:\n\t\tworkOrderEventStatusId \u003d self.props.data[event.row][\u0027workOrderEventStatusId\u0027]\n\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027sortOrder\u0027, \u0027isActive\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.cmms.updateWorkOrderEventStatusField(workOrderEventStatusId, event.column, event.value, self.view.custom.security.userId)\t\t\t\n\t\t\tif msg: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027Failed to update the work order event status. %s\u0027%msg})\n\t\t\telse: system.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Work order event status has been updated\u0027})\t\t\n\t\telse:\n\t\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, \u0027Column is not enabled for editing\u0027)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, \u0027No permissions to update\u0027)\n\n\tself.view.refreshBinding(\"custom.workOrderEventStatus.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "tblItemState",
+              "name": "tblWorkOrderEventstatus"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.columns[2].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\u0027Status\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.columns[4].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\u0027Category\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.columns[5].editable": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.userAction.canUpdate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.columns[5].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\u0027Enabled\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.columns[6].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\u0027Is Active\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.columns[7].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\u0027Reserved\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.columns[8].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\u0027Sort Order\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatus.data"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tdef buildElement(value, fontWeight, foreColor, bgColor):\n#\t\tsystem.perspective.print(\"%s %s %s %s\"%(value, fontWeight, foreColor, bgColor))\n\t\tif (bgColor or None) is None: bgColor \u003d \u0027#FFFFFF\u0027\t\t\n\t\tstyle \u003d {\u0027backgroundColor\u0027: bgColor}\n\t\tif fontWeight is not None:\tstyle.update({\"fontWeight\": fontWeight})\t\t\n\t\tif foreColor is not None: style.update({\"color\": foreColor})\n\t\telse: style.update({\"color\": system.kanoa.utilities.getContrastingColor(bgColor)})\n\t\tstyle.update({\u0027borderColor\u0027: bgColor or \u0027#000000\u0027, \u0027borderRadius\u0027: \u00274px\u0027, \u0027margin\u0027: \u00271px\u0027})\t\n\t\treturn {\u0027value\u0027: value, \u0027style\u0027:style}\n\n\tstates \u003d []\n\tfor state in value:\n\t\tstate \u003d dict(state)\n\t\tstate[\u0027workOrderEventStatusDisplay\u0027] \u003d buildElement(state[\u0027workOrderEventStatusName\u0027], None, None, state[\u0027workOrderEventStatusColor\u0027])\n\t\tstates.append(state)\n\n\treturn states",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selection.data": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatus.selectedData"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedColumn": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatus.col"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedRow": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatus.row"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "cells": {
+                "style": {
+                  "classes": "kanoa/font/default"
+                }
+              },
+              "columns": [
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "workOrderEventStatusId",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Id"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 40
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "workOrderEventStatusCategoryId",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Id"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": false,
+                  "width": ""
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "workOrderEventStatusName",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    }
+                  },
+                  "justify": "auto",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": false,
+                  "width": 200
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "workOrderEventStatusDisplay",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Status"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 200
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "workOrderEventStatusCategoryName",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 100
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "field": "enabled",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "isActive",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "reservedBySystem",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "sortOrder",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "lastUpdatedBy",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Last Updated By"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 250
+                }
+              ],
+              "filter": {
+                "enabled": true
+              },
+              "headerStyle": {
+                "fontWeight": "bold"
+              },
+              "nullFormat": {
+                "includeNullStrings": true
+              },
+              "pager": {
+                "bottom": false
+              },
+              "rows": {
+                "striped": {
+                  "enabled": false
+                },
+                "style": {
+                  "paddingLeft": 5
+                }
+              },
+              "selection": {
+                "mode": "multiple interval"
+              },
+              "style": {
+                "borderStyle": "none"
+              }
+            },
+            "type": "ia.display.table"
+          }
+        ],
+        "meta": {
+          "domId": "flxTable-1",
+          "name": "flxTable"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/border",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "gap": "3px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "clearData",
+          "params": [],
+          "script": "\t\n\tsystem.perspective.print(\"clearData() called\")\n\t\n\tself.view.custom.workOrderEventStatus.data \u003d []\n\tself.view.custom.workOrderEventStatus.row \u003d None\n\tself.view.custom.workOrderEventStatus.col \u003d None\n\n\treturn"
+        },
+        {
+          "name": "openWorkOrderEventStatusCategoryEditor",
+          "params": [
+            "workOrderEventStatusCategoryId"
+          ],
+          "script": "\t\n\tsystem.perspective.openPopup(\"Wokr Order Event Status Category Type Editor\", \"kanoa/cmms/config/eventStatus/eventStatusCategoryEditor\", params\u003d{\u0027values\u0027: {\u0027workOrderEventStatusCategoryId\u0027:workOrderEventStatusCategoryId}}, overlayDismiss\u003dTrue, title\u003d\u0027Work Order Event Status Category Editor\u0027, draggable\u003dTrue, showCloseOption\u003dTrue, resizable\u003dTrue, viewPortBound\u003dTrue)\n\t\n\treturn"
+        },
+        {
+          "name": "openWorkOrderEventStatusEditor",
+          "params": [
+            "workOrderEventStatusId"
+          ],
+          "script": "\t\n\tsystem.perspective.openPopup(\"Work Order Event Status Editor\", \"kanoa/cmms/config/eventStatus/eventStatusEditor\", params\u003d{\u0027values\u0027: {\u0027workOrderEventStatusId\u0027:workOrderEventStatusId}}, overlayDismiss\u003dTrue, title\u003d\u0027Work Order Event Status Editor\u0027, draggable\u003dTrue, showCloseOption\u003dTrue, resizable\u003dTrue, viewPortBound\u003dTrue)\n\t\n\treturn"
+        },
+        {
+          "name": "deleteWorkOrderEventStatusCategories",
+          "params": [],
+          "script": "\n\tworkOrderEventStatusCategoriesInfo \u003d self.view.custom.workOrderEventStatusCategories.selected\n\tif workOrderEventStatusCategoriesInfo and workOrderEventStatusCategoriesInfo.has_key(\u0027workOrderEventStatusCategoryId\u0027):\n\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderEventStatusCategory(workOrderEventStatusCategoriesInfo[\u0027workOrderEventStatusCategoryId\u0027], self.view.custom.security.userId)\n\t\tif retVal:\n\t\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Category has been deleted\u0027})\n\t\telse:\n\t\t\tif \u0027The DELETE statement conflicted with the REFERENCE constraint\u0027 in str(msg) or \u0027The DELETE statement conflicted with the SAME TABLE REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \u0027This category has been used and cannot be deleted. Please disable it.\u0027\n\t\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\n\t\tself.view.refreshBinding(\"custom.workOrderEventStatusCategories.data\")\t #Update the Tree Selector\n\t\tself.view.refreshBinding(\"custom.workOrderEventStatus.data\")\n\t\n\treturn"
+        },
+        {
+          "name": "deleteWorkOrderEventStatus",
+          "params": [],
+          "script": "\n\t\n\tworkOrderEventStatusInfo \u003d self.view.custom.workOrderEventStatus.selectedData[0]\n\tif workOrderEventStatusInfo and workOrderEventStatusInfo.has_key(\u0027workOrderEventStatusId\u0027):\n\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderEventStatus(workOrderEventStatusInfo[\u0027workOrderEventStatusId\u0027], self.view.custom.security.userId)\n\t\tif retVal:\n\t\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Status has been deleted\u0027})\n\t\telse:\n\t\t\tif \u0027The DELETE statement conflicted with the REFERENCE constraint\u0027 in str(msg) or \u0027The DELETE statement conflicted with the SAME TABLE REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \u0027This status has been used and cannot be deleted. Please disable it.\u0027\n\t\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\n\t\tself.view.refreshBinding(\"custom.workOrderEventStatusCategories.data\")\t #Update the Tree Selector\n\t\tself.view.refreshBinding(\"custom.workOrderEventStatus.data\")\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "updatePopupSelection",
+          "pageScope": true,
+          "script": "\t\n\tsystem.perspective.print(\"updatePopupSelection msg received with %s\"%payload)\n\n\tif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027eventStatusCategorySelected\u0027: \n\t\tif len(payload[\u0027selection\u0027]) \u003e 0: selection \u003d payload[\u0027selection\u0027][0][\u0027value\u0027]\n\t\telse:\n\t\t\tselection \u003d {\n\t\t\t\t\t\t\"changedBy\": None,\n\t\t\t\t\t\t\"changedDate\": None,\n\t\t\t\t\t\t\"createdBy\": None,\n\t\t\t\t\t\t\"createdDate\": None,\n\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\"workOrderEventStatusCategoryId\": None,\n\t\t\t\t\t\t\"label\": None,\n\t\t\t\t\t\t\"parentId\": None,\n\t\t\t\t\t\t\"path\": None,\n\t\t\t\t\t\t\"treeLevel\": None\n\t\t\t\t\t\t}\n\t\n\t\tself.view.custom.workOrderEventStatusCategories.selected \u003d selection\n\t\n\treturn\n\t",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshWorkOrderEventStatus",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.workOrderEventStatus.data\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshWorkOrderEventStatusCategories",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.workOrderEventStatusCategories.data\")\n\tself.view.refreshBinding(\"custom.workOrderEventStatus.data\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

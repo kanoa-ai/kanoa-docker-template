@@ -1,0 +1,1785 @@
+{
+  "custom": {
+    "errorMsg": "",
+    "roles": {
+      "col": "roleName",
+      "row": 2,
+      "selectedData": [
+        {
+          "assetIds": "",
+          "assetPaths": "",
+          "roleId": 3,
+          "roleName": "User"
+        }
+      ]
+    },
+    "security": {
+      "config": {
+        "allowGuest": "1",
+        "userSource": "default",
+        "userSources": "[\"default\"]"
+      },
+      "userCRUD": {
+        "approveMaintenanceWO": {
+          "assets": [],
+          "enabled": false
+        },
+        "approveQualityCheck": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureAssets": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureItems": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureLots": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureMaintenanceWO": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureQuality": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureSecurity": {
+          "assets": [],
+          "enabled": false
+        },
+        "customFunction": {
+          "assets": [],
+          "enabled": false
+        },
+        "dogWalking": {
+          "assets": [],
+          "enabled": false
+        },
+        "editMaintenanceWO": {
+          "assets": [],
+          "enabled": false
+        },
+        "editOperations": {
+          "assets": [],
+          "enabled": false
+        },
+        "enterQualityCheck": {
+          "assets": [],
+          "enabled": false
+        },
+        "isGatewayAdmin": true,
+        "operateAssets": {
+          "assets": [],
+          "enabled": false
+        },
+        "scheduleOperations": {
+          "assets": [],
+          "enabled": false
+        },
+        "scheduleShifts": {
+          "assets": [],
+          "enabled": false
+        }
+      },
+      "userId": 120
+    },
+    "userSourceType": "INTERNAL",
+    "values": {
+      "changePassword": true,
+      "changedBy": null,
+      "changedDate": null,
+      "confirmPassword": "",
+      "createdBy": null,
+      "createdDate": null,
+      "email": "",
+      "firstName": "",
+      "gatewayAdmin": null,
+      "idpUserId": null,
+      "lastName": "",
+      "password": "",
+      "userId": null,
+      "userName": "",
+      "userSource": "default"
+    }
+  },
+  "params": {
+    "values": {
+      "userId": null
+    }
+  },
+  "propConfig": {
+    "custom.errorMsg": {
+      "binding": {
+        "config": {
+          "path": "view.custom.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tif value[\u0027changePassword\u0027] and value[\u0027password\u0027] !\u003d value[\u0027confirmPassword\u0027]: return \u0027Passwords do not match.\u0027\n\treturn \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.roles": {
+      "persistent": true
+    },
+    "custom.roles.data": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.userId"
+        },
+        "transforms": [
+          {
+            "code": "\t\u0027\u0027\u0027\n\t\tTakes a user\u0027s assetRoles, and formats the data and adds columns for assetPaths and assetIds, for table display\n\t\tArgs:\n\t\t\tuserId: int\n\t\tReturns:\n\t\t\tlist of dictionaries\n\t\tUpdated:\n\t\t\tjz 11/30/23 - refactored, returning list of dictionaries instead of dataset\n\t\u0027\u0027\u0027\n\tallRoles \u003d [role for role in system.user.getRoles(\u0027default\u0027) if role !\u003d \u0027Gateway Admin\u0027]\n\trolesRows \u003d []\n\t\n\t # initializes roles - assets dictionary for a user\n\trolesDict \u003d {row[\u0027roleName\u0027]: {\u0027roleId\u0027: row[\u0027roleId\u0027], \u0027roleName\u0027: row[\u0027roleName\u0027], \u0027assetPaths\u0027: [], \u0027assetIds\u0027: []} for row in system.kanoa.security.getRoleFunctions({})}\n\t\n\t# iterates through user\u0027s assetRoles, and populates assetPath list and assetId list for each role\n\tfor row in system.kanoa.security.getUserAssetRoles({\u0027userId\u0027: value or -1}):\n\t\tif row[\u0027assetId\u0027] and row[\u0027assetId\u0027] not in rolesDict[row[\u0027roleName\u0027]][\u0027assetIds\u0027]:\n\t\t\trolesDict[row[\u0027roleName\u0027]][\u0027assetPaths\u0027].append(row[\u0027assetPath\u0027])\n\t\t\trolesDict[row[\u0027roleName\u0027]][\u0027assetIds\u0027].append(str(row[\u0027assetId\u0027]))\n\t\n\t# takes the lists of assetPaths and assetIds, and converts them to a comma-separated string\n\tfor role in rolesDict:\n\t\trolesDict[role][\u0027assetPaths\u0027] \u003d \", \".join(list(set(rolesDict[role][\u0027assetPaths\u0027])))\n\t\trolesDict[role][\u0027assetIds\u0027] \u003d \", \".join(list(set(rolesDict[role][\u0027assetIds\u0027])))\n\t\trolesRows.append(rolesDict[role])\n\t\n\trolesRows.sort(key\u003dlambda x: x[\u0027roleId\u0027])\n\treturn rolesRows",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.security": {
+      "binding": {
+        "config": {
+          "struct": {
+            "user": "{session.props.auth.user}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tuserId \u003d system.kanoa.security.getIDPUserId(value[\u0027user\u0027])\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.userSourceType": {
+      "binding": {
+        "config": {
+          "expression": "1"
+        },
+        "transforms": [
+          {
+            "code": "\tidpType \u003d \u0027\u0027\n\tuserSource \u003d \u0027default\u0027\n\tfor idp in system.user.getUserSources():\n\t\tif userSource \u003d\u003d idp.getName(): idpType \u003d idp.getType()\n\treturn idpType",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\t\n\tsecConfig \u003d self.custom.security.config\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.security.getUsers({\u0027userId\u0027: value[\u0027userId\u0027] or -1}),0)\n\tinfo[\u0027userName\u0027] \u003d info[\u0027userName\u0027] or \u0027\u0027\n\tinfo[\u0027firstName\u0027] \u003d info[\u0027firstName\u0027] or \u0027\u0027\t\n\tinfo[\u0027lastName\u0027] \u003d info[\u0027lastName\u0027] or \u0027\u0027\n\tinfo[\u0027email\u0027] \u003d info[\u0027email\u0027] or \u0027\u0027\n\tinfo[\u0027password\u0027] \u003d \u0027\u0027\n\tinfo[\u0027confirmPassword\u0027] \u003d \u0027\u0027\n\tinfo[\u0027changePassword\u0027] \u003d False if info[\u0027userId\u0027] else True\n\tif value[\u0027userId\u0027] is None: info[\u0027userSource\u0027] \u003d secConfig[\u0027userSource\u0027] if secConfig.has_key(\u0027userSource\u0027) else \u0027default\u0027 \n\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 457,
+      "width": 652
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblUserName",
+                          "name": "lblUserName"
+                        },
+                        "position": {
+                          "basis": "60px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "classes": "kanoa/font/default",
+                            "textAlign": "right"
+                          },
+                          "text": "Username"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "txtFieldUserName",
+                          "name": "txtFieldUserName"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "propConfig": {
+                          "props.enabled": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.values.userId"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\treturn value is None",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          },
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.userName"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "deferUpdates": false
+                        },
+                        "type": "ia.input.text-field"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxUserName",
+                      "name": "flxUserName"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "alignItems": "center",
+                      "style": {
+                        "gap": "5px"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblFirstName",
+                          "name": "lblFirstName"
+                        },
+                        "position": {
+                          "basis": "60px"
+                        },
+                        "props": {
+                          "style": {
+                            "classes": "kanoa/font/default",
+                            "textAlign": "right"
+                          },
+                          "text": "First Name"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "txtFieldFirstName",
+                          "name": "txtFieldFirstName"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.firstName"
+                              },
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "type": "ia.input.text-field"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxFirstName",
+                      "name": "flxFirstName"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "alignItems": "center",
+                      "style": {
+                        "gap": 5
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblLastName",
+                          "name": "lblLastName"
+                        },
+                        "position": {
+                          "basis": "60px"
+                        },
+                        "props": {
+                          "style": {
+                            "classes": "kanoa/font/default",
+                            "textAlign": "Right"
+                          },
+                          "text": "Last Name"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "txtFieldLastName",
+                          "name": "txtFieldLastName"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.lastName"
+                              },
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "type": "ia.input.text-field"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxLastName",
+                      "name": "flxLastName"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "alignItems": "center",
+                      "style": {
+                        "gap": 5
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblEmail",
+                          "name": "lblEmail"
+                        },
+                        "position": {
+                          "basis": "60px"
+                        },
+                        "props": {
+                          "style": {
+                            "classes": "kanoa/font/default",
+                            "textAlign": "right"
+                          },
+                          "text": "Email"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "txtField",
+                          "name": "txtField"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.email"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "type": "ia.input.text-field"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxEmail",
+                      "name": "flxEmail"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "alignItems": "center",
+                      "style": {
+                        "gap": 5
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "domId": "chkChangePW",
+                              "name": "chkChangePW"
+                            },
+                            "position": {
+                              "basis": "150px"
+                            },
+                            "propConfig": {
+                              "props.enabled": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.values.userSource"
+                                  },
+                                  "transforms": [
+                                    {
+                                      "code": "\treturn value \u003d\u003d \u0027default\u0027",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              },
+                              "props.selected": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.values.changePassword"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "text": "Change Password?",
+                              "textPosition": "left"
+                            },
+                            "type": "ia.input.checkbox"
+                          }
+                        ],
+                        "meta": {
+                          "domId": "flxChangePW",
+                          "name": "flxChangePW"
+                        },
+                        "props": {
+                          "justify": "flex-end"
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "domId": "lblPassword",
+                              "name": "lblPassword"
+                            },
+                            "position": {
+                              "basis": "60px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "classes": "kanoa/font/default",
+                                "textAlign": "right"
+                              },
+                              "text": "Password"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "domId": "passwordField",
+                              "name": "passwordField"
+                            },
+                            "position": {
+                              "grow": 1
+                            },
+                            "propConfig": {
+                              "props.enabled": {
+                                "binding": {
+                                  "config": {
+                                    "path": ".../flxChangePW/chkChangePW.props.selected"
+                                  },
+                                  "type": "property"
+                                }
+                              },
+                              "props.text": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.values.password"
+                                  },
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "type": "ia.input.password-field"
+                          }
+                        ],
+                        "meta": {
+                          "domId": "flxPassword",
+                          "name": "flxPassword"
+                        },
+                        "position": {
+                          "basis": "30px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "alignItems": "center",
+                          "style": {
+                            "gap": 5
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "domId": "lblPassword-1",
+                              "name": "lblPassword"
+                            },
+                            "position": {
+                              "basis": "60px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "textAlign": "right"
+                              },
+                              "text": "Confirm Password"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "domId": "passwordField-1",
+                              "name": "passwordField"
+                            },
+                            "position": {
+                              "grow": 1
+                            },
+                            "propConfig": {
+                              "props.enabled": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.values.changePassword"
+                                  },
+                                  "type": "property"
+                                }
+                              },
+                              "props.text": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.values.confirmPassword"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "type": "ia.input.password-field"
+                          }
+                        ],
+                        "meta": {
+                          "domId": "flxConfirmPassword",
+                          "name": "flxConfirmPassword"
+                        },
+                        "position": {
+                          "basis": "30px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "alignItems": "center",
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "meta": {
+                          "domId": "lblErrorMsg",
+                          "name": "lblErrorMsg"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.errorMsg"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "textStyle": {
+                            "color": "red",
+                            "textAlign": "center"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxPW",
+                      "name": "flxPW"
+                    },
+                    "position": {
+                      "basis": "200px"
+                    },
+                    "props": {
+                      "direction": "column",
+                      "style": {
+                        "gap": "5px"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "meta": {
+                      "domId": "chkGwAdmin",
+                      "name": "chkGwAdmin"
+                    },
+                    "position": {
+                      "basis": "140px"
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.userId"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\treturn value is not None",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.enabled": {
+                        "binding": {
+                          "config": {
+                            "path": "session.props.auth.user"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\t\n\tloggedUserId \u003d system.kanoa.security.getIDPUserId(value)\n\treturn system.kanoa.security.checkIsGatewayAdmin(loggedUserId)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.values.gatewayAdmin"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        },
+                        "onChange": {
+                          "enabled": null,
+                          "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tenable \u003d (self.props.selected or False)\n\t\tretVal, msg \u003d system.kanoa.security.updateUserField(self.view.custom.values.userId, \u0027gatewayAdmin\u0027, enable, self.view.custom.security.userId)\n\t\t\n\t\tif msg: system.perspective.sendMessage(\"showFailerToast\", \"User not updated: %s\"%msg)\n\t\telse: \n\t\t\tsystem.perspective.sendMessage(\"showSuccessfulToast\", \"User updated\")\n\t\t\t\n\t\tsystem.perspective.sendMessage(\u0027updateUsers\u0027)\t\t\n\t\n\treturn"
+                        }
+                      }
+                    },
+                    "props": {
+                      "text": "Gateway Admin",
+                      "textPosition": "left"
+                    },
+                    "type": "ia.input.checkbox"
+                  },
+                  {
+                    "children": [
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\tself.view.getChild(\"root\").saveUser()\n\treturn"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "domId": "btnSave",
+                          "name": "btnSave",
+                          "tooltip": {
+                            "delay": 0,
+                            "enabled": true,
+                            "location": "top",
+                            "style": {
+                              "classes": "kanoa/tooltipError"
+                            },
+                            "tail": false
+                          }
+                        },
+                        "position": {
+                          "basis": "120px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "position.display": {
+                            "binding": {
+                              "config": {
+                                "struct": {
+                                  "errorMsg": "{view.custom.errorMsg}",
+                                  "userInfo": "{view.custom.values}"
+                                },
+                                "waitOnAll": true
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\tif (value[\u0027userInfo\u0027][\u0027userName\u0027] or None) is None : return False\n\tif (value[\u0027userInfo\u0027][\u0027firstName\u0027] or None) is None: return False\n\tif (value[\u0027userInfo\u0027][\u0027lastName\u0027] or None) is None: return False\n\tif value[\u0027userInfo\u0027][\u0027userId\u0027] is None and (value[\u0027userInfo\u0027][\u0027password\u0027] or None) is None: return False\n\tif (value[\u0027errorMsg\u0027] or None) is not None: return False\t\n#\tif (value[\u0027userInfo\u0027][\u0027userSource\u0027] or None) is None: return False\n\treturn True",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "expr-struct"
+                            }
+                          },
+                          "props.enabled": {
+                            "binding": {
+                              "config": {
+                                "struct": {
+                                  "errorMsg": "{view.custom.errorMsg}",
+                                  "userInfo": "{view.custom.values}"
+                                },
+                                "waitOnAll": true
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\n\tif (value[\u0027userInfo\u0027][\u0027userName\u0027] or None) is None : return False\n\tif (value[\u0027userInfo\u0027][\u0027firstName\u0027] or None) is None: return False\n\tif (value[\u0027userInfo\u0027][\u0027lastName\u0027] or None) is None: return False\n\tif value[\u0027userInfo\u0027][\u0027userId\u0027] is None and (value[\u0027userInfo\u0027][\u0027password\u0027] or None) is None: return False\n\tif (value[\u0027errorMsg\u0027] or None) is not None: return False\t\n\tif (value[\u0027userInfo\u0027][\u0027userSource\u0027] or \u0027\u0027) !\u003d \u0027default\u0027: return False\n\n\treturn True",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "expr-struct"
+                            }
+                          },
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.values.userId"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\treturn \u0027Update\u0027 if value else \u0027Save\u0027",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "image": {
+                            "icon": {
+                              "path": "material/save"
+                            }
+                          },
+                          "style": {
+                            "classes": "kanoa/button/filled",
+                            "color": "white"
+                          }
+                        },
+                        "type": "ia.input.button"
+                      },
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "domId": "btnClose",
+                          "name": "btnClose"
+                        },
+                        "position": {
+                          "basis": "120px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "image": {
+                            "icon": {
+                              "path": "material/exit_to_app"
+                            }
+                          },
+                          "primary": false,
+                          "style": {
+                            "classes": "kanoa/button/outlined"
+                          },
+                          "text": "Close"
+                        },
+                        "type": "ia.input.button"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxButtons",
+                      "name": "flxButtons",
+                      "tooltip": {
+                        "delay": 0
+                      }
+                    },
+                    "position": {
+                      "grow": 1,
+                      "shrink": 0
+                    },
+                    "props": {
+                      "alignContent": "center",
+                      "alignItems": "flex-end",
+                      "justify": "center",
+                      "style": {
+                        "gap": "5px",
+                        "overflow": "hidden",
+                        "padding": "5px"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxContent",
+                  "name": "flxContent"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "--kcSurface",
+                    "classes": "kanoa/popup",
+                    "gap": 5,
+                    "width": "350px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxInfo",
+              "name": "flxInfo"
+            },
+            "propConfig": {
+              "custom.errorMessage": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tpassword \u003d value[\u0027password\u0027]\n\tpasswordConfirm \u003d value[\u0027confirmPassword\u0027]\n\tfirstName \u003d value[\u0027firstName\u0027]\n\tlastName \u003d value[\u0027lastName\u0027]\n\t\n\tif password \u003d\u003d \u0027\u0027 and value[\u0027userId\u0027] is None: return \u0027Password field cannot be empty.\u0027\n\tif password !\u003d passwordConfirm: return \u0027Passwords do not match.\u0027\n\tif firstName \u003d\u003d \u0027\u0027: return \u0027First name field cannot be empty\u0027\n\tif lastName \u003d\u003d \u0027\u0027: return \u0027Last name field cannot be empty\u0027\n\t\n\treturn \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "center",
+              "direction": "column",
+              "justify": "space-evenly",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/popup",
+                "gap": 5
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\n\tsystem.perspective.navigate(url \u003d \u0027https://docs.kanoa.ai/configuration/users\u0027, newTab\u003dTrue)\n\t\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "domId": "icoHelp",
+                      "name": "icoHelp",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "bottom-right",
+                        "style": {
+                          "textAlign": "left",
+                          "whiteSpace": "pre"
+                        },
+                        "text": "Go to online help"
+                      }
+                    },
+                    "position": {
+                      "basis": "30px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "color": "--kcBlue-60",
+                      "path": "material/help_center"
+                    },
+                    "type": "ia.display.icon"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblRolesTitle",
+                          "name": "lblRolesTitle"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "props": {
+                          "text": "Enable a users roles for specific assets. If no asset is selected for a role, that role is not enabled. Role applies to selected asset and child assets.",
+                          "textStyle": {
+                            "overflowWrap": "break-word",
+                            "whiteSpace": "pre-wrap"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxHdr",
+                      "name": "flxHdr"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "props": {
+                      "alignContent": "flex-start",
+                      "alignItems": "flex-start",
+                      "direction": "column",
+                      "style": {
+                        "padding": "5px"
+                      },
+                      "wrap": "wrap"
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxRoleInfo",
+                  "name": "flxRoleInfo"
+                },
+                "props": {
+                  "alignContent": "flex-start",
+                  "alignItems": "flex-start"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "custom": {
+                      "info": {
+                        "showBar": true,
+                        "text": "Getting Assets....",
+                        "type": "INFO"
+                      }
+                    },
+                    "meta": {
+                      "domId": "evAssets",
+                      "name": "evAssets",
+                      "tooltip": {
+                        "location": "center-right"
+                      }
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.params.values.data": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "security": "{view.custom.security}"
+                            },
+                            "waitOnAll": false
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tsystem.perspective.print(\"assetData binding change\")\n\n\tparamsDict \u003d {\u0027enabled\u0027: True}\n\n\tif not value[\u0027security\u0027][\u0027userCRUD\u0027][\u0027isGatewayAdmin\u0027]:\n\t\tparamsDict[\u0027userId\u0027] \u003d value[\u0027security\u0027][\u0027userId\u0027]\n\t\tparamsDict[\u0027function\u0027] \u003d \u0027configureSecurity\u0027\n\n\treturn system.kanoa.asset.getAssets(paramsDict)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "values": {
+                          "msgHandler": "userAssetSelected",
+                          "options": {
+                            "expand": false,
+                            "multiSelect": true,
+                            "selectable": []
+                          },
+                          "selection": [],
+                          "showClear": false,
+                          "style": {
+                            "backgroundColor": "",
+                            "iconColor": "",
+                            "iconPath": null,
+                            "position": {
+                              "width": "450px"
+                            },
+                            "tooltip": null
+                          }
+                        }
+                      },
+                      "path": "kanoa/core/templates/selectors/tree/selector",
+                      "style": {
+                        "key": "value"
+                      }
+                    },
+                    "type": "ia.display.view"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblInfo",
+                      "name": "lblInfo"
+                    },
+                    "props": {
+                      "text": "\u003c- Select assets that  the user has this role for."
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxAssetSelector",
+                  "name": "flxAssetSelector"
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.roles.selectedData"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn len(value) \u003e 0",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "meta": {
+                  "domId": "tblRoles",
+                  "name": "tblRoles"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.roles.data"
+                      },
+                      "type": "property"
+                    }
+                  },
+                  "props.selection.data": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.roles.selectedData"
+                      },
+                      "type": "property"
+                    }
+                  },
+                  "props.selection.selectedColumn": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.roles.col"
+                      },
+                      "type": "property"
+                    }
+                  },
+                  "props.selection.selectedRow": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.roles.row"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "bodyStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "columns": [
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "roleId",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "justify": "auto",
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": false,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "roleName",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Role"
+                      },
+                      "justify": "auto",
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "assetIds",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "justify": "auto",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": false,
+                      "width": ""
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "assetPaths",
+                      "filter": {
+                        "boolean": {
+                          "condition": ""
+                        },
+                        "date": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "enabled": false,
+                        "number": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "string": {
+                          "condition": "",
+                          "value": ""
+                        },
+                        "visible": "on-hover"
+                      },
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": "Assets"
+                      },
+                      "justify": "auto",
+                      "nullFormat": {
+                        "includeNullStrings": false,
+                        "nullFormatValue": "",
+                        "strict": false
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": false,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": ""
+                    }
+                  ],
+                  "headerStyle": {
+                    "classes": "kanoa/font/default",
+                    "fontWeight": "bold"
+                  },
+                  "pager": {
+                    "bottom": false
+                  },
+                  "rows": {
+                    "striped": {
+                      "enabled": false
+                    },
+                    "style": {
+                      "paddingLeft": "5px"
+                    }
+                  },
+                  "selection": {}
+                },
+                "type": "ia.display.table"
+              },
+              {
+                "children": [
+                  {
+                    "events": {
+                      "component": {
+                        "onActionPerformed": {
+                          "config": {
+                            "script": "\n\troleId \u003d self.view.custom.roles.selectedData[0].roleId\n\tuserId \u003d self.view.custom.values.userId\n\tupdaterId \u003d self.view.custom.security.userId\n\tuserRoles \u003d system.kanoa.security.getUserAssetRoles({\u0027userId\u0027: userId, \u0027roleId\u0027:roleId})\n\tfor assetId in list(set([record[\u0027assetId\u0027] for record in userRoles])): \n\t\tsystem.kanoa.security.deleteUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\t\n\tself.view.refreshBinding(\"custom.roles.data\")\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027, {})\n\t\n\treturn\n"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "domId": "btnRemoveAssets",
+                      "name": "btnRemoveAssets"
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.roles.selectedData"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\treturn len(value) \u003e 0 and (value[0][\u0027assetIds\u0027] or None) is not None",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "image": {
+                        "icon": {
+                          "path": "material/delete_forever"
+                        }
+                      },
+                      "primary": false,
+                      "style": {
+                        "classes": "kanoa/button/filled",
+                        "color": "white"
+                      },
+                      "text": "Remove Assets"
+                    },
+                    "type": "ia.input.button"
+                  },
+                  {
+                    "events": {
+                      "component": {
+                        "onActionPerformed": {
+                          "config": {
+                            "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "domId": "btnClose-1",
+                      "name": "btnClose"
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "image": {
+                        "icon": {
+                          "path": "material/exit_to_app"
+                        }
+                      },
+                      "primary": false,
+                      "style": {
+                        "classes": "kanoa/button/outlined"
+                      },
+                      "text": "Close"
+                    },
+                    "type": "ia.input.button"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxButtons-1",
+                  "name": "flxButtons",
+                  "tooltip": {
+                    "delay": 0
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignContent": "center",
+                  "alignItems": "center",
+                  "justify": "center",
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden",
+                    "padding": "5px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxRoles",
+              "name": "flxRoles"
+            },
+            "position": {
+              "tabIndex": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/popup",
+                "gap": 5
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "tabUserEdit",
+          "name": "tabUserEdit"
+        },
+        "position": {
+          "basis": "457px"
+        },
+        "propConfig": {
+          "props.currentTabIndex": {
+            "binding": {
+              "config": {
+                "expression": "0"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          },
+          "props.tabs[0].disabled": {
+            "binding": {
+              "config": {
+                "path": "view.custom.userSourceType"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn value !\u003d \u0027INTERNAL\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.tabs[1].disabled": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values.userId"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value is None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "menuType": "modern",
+          "style": {
+            "backgroundColor": "--kcSurfaceVariant"
+          },
+          "tabSize": {
+            "width": 120
+          },
+          "tabStyle": {
+            "active": {
+              "classes": "kanoa/font/default"
+            },
+            "inactive": {
+              "classes": "kanoa/font/default"
+            }
+          },
+          "tabs": [
+            {
+              "text": "User Info"
+            },
+            {
+              "text": "Roles"
+            }
+          ]
+        },
+        "type": "ia.container.tab"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "saveUser",
+          "params": [],
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tuserInfo \u003d dict(self.view.custom.values)\n\tif self.view.custom.values[\u0027userId\u0027]: \n\t\tsystem.perspective.print(\"userInfo: %s, userId: %s\"%(userInfo, userId))\n\t\tretVal, msg \u003d system.kanoa.security.updateUser(userInfo, userId)\n\t\tif msg: system.perspective.sendMessage(\"showFailerToast\", \"User not updated: %s\"%msg)\n\t\telse: system.perspective.sendMessage(\"showSuccessfulToast\", \"User updated\")\n\t\tself.view.refreshBinding(\"custom.values\")\n\telse:\n\t\tresponse \u003d system.kanoa.security.addUserToUserSource(userInfo)\n\t\twarnings \u003d [warning for warning in response.getWarns()]\n\t\terrors \u003d [error for error in response.getErrors()]\n\n\t\tif len(errors) \u003e 0:\n\t\t\tsystem.perspective.sendMessage(\"showFailerToast\", \"User not created: %s\"% errors)\n\t\telse:\n\t\t\tuserId, msg \u003d system.kanoa.security.addUser(userInfo, userId)\n\t\t\tif msg: system.perspective.sendMessage(\"showFailerToast\", \"User not created: %s\"%msg)\n\t\t\telse: \n\t\t\t\tsystem.perspective.sendMessage(\"showSuccessfulToast\", \"User created\")\n\t\t\t\tself.view.params.values.userId \u003d userId\n\t\t\t\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027)\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "userAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"updateUserRoleAssets msg rcvd with %s\"%payload)\t\n\n\tupdaterId \u003d self.view.custom.security.userId\n\tuserId \u003d self.view.params.values.userId\n\troleId \u003d self.view.custom.roles.selectedData[0].roleId\n\tselectedAssets \u003d payload[\u0027selection\u0027]\n\tassetIds \u003d [asset[\u0027value\u0027][\u0027assetId\u0027] for asset in selectedAssets]\n\tuserRoles \u003d system.kanoa.security.getUserAssetRoles({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId})\n\tcurrentAssetIds \u003d [record[\u0027assetId\u0027] for record in userRoles]\n\tdeleteAssets \u003d [assetId for assetId in currentAssetIds if assetId not in assetIds]\n\tfor assetId in deleteAssets:\n\t\tsystem.kanoa.security.deleteUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\t\n\tinsertAssets \u003d [assetId for assetId in assetIds if assetId not in currentAssetIds]\n\tfor assetId in insertAssets: system.kanoa.security.addUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\tself.view.refreshBinding(\u0027custom.roles.data\u0027)\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027, {})\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "userSelected",
+          "pageScope": true,
+          "script": "\t\n\tsystem.perspective.print(\"userSelected msg rcvd with %s\"%payload)\n\tself.view.params.values \u003d payload\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

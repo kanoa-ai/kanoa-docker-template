@@ -1,0 +1,146 @@
+{
+  "custom": {
+    "sessionSecurity": "Jason Coope Configure Quality, Configure Assets, Schedule Shifts, Edit Operations, Schedule Operations, Configure Items, Enter Quality Check, Configure Lots, Configure Security, Approve Quality Check, Is Gateway Admin, Operate Assets"
+  },
+  "params": {},
+  "propConfig": {
+    "custom.sessionSecurity": {
+      "binding": {
+        "config": {
+          "struct": {
+            "auth": "{session.props.auth}",
+            "sessionSecurity": "{session.custom.kanoa.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\timport re\n\t\n#\tlog \u003d system.util.getLogger(\u0027kanoaSecurity\u0027)\n#\tlog.trace(\"%s\"%dict(self.session.custom.kanoa.security[\u0027userCRUD\u0027]))\t\t\n\t\n\tif not  value[\u0027auth\u0027][\u0027authenticated\u0027]: return \u0027Click to log in\u0027\n\tuser \u003d value[\u0027auth\u0027][\u0027user\u0027]\t\n\tuserLabel \u003d \"%s %s\"%(user[\u0027firstName\u0027], user[\u0027lastName\u0027]) if user[\u0027firstName\u0027] and user[\u0027lastName\u0027] else user[\u0027userName\u0027]\n\t\n\tuserCRUD \u003d dict(value[\u0027sessionSecurity\u0027][\u0027userCRUD\u0027])\n\tinfo \u003d []\n\t\n\tdef prettify(name):\n\t\treturn re.sub(r\u0027(?\u003c!^)(?\u003d[A-Z])\u0027, \u0027 \u0027, name).title()\n\t\n\tfor k, v in userCRUD.items():\n\t\tif k \u003d\u003d \u0027isGatewayAdmin\u0027:\n\t\t\tif v: info.append(prettify(k))\n\t\telif hasattr(v, \u0027get\u0027) and v.get(\u0027enabled\u0027): info.append(prettify(k))\n\n\treturn \"%s %s\"%(userLabel, \u0027, \u0027.join(info))\t",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 30
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\n\tif self.session.props.auth.authenticated: \n\t\tsystem.perspective.openPopup(\u0027userRolesPopup\u0027, \u0027kanoa/core/docks/header/assetRoles\u0027, title\u003d\u0027User Roles\u0027, resizable\u003dTrue, draggable\u003dTrue, showCloseIcon\u003dTrue, viewPortBound\u003dTrue)\n\telse: system.perspective.login()\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "signedIn",
+          "name": "evAvatar"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.params.values": {
+            "binding": {
+              "config": {
+                "path": "session.props.auth.user"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn {\u0027firstName\u0027: value[\u0027firstName\u0027], \u0027lastName\u0027: value[\u0027lastName\u0027], \u0027userName\u0027: value[\u0027userName\u0027]}",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/core/config/security/avatar",
+          "style": {
+            "cursor": "pointer",
+            "height": "30px",
+            "width": "30px"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "lblUser",
+          "name": "lblUser"
+        },
+        "position": {
+          "display": false,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "session.props.auth.user"
+              },
+              "transforms": [
+                {
+                  "code": "\n\tif value.userName is None: return \u0027Guest\u0027\n\treturn value.userName.split(\u0027@\u0027)[0]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\t\n\tlog \u003d system.util.getLogger(\u0027kanoaSecurity\u0027)\n\ttry: \t#wrap this in try block in case client is not using our security schema\n\t\tuserId \u003d system.kanoa.security.storeNewIDPUser(self.session.props.auth)\n\t\tif len(system.kanoa.security.getUsers({\u0027gatewayAdmin\u0027: True})) \u003d\u003d 0: system.kanoa.security.updateUserField(userId, \u0027gatewayAdmin\u0027, 1, userId)\n\n\t\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\t\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\t\tself.session.custom.kanoa[\u0027security\u0027] \u003d {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}\n\n\texcept:\n\t\tlog.warn(\"Unable to storeNewIDPUser\")\n\t\tpass\n\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\n\tsessionSecurity \u003d {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}\n\tlog.trace(\"Setting session security to %s\"%sessionSecurity)\n\tself.session.custom.kanoa[\u0027security\u0027] \u003d sessionSecurity\t\t\n\t\n\treturn"
+            }
+          }
+        },
+        "props": {
+          "textStyle": {
+            "color": "--kcDockColor",
+            "fontSize": "10px"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "name": "root",
+      "tooltip": {
+        "enabled": true,
+        "location": "bottom"
+      }
+    },
+    "propConfig": {
+      "meta.tooltip.text": {
+        "binding": {
+          "config": {
+            "path": "view.custom.sessionSecurity"
+          },
+          "overlayOptOut": true,
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "style": {
+        "backgroundColor": "--kcDockBackground",
+        "gap": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

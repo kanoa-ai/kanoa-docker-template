@@ -1,0 +1,248 @@
+{
+  "custom": {},
+  "params": {
+    "values": {
+      "infoList": [
+        {
+          "icon": "✓",
+          "text": "Time for tea"
+        },
+        {
+          "icon": "🕓",
+          "text": "Time for tea"
+        },
+        {
+          "icon": "✔",
+          "text": "Bacon"
+        },
+        {
+          "icon": "✘",
+          "text": "Eggs"
+        },
+        {
+          "icon": "❌",
+          "text": "milk"
+        },
+        {
+          "icon": "❗",
+          "text": "Warn"
+        }
+      ],
+      "popuId": null,
+      "popupType": "textarea",
+      "size": {
+        "height": 293,
+        "width": 512
+      },
+      "timeout": false
+    }
+  },
+  "propConfig": {
+    "params.values": {
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.values.timeout": {
+      "onChange": {
+        "enabled": null,
+        "script": "\timport time\n\ttimeout \u003d currentValue.value\n\tif timeout is not None:\n\t\ttime.sleep(timeout)\n\t\tsystem.perspective.closePopup(\u0027infoPopup\u0027)"
+      }
+    },
+    "props.defaultSize.height": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.size.height"
+        },
+        "type": "property"
+      }
+    },
+    "props.defaultSize.width": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.size.width"
+        },
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {}
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "txtContent",
+          "name": "txtContent"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.popupType"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027textarea\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.infoList"
+              },
+              "transforms": [
+                {
+                  "code": "\tlines \u003d []\n\tfor line in value:\n\t\tif line[\u0027icon\u0027] is None:\n\t\t\tlines.append(line[\u0027text\u0027])\n\t\telse:\n\t\t\tlines.append(line[\u0027icon\u0027] + \"\\t\" + line[\u0027text\u0027])\n\t\t\t\n\treturn \"\\n\".join(lines)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "resize": "both",
+          "spellcheck": false,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.text-area"
+      },
+      {
+        "meta": {
+          "domId": "lblContent",
+          "name": "lblContent"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.popupType"
+              },
+              "enabled": false,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027label\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values.infoList"
+              },
+              "transforms": [
+                {
+                  "code": "\tcontent \u003d value[0]\n\treturn content[\u0027icon\u0027] + \"\\t\" + content[\u0027text\u0027] if content[\u0027icon\u0027] is not None else content[\u0027text\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "textStyle": {
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tpopupId \u003d self.view.params.values[\u0027popupId\u0027] if self.view.params.values.has_key(\u0027popupId\u0027) else \u0027\u0027\n\tsystem.perspective.closePopup(popupId or \u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnOK",
+              "name": "btnClose"
+            },
+            "position": {
+              "basis": "100px"
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "padding": "5px",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "updateInfoPopup",
+          "pageScope": true,
+          "script": "#\tpayload \u003d {\n#\t\t\u0027values\u0027: {\n#\t\t\t\u0027infoList\u0027,\n#\t\t\t\u0027popupType\u0027,\n#\t\t\t\u0027size\u0027,\n#\t\t\t\u0027timeout\u0027\n#\t\t},\n#\t\t\u0027updateType\u0027: \u0027append\u0027 or \u0027overwrite\u0027\n#\t}\n\tcurrentInfoList \u003d self.view.params.values.infoList\n\tincomingInfoList \u003d payload[\u0027values\u0027][\u0027infoList\u0027]\n\tupdateType \u003d payload[\u0027updateType\u0027]\n\t\n\tupdatedInfoList \u003d incomingInfoList if updateType \u003d\u003d \u0027overwrite\u0027 else currentInfoList + incomingInfoList\n\tpayload[\u0027values\u0027][\u0027infoList\u0027] \u003d updatedInfoList\n\tself.view.params.values \u003d payload[\u0027values\u0027]",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

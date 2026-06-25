@@ -1,0 +1,176 @@
+{
+  "custom": {
+    "dataType": "value"
+  }, 
+  "params": {}, 
+  "props": {}, 
+  "root": {
+    "type": "ia.container.coord", 
+    "children": [
+      {
+        "type": "ia.input.fileupload", 
+        "meta": {
+          "domId": "FileUpload", 
+          "name": "FileUpload"
+        }, 
+        "position": {
+          "width": 400, 
+          "x": 38, 
+          "y": 118, 
+          "height": 145
+        }, 
+        "events": {
+          "component": {
+            "onFileReceived": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\t\n\tuserId = system.kanoa.security.getIDPUserId({'userName': 'SYSTEM'})\n\tworkSheetName = 'Sheet1'\n#\tkanoaScripts.custom.ops.import.importAssetStateEvents(event.file, workSheetName, userId)\n#\tdata = system.kanoa.utilities.convertDatasetToJSON(kanoaScripts.custom.ops.import.parseExcelFile(event.file, workSheetName))\n\tdata = kanoaScripts.custom.ops.import.parseExcelFile(event.file, workSheetName)\n\tdata = system.kanoa.utilities.convertDatasetToJSON(system.dataset.toDataSet(data))\n\tdata = [row for row in data if row['Form'] != \"None\"]\n\tself.view.custom.dataset = data\n\treturn"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.text-area", 
+        "props": {
+          "text": "Pick an excel file here to upload state events to the Kanoa system. Uses the kanoaScripts.custom.ops.import.importAssetStateEvents() script to go through the excel file and extract information to import.  Can just run the view in the designer."
+        }, 
+        "meta": {
+          "domId": "TextArea", 
+          "name": "TextArea"
+        }, 
+        "position": {
+          "width": 581, 
+          "x": 38, 
+          "y": 27, 
+          "height": 65
+        }
+      }, 
+      {
+        "type": "ia.display.table", 
+        "meta": {
+          "visible": false, 
+          "domId": "Table", 
+          "name": "Table"
+        }, 
+        "position": {
+          "width": 997, 
+          "y": 212, 
+          "height": 706
+        }, 
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.custom.dataset"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "text": "Import Data"
+        }, 
+        "meta": {
+          "domId": "Button", 
+          "name": "Button"
+        }, 
+        "position": {
+          "width": 80, 
+          "x": 573, 
+          "y": 159, 
+          "height": 34
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.parent.importCheckEntries()\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value is not None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.custom.dataset"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "visible": false, 
+          "domId": "Label", 
+          "name": "Label"
+        }, 
+        "position": {
+          "width": 1008, 
+          "y": 272, 
+          "height": 494
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.custom.dataset"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\t\n\t'''\n\tGiven a dataset, with each row representing an entered check sheet\n\tEach loop:\n\t\t- we create the check event (addCheckEvent)\n\t\t- for each column, we call saveChkItemEvent\n\t'''\n\t\n\tchkShtId = 244\n\tchkShtColumns = {\n\t\t'Batch #': 2595,\n\t\t'Metal': 2596,\n\t\t'Glass': 2597,\n\t\t'Green PET': 2598,\n\t\t'Black': 2599,\n\t\t'Label': 2600,\n\t\t'Unmelts': 2601,\n\t\t'PVC': 2602,\n\t\t'Low Melts': 2603\n\t}\n\tassetIds = {\n\t\t'QC1': 2483,\n\t\t'QC2': 2484,\n\t\t'QC3': 2485,\n\t\t'QC4': 2486,\n\t\t'QC5': 2487\n\t}\n\tstatusIds = {\n\t\t'True': 4,\n\t\t'False': 11\n\t}\n\tdataset = self.view.custom.dataset\n\tfor row in dataset:\n\t\tchkShtEventInfo = {\n\t\t\t'chkShtId': chkShtId,\n\t\t\t'assetId': assetIds[row['Resource']],\n\t\t\t'shiftNameId': None,\n\t\t\t'comment': None,\n\t\t\t'itemId': None,\n\t\t\t'chkShtTriggerId': None,\n\t\t\t'chkShtStateId': statusIds[row['Status']],\n\t\t\t'scheduledDate': system.date.now()\n\t\t}\n\t\tchkShtEventId = system.kanoa.quality.event.addCheckEvent(chkShtEventInfo, 18)\n\t\tsystem.perspective.print(chkShtEventId)\n\t\tfor column in row:\n\t\t\tif chkShtColumns.has_key(column):\n\t\t\t\tchkItemEventInfo = {\n\t\t\t\t\t'chkItemEventId': None,\n\t\t\t\t\t'chkShtEventId': chkShtEventId,\n\t\t\t\t\t'chkItemId': chkShtColumns[column],\n\t\t\t\t\t'measNumber': 1,\n\t\t\t\t\t'chkItemValue': row[column],\n\t\t\t\t\t'chkItemStateId': None,\n\t\t\t\t}\n\t\t\t\tsystem.kanoa.quality.event.saveChkItemEvent(chkItemEventInfo, 18)\n\treturn", 
+          "name": "importCheckEntries"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "custom.dataType": {
+      "persistent": true
+    }, 
+    "custom.dataset": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn None", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "now(0)"
+        }
+      }, 
+      "persistent": false
+    }
+  }
+}

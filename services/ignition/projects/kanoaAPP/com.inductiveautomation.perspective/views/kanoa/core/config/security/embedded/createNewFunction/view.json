@@ -1,0 +1,410 @@
+{
+  "custom": {
+    "categoryOptions": [
+      {
+        "label": "Ops",
+        "value": "Ops"
+      },
+      {
+        "label": "Quality",
+        "value": "Quality"
+      },
+      {
+        "label": "Trace",
+        "value": "Trace"
+      },
+      {
+        "label": "Maintenance",
+        "value": "Maintenance"
+      }
+    ],
+    "errorMessage": "Function Name Required",
+    "hasEdited": false,
+    "values": {
+      "category": null,
+      "description": "",
+      "functionId": null,
+      "functionName": "",
+      "label": "",
+      "userId": null
+    }
+  },
+  "params": {
+    "values": {
+      "category": null,
+      "description": "",
+      "functionId": null,
+      "functionName": "",
+      "label": "",
+      "userId": null
+    }
+  },
+  "propConfig": {
+    "custom.categoryOptions": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\toptions \u003d [\u0027Ops\u0027, \u0027Quality\u0027, \u0027Trace\u0027, \u0027Maintenance\u0027]\n\treturn [{\u0027label\u0027: item, \u0027value\u0027: item} for item in options]",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.errorMessage": {
+      "binding": {
+        "config": {
+          "path": "view.custom.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif (value[\u0027label\u0027] or None) is None: return \u0027Function Name Required\u0027\n\tif (value[\u0027category\u0027] or None) is None: return \u0027Category Required\u0027\n\treturn \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.hasEdited": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn False",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 226,
+      "width": 375
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblRoleName",
+              "name": "lblFunctionName"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onFocus": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.print(\u0027focus triggered\u0027)\n\tself.view.custom.hasEdited \u003d True"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "txtRoleName",
+              "name": "txtFunctionName"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.label"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "persistent": false
+              }
+            },
+            "props": {
+              "deferUpdates": false
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxRoleName",
+          "name": "flxName"
+        },
+        "props": {
+          "alignItems": "center"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblRoleName",
+              "name": "lblDescription"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "Description"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "txtAreaDescription"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.description"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "height": "90%"
+              }
+            },
+            "type": "ia.input.text-area"
+          }
+        ],
+        "meta": {
+          "domId": "flxRoleName",
+          "name": "flxDescription"
+        },
+        "position": {
+          "basis": "120px"
+        },
+        "props": {
+          "alignItems": "center"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").addFunction()\n\tsystem.perspective.closePopup(\u0027\u0027)\n\tsystem.perspective.sendMessage(\u0027updateRoles\u0027, {})\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnOK",
+              "name": "btnOK",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom"
+              }
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "errorMessage": "{view.custom.errorMessage}",
+                      "hasEdited": "{view.custom.hasEdited}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif not value[\u0027hasEdited\u0027]: return \u0027\u0027\n\treturn value[\u0027errorMessage\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.errorMessage"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "OK"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "primary": false,
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxButtons",
+          "name": "flxButtons",
+          "tooltip": {
+            "delay": 0
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "Label"
+        },
+        "position": {
+          "basis": "98px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "addFunction",
+          "params": [],
+          "script": "\t\n\timport re\n\n\tdef toCamelCase(label):\n\t    words \u003d re.split(r\u0027[\\s_\\-]+\u0027, label.lower().strip())\n\t    return words[0] + \u0027\u0027.join(word.capitalize() for word in words[1:])\n\t\n\tfunctionInfo \u003d dict(self.view.custom.values)\n\tfunctionInfo[\u0027functionName\u0027] \u003d toCamelCase(functionInfo[\u0027label\u0027])\n\tsystem.perspective.print(\u0027functionInfo: %s\u0027%functionInfo)\n\t\n\tif functionInfo[\u0027functionId\u0027] is None: retVal, msg \u003d system.kanoa.security.addUserFunction(functionInfo, functionInfo[\u0027userId\u0027])\n\telse: retVal, msg \u003d system.kanoa.security.updateUserFunction(functionInfo, functionInfo[\u0027userId\u0027])\n\t\n\tif retVal: system.perspective.sendMessage(\"showSuccessfulToast\", {\u0027message\u0027: \u0027New function created\u0027})\n\telse: system.perspective.sendMessage(\"showFailerToast\", {\u0027message\u0027: \u0027Error creating new function: %s\u0027%msg})\n\treturn\n\t"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

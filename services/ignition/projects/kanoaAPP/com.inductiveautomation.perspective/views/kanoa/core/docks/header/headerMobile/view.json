@@ -1,0 +1,427 @@
+{
+  "custom": {
+    "version": "3.1.4"
+  },
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\tself.getChild(\"root\").getFrameworkInfo()"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.version": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.frameworkInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tif not \u0027versionNumber\u0027 in value:\n\t\tself.getChild(\"root\").getFrameworkInfo()\n\t\t\n\t\tvalue \u003d self.session.custom.kanoa.frameworkInfo\n\t\t\n\t\tif not \u0027versionNumber\u0027 in value:\n\t\t\treturn \u0027\u0027\n\t\n\treturn value[\u0027versionNumber\u0027]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 40,
+      "width": 441
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tparams\u003d {\"path\": \u0027/\u0027, \"name\": \u0027Home\u0027, \"type\": \u0027page\u0027, \"params\": None}\t\n\tsystem.perspective.sendMessage(\"updateNavigation\", params)\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "icoLogo",
+          "name": "icoLogo",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Click to back to the home page"
+          }
+        },
+        "position": {
+          "basis": "35px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.source": {
+            "binding": {
+              "config": {
+                "expression": "\u0027/system/images/Logos/primary_favicon.png\u0027"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn value\n#\tdata \u003d system.kanoa.config.getConfig({\u0027project\u0027: system.util.getProjectName(), \u0027configName\u0027:\u0027logoMobile\u0027})\n#\tif data.rowCount \u003d\u003d 0: \tdata \u003d system.kanoa.config.getConfig({\u0027project\u0027: \u0027kanoaCore\u0027, \u0027configName\u0027: \u0027logoMobile\u0027})\n#\treturn \u0027/system/images/\u0027 + data.getValueAt(0, \u0027configValue\u0027) if data and data.rowCount else \u0027/system/images/Logos/primary_favicon.png\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "fit": {
+            "aspectRatio": 1,
+            "height": 24,
+            "mode": "contain",
+            "width": 24
+          },
+          "style": {
+            "backgroundColor": "--kcOnPrimary",
+            "borderRadius": 50,
+            "height": "35px",
+            "overflow": "hidden",
+            "padding": 3
+          }
+        },
+        "type": "ia.display.image"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.toggleDock(\u0027NavBar\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "icoMenu",
+          "name": "icoMenu",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "Open navigation menu"
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "color": "--kcDockColor",
+          "path": "material/menu",
+          "style": {
+            "backgroundColor": "--kcDockBackground",
+            "classes": "kanoa/button/flatIcon",
+            "cursor": "pointer",
+            "height": "30px",
+            "width": "30px"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.sendMessage(\u0027traverseNavigation\u0027, payload\u003d{\u0027direction\u0027: -1})\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnNavLeft",
+          "name": "btnNavLeft",
+          "tooltip": {
+            "enabled": true,
+            "text": "Go back"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "session.custom.kanoa"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tpageId \u003d self.page.props.pageId\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\tshow \u003d value[pageId][\u0027navigation\u0027][\u0027currentIndex\u0027] !\u003d 0 or False\n\treturn show",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcOnPrimary",
+              "path": "material/arrow_back"
+            }
+          },
+          "style": {
+            "background": "--kcPrimary",
+            "classes": "kanoa/button/flatIcon",
+            "height": "35px",
+            "width": "35px"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "meta": {
+          "domId": "lblCurrentPage",
+          "name": "lblCurrentPage"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "parent.custom.navHistory"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\ttry:\t#If page is refreshed afte ran update, sometimes there is no index\n\t\treturn value[\u0027history\u0027][value[\u0027currentIndex\u0027]].name\n\texcept:\n\t\t\u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "textStyle": {
+            "classes": "kanoa/font/titleMedium",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\tsystem.perspective.sendMessage(\u0027traverseNavigation\u0027, payload\u003d{\u0027direction\u0027: 1})"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnNavRight",
+          "name": "btnNavRight",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Navigate forward"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "session.custom.kanoa"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tpageId \u003d self.page.props.pageId\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\tshow \u003d value[pageId][\u0027navigation\u0027][\u0027currentIndex\u0027] !\u003d len(value[pageId][\u0027navigation\u0027][\u0027history\u0027]) - 1\n\t\t\n\treturn show",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcOnPrimary",
+              "path": "material/arrow_forward"
+            }
+          },
+          "style": {
+            "background": "--kcPrimary",
+            "classes": "kanoa/button/flatIcon",
+            "height": "35px",
+            "width": "35px"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "custom": {
+          "test": false
+        },
+        "meta": {
+          "domId": "toast",
+          "name": "toast"
+        },
+        "position": {
+          "display": false,
+          "shrink": 0
+        },
+        "propConfig": {
+          "custom.test": {
+            "onChange": {
+              "enabled": null,
+              "script": "\tif currentValue.value:\n\t\t# showToast\n\t\t# showSuccessfulToast\n\t\t# showFailerToast\n\t\t# showBugToast\n\t\t# showWarningToast\n\t\t# showInfoToast\n\t\t\n\t\tpayload \u003d {\n\t\t\t\u0027message\u0027: \u0027This is a test\u0027,\n\t\t\t\u0027bgColor\u0027: \u0027green\u0027,\n\t\t\t\u0027fgColor\u0027: \u0027white\u0027,\n\t\t\t\u0027icon\u0027: \u0027material/bubble_chart\u0027,\n\t\t}\n\t\n\t\tsystem.perspective.sendMessage(\u0027showToast\u0027, payload)\n\t\tself.custom.test \u003d False"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "width": "1px"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "evUserLogin"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "path": "kanoa/core/docks/header/userLogin"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.toggleDock(\u0027options\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "icoOptions",
+          "name": "icoOptions",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-right",
+            "text": "Goto Settings"
+          }
+        },
+        "position": {
+          "basis": "25px",
+          "shrink": 0
+        },
+        "props": {
+          "color": "--kcDockColor",
+          "path": "material/more_vert",
+          "style": {
+            "backgroundColor": "--kcDockBackground",
+            "classes": "kanoa/button/flatIcon"
+          }
+        },
+        "type": "ia.display.icon"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "sustain": 0
+      }
+    },
+    "propConfig": {
+      "custom.navHistory": {
+        "binding": {
+          "config": {
+            "struct": {
+              "navHistory": "{session.custom.kanoa}",
+              "pageId": "{page.props.pageId}"
+            },
+            "waitOnAll": true
+          },
+          "transforms": [
+            {
+              "code": "\tpageId \u003d value[\u0027pageId\u0027]\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\treturn value[\u0027navHistory\u0027][pageId][\u0027navigation\u0027]",
+              "type": "script"
+            }
+          ],
+          "type": "expr-struct"
+        }
+      },
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "session.props.theme"
+          },
+          "enabled": false,
+          "transforms": [
+            {
+              "code": "\t\n\treturn system.kanoa.config.getBackgroundColor(self.session.props.theme)",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcDockBackground",
+        "color": "--kcDockColor",
+        "gap": 3,
+        "overflow": "hidden",
+        "padding": "4px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getFrameworkInfo",
+          "params": [],
+          "script": "\t\n\tfilePath \u003d \u0027C:\\Program Files\\Inductive Automation\\Ignition\\data\\projects\\KanoaFrameworkInfo.json\u0027\n\tif system.file.fileExists(filePath):\n\t\tjsonFile \u003d system.file.readFileAsString(filePath)\n\t\tself.session.custom.kanoa.frameworkInfo \u003d system.util.jsonDecode(jsonFile)\n\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

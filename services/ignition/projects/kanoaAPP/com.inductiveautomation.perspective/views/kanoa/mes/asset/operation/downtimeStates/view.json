@@ -1,0 +1,260 @@
+{
+  "custom": {
+    "filter": {
+      "endDate": {
+        "$ts": 1755068400000, 
+        "$": [
+          "ts", 
+          192, 
+          1755266589934
+        ]
+      }, 
+      "startDate": {
+        "$ts": 1754982000000, 
+        "$": [
+          "ts", 
+          192, 
+          1755266589934
+        ]
+      }
+    }
+  }, 
+  "params": {
+    "value": {
+      "assetId": 4
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 1048, 
+      "height": 691
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "3px", 
+        "overflow": "hidden", 
+        "gap": "3px", 
+        "width": "80vw"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "params": {
+            "dates": {
+              "selectedRange": "Today"
+            }, 
+            "value": {
+              "display": {
+                "showAutoRefresh": true, 
+                "showDateSelector": true, 
+                "showPeriodSelector": true
+              }, 
+              "enabled": true, 
+              "options": [
+                {
+                  "label": "Current Run", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Current Shift", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Previous Shift", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Today", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Yesterday", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "This Week", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last Week", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "This Month", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last Month", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Year To Date", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last 24 Hrs", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last 7 Days", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Last 14 Days", 
+                  "enabled": true
+                }, 
+                {
+                  "label": "Custom", 
+                  "enabled": true
+                }
+              ]
+            }
+          }, 
+          "path": "kanoa/core/templates/selectors/dateSelector", 
+          "style": {
+            "classes": "kanoa/container"
+          }
+        }, 
+        "meta": {
+          "domId": "evDateSelector", 
+          "name": "evDateSelector"
+        }, 
+        "propConfig": {
+          "props.params.dates.endDate": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.filter.endDate"
+              }
+            }
+          }, 
+          "props.params.dates.startDate": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.filter.startDate"
+              }
+            }
+          }, 
+          "props.params.value.assetPath": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\tif value is None: return None\n\treturn system.kanoa.utilities.getFieldValue('assetPath', system.kanoa.asset.getAssets({'assetId': value}))", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.filter.assetId"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "params": {
+            "update": ""
+          }, 
+          "path": "kanoa/mes/asset/downtime/downtimeTable"
+        }, 
+        "meta": {
+          "domId": "evDowntimeTable", 
+          "name": "evDowntimeTable"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.params.value": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\treturn {\n\t\t\t\t\"assetId\": value['assetId'],\n\t\t\t\t\"assetPath\": None,\n\t\t\t\t\"endDate\": value['endDate'],\n\t\t\t\t\"options\": {\n\t\t\t\t\t\t\t\t\"minDurationMins\": 1,\n\t\t\t\t\t\t\t\t\"showAllStates\": False,\n\t\t\t\t\t\t\t\t\"showChanged\": -1,\n\t\t\t\t\t\t\t\t\"showDurationSecs\": False,\n\t\t\t\t\t\t\t\t\"sortDateAsc\": False\n\t\t\t\t\t\t\t},\n\t\t\t\t\"startDate\": value['startDate']\n\t\t\t}", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.filter"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\t\n\tsystem.perspective.print(\"openEditor() called\")\n\tidList = [item.stateEventId for item in self.view.custom.table.selection.data]\n\tassetId = self.view.params.value.assetId\n\n\tpayload = {'value':\t{\"assetId\": assetId, \"idList\": idList}}\t\n\n\teventTitle = 'Edit Event' if len(idList) > 1 else 'Edit Events'\n\tsystem.perspective.openPopup(\"Downtime Editor\", \"kanoa/mes/asset/downtime/downtimeEditor\", params=payload, title=eventTitle,overlayDismiss=True)\n\t\n\treturn", 
+          "name": "openEditor"
+        }, 
+        {
+          "params": [], 
+          "script": "\n\tself.view.custom.table.selection.row = None\n\tself.view.custom.table.selection.col = None\n\n\treturn", 
+          "name": "clearTableSelection"
+        }, 
+        {
+          "params": [], 
+          "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdata = system.kanoa.event.getStateEventById(self.view.custom.table.selection.data[0].stateEventId)\n\t\n\tfor row in system.dataset.toPyDataSet(data):\n\t\tassetStateId = row['origAssetId'] or row['assetStateId']\n\t\tstateCode = row['origStateCode'] or row['stateCode']\n\t\tsystem.kanoa.event.updateStateEvent({'stateEventId': row['stateEventId'], 'stateCode': stateCode, 'origStateCode': None, 'assetStateId': assetStateId, 'origAssetId': None, 'note':(row['note'] or '') + ' (reverted)'}, userId)\n\t\n\tsystem.perspective.sendMessage(\"DTUpdated\", {})\n\t\n\treturn", 
+          "name": "revert"
+        }, 
+        {
+          "params": [], 
+          "script": "\t\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tidList = [item.stateEventId for item in self.view.custom.table.selection.data]\n\tfor stateEventId in idList: system.kanoa.event.deleteStateEvent(stateEventId, userId)\n\tsystem.perspective.sendMessage(\"DTUpdated\", {})\n\treturn\t\t", 
+          "name": "deleteState"
+        }, 
+        {
+          "params": [], 
+          "script": "\n\tif len(self.view.custom.table.selection) == 0: return\n\tstateEventId = self.view.custom.table.selection.data[0].stateEventId\n\tsystem.perspective.print(\"splitEvent() called for stateEventId %i\"%stateEventId)\n\tsystem.perspective.openPopup(\"Split DT\", 'kanoa/mes/asset/downtime/splitDT', params={'values': {\"stateEventId\": stateEventId}})\n\t\n\treturn", 
+          "name": "splitEvent"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    }, 
+    "params.update": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.testEqPath": {
+      "persistent": true
+    }, 
+    "custom.filter.assetId": {
+      "binding": {
+        "type": "property", 
+        "config": {
+          "path": "view.params.value.assetId"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,432 @@
+{
+  "custom": {
+    "configInfo": {
+      "enableKanoaCMMS": "1",
+      "enableKanoaQDS": "1",
+      "enableKanoaTrace": "1",
+      "environment": "development"
+    },
+    "installError": false,
+    "installInfo": {
+      "dbProduct": "Microsoft SQL Server",
+      "dbVersion": "15.00.2000",
+      "driverName": "Microsoft JDBC Driver 9.4 for SQL Server",
+      "driverVersion": "9.4.0.0",
+      "hawthornStatus": "Database tables present but no changeSet",
+      "ignitionVersion": "8.1.50 (b2025093011)",
+      "installationDate": "2026-06-09T14:14:20.774886300",
+      "kanoaMESVersion": "1.15.0-beta9",
+      "systemTimeZone": "Etc/UTC"
+    },
+    "licenseState": {
+      "cmmsActive": true,
+      "cmmsLicensed": true,
+      "opsActive": true,
+      "opsLicensed": true,
+      "qdsActive": true,
+      "qdsLicensed": true,
+      "traceActive": true,
+      "traceLicensed": true,
+      "trialActive": true
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.configInfo": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.utilities.convertDatasetToDict(system.kanoa.config.getConfig({\u0027configTypeName\u0027: \u0027application\u0027}), \u0027configName\u0027, \u0027configValue\u0027)",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.installError": {
+      "binding": {
+        "config": {
+          "path": "view.custom.installInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn False if value[\u0027hawthornStatus\u0027] in (\u0027Database tables present but no changeSet\u0027, \u0027Hawthorn Success\u0027) else True",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.installInfo": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tparentPath \u003d \u0027[kanoaMES]installationInfo\u0027\n\tbrowse \u003d system.tag.browse(parentPath)\n\tresults \u003d browse.getResults()\n\t\n\tpaths \u003d [str(r[\"fullPath\"]) for r in results]\n\tqvs \u003d system.tag.readBlocking(paths)\n\treturn {r[\"name\"]: qv.value for r, qv in zip(results, qvs)}",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.licenseState": {
+      "binding": {
+        "config": {
+          "struct": {
+            "cmmsActive": "{[kanoaMES]licenseInfo/cmmsActive}",
+            "cmmsLicensed": "{[kanoaMES]licenseInfo/cmmsLicensed}",
+            "opsActive": "{[kanoaMES]licenseInfo/opsActive}",
+            "opsLicensed": "{[kanoaMES]licenseInfo/opsLicensed}",
+            "qdsActive": "{[kanoaMES]licenseInfo/qdsActive}",
+            "qdsLicensed": "{[kanoaMES]licenseInfo/qdsLicensed}",
+            "traceActive": "{[kanoaMES]licenseInfo/traceActive}",
+            "traceLicensed": "{[kanoaMES]licenseInfo/traceLicensed}",
+            "trialActive": "{[kanoaMES]licenseInfo/trialActive}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "type": "expr-struct"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 41,
+      "width": 262
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblEnvironment",
+          "name": "lblEnvironment",
+          "tooltip": {
+            "delay": 0,
+            "enabled": true,
+            "location": "center-left",
+            "sustain": 0
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "this.props.text"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \"This gateway is configured as a %s environment\"%value",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "this.props.text"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value not in (\u0027PRODUCTION\u0027, \u0027\u0027)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.configInfo"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value[\u0027environment\u0027].upper() if value.has_key(\u0027environment\u0027) else \u0027No Environment Set\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "backgroundColor": "--kcTertiaryContainer",
+            "borderBottomLeftRadius": 100,
+            "borderBottomRightRadius": 100,
+            "borderTopLeftRadius": 100,
+            "borderTopRightRadius": 100,
+            "classes": "kanoa/font/default",
+            "color": "--kcOnTertiaryContainer",
+            "fontSize": "12px",
+            "fontWeight": "bold",
+            "padding": 5,
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblViewModeOnly",
+          "name": "lblViewModeOnly",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-right",
+            "text": "As a guest, you\u0027re welcome to peruse the screens but everything will be in a view-only mode"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "session.props.auth.user.id"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value is None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "backgroundColor": "--kcTertiaryContainer",
+            "borderBottomLeftRadius": 100,
+            "borderBottomRightRadius": 100,
+            "borderTopLeftRadius": 100,
+            "borderTopRightRadius": 100,
+            "classes": "kanoa/font/default",
+            "color": "--kcOnTertiaryContainer",
+            "fontSize": "12px",
+            "fontWeight": "bold",
+            "padding": 5,
+            "textAlign": "center"
+          },
+          "text": "View Only"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\n\tinfo \u003d [{\"name\": k, \"value\": v} for k,v in self.view.custom.installInfo.items()]\n\t\n\tsession \u003d self.session.props\n\ttimezoneInfo \u003d [\n#\t\t\t\t\t\t{\"name\": \"Gateway Timezone\", \"value\": \"%s (%s)\"%(session[\u0027gateway\u0027][\u0027timezone\u0027][\u0027name\u0027], session[\u0027gateway\u0027][\u0027timezone\u0027][\u0027utcOffset\u0027])},\n\t\t\t\t\t\t{\"name\": \"Client Timezone\", \"value\": \"%s (%s)\"%(session[\u0027device\u0027][\u0027timezone\u0027][\u0027id\u0027], session[\u0027device\u0027][\u0027timezone\u0027][\u0027utcOffset\u0027])},\n\t\t\t\t\t\t{\"name\": \"Database Timezone\", \"value\": system.db.runScalarQuery(\"SELECT FORMAT(SYSDATETIMEOFFSET(), \u0027zzz\u0027)\", system.kanoa.config.getDBName(\u0027mes\u0027))}\n\t\t\t\t\t]\n\t\n\tinfo.extend(timezoneInfo)\n\tmdInfo \u003d \"| Name | Value |\\n|---|---|\\n\" + \"\\n\".join(\"| {} | {} |\".format(d[\"name\"], d[\"value\"])for d in info)\n\tsystem.perspective.openPopup(\"infoPopup\", \"kanoa/core/templates/displays/diagnosticsPopup\", {\u0027text\u0027:mdInfo}, title\u003d\u0027Diagnostics Info\u0027, draggable\u003dTrue, resizable\u003d True)\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "btnLogs",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-left"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.installError"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027View and export diagnostic logs\u0027 if not value else \u0027Installation error. click to view diagnostics\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.image.height": {
+            "binding": {
+              "config": {
+                "path": "view.custom.installError"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn 20 if value else 25",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.image.icon.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.installError"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027--kcRed-60\u0027 if value else \u0027--kcDockColor\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.image.icon.path": {
+            "binding": {
+              "config": {
+                "path": "view.custom.installError"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027material/warning\u0027 if value else \u0027material/info\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.image.width": {
+            "binding": {
+              "config": {
+                "path": "view.custom.installError"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn 20 if value else 25",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.custom.installError"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027--kcSurfaceVariant\u0027 if value else \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {}
+          },
+          "style": {
+            "classes": "kanoa/button/flatIcon",
+            "height": "25px",
+            "width": "25px"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "meta": {
+          "name": "iconLicenseState",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-left",
+            "text": "Trial period has expired and kanoaMES is not fully licensed. Reset the trial period to continue"
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "configInfo": "{view.custom.configInfo}",
+                  "licenseState": "{view.custom.licenseState}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tlicenseState \u003d value.get(\u0027licenseState\u0027)\n\tif not licenseState: return True\n\tif licenseState.get(\u0027trialActive\u0027): return False\n\n\tmapping \u003d {\u0027enableKanoaCMMS\u0027: \u0027cmmsActive\u0027, \u0027enableKanoaQDS\u0027: \u0027qdsActive\u0027, \u0027enableKanoaTrace\u0027: \u0027traceActive\u0027, \u0027enableKanoaInv\u0027: \u0027invActive\u0027}\n\n\tfor configKey, licenseKey in mapping.items():\n\t\tif value[\u0027configInfo\u0027].get(configKey) in (1, \u00271\u0027, True):\n\t\t\tif not licenseState.get(licenseKey, False):\n\t\t\t\treturn True\n\n\treturn False",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "color": "--kcRed-10",
+          "path": "material/receipt_long"
+        },
+        "type": "ia.display.icon"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "gap": "5px",
+        "padding": "2px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "configUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.configInfo\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

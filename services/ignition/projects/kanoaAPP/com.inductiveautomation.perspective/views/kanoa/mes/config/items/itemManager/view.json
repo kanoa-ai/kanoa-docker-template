@@ -1,0 +1,157 @@
+{
+  "custom": {
+    "tabIndex": 0,
+    "tabs": [
+      "Items",
+      "Production Rates",
+      "Item Units"
+    ]
+  },
+  "params": {},
+  "propConfig": {
+    "custom.tabIndex": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn 0",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.tabs": {
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1500
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "tabs",
+              "name": "tabs"
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.currentTabIndex": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.tabIndex"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.tabs": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tabs"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "menuStyle": {
+                "backgroundColor": "--kcSurface"
+              },
+              "menuType": "modern",
+              "tabSize": {
+                "width": 110
+              },
+              "tabStyle": {
+                "active": {
+                  "classes": "kanoa/font/default"
+                },
+                "inactive": {
+                  "classes": "kanoa/font/default"
+                }
+              }
+            },
+            "type": "ia.container.tab"
+          },
+          {
+            "meta": {
+              "domId": "evViewer",
+              "name": "evViewer"
+            },
+            "position": {
+              "basis": "400px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tabIndex"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return \"kanoa/mes/config/items/items\"\n\ttab \u003d self.view.custom.tabs[value]\n\t\n\tif tab \u003d\u003d \u0027Items\u0027: return \"kanoa/mes/config/items/items\"\n\tif tab \u003d\u003d \u0027Input Materials\u0027: return \"kanoa/mes/config/items/inputMaterials\"\n\tif tab \u003d\u003d \u0027Production Rates\u0027: return \"kanoa/mes/config/items/itemRates\"\n\tif tab \u003d\u003d \u0027Item Units\u0027: return \"kanoa/mes/config/items/itemUnits\"\n\t\n\treturn \"kanoa/mes/config/items/items\"",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxMain",
+          "name": "flxMain"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "padding": "3px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "custom": {
+      "gettingData": false
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcBackground",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

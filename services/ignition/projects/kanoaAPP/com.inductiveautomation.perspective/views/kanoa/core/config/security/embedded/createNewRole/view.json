@@ -1,0 +1,295 @@
+{
+  "custom": {
+    "errorMessage": "New role name cannot be blank.",
+    "hasEdited": false
+  },
+  "params": {
+    "values": {
+      "assetPath": ""
+    }
+  },
+  "propConfig": {
+    "custom.errorMessage": {
+      "binding": {
+        "config": {
+          "path": "/root/flxRoleName/txtRoleName.props.text"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tif value \u003d\u003d \u0027\u0027 or value is None: return \u0027New role name cannot be blank.\u0027\n\tif value \u003d\u003d \u0027Administrator\u0027 or value \u003d\u003d \u0027Gateway Admin\u0027: return \u0027Cannot use a reserved role name.\u0027\n\troleNames \u003d [row[\u0027roleName\u0027] for row in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.security.getRoles({}))]\n\tif value in roleNames: return \u0027Role name already exists.\u0027\n\treturn \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.hasEdited": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn False",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 136,
+      "width": 375
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblRoleName",
+              "name": "lblRoleName"
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "props": {
+              "text": "New Role"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onFocus": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.print(\u0027focus triggered\u0027)\n\tself.view.custom.hasEdited \u003d True"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "txtRoleName",
+              "name": "txtRoleName"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "persistent": false
+              }
+            },
+            "props": {
+              "deferUpdates": false
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxRoleName",
+          "name": "flxRoleName"
+        },
+        "position": {
+          "basis": "63px"
+        },
+        "props": {
+          "alignItems": "center"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblErrorMsg",
+          "name": "lblErrorMsg"
+        },
+        "position": {
+          "basis": "32px"
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "errorMessage": "{view.custom.errorMessage}",
+                  "hasEdited": "{view.custom.hasEdited}"
+                },
+                "waitOnAll": true
+              },
+              "transforms": [
+                {
+                  "code": "\tif not value[\u0027hasEdited\u0027]: return \u0027\u0027\n\treturn value[\u0027errorMessage\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "textStyle": {
+            "color": "red",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tnewRoleName \u003d self.parent.parent.getChild(\"flxRoleName\").getChild(\"txtRoleName\").props.text\n\tsystem.perspective.sendMessage(\"addRole\", payload \u003d {\u0027roleName\u0027: newRoleName, \u0027userSource\u0027: None}, scope\u003d\u0027page\u0027)\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnOK",
+              "name": "btnOK",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom",
+                "style": {
+                  "classes": "kanoa/tooltipError"
+                },
+                "sustain": 1000,
+                "tail": false
+              }
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": ".../flxRoleName/txtRoleName.props.text"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Role name already exists\u0027 if value in system.user.getRoles(\u0027default\u0027) else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.errorMessage"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check_box"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "OK"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "primary": false,
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxButtons",
+          "name": "flxButtons",
+          "tooltip": {
+            "delay": 0
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default kanoa/popup"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

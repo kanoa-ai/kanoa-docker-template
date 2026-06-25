@@ -1,0 +1,365 @@
+{
+  "custom": {
+    "fileText": "", 
+    "data": {}, 
+    "document": "", 
+    "clearData": false, 
+    "displayMessage": "", 
+    "page": 0
+  }, 
+  "params": {
+    "options": {
+      "supportedFileTypes": [
+        "json"
+      ], 
+      "exportType": "qualityCheckSheetData"
+    }, 
+    "callerId": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 474, 
+      "height": 494
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 10, 
+        "backgroundColor": "transparent", 
+        "classes": "Kanoa/Containers/popup", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "custom": {
+          "page": 0
+        }, 
+        "type": "ia.container.flex", 
+        "props": {
+          "style": {
+            "gap": 5, 
+            "position": "relative"
+          }, 
+          "direction": "column"
+        }, 
+        "children": [
+          {
+            "type": "ia.input.fileupload", 
+            "props": {
+              "fileUploadIcon": {
+                "path": "material/get_app"
+              }, 
+              "maxUploads": 1
+            }, 
+            "meta": {
+              "domId": "FileUpload", 
+              "name": "FileUpload"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onFileReceived": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.print('onFileReceived() - setting file text property.')\n\tself.view.custom.fileText = event.file.getString()\n\t\n\treturn\n\t"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.supportedFileTypes": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.params.options.supportedFileTypes"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.text-area", 
+            "props": {
+              "style": {
+                "fontSize": "10px"
+              }
+            }, 
+            "meta": {
+              "domId": "txtFile", 
+              "name": "txtFile"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.fileText"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "marginLeft": "5px", 
+                "marginRight": "auto"
+              }, 
+              "textStyle": {
+                "color": "red"
+              }
+            }, 
+            "meta": {
+              "domId": "lblErrorMessage", 
+              "name": "lblErrorMessage"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.displayMessage"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxBody", 
+          "name": "flxBody"
+        }, 
+        "position": {
+          "grow": 1
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/get_app"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/filled"
+              }, 
+              "text": "Import"
+            }, 
+            "meta": {
+              "domId": "btnImport", 
+              "name": "btnImport"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tdata = system.util.jsonDecode(system.util.jsonEncode(self.view.custom.data))\n\t\n\tsystem.perspective.print(\"Sending msg importer.import\")\n\t\n\tsystem.perspective.sendMessage(\n\t\tmessageType='importer.import',\n\t\tpayload={\n\t\t\t'data': data,\n\t\t\t'callerId': self.view.params.callerId\n\t\t}\n\t)\n\t\n\tsystem.perspective.closePopup('')\n\t"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn len(dict(value)) > 0", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.data"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/outlined"
+              }, 
+              "text": "Close"
+            }, 
+            "meta": {
+              "domId": "btnClose", 
+              "name": "btnClose"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup('')"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxActions", 
+          "name": "flxActions"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "domId": "Label", 
+          "name": "Label"
+        }, 
+        "position": {
+          "display": false, 
+          "basis": "50px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn str(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.options"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "domId": "Label_0", 
+          "name": "Label_0"
+        }, 
+        "position": {
+          "display": false, 
+          "basis": "50px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn str(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.callerId"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "events": {
+    "system": {
+      "onStartup": {
+        "type": "script", 
+        "scope": "G", 
+        "config": {
+          "script": "\tself.custom.page = 0\n\tself.custom.document = ''"
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.options": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.displayMessage": {
+      "persistent": true
+    }, 
+    "custom.fileText": {
+      "persistent": true
+    }, 
+    "custom.data": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tif (value or None) is None: return {}\n\t\n\timport java.lang\n\t\n\tself.custom.displayMessage = ''\n\t\n\ttry:\n\t\tfileText = system.util.jsonDecode(value)\n\t\t\n\t\tif 'exportType' not in fileText: \n\t\t\tself.custom.displayMessage = 'The imported file has no exportType'\n\t\t\treturn {}\n\t\t\n\t\tif fileText['exportType'] != self.params.options.exportType:\n\t\t\tself.custom.displayMessage = 'The imported file has the wrong exportType value'\n\t\t\treturn {}\n\t\n\texcept java.lang.Exception, e:\n\t\tself.custom.displayMessage = 'The imported file did not load. %s'%(e.cause or '')\n\t\treturn {}\n\t\n\ttry:\n\t\tdata = system.util.jsonEncode(fileText['data'])\n\t\tdata.replace('\\\\', '\\\\\\\\')\n\t\tdata = system.util.jsonDecode(data)\n\t\ttry:\t#quality check sheets are a list, assets are a dictionary\n\t\t\treturn dict(data)\n\t\texcept:\n\t\t\treturn data\n\texcept java.lang.Exception, e:\n\t\tself.custom.displayMessage = 'Error parsing file. %s'%(e.cause or '')\n\t\treturn {}\n\texcept:\n\t\tself.custom.displayMessage = \"Couldn't decode file.\"\n\t\treturn {}\t\n\treturn {}", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.custom.fileText"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.callerId": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.clearData": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tif currentValue.value:\n\t\tself.custom.fileText = ''\n\t\tself.custom.displayMessage = ''\n\t\tself.custom.clearData = False\n\t\n\treturn"
+      }, 
+      "persistent": true
+    }
+  }
+}

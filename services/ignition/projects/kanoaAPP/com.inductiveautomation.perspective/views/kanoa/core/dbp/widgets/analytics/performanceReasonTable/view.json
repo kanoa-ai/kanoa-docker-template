@@ -1,0 +1,392 @@
+{
+  "custom": {
+    "data": {},
+    "filters": {
+      "assetId": null,
+      "assetPath": null,
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "showAssetPath": true,
+      "showSummary": true,
+      "showSummarySelector": true,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true,
+      "showSummary": true,
+      "showSummarySelector": true
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.perfEvents": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\tfilter \u003d value\n\n\tif (filter[\u0027assetPath\u0027] or None) is None: return []\n\tassetPath \u003d filter[\u0027assetPath\u0027] + \u0027%\u0027\n\tstartDate \u003d filter[\u0027dateRange\u0027][\u0027startDate\u0027]\n\tendDate \u003d filter[\u0027dateRange\u0027][\u0027endDate\u0027]\n\tmodeEventId \u003d None\n\n\tif assetPath is None: return []\n\t\n\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027modeEventId\u0027: modeEventId}\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getPerformanceEvents(paramsDict))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.summary": {
+      "binding": {
+        "config": {
+          "path": "view.custom.data.perfEvents"
+        },
+        "transforms": [
+          {
+            "code": "\tfrom collections import defaultdict\n\n\tif len(value) \u003d\u003d 0:\n\t\treturn []\n\t\n\t# Grouping: (Reason, Asset) → total duration\n\tsummaryMap \u003d defaultdict(float)\n\t\n\tfor entry in value:\n\t\treason \u003d entry.get(\"performanceStateName\") or \"Unspecified\"\n\t\tasset \u003d entry.get(\"assetName\") or \"Unspecified\"\n\t\tkey \u003d (reason, asset)\n\t\n\t\tduration \u003d entry.get(\"value\", 0)\n\t\tsummaryMap[key] +\u003d duration\n\t\n\t# Format for table output\n\tsummary \u003d []\n\tfor (reason, asset), total in summaryMap.items():\n\t\tsummary.append({\n\t\t\t\"performanceStateName\": reason,\n\t\t\t\"assetName\": asset,\n\t\t\t\"value\": round(total, 3)\n\t\t})\n\t\n\t# Optionally sort descending by duration\n\tsummary.sort(key\u003dlambda x: x[\"value\"], reverse\u003dTrue)\n\t\n\treturn summary",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027showAssetPath\u0027): filters[\u0027showAssetPath\u0027] \u003d True\n\tif not filters.has_key(\u0027showSummarySelector\u0027): filters[\u0027showSummarySelector\u0027] \u003d True\n\tif not filters.has_key(\u0027showSummary\u0027): filters[\u0027showSummary\u0027] \u003d True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 400,
+      "width": 995
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge"
+              },
+              "text": "Performance Loss Reasons ",
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblAsset",
+              "name": "lblAsset"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.showAssetPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tassetPath \u003d system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}) if value[\u0027showAssetPath\u0027] else \u0027\u0027\n\treturn \u0027%s\u0027%(assetPath)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "chkSummary",
+              "name": "chkSummary"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.showSummarySelector"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.showSummary"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": "Summary"
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "visible",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "eventTable",
+          "name": "eventTable"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.columns": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showSummary"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tdef buildColumn(field, title, justify, sortable, width, visible):\n\t\treturn {\n\t\t\t\t  \"field\": field,\n\t\t\t\t  \"visible\": visible,\n\t\t\t\t  \"editable\": False,\n\t\t\t\t  \"render\": \"auto\",\n\t\t\t\t  \"justify\": justify,\n\t\t\t\t  \"align\": \"center\",\n\t\t\t\t  \"resizable\": True,\n\t\t\t\t  \"sortable\": sortable,\n\t\t\t\t  \"sort\": \"none\",\n\t\t\t\t  \"filter\": {\"enabled\": False, \"visible\": \"on-hover\", \"string\": {\"condition\": \"\", \"value\": \"\" }, \"number\": {\"condition\": \"\", \"value\": \"\"}, \"boolean\": {\"condition\": \"\"}, \"date\": {\"condition\": \"\", \"value\": \"\"}},\n\t\t\t\t  \"viewPath\": \"\",\n\t\t\t\t  \"viewParams\": \"\",\n\t\t\t\t  \"boolean\": \"checkbox\",\n\t\t\t\t  \"number\": \"value\",\n\t\t\t\t  \"progressBar\": {\"max\": 100, \"min\": 0, \"bar\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"track\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"value\": {\"enabled\": True, \"format\": \"0,0.##\", \"justify\": \"center\", \"style\": {\"classes\": \"\"}}},\n\t\t\t\t  \"toggleSwitch\": {\"color\": {\"selected\": \"\", \"unselected\": \"\"}},\n\t\t\t\t  \"NoneFormat\": {\"includeNoneStrings\": False, \"strict\": False, \"NoneFormatValue\": \"\"},\n\t\t\t\t  \"numberFormat\": \"0,0.##\",\n\t\t\t\t  \"dateFormat\": \"MM/DD/YYYY HH:mm\",\n\t\t\t\t  \"width\": width,\n\t\t\t\t  \"strictWidth\": True,\n\t\t\t\t  \"style\": {\"classes\": \"\"},\n\t\t\t\t  \"header\": {\"title\": title, \"justify\": justify, \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t  \"footer\": {\"title\": \"\", \"justify\": \"left\", \"align\": \"center\", \"style\": {\"classes\": \"\" }}\n\t\t\t\t}\n\t\n\tcolumns \u003d []\n\tif not value: columns.append(buildColumn(\u0027startDate\u0027, \u0027Start\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\tif not value: columns.append(buildColumn(\u0027endDate\u0027, \u0027End\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\tcolumns.append(buildColumn(\u0027performanceStateName\u0027, \u0027Reason\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\tcolumns.append(buildColumn(\u0027assetName\u0027, \u0027Asset\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\tif not value: columns.append(buildColumn(\u0027workOrderName\u0027, \u0027Asset\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\tif not value: columns.append(buildColumn(\u0027itemName\u0027, \u0027Item\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\tif not value: columns.append(buildColumn(\u0027note\u0027, \u0027Note\u0027, \u0027left\u0027, True, \u0027\u0027, True))\n\tcolumns.append(buildColumn(\u0027value\u0027, \u0027Loss Time (mins)\u0027, \u0027center\u0027, True, \u0027\u0027, True))\n\t\t\n\treturn columns",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.data": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "data": "{view.custom.data}",
+                  "filter": "{view.custom.filters}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value[\u0027filter\u0027][\u0027showSummary\u0027]: return value[\u0027data\u0027][\u0027summary\u0027]\n\treturn value[\u0027data\u0027][\u0027perfEvents\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.footerGroups[0][0].span": {
+            "binding": {
+              "config": {
+                "path": "this.props.columns"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn len(value) - 1",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.footerGroups[0][1].title": {
+            "binding": {
+              "config": {
+                "path": "this.props.data"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(round(sum([item[\u0027value\u0027] for item in value]),1))",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "bodyStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "enableFooterGroups": true,
+          "footerGroupStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "footerGroups": [
+            [
+              {
+                "align": "center",
+                "justify": "right",
+                "style": {
+                  "classes": ""
+                },
+                "title": "Total"
+              },
+              {
+                "align": "center",
+                "justify": "center",
+                "span": 1,
+                "style": {
+                  "classes": ""
+                }
+              }
+            ]
+          ],
+          "footerStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "headerGroupStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "headerStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "pager": {
+            "bottom": false
+          },
+          "rows": {
+            "striped": {
+              "enabled": false
+            }
+          },
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.display.table"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": {
+      "LSL": 1, 
+      "USL": 7, 
+      "LEL": 0, 
+      "Target": 5, 
+      "LCL": 2, 
+      "ProcessValue": 8, 
+      "UEL": 10, 
+      "UCL": 6
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 648, 
+      "height": 43
+    }
+  }, 
+  "root": {
+    "custom": {
+      "seed": 5000
+    }, 
+    "type": "ia.container.flex", 
+    "props": {
+      "alignContent": "center", 
+      "justify": "center", 
+      "style": {
+        "overflow": "hidden"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.flex-repeater", 
+        "props": {
+          "alignItems": "center", 
+          "instances": [
+            {
+              "specValue": 1, 
+              "barColor": "--kcRed-40", 
+              "instanceStyle": {
+                "classes": "", 
+                "fontWeight": "bold"
+              }, 
+              "specName": "LSL", 
+              "instancePosition": {
+                "grow": 0, 
+                "shrink": 0, 
+                "basis": "5%"
+              }, 
+              "direction": "right"
+            }, 
+            {
+              "specValue": 2, 
+              "barColor": "--kcOrange-40", 
+              "instanceStyle": {
+                "classes": "", 
+                "fontWeight": "bold"
+              }, 
+              "specName": "LCL", 
+              "instancePosition": {
+                "grow": 1, 
+                "shrink": 1, 
+                "basis": "16.6666666667%"
+              }, 
+              "direction": "right"
+            }, 
+            {
+              "specValue": 5, 
+              "barColor": "--kcGray-0", 
+              "instanceStyle": {
+                "classes": "", 
+                "fontWeight": "bold"
+              }, 
+              "specName": "TGT", 
+              "instancePosition": {
+                "grow": 1, 
+                "shrink": 1, 
+                "basis": "66.6666666667%"
+              }, 
+              "direction": "center"
+            }, 
+            {
+              "specValue": 6, 
+              "barColor": "--kcOrange-40", 
+              "instanceStyle": {
+                "classes": "", 
+                "fontWeight": "bold"
+              }, 
+              "specName": "UCL", 
+              "instancePosition": {
+                "grow": 1, 
+                "shrink": 1, 
+                "basis": "16.6666666667%"
+              }, 
+              "direction": "left"
+            }, 
+            {
+              "specValue": 7, 
+              "barColor": "--kcRed-40", 
+              "instanceStyle": {
+                "classes": "", 
+                "fontWeight": "bold"
+              }, 
+              "specName": "USL", 
+              "instancePosition": {
+                "grow": 0, 
+                "shrink": 0, 
+                "basis": "5%"
+              }, 
+              "direction": "left"
+            }
+          ], 
+          "useDefaultViewWidth": false, 
+          "path": "Kanoa/Quality/Templates/Utilities/LimitBar", 
+          "style": {
+            "overflow": "hidden"
+          }, 
+          "useDefaultViewHeight": false
+        }, 
+        "meta": {
+          "domId": "FlexRepeater", 
+          "name": "FlexRepeater"
+        }, 
+        "position": {
+          "basis": "320px"
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "!{../lblNoSpecs.position.display}"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "center", 
+            "classes": "GP/Text/Type/Header6"
+          }, 
+          "text": "No spec limits set for this check"
+        }, 
+        "meta": {
+          "domId": "lblNoSpecs", 
+          "name": "lblNoSpecs"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0, 
+          "basis": "32px"
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\tif value[\"LSL\"] is None and value[\"LCL\"] is None:\n\t\treturn True\n\t\n\treturn False", 
+                  "type": "script"
+                }
+              ], 
+              "type": "expr", 
+              "config": {
+                "expression": "{view.params.values}"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\t\n\t\n#\tsystem.perspective.print(\"buildGraphic() called\")\n\t\n\tdef buildElement(value, label, direction, hexColor, basis, grow, shrink):\n\t\tif value is None: return None\n\t\t\t\t\n\t\tif value != '':\tvalue = float(value)\n\t\t\t\n\t\telement = {\n\t\t\t\t\t\"instanceStyle\": {\n\t\t\t\t\t  \"classes\": \"\",\n\t\t\t\t\t  \"fontWeight\": \"bold\"\n\t\t\t\t\t},\n\t\t\t\t\t\"instancePosition\": {\n\t\t\t\t\t  \"grow\": grow,\n\t\t\t\t\t  \"shrink\": shrink,\n\t\t\t\t\t  \"basis\": str(basis) + '%'\n\t\t\t\t\t},\n\t\t\t\t\t\"specName\": label,\n\t\t\t\t\t\"barColor\": hexColor,\n\t\t\t\t\t\"direction\": direction,\n\t\t\t\t\t\"specValue\": value\n\t\t\t\t  }\n\t\t\t\t  \n\t\treturn element\n\t\t\n\tinstances = []\n\n\tLSL = self.view.params.values.LSL\n\tUSL = self.view.params.values.USL\n\tLCL = self.view.params.values.LCL\n\tUCL = self.view.params.values.UCL\n\tTGT = self.view.params.values.Target\n\tactual = self.view.params.values.ProcessValue\n\n\tif USL is not None and LSL is not None:\t#Not much I can do if specs haven't been set\n\t\n\t\tif LCL == 0: LCL = None\n\t\tif UCL == 0: UCL = None\n\t\t\n\t\tbasis = 5\n\t\t\n\t#\trange = float(USL - LSL) - (basis * 2)\n\t\trange = float(USL - LSL)\n\t\tif range == 0.0: range = 1.0\n\t#\tsystem.perspective.print(\"Range is \" + str(range))\n\t\n\t\tLSLBasis = None\n\t\tLCLBasis = None\n\t\ttgtBasis = None\n\t\tUCLBasis = None\n\t\n\t\tif LSL is not None and USL is not None:\n\t\t\tLSLBasis = basis\n\t#\t\tsystem.perspective.print(\"LSLBasis is \" + str(LSLBasis))\n\t#\t\tsystem.perspective.print(\"USLBasis is \" + str(LSLBasis))\t\t\n\t\t\t\n\t\t\tif LCL is not None and LCL != 0: LCLBasis = ((LCL - LSL) / range) * 100.0\n\t#\t\tsystem.perspective.print(\"LCLBasis is \" + str(LCLBasis))\n\t\n\t\t\tif LCL is not None and UCL is not None:\ttgtBasis = ((UCL - LCL) / range) * 100.0\n\t\t\telif LSL is not None and USL is not None: tgtBasis = ((USL - LSL) / range) * 100.0\t\t\n\t\t\t\n\t\t\tif UCL is not None:\tUCLBasis = ((USL - UCL) / range) * 100.0\n\t#\t\tsystem.perspective.print(\"UCLBasis is \" + str(UCLBasis))\t\t\t\n\t\t\n\t\t\telement = buildElement(LSL, 'LSL', 'right', '--kcRed-40', LSLBasis, 0,0)\n\t\t\tif element is not None:\tinstances.append(element)\n\t\t\telement = buildElement(LCL, 'LCL', 'right', '--kcOrange-40', LCLBasis, 1,1)\n\t\t\tif element is not None: instances.append(element)\n\t\n\t#\t\tsystem.perspective.print(\"Building tgtBasis element with \" + str(tgtBasis))\n\t\t\tif TGT is None:\n\t\t\t\tTGT = ''\n\t\t\t\tlabel = ''\n\t\t\telse:\n\t\t\t\tlabel = 'TGT'\t\n\t\t\telement = buildElement(TGT, label, 'center', '--kcGray-0', tgtBasis, 1,1)\n\t#\t\tsystem.perspective.print('tgt element is ' + str(element))\n\t\t\tif element is not None:\n\t\t\t\tinstances.append(element)\t\n\t\t\t\t\t\t\n\t\t\telement = buildElement(UCL, 'UCL', 'left', '--kcOrange-40', UCLBasis, 1,1)\n\t\t\tif element is not None: instances.append(element)\t\t\t\n\t\t\telement = buildElement(USL, 'USL', 'left', '--kcRed-40', LSLBasis, 0,0)\n\t\t\tif element is not None: instances.append(element)\t\t\t\n\n\n#\tsystem.perspective.print(\"Setting specIndicator to \" + str(instances))\t\t\t\t\n\tself.getChild(\"FlexRepeater\").props.instances = instances\n\t\n\treturn", 
+          "name": "buildGraphic"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.values.USL": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.LEL": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.LSL": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.ProcessValue": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.UEL": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.UCL": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.Target": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tself.getChild(\"root\").buildGraphic()"
+      }, 
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.values.LCL": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

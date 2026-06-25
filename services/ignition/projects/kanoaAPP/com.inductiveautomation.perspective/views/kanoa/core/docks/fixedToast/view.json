@@ -1,0 +1,414 @@
+{
+  "custom": {
+    "debug": {
+      "test": {
+        "normal": false, 
+        "failed": false, 
+        "bug": false, 
+        "success": false, 
+        "warning": false, 
+        "info": false
+      }, 
+      "clear": false
+    }, 
+    "show": false, 
+    "uuid": "3967e95e-2d68-4e57-8146-042890f8a99r", 
+    "timer": 0, 
+    "popupTime": 1
+  }, 
+  "params": {
+    "fgColor": "white", 
+    "icon": "", 
+    "message": "Hello. My name is Frank.ggg", 
+    "bgColor": "#666666"
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 390, 
+      "height": 50
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "justify": "center", 
+      "style": {
+        "backgroundColor": "transparent", 
+        "right": "10px", 
+        "left": "10px", 
+        "pointerEvents": "none"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "flex-start", 
+          "style": {
+            "padding": "5px 10px", 
+            "borderRadius": 5, 
+            "gap": 5, 
+            "height": "auto"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.display.icon", 
+            "props": {
+              "style": {
+                "aspectRatio": 1, 
+                "width": 20, 
+                "height": 30
+              }
+            }, 
+            "meta": {
+              "domId": "Icon", 
+              "name": "Icon"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "propConfig": {
+              "props.color": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.params.fgColor"
+                  }
+                }
+              }, 
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn (value or None) is not None", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.icon"
+                  }
+                }
+              }, 
+              "props.path": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.params.icon"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "style": {
+                "minHeight": 30
+              }, 
+              "textStyle": {
+                "whiteSpace": "pre-line", 
+                "classes": "kanoa/font/default"
+              }
+            }, 
+            "meta": {
+              "domId": "lblMessage", 
+              "name": "lblMessage"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.params.message"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxDisplay", 
+          "name": "flxDisplay"
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.bgColor"
+              }
+            }
+          }, 
+          "position.display": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.show"
+              }
+            }
+          }, 
+          "props.style.color": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.fgColor"
+              }
+            }
+          }, 
+          "props.style.transition": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tpopupTime = self.view.custom.popupTime\n\topacityCurve = 'cubic-bezier(%g,%g,%g,%g)' % ((0.5, 0.5, 0.5, 3) if not value else (0.5, -1, 0.5, 0.5))\n\treturn 'opacity %gs %s, transform %gs, bottom %gs ease' % (popupTime, opacityCurve, popupTime, popupTime)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.show"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": true, 
+          "script": "\tpayload = self.processPayload(payload)\n\t\t\n\tself.showMessage(**payload)", 
+          "messageType": "showToast", 
+          "sessionScope": true, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": true, 
+          "script": "\tpayload = self.processPayload(payload)\n\t\n\tif not 'bgColor' in payload: payload['bgColor'] = 'forestGreen'\n\tif not 'fgColor' in payload: payload['fgColor'] = 'white'\n\tif not 'icon' in payload: payload['icon'] = 'material/check_circle'\n\t\n\tself.showMessage(**payload)", 
+          "messageType": "showSuccessfulToast", 
+          "sessionScope": true, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": true, 
+          "script": "\tpayload = self.processPayload(payload)\n\t\n\tif not 'bgColor' in payload: payload['bgColor'] = 'fireBrick'\n\tif not 'fgColor' in payload: payload['fgColor'] = 'white'\n\tif not 'icon' in payload: payload['icon'] = 'material/error'\n\t\n\tself.showMessage(**payload)", 
+          "messageType": "showFailerToast", 
+          "sessionScope": true, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": true, 
+          "script": "\tpayload = self.processPayload(payload)\n\t\n\tif not 'bgColor' in payload: payload['bgColor'] = '#EE9933'\n\tif not 'fgColor' in payload: payload['fgColor'] = 'white'\n\tif not 'icon' in payload: payload['icon'] = 'material/bug_report'\n\t\n\tself.showMessage(**payload)", 
+          "messageType": "showBugToast", 
+          "sessionScope": true, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": true, 
+          "script": "\tpayload = self.processPayload(payload)\n\t\n\tif not 'bgColor' in payload: payload['bgColor'] = '#AF9E00'\n\tif not 'fgColor' in payload: payload['fgColor'] = 'white'\n\tif not 'icon' in payload: payload['icon'] = 'material/warning'\n\t\n\tself.showMessage(**payload)", 
+          "messageType": "showWarningToast", 
+          "sessionScope": true, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": true, 
+          "script": "\tpayload = self.processPayload(payload)\n\t\n\tif not 'bgColor' in payload: payload['bgColor'] = '#0077AA'\n\tif not 'fgColor' in payload: payload['fgColor'] = 'white'\n\tif not 'icon' in payload: payload['icon'] = 'material/info'\n\t\n\tself.showMessage(**payload)", 
+          "messageType": "showInfoToast", 
+          "sessionScope": true, 
+          "pageScope": true
+        }, 
+        {
+          "viewScope": false, 
+          "script": "\t\"\"\"\n\tForces the toast to close itself immediately\n\t\"\"\"\n\t\n\tself.view.custom.timer = 0\n\t\n\treturn", 
+          "messageType": "closeToast", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [
+        {
+          "params": [
+            "message=''", 
+            "bgColor=''", 
+            "fgColor=''", 
+            "icon=''"
+          ], 
+          "script": "\t\n\tself.view.params.bgColor = bgColor or '#666666'\n\tself.view.params.fgColor = fgColor or 'white'\n\tself.view.params.icon = icon or ''\n\tself.view.params.message = message or ''\n\tif message:\tself.view.custom.uuid = str(system.kanoa.utilities.getUUID())", 
+          "name": "showMessage"
+        }, 
+        {
+          "params": [
+            "payload"
+          ], 
+          "script": "\treturn payload if str(type(payload)) == \"<type 'dict'>\" else {'message': payload}", 
+          "name": "processPayload"
+        }
+      ], 
+      "extensionFunctions": null
+    }, 
+    "propConfig": {
+      "custom.show": {
+        "binding": {
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "bidirectional": true, 
+            "path": "view.custom.show"
+          }
+        }
+      }, 
+      "custom.debug": {
+        "binding": {
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "bidirectional": true, 
+            "path": "view.custom.debug"
+          }
+        }
+      }, 
+      "props.style.transition": {
+        "binding": {
+          "transforms": [
+            {
+              "code": "\tpopupTime = self.view.custom.popupTime\n\topacityCurve = 'cubic-bezier(%g,%g,%g,%g)' % ((0.5, 0.5, 0.5, 3) if not value else (0.5, -1, 0.5, 0.5))\n\treturn 'opacity %gs %s, transform %gs, bottom %gs ease' % (popupTime, opacityCurve, popupTime, popupTime)", 
+              "type": "script"
+            }
+          ], 
+          "type": "property", 
+          "overlayOptOut": true, 
+          "config": {
+            "path": "view.custom.show"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "custom.debug.test.warning": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tsystem.perspective.sendMessage('showWarningToast', 'Watch out! The monster is right behind you!')\n\t\tself.custom.debug.test.warning = False"
+      }
+    }, 
+    "custom.show": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn True", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.custom.uuid"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.bgColor": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.uuid": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value != '':\n\t\tfrom math import ceil\n\t\tmessage = self.params.message\n\t\twordPerMinute = 150\n\t\twordCount = len(message.split(' '))\n\t\tduration = ceil(wordCount / float(wordPerMinute) * 60.0)\n\t\t\n\t\tpopupTime = self.custom.popupTime or 0\n\t\t\n\t\tself.custom.timer = duration + popupTime * 2\n\t\t\n\t\treturn"
+      }, 
+      "persistent": true
+    }, 
+    "custom.debug.clear": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tself.params.message = ''\n\t\tself.params.bgColor = ''\n\t\tself.params.fgColor = ''\n\t\tself.params.icon = ''\n\t\tself.custom.debug.clear = False"
+      }
+    }, 
+    "custom.debug": {
+      "persistent": true
+    }, 
+    "custom.debug.test.bug": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tsystem.perspective.sendMessage('showBugToast', 'Error 404: Your brain was not found!')\n\t\tself.custom.debug.test.bug = False"
+      }
+    }, 
+    "custom.debug.test.normal": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tsystem.perspective.sendMessage('showToast', 'Hello. My name is Frank.')\n\t\tself.custom.debug.test.normal = False"
+      }
+    }, 
+    "params.icon": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.message": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.popupTime": {
+      "persistent": true
+    }, 
+    "custom.debug.test.failed": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tsystem.perspective.sendMessage('showFailerToast', 'Oh no! It didn\\'t work.')\n\t\tself.custom.debug.test.failed = False"
+      }
+    }, 
+    "custom.debug.test.success": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tsystem.perspective.sendMessage('showSuccessfulToast', 'Good Job! You did it.')\n\t\tself.custom.debug.test.success = False"
+      }
+    }, 
+    "params.fgColor": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.debug.test.info": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\tif currentValue.value:\n\t\tsystem.perspective.sendMessage('showInfoToast', u'The weather is sunny with a high of 68°F.')\n\t\tself.custom.debug.test.info = False"
+      }
+    }, 
+    "custom.timer": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\tvalue = float(self.custom.timer or 0)\n\n\tif value <= self.custom.popupTime:\n\t\tself.custom.show = False\n\t\n\tif value > 0:\n\t\treturn value - 1\n\telse:\n#\t\tself.params.message = ''\n\t\treturn 0", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "overlayOptOut": true, 
+        "config": {
+          "expression": "now(1000)"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

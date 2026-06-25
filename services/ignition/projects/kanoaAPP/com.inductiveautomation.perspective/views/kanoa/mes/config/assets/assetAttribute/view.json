@@ -1,0 +1,498 @@
+{
+  "custom": {
+    "hover": false,
+    "labelFocused": false
+  },
+  "params": {
+    "attrId": [
+      56
+    ],
+    "enabled": true,
+    "label": "erpMachineName",
+    "options": [
+      "_assetOpsViewPath",
+      "erpMachineName",
+      "assetOpsViewOptions",
+      "_runSetupViewPath",
+      "_productionReportViewPath"
+    ],
+    "text": "",
+    "uuid": ""
+  },
+  "propConfig": {
+    "custom.default": {
+      "persistent": true
+    },
+    "params.attrId": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.enabled": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.label": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif currentValue.value is None: self.params.label \u003d \u0027\u0027\n\t\n\tif origin \u003d\u003d \u0027BindingWriteback\u0027:\n\t\tself.getChild(\"root\").save()"
+      },
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.options": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.text": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tif origin \u003d\u003d \u0027BindingWriteback\u0027:\n\t\tself.getChild(\"root\").save()"
+      },
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.uuid": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 351
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onBlur": {
+                  "config": {
+                    "script": "\tself.view.custom.labelFocused \u003d False"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "dropdown",
+              "name": "dropdown"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.labelFocused"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\tif currentValue.value:\n\t\tself.focus()"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.options"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\n\t\t\u0027label\u0027: x,\n\t\t\u0027value\u0027: x\n\t} for x in value]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.label"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "allowCustomOptions": true,
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "showClearIcon": true,
+              "style": {
+                "backgroundColor": "transparent",
+                "borderStyle": "none",
+                "classes": "kanoa/font/default",
+                "minWidth": "150px",
+                "textOverflow": "ellipsis",
+                "width": "100%"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "events": {
+              "dom": {
+                "onFocus": {
+                  "config": {
+                    "script": "\tself.view.custom.labelFocused \u003d True"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "label",
+              "name": "label",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right",
+                "text": "Name of the attribute. You can select from a list or type in a new attribute name."
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.labelFocused"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn not value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.label"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value if value else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "placeholder": "Click here to add new attribute",
+              "style": {
+                "backgroundColor": "transparent",
+                "borderStyle": "none",
+                "classes": "kanoa/font/default",
+                "minWidth": "150px",
+                "textAlign": "right",
+                "textOverflow": "ellipsis",
+                "width": "100%"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxLabel",
+          "name": "flxLabel"
+        },
+        "position": {
+          "basis": "200px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.style.widthX": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "label": "{view.params.label}",
+                  "labelFocused": "{view.custom.labelFocused}"
+                },
+                "waitOnAll": true
+              },
+              "enabled": false,
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn 200 if value.labelFocused else \u0027%dch\u0027 % len(value.label or \u0027\u0027)",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "backgroundColor": "transparent",
+            "classes": "kanoa/font/default",
+            "cursor": "pointer",
+            "maxWidth": 250,
+            "minWidth": 120,
+            "overflow": "hidden",
+            "padding": 0,
+            "transition": "0.5s",
+            "widthX": "1ch"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "events": {
+          "dom": {
+            "onFocus": {
+              "config": {
+                "script": "\tself.view.custom.labelFocused \u003d False"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "input",
+          "name": "input",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-left",
+            "text": "Value of the custom asset attribute"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "meta.visible": {
+            "binding": {
+              "config": {
+                "path": "view.params.label"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn (value or None) is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.text"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/border kanoa/font/default",
+            "height": "auto",
+            "minHeight": 30,
+            "textAlign": "left"
+          }
+        },
+        "type": "ia.input.text-field"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\tself.view.getChild(\"root\").remove()"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          },
+          "dom": {
+            "onFocus": {
+              "config": {
+                "script": "\tself.view.custom.labelFocused \u003d False"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnRemove",
+          "name": "btnRemove",
+          "tooltip": {
+            "delay": 0,
+            "enabled": true,
+            "location": "center-left",
+            "text": "Remove attribute"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "custom.show": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "hover": "{view.custom.hover}",
+                  "labelFocused": "{view.custom.labelFocused}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif (self.view.params.text or None) is None: return False\n\t\n\treturn value[\u0027hover\u0027] and not value[\u0027labelFocused\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.style.marginLeft": {
+            "binding": {
+              "config": {
+                "path": "this.custom.show"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn -3 if value else -5",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.width": {
+            "binding": {
+              "config": {
+                "path": "this.custom.show"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn 30 if value else 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/clear"
+            }
+          },
+          "style": {
+            "classes": "kanoa/button/flatIcon",
+            "focusable": "none",
+            "transition": "0.1s"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onMouseEnter": {
+          "config": {
+            "script": "\tself.view.custom.hover \u003d True"
+          },
+          "scope": "G",
+          "type": "script"
+        },
+        "onMouseLeave": {
+          "config": {
+            "script": "\tself.view.custom.hover \u003d False"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "flex-component",
+        "gap": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\tlabel \u003d self.view.params.label\n\ttext \u003d self.view.params.text\n\t\n\tif label !\u003d \u0027\u0027 and text !\u003d \u0027\u0027:\n\t\tpayload \u003d {\n\t\t\t\u0027uuid\u0027: self.view.params.uuid,\n\t\t\t\u0027attrId\u0027: self.view.params.attrId,\n\t\t\t\u0027state\u0027: \u0027update\u0027 if self.view.params.attrId else \u0027insert\u0027,\n\t\t\t\u0027label\u0027: label,\n\t\t\t\u0027text\u0027: text\n\t\t}\n\t\t\n\t\tsystem.perspective.sendMessage(\u0027Change Asset Attribute\u0027, payload)"
+        },
+        {
+          "name": "remove",
+          "params": [],
+          "script": "\tpayload \u003d {\n\t\t\u0027uuid\u0027: self.view.params.uuid,\n\t\t\u0027attrId\u0027: self.view.params.attrId,\n\t\t\u0027state\u0027: \u0027delete\u0027 if self.view.params.attrId else \u0027drop\u0027,\n\t\t\u0027label\u0027: self.view.params.label,\n\t\t\u0027text\u0027: self.view.params.text\n\t}\n\t\n\tsystem.perspective.sendMessage(\u0027Change Asset Attribute\u0027, payload)"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

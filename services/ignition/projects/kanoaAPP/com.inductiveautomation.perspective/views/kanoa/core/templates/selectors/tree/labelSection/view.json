@@ -1,0 +1,113 @@
+{
+  "custom": {
+    "expanded": false,
+    "values": {
+      "msgHandler": null,
+      "path": "Kanoa Industries\\Adelaide Hills\\Packaging\\Line 1",
+      "section": "Packaging",
+      "selectorId": null
+    }
+  },
+  "params": {
+    "values": {
+      "msgHandler": null,
+      "path": "Kanoa Industries\\Adelaide Hills\\Packaging\\Line 1",
+      "section": "Packaging",
+      "selectorId": null
+    }
+  },
+  "propConfig": {
+    "custom.expanded": {
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 40,
+      "width": 82
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblItem",
+          "name": "lblItem"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.values"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\tdivider \u003d \u0027 \u003e \u0027 if \tvalue[\u0027section\u0027] !\u003d value[\u0027path\u0027] else \u0027\u0027\n\treturn \"%s%s\"%(divider, value[\u0027section\u0027])",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\n\tself.view.getChild(\"root\").selectionMade()\n\t\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignContent": "center",
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "selectionMade",
+          "params": [],
+          "script": "\t\n\toriginalPath \u003d self.view.custom.values.path\n\tsections \u003d originalPath.split(\"\\\\\")[:-1]\n\tsections.append(self.view.custom.values.section)\n\tnewPath \u003d \"\\\\\".join(sections)\n\tpayload\u003d{\u0027path\u0027: newPath, \u0027msgHandler\u0027: self.view.params.values.msgHandler, \u0027selectorId\u0027: self.view.params.values.selectorId}\n\tsystem.perspective.print(\u0027selectionMade called with payload of %s\u0027%payload)\n\tsystem.perspective.sendMessage(\"breadCrumbSectionSelected\", payload)\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

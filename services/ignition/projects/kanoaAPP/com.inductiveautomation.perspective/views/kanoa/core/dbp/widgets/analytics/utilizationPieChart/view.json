@@ -1,0 +1,638 @@
+{
+  "custom": {
+    "chart": {},
+    "data": {},
+    "filters": {
+      "assetId": null,
+      "assetPath": null,
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "donutMode": true,
+      "includeNonProductionModes": true,
+      "includeProductiveTime": true,
+      "showAssetPath": true,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "donutMode": true,
+      "includeNonProductionModes": true,
+      "includeProductiveTime": true
+    }
+  },
+  "propConfig": {
+    "custom.chart": {
+      "persistent": true
+    },
+    "custom.chart.series": {
+      "binding": {
+        "config": {
+          "path": "view.custom.data.productionEvents"
+        },
+        "transforms": [
+          {
+            "code": "\t# Perspective transform for OEE pie (ApexCharts)\n\t# Input:  value -\u003e list[dict] production events (productionEventData.json shape)\n\t# Output: {\"labels\": [...], \"series\": [...], \"colors\": [...]}  (minutes, 2 decimals)\n\t#\n\t# Ordering:\n\t#   1) Non-production modes, most -\u003e least (by duration)\n\t#   2) Good Runtime (if includeProductiveTime)\n\t#   3) Losses: A/P/Q, most -\u003e least\n\t#\n\t# Colors:\n\t#   - Each non-production mode -\u003e its assigned modeColor\n\t#   - Good Runtime -\u003e Production mode color\n\t#   - A/P/Q -\u003e distinct tweakable defaults (constants below)\n\t#\n\t# Notes:\n\t#   - Uses dataset minute totals; skips zero/neg durations\n\t#   - Missing A/P/Q treated as 1.0 (no loss)\n\t#   - Returns minutes for readability\n\t\n\tfrom collections import defaultdict\n\t\n\tlogger \u003d system.util.getLogger(\u0027oeePieChart\u0027)\n\t\n\t# \u003d\u003d\u003d Tweakable defaults for OEE slices \u003d\u003d\u003d\n\tAPX_COLOR_AVAILABILITY \u003d \u0027#ba1a1a\u0027  # A\n\tAPX_COLOR_PERFORMANCE  \u003d \u0027#f4b400\u0027  # P\n\tAPX_COLOR_QUALITY      \u003d \u0027#489fe2\u0027  # Q\n\tAPX_COLOR_FALLBACK     \u003d \u0027#9e9e9e\u0027  # Any missing mode color\n\t\n\tdef safeRate(raw):\n\t\t\"\"\"Coerce availability/performance/quality into [0,1], default 1.0 when None/invalid.\"\"\"\n\t\ttry:\n\t\t\tval \u003d float(raw)\n\t\texcept:\n\t\t\treturn 1.0\n\t\treturn 0.0 if val \u003c 0 else 1.0 if val \u003e 1 else val\n\t\n\tdef mins(x):\n\t\t\"\"\"Seconds -\u003e minutes, rounded to 2 decimals.\"\"\"\n\t\treturn round((x or 0.0) / 60.0, 2)\n\t\n\tdef getModeColorByName(modeName, cache):\n\t\t\"\"\"\n\t\tReturn the configured color for a given modeName.\n\t\tLookup order:\n\t\t  1) Cache hit\n\t\t  2) Live modes -\u003e getFieldValue(\u0027modeColor\u0027, system.kanoa.asset.getModes({\u0027modeName\u0027: modeName}))\n\t\t  3) Fallback\n\t\t\"\"\"\n\t\tif not modeName:\n\t\t\treturn APX_COLOR_FALLBACK\n\t\n\t\tif modeName in cache:\n\t\t\treturn cache[modeName] or APX_COLOR_FALLBACK\n\t\n\t\ttry:\n\t\t\tmodesDs \u003d system.kanoa.asset.getModes({\u0027modeName\u0027: modeName})\n\t\t\tmodeColor \u003d system.kanoa.utilities.getFieldValue(\u0027modeColor\u0027, modesDs)\n\t\t\tcache[modeName] \u003d modeColor or APX_COLOR_FALLBACK\n\t\texcept Exception as ex:\n\t\t\tlogger.warn(\u0027getModeColorByName failed for \"%s\": %s\u0027 % (modeName, ex))\n\t\t\tcache[modeName] \u003d APX_COLOR_FALLBACK\n\t\n\t\treturn cache[modeName]\n\t\n\ttry:\n\t\tif not value:\n\t\t\treturn {\"labels\": [], \"series\": [], \"colors\": []}\n\t\n\t\t# Read flags (default True if absent)\n\t\tfilters \u003d getattr(self.view.custom, \u0027filters\u0027, {}) or {}\n\t\tincludeNonProduction \u003d bool(filters.get(\u0027includeNonProductionModes\u0027, True))\n\t\tincludeProductiveTime \u003d bool(filters.get(\u0027includeProductiveTime\u0027, True))\n\t\n\t\t# Accumulators (seconds)\n\t\tnonProdByMode \u003d defaultdict(float)\n\t\tavailabilityLossSecs \u003d 0.0\n\t\tperformanceLossSecs \u003d 0.0\n\t\tqualityLossSecs \u003d 0.0\n\t\tgoodRuntimeSecs \u003d 0.0\n\t\n\t\t# Color helpers\n\t\tmodeColorCache \u003d {}\n\t\n\t\t# Also capture a \"production color\" for Good Runtime\n\t\tproductionColor \u003d None\n\t\n\t\tfor row in value:\n\t\t\tdurationSecs \u003d float(row.get(\u0027durationSecs\u0027) or 0.0)\n\t\t\tif durationSecs \u003c\u003d 0:\n\t\t\t\tcontinue\n\t\n\t\t\tmodeTypeName \u003d row.get(\u0027modeTypeName\u0027) or \u0027\u0027\n\t\t\tmodeName \u003d row.get(\u0027modeName\u0027) or \u0027Unspecified\u0027\n\t\n\t\t\t# Prefer color from row if present; seed the cache to avoid DB calls\n\t\t\trowModeColor \u003d row.get(\u0027modeColor\u0027) or None\n\t\t\tif rowModeColor and modeName not in modeColorCache:\n\t\t\t\tmodeColorCache[modeName] \u003d rowModeColor\n\t\n\t\t\tif modeTypeName !\u003d \u0027Production\u0027:\n\t\t\t\tnonProdByMode[modeName] +\u003d durationSecs\n\t\t\t\tcontinue\n\t\n\t\t\t# Production: split A/P/Q/Good\n\t\t\ta \u003d safeRate(row.get(\u0027availability\u0027))\n\t\t\tp \u003d safeRate(row.get(\u0027performance\u0027))\n\t\t\tq \u003d safeRate(row.get(\u0027quality\u0027))\n\t\n\t\t\taLost \u003d durationSecs * (1.0 - a)\n\t\t\tremA \u003d durationSecs - aLost\n\t\n\t\t\tpLost \u003d remA * (1.0 - p)\n\t\t\tremAP \u003d remA - pLost\n\t\n\t\t\tqLost \u003d remAP * (1.0 - q)\n\t\t\tgood \u003d remAP - qLost\n\t\n\t\t\tavailabilityLossSecs +\u003d aLost\n\t\t\tperformanceLossSecs +\u003d pLost\n\t\t\tqualityLossSecs +\u003d qLost\n\t\t\tgoodRuntimeSecs +\u003d good\n\t\n\t\t\t# Capture production color once\n\t\t\tif productionColor is None:\n\t\t\t\tproductionColor \u003d getModeColorByName(\u0027Production\u0027, modeColorCache)\n\t\n\t\t# Default production color if lookup never happened\n\t\tif productionColor is None:\n\t\t\tproductionColor \u003d getModeColorByName(\u0027Production\u0027, modeColorCache)\n\t\n\t\t# \u003d\u003d\u003d Build ordered slices \u003d\u003d\u003d\n\t\tlabels \u003d []\n\t\tseries \u003d []\n\t\tcolors \u003d []\n\t\n\t\t# 1) Non-production modes, most -\u003e least\n\t\tif includeNonProduction and nonProdByMode:\n\t\t\tfor name, secs in sorted(nonProdByMode.items(), key\u003dlambda kv: kv[1], reverse\u003dTrue):\n\t\t\t\tlabels.append(name)\n\t\t\t\tseries.append(mins(secs))\n\t\t\t\tcolors.append(getModeColorByName(name, modeColorCache))\n\t\n\t\t# 2) Good Runtime (optional)\n\t\tif includeProductiveTime and goodRuntimeSecs \u003e 0:\n\t\t\tlabels.append(\u0027Good Runtime\u0027)\n\t\t\tseries.append(mins(goodRuntimeSecs))\n\t\t\tcolors.append(productionColor)\n\t\n\t\t# 3) Losses -\u003e compute mins and order by magnitude\n\t\tlossTriples \u003d [\n\t\t\t(\u0027Availability Loss\u0027, availabilityLossSecs, APX_COLOR_AVAILABILITY),\n\t\t\t(\u0027Performance Loss\u0027,  performanceLossSecs,  APX_COLOR_PERFORMANCE),\n\t\t\t(\u0027Quality Loss\u0027,      qualityLossSecs,      APX_COLOR_QUALITY),\n\t\t]\n\t\t# Filter zeros, sort most -\u003e least\n\t\tlossTriples \u003d [(n, s, c) for (n, s, c) in lossTriples if s \u003e 0]\n\t\tlossTriples.sort(key\u003dlambda t: t[1], reverse\u003dTrue)\n\t\n\t\tfor name, secs, color in lossTriples:\n\t\t\tlabels.append(name)\n\t\t\tseries.append(mins(secs))\n\t\t\tcolors.append(color or APX_COLOR_FALLBACK)\n\t\n\t\treturn {\"labels\": labels, \"series\": series, \"colors\": colors}\n\t\n\texcept Exception as ex:\n\t\tlogger.error(\u0027oeePieChart transform failed: %s\u0027 % ex)\n\t\treturn {\"labels\": [], \"series\": [], \"colors\": []}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.productionEvents": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\tfilter \u003d value\n\n\tif (filter[\u0027assetPath\u0027] or None) is None: return []\n\tassetPath \u003d filter[\u0027assetPath\u0027] + \u0027%\u0027\n\tassetId \u003d filter[\u0027assetId\u0027]\n\tstartDate \u003d filter[\u0027dateRange\u0027][\u0027startDate\u0027]\n\tendDate \u003d filter[\u0027dateRange\u0027][\u0027endDate\u0027]\n\tmodeEventId \u003d None\n\n\tif assetPath is None: return []\n\t\n\tparamsDict \u003d {\u0027assetId\u0027: assetId, \u0027assetPath\u0027: assetPath, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027modeEventId\u0027: modeEventId}\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEvents(paramsDict))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027showAssetPath\u0027): filters[\u0027showAssetPath\u0027] \u003d True\n\tif not filters.has_key(\u0027includeNonProductionModes\u0027): filters[\u0027includeNonProductionModes\u0027] \u003d True\n\tif not filters.has_key(\u0027includeProductiveTime\u0027): filters[\u0027includeProductiveTime\u0027] \u003d True\n\tif not filters.has_key(\u0027donutMode\u0027): filters[\u0027donutMode\u0027] \u003d False\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 450,
+      "width": 926
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge"
+              },
+              "text": "Asset Utilization",
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblAsset",
+              "name": "lblAsset"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tassetPath \u003d system.kanoa.utilities.formatPath(value[\u0027assetPath\u0027], {}) if value[\u0027showAssetPath\u0027] else \u0027\u0027\n\treturn \u0027%s\u0027%(assetPath)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "textStyle": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblMetric",
+              "name": "lblMetric"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tmetricType \u003d value[\u0027metricType\u0027] if value.has_key(\u0027showMetricSelector\u0027) and not value[\u0027showMetricSelector\u0027] else \u0027\u0027\n\treturn \u0027Summarize by %s\u0027%(metricType)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddMetric",
+              "name": "ddMetric"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showMetricSelector\u0027) and value[\u0027showMetricSelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027Duration\u0027, \u0027value\u0027: \u0027Duration\u0027}, \n\t{\u0027label\u0027: \u0027Occurrence\u0027, \u0027value\u0027: \u0027Occurrence\u0027}]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.metricType"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "lblGroupBy",
+              "name": "lblGroupBy"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tgroupBy \u003d value[\u0027groupBy\u0027] if value.has_key(\u0027showGroupBySelector\u0027) and not value[\u0027showGroupBySelector\u0027] else \u0027\u0027\n\treturn \u0027Group by %s\u0027%(groupBy)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddGroup",
+              "name": "ddGroup"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value.has_key(\u0027showGroupBySelector\u0027) and value[\u0027showGroupBySelector\u0027] else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027label\u0027: \u0027Asset\u0027, \u0027value\u0027: \u0027Asset\u0027}, \n\t{\u0027label\u0027: \u0027Reason\u0027, \u0027value\u0027: \u0027Reason\u0027}, \n\t{\u0027label\u0027: \u0027Work Order\u0027, \u0027value\u0027: \u0027Work Order\u0027},\n\t{\u0027label\u0027: \u0027Item\u0027, \u0027value\u0027: \u0027Item\u0027},\n\t{\u0027label\u0027: \u0027Line\u0027, \u0027value\u0027: \u0027Line\u0027}]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.groupBy"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions"
+        },
+        "position": {
+          "display": false
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "visible"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "apexPie",
+              "name": "apexPie"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options.colors": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.series.colors"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.options.labels": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.series.labels"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.chart.series.series"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.type": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.donutMode"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027donut\u0027 if value else \u0027pie\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "options": {
+                "chart": {
+                  "fontFamily": "Roboto",
+                  "height": 350,
+                  "stacked": false,
+                  "toolbar": {
+                    "show": false
+                  },
+                  "type": "pie"
+                },
+                "dataLabels": {
+                  "enabled": true
+                },
+                "fill": {
+                  "opacity": 1
+                },
+                "legend": {
+                  "position": "bottom"
+                },
+                "markers": {
+                  "size": 5
+                },
+                "plotOptions": {},
+                "stroke": {
+                  "colors": [
+                    "#000000"
+                  ],
+                  "curve": "monotoneCubic",
+                  "width": 1
+                },
+                "theme": {},
+                "title": {
+                  "text": ""
+                },
+                "tooltip": {
+                  "y": {
+                    "formatter": {
+                      "y": {
+                        "formatter": "function(val) { return val.toFixed(1) ; }"
+                      }
+                    }
+                  }
+                },
+                "xaxis": {
+                  "labels": {
+                    "formatter": "function(val) { if (!val) return \u0027\u0027; var parts \u003d val.split(\u0027\\\\\u0027); return parts[parts.length - 1]; }"
+                  },
+                  "type": "category"
+                }
+              }
+            },
+            "type": "kyvislabs.display.apexchart"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblFilter",
+              "name": "lblFilter"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_0",
+              "name": "lblFilter_0"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblFilter_1",
+              "name": "lblFilter_1"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo.params[0].enabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxDebug",
+          "name": "flxDebug"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 3
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

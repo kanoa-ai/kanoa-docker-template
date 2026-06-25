@@ -1,0 +1,736 @@
+{
+  "custom": {
+    "clearView": false,
+    "expand": true,
+    "showInfolevel": "status",
+    "size": 24
+  },
+  "params": {
+    "value": {
+      "assetInfo": {
+        "assetGroupColor": null,
+        "assetGroupId": null,
+        "assetGroupName": null,
+        "assetId": null,
+        "assetName": null,
+        "assetPath": null,
+        "assetTypeId": null,
+        "assetTypeName": null,
+        "assetTypePath": null,
+        "displayPath": null,
+        "enabled": null,
+        "iconPath": null,
+        "oeeEnabled": null,
+        "parentId": null,
+        "path": null,
+        "processTypeId": null,
+        "processTypeName": null,
+        "sortOrder": null,
+        "tagPath": null,
+        "timeZone": null
+      },
+      "assetName": "",
+      "assets": [],
+      "childAssets": [],
+      "expand": true,
+      "level": 3
+    }
+  },
+  "propConfig": {
+    "custom.clearView": {
+      "onChange": {
+        "enabled": null,
+        "script": "\n\tif currentValue.value:\n\t\tself.params.value.assetInfo.oeeEnabled \u003d False\n\t\tself.params.value.assets \u003d []\n\t\tself.params.value.childAssets \u003d []\n\t\tself.params.value.assetName \u003d \u0027\u0027\n\t\tself.params.value.assetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: -1}), 0)\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tself.custom.clearView \u003d False\n\t\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.expand": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.expand"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.showInfolevel": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027status\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\t\t\n\tif self.view.params.value.assetInfo.assetPath:\n\t\tpayload \u003d {\u0027showInfoLevel\u0027: currentValue.value, \u0027assetPath\u0027: self.view.params.value.assetInfo.assetPath}\n\t\tsystem.perspective.sendMessage(\"showAssetInfo\", payload)\n\t\t\n\treturn\t\t"
+      },
+      "persistent": true
+    },
+    "custom.size": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetPath\u0027] is None: return 24\n\tlevel \u003d len(value[\u0027assetPath\u0027].split(\"\\\\\"))\n\tlevel \u003d 24 - level*3\n\tif level \u003c 10: level \u003d 10\n\treturn level",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 76,
+      "width": 1561
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evAssetStatus",
+              "name": "evAssetStatus"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value.get(\u0027assetInfo\u0027) is None: return False\n\treturn value[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.value.assetInfo": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetInfo"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n#\tif value.get(\u0027assetInfo\u0027) is None or not value[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027] or value[\u0027assetInfo\u0027].get(\u0027_assetOEEStateDisplay\u0027) is None: return \u0027kanoa/core/dbp/blankView\u0027\n\tif value.get(\u0027assetInfo\u0027) is None or not value[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: return \u0027kanoa/core/dbp/blankView\u0027\n\treturn  value[\u0027assetInfo\u0027].get(\u0027_assetOEEStateDisplay\u0027) or \u0027kanoa/mes/asset/overview/assetOEEState\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {}
+              },
+              "style": {
+                "overflow": "visible"
+              },
+              "useDefaultViewWidth": true
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\n\texpandMsg \u003d {\u0027expand\u0027: not self.view.custom.expand, \u0027assetPath\u0027: self.view.params.value.assetInfo.assetPath}\n\tsystem.perspective.sendMessage(\u0027expandAssets\u0027, expandMsg)\n\tself.view.custom.expand \u003d not self.view.custom.expand\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "icoExpand",
+              "name": "icoExpand"
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.visible": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.childAssets"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetInfo.oeeEnabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn False if value else True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "expand": "{view.custom.expand}",
+                      "timeNow": "now(0)"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027material/keyboard_arrow_down\u0027 if value[\u0027expand\u0027] else \u0027material/keyboard_arrow_right\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "color": "--kcOnSurface",
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "height": 30,
+                "width": 30
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblLevel",
+                  "name": "lblLevel"
+                },
+                "position": {
+                  "display": false,
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.level"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "textStyle": {
+                    "classes": "kanoa/font/titleLarge"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "icoSite",
+                  "name": "icoAsset",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "bottom-left"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.assetInfo.assetTypeName"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif value is None: return \u0027\u0027\n\treturn value.title() or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.assetInfo.iconPath"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.height": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.size"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.style.width": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.size"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "color": "--kcOnSurface",
+                  "style": {
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.display.icon"
+              },
+              {
+                "meta": {
+                  "domId": "lblAssetName",
+                  "name": "lblAssetName"
+                },
+                "position": {
+                  "basis": "175px",
+                  "grow": 1,
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif value[\u0027assetInfo\u0027][\u0027assetPath\u0027] is None: return \u0027\u0027\n\tif value[\u0027level\u0027] \u003e 2: return \" \u003e \".join(value[\u0027assetInfo\u0027][\u0027assetPath\u0027].split(\"\\\\\")[2:])\n\treturn value[\u0027assetName\u0027] or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.textStyle.fontSize": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.size"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\n\treturn \u0027%spx\u0027%(value or 20)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "--kcOnSurface",
+                    "fontWeight": "normal"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "children": [
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\t\n\tself.view.custom.showInfolevel \u003d \u0027detail\u0027 if self.view.custom.showInfolevel !\u003d \u0027detail\u0027 else \u0027status\u0027\n\t\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "domId": "btnShowDetail",
+                      "name": "btnShowDetail",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-left",
+                        "text": "Show Details"
+                      }
+                    },
+                    "position": {
+                      "basis": "60px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "expand": "{view.custom.expand}",
+                              "level": "{view.params.value.level}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn value[\u0027level\u0027] \u003e 0 and value[\u0027expand\u0027] \u003d\u003d True",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      },
+                      "props.style.classes": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn \u0027kanoa/button/filled kanoa/font/default\u0027 if value \u003d\u003d \u0027detail\u0027 else \u0027kanoa/button/outlined kanoa/font/default\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "image": {
+                        "position": "right"
+                      },
+                      "style": {
+                        "height": "20px"
+                      },
+                      "text": "Detail",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelSmall"
+                      }
+                    },
+                    "type": "ia.input.button"
+                  },
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\n\tself.view.custom.showInfolevel \u003d \u0027summary\u0027 if self.view.custom.showInfolevel !\u003d \u0027summary\u0027 else \u0027status\u0027\n\t\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "domId": "btnShowSummary",
+                      "name": "btnShowSummary",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Show Summary"
+                      }
+                    },
+                    "position": {
+                      "basis": "60px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "expand": "{view.custom.expand}",
+                              "level": "{view.params.value.level}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn value[\u0027level\u0027] \u003e 0 and value[\u0027expand\u0027] \u003d\u003d True",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      },
+                      "props.style.classes": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn \u0027kanoa/button/filled kanoa/font/default\u0027 if value \u003d\u003d \u0027summary\u0027 else \u0027kanoa/button/outlined kanoa/font/default\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "image": {
+                        "position": "right"
+                      },
+                      "style": {
+                        "height": "20px"
+                      },
+                      "text": "Summary",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelSmall"
+                      }
+                    },
+                    "type": "ia.input.button"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxButtons",
+                  "name": "flxButtons"
+                },
+                "position": {
+                  "basis": "200px"
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "expand": "{view.custom.expand}",
+                          "level": "{view.params.value.level}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn value[\u0027level\u0027] \u003e 0 and value[\u0027expand\u0027] \u003d\u003d True",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "justify": "flex-end",
+                  "style": {
+                    "gap": "3px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxTitle",
+              "name": "flxTitle"
+            },
+            "position": {
+              "basis": "330px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetInfo.oeeEnabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn False if value else True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "center",
+              "style": {
+                "gap": "5px",
+                "height": "40px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "center",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "gap": "5px",
+            "overflow": "hidden"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "flxChildAssetStatus",
+              "name": "flxChildAssetStatus"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.showInfolevel"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027status\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assets"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tinstances \u003d sorted(value, key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\treturn [{\u0027value\u0027: {\u0027assetInfo\u0027: item[\u0027assetInfo\u0027]}} for item in instances if item[\u0027assetInfo\u0027] is not None]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignContent": "center",
+              "alignItems": "flex-start",
+              "elementPosition": {
+                "basis": "auto",
+                "grow": 0,
+                "shrink": 0
+              },
+              "path": "kanoa/mes/asset/overview/assetOEEState",
+              "style": {
+                "gap": "5px",
+                "overflow": "visible"
+              },
+              "useDefaultViewHeight": false,
+              "wrap": "wrap"
+            },
+            "type": "ia.display.flex-repeater"
+          }
+        ],
+        "meta": {
+          "domId": "flxContent",
+          "name": "flxContent"
+        },
+        "position": {
+          "basis": "400px",
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "justify": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": 5,
+        "padding": "3px"
+      },
+      "wrap": "wrap"
+    },
+    "type": "ia.container.flex"
+  }
+}

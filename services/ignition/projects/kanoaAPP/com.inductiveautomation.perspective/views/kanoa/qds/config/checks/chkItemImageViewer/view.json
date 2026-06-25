@@ -1,0 +1,453 @@
+{
+  "custom": {
+    "gettingImage": false,
+    "image": null,
+    "thumbnail": null
+  },
+  "params": {
+    "imageData": {
+      "chkItemId": null,
+      "chkItemImageId": null,
+      "createdBy": "jason",
+      "createdDate": {
+        "$": [
+          "ts",
+          0,
+          1775583093994
+        ],
+        "$ts": 1775582638597
+      },
+      "image": null,
+      "imageDescription": "blah",
+      "imageName": "2022-07-10 13.29.38.jpg",
+      "imageType": "photo",
+      "thumbnail": null
+    }
+  },
+  "propConfig": {
+    "custom.gettingImage": {
+      "persistent": true
+    },
+    "custom.image": {
+      "binding": {
+        "config": {
+          "path": "view.params.imageData"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tself.custom.gettingImage \u003d True\n\timage \u003d system.kanoa.quality.config.getChkItemImage(value[\u0027chkItemImageId\u0027] or -1)\n\tself.custom.gettingImage \u003d False\n\treturn image",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.thumbnail": {
+      "binding": {
+        "config": {
+          "path": "view.params.imageData"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.quality.config.getChkItemImageThumbnail(value[\u0027chkItemImageId\u0027] or -1)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.b64Image": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.imageData": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 597,
+      "width": 332
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Progress",
+              "name": "Progress"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "bar": {
+                "color": "--kcGreen-60"
+              },
+              "mode": "indeterminate",
+              "style": {
+                "borderStyle": "none"
+              },
+              "track": {
+                "indeterminate": {
+                  "color": "--kcSurface"
+                }
+              }
+            },
+            "type": "ia.display.progress"
+          }
+        ],
+        "meta": {
+          "domId": "flxProgress",
+          "name": "flxProgress",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Getting full res image..."
+          }
+        },
+        "position": {
+          "basis": "10px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.gettingImage"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "width": "100%"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "image",
+          "name": "image"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.source": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "image": "{view.custom.image}",
+                  "thumbnail": "{view.custom.thumbnail}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\timage \u003d value[\u0027image\u0027] or value[\u0027thumbnail\u0027]\n\t\n\treturn \"data:imagef;base64,%s\" % image if image is not None else \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "fit": {
+            "mode": "percent"
+          }
+        },
+        "type": "ia.display.image"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblImageName",
+              "name": "lblImageName"
+            },
+            "position": {
+              "basis": "32px"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.imageData.imageName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblType",
+              "name": "lblType"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.imageData.imageType"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn \u0027%s\u0027%value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "Kanoa/Fonts/small",
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblDescription",
+              "name": "lblDescription"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.imageData.imageDescription"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "Kanoa/Fonts/small",
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblDate",
+              "name": "lblDate"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.imageData.createdDate"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "formatType": "datetime",
+                      "formatValue": {
+                        "date": "medium",
+                        "time": "medium"
+                      },
+                      "type": "format"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "Kanoa/Fonts/small",
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "draggable": true,
+                    "id": "qZm2V_6H",
+                    "modal": true,
+                    "overlayDismiss": true,
+                    "resizable": false,
+                    "showCloseIcon": true,
+                    "type": "open",
+                    "viewParams": {
+                      "newfileName": "{view.params.data.name}",
+                      "oldfileName": "{view.params.data.name}"
+                    },
+                    "viewPath": "All Health/Product Tracking/Embedded/Rename File",
+                    "viewportBound": false
+                  },
+                  "scope": "C",
+                  "type": "popup"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnRename",
+              "name": "btnRename",
+              "tooltip": {
+                "enabled": true,
+                "text": "Rename"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "description": "{view.params.data.description}",
+                      "name": "{view.params.data.name}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027description\u0027] \u003d\u003d \u0027No image found\u0027 and value[\u0027name\u0027] is not None and value[\u0027name\u0027] !\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/edit"
+                }
+              },
+              "style": {
+                "classes": "Kanoa/Button/flat Kanoa/Button/flat-icon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "meta": {
+              "domId": "lblUser",
+              "name": "lblUser"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.imageData"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Uploaded by %s\u0027%value[\u0027createdBy\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "Kanoa/Fonts/small",
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxInfo",
+          "name": "flxInfo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "direction": "column",
+          "justify": "center"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\t\n\tsystem.perspective.sendMessage(\u0027imageSelected\u0027, {\u0027chkItemImageId\u0027: self.view.params.imageData.chkItemImageId})\n\t\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "direction": "column",
+      "justify": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "cursor": "pointer",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

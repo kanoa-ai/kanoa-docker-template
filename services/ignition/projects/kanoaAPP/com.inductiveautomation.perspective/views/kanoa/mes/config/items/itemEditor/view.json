@@ -1,0 +1,903 @@
+{
+  "custom": {
+    "attributes": {
+      "selected": null
+    },
+    "state": null,
+    "values": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "enabled": true,
+      "groupCode": null,
+      "groupName": null,
+      "itemClassColor": null,
+      "itemClassId": null,
+      "itemClassName": null,
+      "itemClassPath": null,
+      "itemColor": null,
+      "itemDescription": "",
+      "itemId": null,
+      "itemName": "",
+      "parentId": null,
+      "path": null
+    }
+  },
+  "params": {
+    "value": {
+      "itemClassId": null,
+      "itemId": null
+    }
+  },
+  "propConfig": {
+    "custom.attributes": {
+      "persistent": true
+    },
+    "custom.attributes.custom": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.itemId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn [{\u0027attrId\u0027: row[\u0027itemAttrId\u0027],\t\u0027label\u0027: row[\u0027itemAttrName\u0027], \u0027text\u0027: row[\u0027itemAttrValue\u0027]} for row in system.kanoa.item.getItemAttributes({\u0027itemId\u0027:value})] if value is not None else []\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.attributes.delete": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.itemId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn []\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.state": {
+      "persistent": true
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tdata \u003d system.kanoa.item.getItems({\u0027itemId\u0027:value[\u0027itemId\u0027] or -1})\n\tif data.rowCount \u003e 0: info \u003d system.kanoa.utilities.convertDatasetRowToJSON(data, 0)\n\telse:\t\n\t\tpath, itemClassColor, itemClassName, itemClassPath \u003d [None] * 4\n\t\tif value[\u0027itemClassId\u0027] is not None:\n\t\t\titemClassInfo \u003d system.kanoa.item.getItemClasses({\u0027itemClassId\u0027: value[\u0027itemClassId\u0027]})\n\t\t\tif itemClassInfo.rowCount \u003e 0:\n\t\t\t\titemClassColor \u003d itemClassInfo.getValueAt(0, \u0027itemClassColor\u0027)\n\t\t\t\titemClassName \u003d itemClassInfo.getValueAt(0, \u0027itemClassName\u0027)\n\t\t\t\titemClassPath \u003d itemClassInfo.getValueAt(0, \u0027path\u0027)\n\t\n\t\tinfo \u003d {\n\t\t\t\t  \"changedBy\": None,\n\t\t\t\t  \"changedDate\": None,\n\t\t\t\t  \"createdBy\": None,\n\t\t\t\t  \"createdDate\": None,\n\t\t\t\t  \"enabled\": True,\n\t\t\t\t  \"itemClassColor\": itemClassColor,\n\t\t\t\t  \"itemClassId\": value[\u0027itemClassId\u0027],\n\t\t\t\t  \"itemClassName\": itemClassName,\n\t\t\t\t  \"parentId\": None,\n\t\t\t\t  \"path\": path,\n\t\t\t\t  \"itemColor\": None,\n\t\t\t\t  \"itemId\": None,\n\t\t\t\t  \"itemName\": \u0027\u0027,\n\t\t\t\t  \"groupName\": None,\n\t\t\t\t  \"itemDescription\": \u0027\u0027,\n\t\t\t\t  \"groupCode\": None,\n\t\t\t\t  \"itemClassPath\": itemClassPath\n\t\t\t\t}\t\t\t\t\n\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "props.defaultSize.height": {
+      "binding": {
+        "config": {
+          "path": "view.custom.attributes.custom"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn 260 + len(value) * 35 + (23 if len(value) else 0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 500
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label",
+              "name": "label",
+              "tooltip": {
+                "enabled": true
+              }
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Item Class"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "selector",
+              "name": "evItemClassSelector"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.item.getItemClasses({})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.params.values.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.itemClassPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "itemClassSelectedForItemEditor",
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "selection": [],
+                  "style": {
+                    "iconColor": "",
+                    "iconPath": "material/snippet_folder",
+                    "tooltip": null
+                  },
+                  "treePath": null
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntParentPath",
+          "name": "flxCntParentPath"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblName",
+              "name": "lblName"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Item"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "txtName",
+              "name": "txtName"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.itemName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-field"
+          },
+          {
+            "meta": {
+              "domId": "lblItemId",
+              "name": "lblItemId",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "itemId"
+              }
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.itemId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if value else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values.itemId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/border kanoa/font/default",
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxName",
+          "name": "flxName"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblDesc",
+              "name": "lblDesc"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Description"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "txtDesc",
+              "name": "txtDesc"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.itemDescription"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxDesc",
+          "name": "flxDesc"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.values.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxEnabled",
+          "name": "flxEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lbl",
+              "name": "lbl"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Color"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss\u003dTrue)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "lblColor",
+              "name": "lblColor"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027itemColor\u0027] or value[\u0027itemClassColor\u0027] or \u0027#D5D5D5\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/input"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxColor",
+          "name": "flxColor"
+        },
+        "position": {
+          "basis": "25px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\tself.view.getChild(\"root\").addAttribute()"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnAddAttribute",
+                  "name": "btnAddAttribute",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "top",
+                    "tail": false,
+                    "text": "Add attribute"
+                  }
+                },
+                "position": {
+                  "basis": "30px",
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcPurple-60",
+                      "path": "material/add_box"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": 30
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "meta": {
+                  "domId": "label-1",
+                  "name": "label"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontSize": "0.8em",
+                    "fontWeight": "bold"
+                  },
+                  "text": "Custom Attributes"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxHeader",
+              "name": "flxHeader"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "rptAttributes",
+              "name": "rptAttributes"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.attributes.custom"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.attributes.custom"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "direction": "column",
+              "path": "kanoa/mes/config/items/itemAttribute",
+              "style": {
+                "gap": 5
+              },
+              "useDefaultViewWidth": false
+            },
+            "type": "ia.display.flex-repeater"
+          }
+        ],
+        "meta": {
+          "domId": "flxCustomAttr",
+          "name": "flxCustomAttr"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "border": "1px dotted var(--kcGray-40)",
+            "borderRadius": 5,
+            "gap": 5,
+            "padding": 5,
+            "position": "relative"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.params.value.itemId \u003d None\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnAddNew",
+              "name": "btnAddNew",
+              "tooltip": {
+                "enabled": true,
+                "location": "top",
+                "text": "Add New"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.itemId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/add"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "height": "30px"
+              },
+              "text": "Add"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").save()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "top",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value[\u0027itemClassName\u0027] !\u003d \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled",
+                "height": "30px"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "top",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "height": "30px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntActions",
+          "name": "flxCntActions"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcGray-0",
+        "classes": "kanoa/popup",
+        "gap": 5,
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\t\n\tsystem.perspective.print(\"save() called\")\n\tinfo \u003d self.view.custom.values\n\titemId \u003d info[\u0027itemId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\n\tif itemId is None:\n\t\tif system.kanoa.utilities.getFieldValue(\u0027itemId\u0027, system.kanoa.item.getItems({\u0027itemName\u0027: info[\u0027itemName\u0027], \u0027itemClassId\u0027: info[\u0027itemClassId\u0027]})) is not None:\n\t\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027This item already exists\u0027})\n\t\t\treturn\n\t\n\t\titemId \u003d system.kanoa.item.addItem(info, userId)\n\telse: system.kanoa.item.updateItem(info, userId)\n\t\n\tattributes \u003d self.view.custom.attributes\n\tattrList \u003d [x.label or None for x in attributes.custom]\n\tif None in attrList:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027One of the custom attributes is missing a label.\u0027})\n\t\treturn\n\tif len(attrList) !\u003d len(set(attrList)):\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027You have more than one attribute with the same name.\u0027})\n\t\treturn\t\n\t\n\tfor itemAttr in attributes.custom:\n\t\tsystem.kanoa.item.addItemAttribute({\u0027itemId\u0027:itemId, \u0027itemAttrName\u0027: itemAttr.label, \u0027itemAttrValue\u0027: itemAttr.text}, userId)\n\t\t\n\tfor attrId in attributes.delete: \n\t\tsystem.kanoa.item.deleteItemAttribute(attrId, userId)\n\t\n\tattributes.delete \u003d []\n\tself.view.params.value.itemId \u003d None\n\tself.view.params.value.itemId \u003d itemId\n\tsystem.perspective.sendMessage(\"refreshItems\", {})\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Item saved\u0027})\n\t\n\treturn"
+        },
+        {
+          "name": "clearData",
+          "params": [],
+          "script": "\t\n\tself.getChild(\"flxCntPC\").getChild(\"txtMaterial\").props.text \u003d \u0027\u0027\n\tself.getChild(\"flxCntDesc\").getChild(\"txtDesc\").props.text \u003d \u0027\u0027\n\tself.getChild(\"flxCntClass\").getChild(\"ddType\").props.value \u003d None\n\tself.getChild(\"flxCntClass\").getChild(\"ddCode\").props.value \u003d None\n\tself.getChild(\"flxCntColor\").getChild(\"lblColor_Light\").props.style.backgroundColor \u003d \u0027#000000\u0027\n\tself.getChild(\"flxCntColor\").getChild(\"lblColor_Dark\").props.style.backgroundColor \u003d \u0027#FFFFFF\u0027\n\tself.getChild(\"flxCntEnabled\").getChild(\"chkEnabled\").props.selected \u003d False\n\tself.custom.selectedAttribute \u003d None\n\t\n\tself.custom.customAttributes \u003d []\n\tself.custom.deletedAttributes \u003d []\n\t\t\n\treturn"
+        },
+        {
+          "name": "addAttribute",
+          "params": [],
+          "script": "\t\n\tinstances \u003d self.view.custom.attributes.custom\n\tinstances \u003d [x for x in instances if x[\u0027label\u0027] !\u003d \u0027\u0027]\n\tinstances.append({\u0027attrId\u0027: None, \u0027label\u0027: \u0027\u0027, \u0027text\u0027: \u0027\u0027})\n\t\n\tself.view.custom.attributes.custom \u003d instances\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "colorPicked",
+          "pageScope": true,
+          "script": "\t\n\tsystem.perspective.print(\"colorPicked message received with payload \" + str(payload))\t\n\tself.view.custom.values.itemColor \u003d payload[\u0027color\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "deleteItemAttribute",
+          "pageScope": true,
+          "script": "\t\n\tfor i, v in enumerate(self.view.custom.attributes.custom):\n\t\tif v[\u0027label\u0027] \u003d\u003d payload.label:\n\t\t\tif v[\u0027attrId\u0027] is not None: self.view.custom.attributes.delete.append(v[\u0027attrId\u0027])\n\t\t\tself.view.custom.attributes.custom.pop(i)\n\t\t\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "itemClassSelectedForItemEditor",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"itemClassSelectedForItemEditor msg received with %s\"%payload)\n\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tself.view.custom.values.itemClassId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemClassId\u0027]\n\t\tself.view.custom.values.itemClassPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]\n\t\tself.view.custom.values.itemClassName \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemClassName\u0027]\n\t\tself.view.custom.values.itemClassColor \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemClassColor\u0027]\n\telse:\n\t\tself.view.custom.values.itemClassId \u003d None\n\t\tself.view.custom.values.itemClassPath \u003d None\n\t\tself.view.custom.values.itemClassName \u003d None\n\t\tself.view.custom.values.itemClassColor \u003d None\n\t\n\treturn\n\n",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

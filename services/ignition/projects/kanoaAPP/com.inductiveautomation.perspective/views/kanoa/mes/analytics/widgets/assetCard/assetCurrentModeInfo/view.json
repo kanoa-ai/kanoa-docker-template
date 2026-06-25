@@ -1,0 +1,853 @@
+{
+  "custom": {
+    "asset": {},
+    "displayOptions": {},
+    "filters": {
+      "assetId": null,
+      "assetPath": "Tree Top\\Selah\\Packaging\\Line 5",
+      "clickable": false,
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777652457414
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777652457414
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "fontSizeMultiplier": 2,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    },
+    "runInfo": null,
+    "scheduleInfo": {
+      "assetId": null,
+      "assetName": null,
+      "assetPath": null,
+      "canExecute": null,
+      "canSchedule": null,
+      "changedBy": null,
+      "changedByUser": null,
+      "changedDate": null,
+      "color": null,
+      "createdBy": null,
+      "createdByUser": null,
+      "createdDate": null,
+      "dueDate": null,
+      "end": null,
+      "endDate": null,
+      "isActive": null,
+      "itemColor": null,
+      "itemDescription": null,
+      "itemId": null,
+      "itemName": null,
+      "itemPath": null,
+      "itemUnitId": null,
+      "itemUnitName": null,
+      "modeColor": null,
+      "modeId": null,
+      "modeName": null,
+      "modeTypeId": null,
+      "modeTypeName": null,
+      "notes": null,
+      "outfeedUnits": null,
+      "rruleStr": null,
+      "scheduleBlockId": null,
+      "scheduleBlockName": null,
+      "scheduledQty": null,
+      "start": null,
+      "startDate": null,
+      "statusColor": null,
+      "timezone": null,
+      "workOrderId": null,
+      "workOrderName": null,
+      "workOrderStatusId": null,
+      "workOrderStatusName": null,
+      "workOrderTitle": null
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": "Tree Top\\Selah\\Packaging\\Line 5",
+      "fontSizeMultiplier": 2
+    }
+  },
+  "propConfig": {
+    "custom.asset": {
+      "persistent": true
+    },
+    "custom.asset.tagInfo": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.asset.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value.OEE",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      }
+    },
+    "custom.asset.tagPath": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters.assetPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.asset.getAssetTagPath({\u0027assetPath\u0027: value})",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.displayOptions": {
+      "persistent": true
+    },
+    "custom.displayOptions.fontSize": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value.has_key(\u0027fontSizeMultiplier\u0027): return \u0027{}vw\u0027.format(value[\u0027fontSizeMultiplier\u0027])\n\t\n\treturn \u00272vw\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027clickable\u0027): filters[\u0027clickable\u0027] \u003d False\n\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.runInfo": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetInfo": "{view.custom.asset.tagInfo}",
+            "scheduleInfo": "{view.custom.scheduleInfo}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetInfo\u0027][\u0027woActualQty\u0027]:\n\t\tremainingQty \u003d 0 if (value[\u0027assetInfo\u0027][\u0027reqdQty\u0027] or 0.0) \u003d\u003d 0.0 else int(value[\u0027assetInfo\u0027][\u0027reqdQty\u0027]-value[\u0027assetInfo\u0027][\u0027woActualQty\u0027])\n\telif value[\u0027scheduleInfo\u0027][\u0027scheduleBlockId\u0027]:\n\t\tremainingQty \u003d 0 if value[\u0027scheduleInfo\u0027][\u0027scheduledQty\u0027] else int(value[\u0027scheduleInfo\u0027][\u0027scheduledQty\u0027] - value[\u0027assetInfo\u0027][\u0027outfeedCount\u0027])\n\telse:\n\t\tremainingQty \u003d 0\n\n\tif (value[\u0027assetInfo\u0027][\u0027reqdQty\u0027] or 0.0) \u003e 0: reqdQty \u003d value[\u0027assetInfo\u0027][\u0027reqdQty\u0027]\n\telif value[\u0027scheduleInfo\u0027][\u0027scheduleBlockId\u0027]: reqdQty \u003d value[\u0027scheduleInfo\u0027][\u0027scheduledQty\u0027] or 0.0\n\telse: reqdQty \u003d 0.0\n\n\tif reqdQty \u003e 0 and value[\u0027assetInfo\u0027][\u0027woActualQty\u0027] \u003e reqdQty: \n\t\treturn {\u0027status\u0027: \u0027Alarm\u0027,\u0027text\u0027:\u0027Over production\u0027, \u0027remainingQty\u0027: remainingQty, \u0027reqdQty\u0027: reqdQty}\n\tif value[\u0027assetInfo\u0027][\u0027infeedCount\u0027] \u003c ((value[\u0027assetInfo\u0027][\u0027targetCount\u0027] or 0) * 0.80): \n\t\treturn {\u0027status\u0027: \u0027Warning\u0027,\u0027text\u0027:\u0027Running below target rate\u0027, \u0027remainingQty\u0027: remainingQty, \u0027reqdQty\u0027: reqdQty}\n\t\n\treturn {\u0027status\u0027: \u0027Ok\u0027,\u0027text\u0027:\u0027Looking good\u0027, \u0027remainingQty\u0027: remainingQty, \u0027reqdQty\u0027: reqdQty}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.scheduleInfo": {
+      "binding": {
+        "config": {
+          "path": "view.custom.asset.tagInfo.scheduleBlockId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.schedule.getScheduleBlocks({\u0027scheduleBlockId\u0027: value or -1}),0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 160,
+      "width": 547
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblAssetName",
+                  "name": "lblAssetName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\t\n\tassetName \u003d self.view.custom.filters.assetPath.split(\u0027\\\\\u0027)[-1] if self.view.custom.filters.assetPath else \u0027\u0027\n\ttitle \u003d \u0027Current Run\u0027 if value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027 else \u0027\u0027\n\t\n\treturn \"%s %s\"%(assetName, title)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "marginRight": "auto"
+                  },
+                  "textStyle": {
+                    "color": "--kcOnSurface"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblMode",
+                  "name": "lblMode"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.style.background": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo.modeColor"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo.modeName"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value or \u0027Unknown\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.textStyle.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.style.background"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "borderBottomLeftRadius": 100,
+                    "borderBottomRightRadius": 100,
+                    "borderColor": "--kcOutline",
+                    "borderStyle": "solid",
+                    "borderTopLeftRadius": 100,
+                    "borderTopRightRadius": 100,
+                    "borderWidth": 1,
+                    "overflow": "auto",
+                    "paddingLeft": 10,
+                    "paddingRight": 10
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "icoModeSet",
+                  "name": "icoModeSet",
+                  "tooltip": {
+                    "enabled": true
+                  }
+                },
+                "position": {
+                  "basis": "25px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn \u0027Set by %s\u0027%name or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo.modeSourceName"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif value \u003d\u003d \u0027Schedule\u0027: icon \u003d \u0027material/calendar_today\u0027\n\telif value \u003d\u003d \u0027PLC\u0027: icon \u003d \u0027kanoa/cell\u0027\n\telif value in (\u0027Operator\u0027, \u0027Operator Run\u0027): icon \u003d \u0027material/engineering\u0027\n\telse: icon \u003d \u0027\u0027\n\t\n\treturn icon",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "color": "--kcOnSurfaceVariant",
+                  "style": {
+                    "maxHeight": 30
+                  }
+                },
+                "type": "ia.display.icon"
+              },
+              {
+                "meta": {
+                  "domId": "lblState",
+                  "name": "lblState"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.background": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo.stateColor"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.asset.tagInfo.stateName"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value or \u0027Unknown\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.textStyle.color": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.style.background"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "borderBottomLeftRadius": 100,
+                    "borderBottomRightRadius": 100,
+                    "borderColor": "--kcOutline",
+                    "borderStyle": "solid",
+                    "borderTopLeftRadius": 100,
+                    "borderTopRightRadius": 100,
+                    "borderWidth": 1,
+                    "overflow": "auto",
+                    "paddingLeft": 10,
+                    "paddingRight": 10
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxModeState",
+              "name": "flxModeState"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              },
+              "wrap": "wrap"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblNumber",
+                      "name": "lblNumber"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.asset.tagInfo"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"%s - %s\"%(value[\u0027workOrderName\u0027] or \u0027No Order\u0027, value[\u0027itemName\u0027] or \u0027\u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "color": "",
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblProduction",
+                          "name": "lblProduction"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "struct": {
+                                  "assetInfo": "{view.custom.asset.tagInfo}",
+                                  "runInfo": "{view.custom.runInfo}"
+                                },
+                                "waitOnAll": true
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\n\tunits \u003d value[\u0027assetInfo\u0027][\u0027outfeedUnits\u0027] or \u0027\u0027\n\tif value[\u0027runInfo\u0027][\u0027reqdQty\u0027] \u003e 0:\n\t\treturn \u0027{:,} {} of {:,} {} produced\u0027.format(int((value[\u0027assetInfo\u0027][\u0027outfeedCount\u0027] or 0.0)), units, int(value[\u0027runInfo\u0027][\u0027reqdQty\u0027]), units)\n\telse:\n\t\treturn \u0027{:,} {} produced\u0027.format(int((value[\u0027assetInfo\u0027][\u0027outfeedCount\u0027] or 0.0)), units)",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "expr-struct"
+                            }
+                          }
+                        },
+                        "props": {
+                          "textStyle": {
+                            "color": ""
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "domId": "barCount",
+                              "name": "barCount"
+                            },
+                            "position": {
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "position.grow": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.asset.tagInfo.outfeedCount"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "style": {
+                                "backgroundColor": "--kcGood",
+                                "height": "16px"
+                              }
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "domId": "barRemaining",
+                              "name": "barRemaining",
+                              "tooltip": {
+                                "enabled": true,
+                                "location": "bottom"
+                              }
+                            },
+                            "position": {
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "position.grow": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.runInfo.reqdQty"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\n\tself.meta.tooltip.text \u003d \u0027\u0027\n\tif value \u003c 0: return 0\n\t\n\tself.meta.tooltip.text \u003d \u0027%s %s remaining\u0027%(value, self.view.custom.asset.tagInfo.outfeedUnits)\n\treturn int(value)",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "style": {
+                                "backgroundColor": "--kcNeutral-50",
+                                "height": "16px"
+                              },
+                              "textStyle": {
+                                "color": "--kcOnSurfaceVariant"
+                              }
+                            },
+                            "type": "ia.display.label"
+                          }
+                        ],
+                        "meta": {
+                          "domId": "flxGraph",
+                          "name": "flxGraph"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "position.display": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.runInfo.reqdQty"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\treturn value \u003e 0",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "alignItems": "center",
+                          "style": {
+                            "heightX": "20px",
+                            "minWidth": "100px",
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxQty",
+                      "name": "flxQty"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "alignItems": "center",
+                      "style": {
+                        "gap": "5px"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxProduction",
+                  "name": "flxProduction"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": 5,
+                    "overflow": "hidden"
+                  },
+                  "wrap": "wrap"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "icoInfo",
+                      "name": "icoInfo",
+                      "tooltip": {
+                        "location": "bottom"
+                      }
+                    },
+                    "position": {
+                      "basis": "25px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.runInfo.status"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value \u003d\u003d \u0027Ok\u0027: return \u0027--kcGood\u0027\n\tif value \u003d\u003d \u0027Warning\u0027: return \u0027--kcOK\u0027\n\treturn \u0027--kcBad\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.runInfo.status"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value \u003d\u003d \u0027Ok\u0027: return \u0027material/check\u0027\n\treturn \u0027material/warning\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblInfo",
+                      "name": "lblInfo"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.runInfo.text"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxWarning",
+                  "name": "flxWarning"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxRunInfo",
+              "name": "flxRunInfo"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.asset.tagInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "props.style.fontSize": {
+        "binding": {
+          "config": {
+            "path": "view.custom.displayOptions.fontSize"
+          },
+          "overlayOptOut": true,
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/containerVariant",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

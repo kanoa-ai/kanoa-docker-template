@@ -1,0 +1,120 @@
+{
+  "custom": {}, 
+  "params": {
+    "values": {
+      "color": null, 
+      "label": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 120, 
+      "height": 25
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "backgroundColor": "--kcSurface", 
+        "gap": "5px"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "right", 
+            "classes": "kanoa/font/default"
+          }
+        }, 
+        "meta": {
+          "domId": "label", 
+          "name": "label"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value or ''", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.values.label"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "classes": "kanoa/input"
+          }
+        }, 
+        "meta": {
+          "domId": "lblColor", 
+          "name": "lblColor"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "30px"
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss=True)\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.values.color"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\n#\tsystem.perspective.print(\"colorPicked message received with payload \" + str(payload))\t\n\n\tself.view.params.values.color = payload['color']\n\t\n\treturn", 
+          "messageType": "colorPicked", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.values": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

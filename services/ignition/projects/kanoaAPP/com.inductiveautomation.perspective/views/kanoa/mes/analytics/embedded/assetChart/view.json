@@ -1,0 +1,863 @@
+{
+  "custom": {
+    "data": {}
+  },
+  "params": {
+    "value": {
+      "assetId": null,
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1778628455593
+        ],
+        "$ts": 1778544000000
+      },
+      "instanceNum": 0,
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1778628447568
+        ],
+        "$ts": 1778457600000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.dtByDay": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetId\u0027] is None: return system.dataset.toDataSet([],[])\n\n\t#This chart view can get called from a flexRepeater. If there are a bunch of these instances, we\u0027ll space out the database queries so they are not all concurrent\n\tif self.params.value.has_key(\u0027instanceNum\u0027) and self.params.value.instanceNum is not None:\n\t\timport time\n\t\ttime.sleep(1 * self.params.value.instanceNum)\n\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027], \u0027showDowntimeOnly\u0027: True, \u0027showChanged\u0027: None, \u0027durationSecs\u0027: 0, \u0027interval\u0027: \u0027Day\u0027}\n\tparamsDict[\u0027deviceUTCOffsetMins\u0027] \u003d int(self.session.props.device.timezone.utcOffset * 60.0)\n\treturn\tsystem.kanoa.event.getAssetStateEventsByInterval(paramsDict)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.utilByDay": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetId\u0027] is None: return system.dataset.toDataSet([],[])\n\t\n\tparamsDict \u003d dict(self.params.value)\n\tparamsDict[\u0027clientTZOffsetMins\u0027] \u003d int(self.session.props.device.timezone.utcOffset * 60.0)\n\treturn system.kanoa.event.getAssetProductionEventsByDay(paramsDict)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 935,
+      "width": 1168
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblLinePath",
+          "name": "lblLinePath"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.assetId"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\treturn system.kanoa.utilities.formatPath(system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027:value or -1})), {})",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontWeight": "bold",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "evAssetSummary",
+          "name": "evAssetSummary"
+        },
+        "position": {
+          "basis": "50px"
+        },
+        "propConfig": {
+          "props.params.value": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "transforms": [
+                {
+                  "code": "\t\t\n\t#This chart view can get called from a flexRepeater. If there are a bunch of these instances, we\u0027ll space out the database queiries so they are not all concurrent\n\tif value.has_key(\u0027instanceNum\u0027) and value.instanceNum is not None:\n\t\timport time\n\t\ttime.sleep(0.5 * value.instanceNum)\n\t\t\n\treturn {\u0027assetId\u0027:value.assetId or -1, \u0027startDate\u0027: value.startDate, \u0027endDate\u0027:value.endDate}",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/mes/analytics/embedded/assetSummary",
+          "style": {
+            "minHeight": "170px"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "XYChart",
+          "name": "XYChart"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.utilByDay"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value.rowCount \u003e 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.background.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn kanoaScripts.colors.getCSSColor(\u0027--kcSurface\u0027, value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.dataSources.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.utilByDay"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.legend.labels.font.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "this.props.dataSources.data"
+              },
+              "transforms": [
+                {
+                  "code": "\n\tcolors \u003d kanoaScripts.colors.getChartColors()\n\t\n\tdef getSeries(index):\n\t\theader \u003d headers[index]\n\t\tcolor \u003d colors[index] if index \u003c len(colors) else  \u0027#\u0027 + str(hex(int(color[1:], 16) + system.kanoa.utilities.getRandomNumber(0,1000))[2:]).rjust(6,\u00270\u0027)\n\t\n\t\treturn {\n\t\t\t\"name\": \"chart\",\n\t\t\t\"label\": {\"text\": header},\n\t\t\t\"visible\": True,\n\t\t\t\"hiddenInLegend\": False,\n\t\t\t\"defaultState\": {\"visible\": True},\n\t\t\t\"data\": {\"source\": \"data\", \"x\": \"Day\", \"y\": header},\n\t\t\t\"xAxis\": \"date\",\n\t\t\t\"yAxis\": \"values\",\n\t\t\t\"zIndex\": 0,\n\t\t\t\"tooltip\": {\n\t\t\t\t\"enabled\": True,\n\t\t\t\t\"text\": \"{name}: [bold]{valueY} hrs[/]\",\n\t\t\t\t\"cornerRadius\": 3,\n\t\t\t\t\"pointerLength\": 4,\n\t\t\t\t\"background\": {\n\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\"opacity\": 1\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"render\": \"column\",\n\t\t\t\"candlestick\": {\n\t\t\t\t\"open\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"high\": {\"x\": \"\",\"y\": \"\"\n\t\t\t\t},\n\t\t\t\t\"low\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 1},\n\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": 1,\"width\": 1},\n\t\t\t\t\t\"stacked\": False,\n\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"}\n\t\t\t\t\t},\n\t\t\t\t\t\"heatRules\": {\"enabled\": False,\t\"max\": \"\",\"min\": \"\",\"dataField\": \"\"}\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"column\": {\n\t\t\t\t\"open\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"fill\": {\"color\": color,\"opacity\": 1},\n\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": 0,\"width\": 0},\n\t\t\t\t\t\"width\": None,\n\t\t\t\t\t\"height\": None,\n\t\t\t\t\t\"stacked\": True,\n\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"}\n\t\t\t\t\t},\n\t\t\t\t\t\"heatRules\": {\"enabled\": False,\t\"max\": \"\",\"min\": \"\",\"dataField\": \"\"}\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"line\": {\n\t\t\t\t\"open\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"connect\": True,\n\t\t\t\t\t\"tensionX\": 1,\n\t\t\t\t\t\"tensionY\": 1,\n\t\t\t\t\t\"minDistance\": 0.5,\n\t\t\t\t\t\"stroke\": {\n\t\t\t\t\t\t\"width\": 3,\n\t\t\t\t\t\t\"opacity\": 1,\n\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\"dashArray\": \"\"\n\t\t\t\t\t},\n\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 0},\n\t\t\t\t\t\"bullets\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"enabled\": False,\n\t\t\t\t\t\t\t\"render\": \"circle\",\n\t\t\t\t\t\t\t\"width\": 10,\n\t\t\t\t\t\t\t\"height\": 10,\n\t\t\t\t\t\t\t\"label\": {\n\t\t\t\t\t\t\t\t\"text\": \"{value}\",\n\t\t\t\t\t\t\t\t\"position\": {\n\t\t\t\t\t\t\t\t\t\"dx\": 0,\n\t\t\t\t\t\t\t\t\t\"dy\": 0\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"tooltip\": {\n\t\t\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\t\t\"text\": \"{name}: [bold]{valueY}[/]\",\n\t\t\t\t\t\t\t\t\"cornerRadius\": 3,\n\t\t\t\t\t\t\t\t\"pointerLength\": 4,\n\t\t\t\t\t\t\t\t\"background\": {\n\t\t\t\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\t\t\t\"opacity\": 1\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 1},\n\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"width\": 1,\t\"opacity\": 1},\n\t\t\t\t\t\t\t\"rotation\": 0,\n\t\t\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"},\n\t\t\t\t\t\t\t\t\"rotation\": \"\"\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"heatRules\": {\n\t\t\t\t\t\t\t\t\"enabled\": False,\n\t\t\t\t\t\t\t\t\"max\": 100,\n\t\t\t\t\t\t\t\t\"min\": 2,\n\t\t\t\t\t\t\t\t\"dataField\": \"\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"stepLine\": {\n\t\t\t\t\"open\": {\"x\": \"\", \"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"connect\": True,\n\t\t\t\t\t\"tensionX\": 1,\n\t\t\t\t\t\"tensionY\": 1,\n\t\t\t\t\t\"minDistance\": 0.5,\n\t\t\t\t\t\"stroke\": {\n\t\t\t\t\t\t\"width\": 3,\n\t\t\t\t\t\t\"opacity\": 1,\n\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\"dashArray\": \"\"\n\t\t\t\t\t},\n\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 0},\n\t\t\t\t\t\"bullets\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\t\"render\": \"circle\",\n\t\t\t\t\t\t\t\"width\": 10,\n\t\t\t\t\t\t\t\"height\": 10,\n\t\t\t\t\t\t\t\"label\": {\n\t\t\t\t\t\t\t\t\"text\": \"{value}\",\n\t\t\t\t\t\t\t\t\"position\": {\n\t\t\t\t\t\t\t\t\t\"dx\": 0,\n\t\t\t\t\t\t\t\t\t\"dy\": 0\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"tooltip\": {\n\t\t\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\t\t\"text\": \"{name}: [bold]{valueY}[/]\",\n\t\t\t\t\t\t\t\t\"cornerRadius\": 3,\n\t\t\t\t\t\t\t\t\"pointerLength\": 4,\n\t\t\t\t\t\t\t\t\"background\": {\n\t\t\t\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\t\t\t\"opacity\": 1\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 1},\n\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"width\": 1,\"opacity\": 1},\n\t\t\t\t\t\t\t\"rotation\": 0,\n\t\t\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"},\n\t\t\t\t\t\t\t\t\"rotation\": \"\"\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"heatRules\": {\"enabled\": False,\t\"max\": 100,\"min\": 2,\"dataField\": \"\"}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\n\theaders \u003d [name for name in value.getColumnNames()][1:]\n\tseries \u003d [getSeries(index) for index in range(len(headers))]\n\t\t\n\treturn series",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.title.appearance.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.title.text": {
+            "binding": {
+              "config": {
+                "expression": "translate(\u0027Line Utilization\u0027)"
+              },
+              "type": "expr"
+            }
+          },
+          "props.xAxes[0].appearance.labels.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].label.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.yAxes[0].appearance.labels.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.yAxes[0].label.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "background": {
+            "opacity": 0,
+            "render": "color"
+          },
+          "dataSources": {},
+          "legend": {
+            "labels": {
+              "font": {
+                "size": 10
+              },
+              "text": "{name}[/]"
+            },
+            "markers": {
+              "height": 10,
+              "width": 10
+            }
+          },
+          "style": {
+            "classes": "kanoa/font/default"
+          },
+          "title": {
+            "appearance": {}
+          },
+          "xAxes": [
+            {
+              "appearance": {
+                "font": {
+                  "size": "0.8em",
+                  "weight": 500
+                },
+                "grid": {
+                  "color": "",
+                  "dashArray": "",
+                  "minDistance": 0,
+                  "opacity": 0.3,
+                  "position": 0.5
+                },
+                "inside": false,
+                "labels": {
+                  "horizontalCenter": "middle",
+                  "opacity": 1,
+                  "rotation": 45,
+                  "verticalCenter": "middle"
+                },
+                "opposite": false
+              },
+              "category": {
+                "break": {
+                  "enabled": false,
+                  "endCategory": "",
+                  "size": 0.05,
+                  "startCategory": ""
+                }
+              },
+              "date": {
+                "baseInterval": {
+                  "count": 1,
+                  "enabled": false,
+                  "skipEmptyPeriods": false,
+                  "timeUnit": "hour"
+                },
+                "break": {
+                  "enabled": false,
+                  "endDate": "",
+                  "size": 0.05,
+                  "startDate": ""
+                },
+                "format": "M/d",
+                "inputFormat": "yyyy-MM-dd kk:mm:ss",
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "inversed": false,
+              "label": {
+                "enabled": true,
+                "text": ""
+              },
+              "name": "date",
+              "render": "category",
+              "tooltip": {
+                "background": {
+                  "color": "",
+                  "opacity": 1
+                },
+                "cornerRadius": 3,
+                "enabled": true,
+                "pointerLength": 4,
+                "text": ""
+              },
+              "value": {
+                "break": {
+                  "enabled": false,
+                  "endValue": 100,
+                  "size": 0.05,
+                  "startValue": 0
+                },
+                "format": "#,###.##",
+                "logarithmic": false,
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "visible": true
+            }
+          ],
+          "yAxes": [
+            {
+              "appearance": {
+                "font": {
+                  "size": "",
+                  "weight": 500
+                },
+                "grid": {
+                  "color": "",
+                  "dashArray": "",
+                  "minDistance": null,
+                  "opacity": 0.3,
+                  "position": 0.5
+                },
+                "inside": false,
+                "labels": {
+                  "horizontalCenter": "middle",
+                  "opacity": 1,
+                  "rotation": 0,
+                  "verticalCenter": "middle"
+                },
+                "opposite": false
+              },
+              "category": {
+                "break": {
+                  "enabled": false,
+                  "endCategory": "",
+                  "size": 0.05,
+                  "startCategory": ""
+                }
+              },
+              "date": {
+                "baseInterval": {
+                  "count": 1,
+                  "enabled": false,
+                  "skipEmptyPeriods": false,
+                  "timeUnit": "hour"
+                },
+                "break": {
+                  "enabled": false,
+                  "endDate": "",
+                  "size": 0.05,
+                  "startDate": ""
+                },
+                "format": "M/d/yyyy HH:mm:ss",
+                "inputFormat": "yyyy-MM-dd kk:mm:ss",
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "inversed": false,
+              "label": {
+                "enabled": true,
+                "text": "Hrs"
+              },
+              "name": "values",
+              "render": "value",
+              "tooltip": {
+                "background": {
+                  "color": "",
+                  "opacity": 1
+                },
+                "cornerRadius": 3,
+                "enabled": true,
+                "pointerLength": 4,
+                "text": ""
+              },
+              "value": {
+                "break": {
+                  "enabled": false,
+                  "endValue": 24,
+                  "size": 0.05,
+                  "startValue": 0
+                },
+                "format": "#,###.##",
+                "logarithmic": false,
+                "range": {
+                  "max": 24,
+                  "min": 0,
+                  "useStrict": true
+                }
+              },
+              "visible": true
+            }
+          ]
+        },
+        "type": "ia.chart.xy"
+      },
+      {
+        "meta": {
+          "domId": "XYChart_DT",
+          "name": "XYChart_DT"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.dtByDay"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value.rowCount \u003e 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.background.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn kanoaScripts.colors.getCSSColor(\u0027--kcSurface\u0027, value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.dataSources.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.dtByDay"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.legend.labels.font.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "this.props.dataSources.data"
+              },
+              "transforms": [
+                {
+                  "code": "\n\tcolors \u003d kanoaScripts.colors.getChartColors()\n\t\n\tdef getSeries(index):\n\t\theader \u003d headers[index]\n#\t\tcolor \u003d colors[index] if index \u003c len(colors) else  \u0027#\u0027 + str(hex(int(colors[1:], 16) + system.kanoa.utilities.getRandomNumber(0,1000))[2:]).rjust(6,\u00270\u0027)\n\t\tcolor \u003d colors[index] if index \u003c len(colors) else  \u0027#\u0027 + str(hex(int(colors[0][1:], 16) + system.kanoa.utilities.getRandomNumber(0,1000))[2:]).rjust(6,\u00270\u0027)\n\t\n\t\treturn {\n\t\t\t\"name\": \"chart\",\n\t\t\t\"label\": {\"text\": header},\n\t\t\t\"visible\": True,\n\t\t\t\"hiddenInLegend\": False,\n\t\t\t\"defaultState\": {\"visible\": True},\n\t\t\t\"data\": {\"source\": \"data\", \"x\": \"Day\", \"y\": header},\n\t\t\t\"xAxis\": \"date\",\n\t\t\t\"yAxis\": \"values\",\n\t\t\t\"zIndex\": 0,\n\t\t\t\"tooltip\": {\n\t\t\t\t\"enabled\": True,\n\t\t\t\t\"text\": \"{name}: [bold]{valueY} mins[/]\",\n\t\t\t\t\"cornerRadius\": 3,\n\t\t\t\t\"pointerLength\": 4,\n\t\t\t\t\"background\": {\n\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\"opacity\": 1\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"render\": \"column\",\n\t\t\t\"candlestick\": {\n\t\t\t\t\"open\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"high\": {\"x\": \"\",\"y\": \"\"\n\t\t\t\t},\n\t\t\t\t\"low\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 1},\n\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": 1,\"width\": 1},\n\t\t\t\t\t\"stacked\": False,\n\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"}\n\t\t\t\t\t},\n\t\t\t\t\t\"heatRules\": {\"enabled\": False,\t\"max\": \"\",\"min\": \"\",\"dataField\": \"\"}\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"column\": {\n\t\t\t\t\"open\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"fill\": {\"color\": color,\"opacity\": 1},\n\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": 0,\"width\": 0},\n\t\t\t\t\t\"width\": None,\n\t\t\t\t\t\"height\": None,\n\t\t\t\t\t\"stacked\": True,\n\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"}\n\t\t\t\t\t},\n\t\t\t\t\t\"heatRules\": {\"enabled\": False,\t\"max\": \"\",\"min\": \"\",\"dataField\": \"\"}\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"line\": {\n\t\t\t\t\"open\": {\"x\": \"\",\"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"connect\": True,\n\t\t\t\t\t\"tensionX\": 1,\n\t\t\t\t\t\"tensionY\": 1,\n\t\t\t\t\t\"minDistance\": 0.5,\n\t\t\t\t\t\"stroke\": {\n\t\t\t\t\t\t\"width\": 3,\n\t\t\t\t\t\t\"opacity\": 1,\n\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\"dashArray\": \"\"\n\t\t\t\t\t},\n\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 0},\n\t\t\t\t\t\"bullets\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"enabled\": False,\n\t\t\t\t\t\t\t\"render\": \"circle\",\n\t\t\t\t\t\t\t\"width\": 10,\n\t\t\t\t\t\t\t\"height\": 10,\n\t\t\t\t\t\t\t\"label\": {\n\t\t\t\t\t\t\t\t\"text\": \"{value}\",\n\t\t\t\t\t\t\t\t\"position\": {\n\t\t\t\t\t\t\t\t\t\"dx\": 0,\n\t\t\t\t\t\t\t\t\t\"dy\": 0\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"tooltip\": {\n\t\t\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\t\t\"text\": \"{name}: [bold]{valueY}[/]\",\n\t\t\t\t\t\t\t\t\"cornerRadius\": 3,\n\t\t\t\t\t\t\t\t\"pointerLength\": 4,\n\t\t\t\t\t\t\t\t\"background\": {\n\t\t\t\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\t\t\t\"opacity\": 1\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 1},\n\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"width\": 1,\t\"opacity\": 1},\n\t\t\t\t\t\t\t\"rotation\": 0,\n\t\t\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"},\n\t\t\t\t\t\t\t\t\"rotation\": \"\"\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"heatRules\": {\n\t\t\t\t\t\t\t\t\"enabled\": False,\n\t\t\t\t\t\t\t\t\"max\": 100,\n\t\t\t\t\t\t\t\t\"min\": 2,\n\t\t\t\t\t\t\t\t\"dataField\": \"\"\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"stepLine\": {\n\t\t\t\t\"open\": {\"x\": \"\", \"y\": \"\"},\n\t\t\t\t\"appearance\": {\n\t\t\t\t\t\"connect\": True,\n\t\t\t\t\t\"tensionX\": 1,\n\t\t\t\t\t\"tensionY\": 1,\n\t\t\t\t\t\"minDistance\": 0.5,\n\t\t\t\t\t\"stroke\": {\n\t\t\t\t\t\t\"width\": 3,\n\t\t\t\t\t\t\"opacity\": 1,\n\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\"dashArray\": \"\"\n\t\t\t\t\t},\n\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 0},\n\t\t\t\t\t\"bullets\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\t\"render\": \"circle\",\n\t\t\t\t\t\t\t\"width\": 10,\n\t\t\t\t\t\t\t\"height\": 10,\n\t\t\t\t\t\t\t\"label\": {\n\t\t\t\t\t\t\t\t\"text\": \"{value}\",\n\t\t\t\t\t\t\t\t\"position\": {\n\t\t\t\t\t\t\t\t\t\"dx\": 0,\n\t\t\t\t\t\t\t\t\t\"dy\": 0\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"tooltip\": {\n\t\t\t\t\t\t\t\t\"enabled\": True,\n\t\t\t\t\t\t\t\t\"text\": \"{name}: [bold]{valueY}[/]\",\n\t\t\t\t\t\t\t\t\"cornerRadius\": 3,\n\t\t\t\t\t\t\t\t\"pointerLength\": 4,\n\t\t\t\t\t\t\t\t\"background\": {\n\t\t\t\t\t\t\t\t\t\"color\": \"\",\n\t\t\t\t\t\t\t\t\t\"opacity\": 1\n\t\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": 1},\n\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"width\": 1,\"opacity\": 1},\n\t\t\t\t\t\t\t\"rotation\": 0,\n\t\t\t\t\t\t\t\"deriveFieldsFromData\": {\n\t\t\t\t\t\t\t\t\"fill\": {\"color\": \"\",\"opacity\": \"\"},\n\t\t\t\t\t\t\t\t\"stroke\": {\"color\": \"\",\t\"opacity\": \"\",\"width\": \"\"},\n\t\t\t\t\t\t\t\t\"rotation\": \"\"\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t\"heatRules\": {\"enabled\": False,\t\"max\": 100,\"min\": 2,\"dataField\": \"\"}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\n\theaders \u003d [name for name in value.getColumnNames()][1:]\n\tseries \u003d [getSeries(index) for index in range(len(headers))]\n\n\treturn series",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.title.appearance.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.title.text": {
+            "binding": {
+              "config": {
+                "expression": "translate(\u0027Downtime\u0027)"
+              },
+              "type": "expr"
+            }
+          },
+          "props.xAxes[0].appearance.labels.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.xAxes[0].label.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.yAxes[0].appearance.labels.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.yAxes[0].label.color": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#fff\u0027 if \u0027dark\u0027 in value else \u0027#000\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "background": {
+            "opacity": 0,
+            "render": "color"
+          },
+          "dataSources": {},
+          "legend": {
+            "labels": {
+              "font": {
+                "size": 10
+              },
+              "text": "{name}[/]"
+            },
+            "markers": {
+              "height": 10,
+              "width": 10
+            }
+          },
+          "style": {
+            "classes": "kanoa/font/default",
+            "minHeight": "500px"
+          },
+          "title": {
+            "appearance": {}
+          },
+          "xAxes": [
+            {
+              "appearance": {
+                "font": {
+                  "size": "0.8em",
+                  "weight": 500
+                },
+                "grid": {
+                  "color": "",
+                  "dashArray": "",
+                  "minDistance": 0,
+                  "opacity": 0.3,
+                  "position": 0.5
+                },
+                "inside": false,
+                "labels": {
+                  "horizontalCenter": "middle",
+                  "opacity": 1,
+                  "rotation": 45,
+                  "verticalCenter": "middle"
+                },
+                "opposite": false
+              },
+              "category": {
+                "break": {
+                  "enabled": false,
+                  "endCategory": "",
+                  "size": 0.05,
+                  "startCategory": ""
+                }
+              },
+              "date": {
+                "baseInterval": {
+                  "count": 1,
+                  "enabled": false,
+                  "skipEmptyPeriods": false,
+                  "timeUnit": "hour"
+                },
+                "break": {
+                  "enabled": false,
+                  "endDate": "",
+                  "size": 0.05,
+                  "startDate": ""
+                },
+                "format": "M/d",
+                "inputFormat": "yyyy-MM-dd kk:mm:ss",
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "inversed": false,
+              "label": {
+                "enabled": true,
+                "text": ""
+              },
+              "name": "date",
+              "render": "category",
+              "tooltip": {
+                "background": {
+                  "color": "",
+                  "opacity": 1
+                },
+                "cornerRadius": 3,
+                "enabled": true,
+                "pointerLength": 4,
+                "text": ""
+              },
+              "value": {
+                "break": {
+                  "enabled": false,
+                  "endValue": 100,
+                  "size": 0.05,
+                  "startValue": 0
+                },
+                "format": "#,###.##",
+                "logarithmic": false,
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "visible": true
+            }
+          ],
+          "yAxes": [
+            {
+              "appearance": {
+                "font": {
+                  "size": "",
+                  "weight": 500
+                },
+                "grid": {
+                  "color": "",
+                  "dashArray": "",
+                  "minDistance": null,
+                  "opacity": 0.3,
+                  "position": 0.5
+                },
+                "inside": false,
+                "labels": {
+                  "horizontalCenter": "middle",
+                  "opacity": 1,
+                  "rotation": 0,
+                  "verticalCenter": "middle"
+                },
+                "opposite": false
+              },
+              "category": {
+                "break": {
+                  "enabled": false,
+                  "endCategory": "",
+                  "size": 0.05,
+                  "startCategory": ""
+                }
+              },
+              "date": {
+                "baseInterval": {
+                  "count": 1,
+                  "enabled": false,
+                  "skipEmptyPeriods": false,
+                  "timeUnit": "hour"
+                },
+                "break": {
+                  "enabled": false,
+                  "endDate": "",
+                  "size": 0.05,
+                  "startDate": ""
+                },
+                "format": "M/d/yyyy HH:mm:ss",
+                "inputFormat": "yyyy-MM-dd kk:mm:ss",
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "inversed": false,
+              "label": {
+                "enabled": true,
+                "text": "Mins"
+              },
+              "name": "values",
+              "render": "value",
+              "tooltip": {
+                "background": {
+                  "color": "",
+                  "opacity": 1
+                },
+                "cornerRadius": 3,
+                "enabled": true,
+                "pointerLength": 4,
+                "text": ""
+              },
+              "value": {
+                "break": {
+                  "enabled": false,
+                  "endValue": 100,
+                  "size": 0.05,
+                  "startValue": 0
+                },
+                "format": "#,###.##",
+                "logarithmic": false,
+                "range": {
+                  "max": "",
+                  "min": "",
+                  "useStrict": false
+                }
+              },
+              "visible": true
+            }
+          ]
+        },
+        "type": "ia.chart.xy"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

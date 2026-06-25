@@ -1,0 +1,570 @@
+{
+  "custom": {
+    "lotAttributeInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": 5,
+      "createdDate": {
+        "$": [
+          "ts",
+          192,
+          1768589775855
+        ],
+        "$ts": 1751753175010
+      },
+      "enabled": true,
+      "itemClassId": 124,
+      "itemClassPath": "Kanoa Box Co",
+      "itemColor": null,
+      "itemDescription": "",
+      "itemId": 233,
+      "itemName": "Item A",
+      "itemUnitId": 7,
+      "itemUnitName": "lbs",
+      "lotId": 264,
+      "lotName": "LotA"
+    },
+    "lotInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "enabled": null,
+      "itemClassId": null,
+      "itemClassPath": null,
+      "itemColor": null,
+      "itemDescription": null,
+      "itemId": null,
+      "itemName": null,
+      "itemUnitId": null,
+      "itemUnitName": null,
+      "lotId": null,
+      "lotName": null
+    }
+  },
+  "params": {
+    "value": {
+      "lotId": null
+    }
+  },
+  "propConfig": {
+    "custom.lotInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tlotInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLots({\u0027lotId\u0027: value[\u0027lotId\u0027] or -1}), 0)\n\t\n\treturn lotInfo\n\t\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 166,
+      "width": 600
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label",
+              "name": "lblLotName"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "textAlign": "right"
+              },
+              "text": "Lot Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "txtLotName"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.lotInfo.lotName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxLotName",
+          "name": "flxLotName"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblItem",
+              "name": "lblItem"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "pre"
+              },
+              "text": "Item"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "evTreeSelector",
+              "name": "evTreeSelector"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.selectedProducts": {
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\tsystem.perspective.print(\"prod sel %s\"%self.props.params.selectedProducts)\n\tselection \u003d self.props.params.selectedProducts\n\tif len(selection) \u003e 0:\n\t\tself.view.custom.info.itemId \u003d \u0027\u0027\n\t\tself.view.custom.info.itemName \u003d selection[\u0027id\u0027]\n\t\t\n\treturn"
+                }
+              },
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tparamsDict \u003d {\u0027enabled\u0027: True}\n#\tif len(self.view.custom.lotItemLinks) \u003e 0: paramsDict[\u0027itemPathList\u0027] \u003d self.view.custom.lotItemLinks\n\treturn system.kanoa.item.getItems(paramsDict)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "lotItemSelected",
+                  "options": {
+                    "expand": false,
+                    "multiSelect": false,
+                    "selectable": []
+                  },
+                  "selection": [],
+                  "style": {
+                    "backgroundColor": "",
+                    "iconColor": "",
+                    "iconPath": "material/qr_code",
+                    "position": {
+                      "width": "350px"
+                    },
+                    "tooltip": null
+                  }
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "domId": "lblItemPath",
+              "name": "lblItemPath"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lotInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\titemName \u003d value[\u0027itemName\u0027]\n\titemClassPath \u003d value[\u0027itemClassPath\u0027]\n\titemPath \u003d \"%s\\%s\"%(itemClassPath, itemName) if itemClassPath else itemName\n\treturn system.kanoa.utilities.formatPath(itemPath, {})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "pre"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxItems",
+          "name": "flxItems"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblItem",
+              "name": "lblItem"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "pre"
+              },
+              "text": "Units"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddUnits",
+              "name": "ddUnits"
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lotEventInfo.lotId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tdata \u003d system.kanoa.item.getItemUnits({\u0027enabled\u0027:True})\n\treturn [{\u0027label\u0027: row[\u0027itemUnitName\u0027], \u0027value\u0027: row[\u0027itemUnitId\u0027]} for row in system.dataset.toPyDataSet(data)]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.lotInfo.itemUnitId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\treturn"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "height": "30px",
+                "minWidth": "150px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "name": "flxUnits"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tif self.view.getChild(\"root\").save(): system.perspective.closePopup(\u0027\u0027)\t\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom"
+              }
+            },
+            "position": {
+              "basis": "100px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lotAttributeInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value[\u0027lotId\u0027] is None: return \u0027No lot selected\u0027\n\tif (value[\u0027lotAttributeName\u0027] or None) is None: return \u0027No name set for lot attribute\u0027\n\tif (value[\u0027lotAttributeValue\u0027] or None) is None: return \u0027No value set for lot attribute\u0027\n\t\n\treturn \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.lotAttributeInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value[\u0027lotId\u0027] is not None and (value[\u0027lotAttributeValue\u0027] or None) is not None and value[\u0027lotAttributeName\u0027] is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled",
+                "height": "35px"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "sustain": 0,
+                "text": "Close"
+              }
+            },
+            "position": {
+              "basis": "100px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\toptionName \u003d \u0027showCloseButton\u0027\n\treturn value[\u0027options\u0027][optionName] if value.has_key(\u0027options\u0027) and value[\u0027options\u0027].has_key(optionName) else True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "height": "35px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "flex-end",
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "lblDebug",
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tlotInfo \u003d self.view.custom.lotInfo\n\t\n\tif lotInfo[\u0027lotId\u0027]:\t\n\t\tretVal, msg \u003d system.kanoa.lot.updateLot(lotInfo, userId)\n\telse: \n\t\tlotId, msg \u003d system.kanoa.lot.addLot(lotInfo, userId)\n\t\n\tif msg:\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027Lot was not saved. %s\u0027%msg})\t\t\t\n\telse: system.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Lot has been saved\u0027})\n\t\n\tsystem.perspective.sendMessage(\u0027lotUpdate\u0027, {})\t\n\t\n\treturn True if msg is None else False"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "lotItemSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"lotItemSelected() msg rcvd with %s\"%payload)\n\t\n\tlotInfo \u003d dict(self.view.custom.lotInfo)\n\t\n\tif len(payload[\u0027selection\u0027]) \u003d\u003d 0: \n\t\tlotInfo[\u0027itemId\u0027] \u003d None\n\t\tlotInfo[\u0027itemPath\u0027] \u003d None\n\t\tlotInfo[\u0027itemUnitId\u0027] \u003d None\n\telse:\n\t\tsystem.perspective.print(\"Setting itemId to %s\"%payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemId\u0027] if payload[\u0027selection\u0027][0][\u0027value\u0027].has_key(\u0027itemId\u0027) else None)\n\t\tlotInfo[\u0027itemId\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemId\u0027] if payload[\u0027selection\u0027][0][\u0027value\u0027].has_key(\u0027itemId\u0027) else None\n\t\tlotInfo[\u0027itemPath\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemPath\u0027] if payload[\u0027selection\u0027][0][\u0027value\u0027].has_key(\u0027itemPath\u0027) else None\n\n\tself.view.custom.lotInfo \u003d lotInfo\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "color": "#489fe2", 
+      "eqPath": "value", 
+      "assetPath": "value", 
+      "name": "Name", 
+      "state": "msg"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 297, 
+      "height": 53
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "justify": "center", 
+      "style": {
+        "padding": 5, 
+        "backgroundColor": "--kcSurface", 
+        "classes": "kanoa/border kanoa/clickable"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "textStyle": {
+            "color": "", 
+            "classes": "kanoa/font/bodyMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "lblName", 
+          "name": "lblName"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "178px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.name"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "paddingRight": 10, 
+            "borderTopLeftRadius": 20, 
+            "paddingBottom": 10, 
+            "borderBottomLeftRadius": 20, 
+            "borderBottomRightRadius": 20, 
+            "borderTopRightRadius": 20, 
+            "paddingTop": 10, 
+            "paddingLeft": 10
+          }, 
+          "textStyle": {
+            "textAlign": "center", 
+            "classes": "kanoa/font/bodyMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "lblState", 
+          "name": "lblState"
+        }, 
+        "position": {
+          "basis": "150px"
+        }, 
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.color"
+              }
+            }
+          }, 
+          "props.style.color": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn system.kanoa.utilities.getContrastingColor(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.color"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value or 'Unknown'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.state"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "events": {
+      "dom": {
+        "onClick": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\t\n\tsystem.kanoa.utilities.storeAssetPath(self, self.view.params.value.eqPath)\n\tparams= {\"path\": \"kanoa/mes/asset/operation/main\", \"name\": \"Asset Operation\", \"type\": \"view\", \"params\": {}}\n\tsystem.perspective.sendMessage(\"updateNavigation\", payload=params, scope='page')\n\t\n\treturn"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

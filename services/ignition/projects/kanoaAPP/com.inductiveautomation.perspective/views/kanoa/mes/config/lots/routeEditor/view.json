@@ -1,0 +1,574 @@
+{
+  "custom": {
+    "routeInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "enabled": null,
+      "itemClass": null,
+      "itemClassId": null,
+      "itemClassPath": null,
+      "itemColor": null,
+      "itemDescription": null,
+      "itemId": null,
+      "itemLink": null,
+      "itemName": null,
+      "itemPath": null,
+      "lastUpdated": null,
+      "routeDescription": "",
+      "routeId": null,
+      "routeName": ""
+    }
+  },
+  "params": {
+    "values": {
+      "routeId": null
+    }
+  },
+  "propConfig": {
+    "custom.routeInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.routeId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\trouteInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getRoutes({\u0027routeId\u0027:value or -1}), 0)\n\trouteInfo[\u0027routeName\u0027] \u003d routeInfo[\u0027routeName\u0027] or \u0027\u0027\n\trouteInfo[\u0027routeDescription\u0027] \u003d routeInfo[\u0027routeDescription\u0027] or \u0027\u0027\n\t\n\treturn routeInfo\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 207,
+      "width": 684
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblname",
+              "name": "lblname"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Route Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\t\n\timport time\n\ttime.sleep(0.2)\n\tself.focus()"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "txtName",
+              "name": "txtName"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeInfo.routeName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "style": {
+                "classes": "kanoa/font/default kanoa/border"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxRouteName",
+          "name": "flxRouteName"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblname-1",
+              "name": "lblname"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Description"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "txtDescription",
+              "name": "txtDescription"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeInfo.routeDescription"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-area"
+          }
+        ],
+        "meta": {
+          "domId": "flxDescription",
+          "name": "flxDescription"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblItem",
+              "name": "lblItem"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "pre"
+              },
+              "text": "Item"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "evTreeSelector",
+                  "name": "evTreeSelector"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.params.selectedProducts": {
+                    "onChange": {
+                      "enabled": null,
+                      "script": "\t\n\tsystem.perspective.print(\"prod sel %s\"%self.props.params.selectedProducts)\n\tselection \u003d self.props.params.selectedProducts\n\tif len(selection) \u003e 0:\n\t\tself.view.custom.info.itemId \u003d \u0027\u0027\n\t\tself.view.custom.info.itemName \u003d selection[\u0027id\u0027]\n\t\t\n\treturn"
+                    }
+                  },
+                  "props.params.values.data": {
+                    "binding": {
+                      "config": {
+                        "expression": "now(0)"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\n\treturn system.kanoa.item.getItems({\u0027enabled\u0027:True})",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr"
+                    }
+                  },
+                  "props.params.values.path": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.routeInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value[\u0027itemPath\u0027] or value[\u0027itemClassPath\u0027]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.params.values.selection": {
+                    "onChange": {
+                      "enabled": null,
+                      "script": "\t\n\tselection \u003d self.props.params.values.selection\n\t\n\tsystem.perspective.print(\"selectedItems %s\"%selection)\n\t\n\titemId, itemName, itemPath, itemClassId, itemClassPath \u003d [None] * 5\n\t\n\tif len(selection) \u003e 0: \n\t\tif selection[0].value.has_key(\u0027itemId\u0027):\n\t\t\titemId \u003d selection[0].value[\u0027itemId\u0027]\n\t\t\titemName \u003d selection[0].value[\u0027itemName\u0027]\n\t\t\titemPath \u003d selection[0].value[\u0027itemPath\u0027]\n\t\telse:\n\t\t\titemClassPath \u003d selection[0].value[\u0027path\u0027]\n\t\t\titemClassId \u003d system.kanoa.utilities.getFieldValue(\u0027itemClassId\u0027, system.kanoa.item.getItemClasses({\u0027itemClassPath\u0027: selection[0].value[\u0027path\u0027]}))\n\n\tsystem.perspective.print(\"setting routeInfo to itemId %s, itemName %s, itemPath %s, itemClassId %s, itemClassPath %s\"%(itemId, itemName, itemPath, itemClassId, itemClassPath))\n\n\tself.view.custom.routeInfo[\u0027itemId\u0027] \u003d itemId\n\tself.view.custom.routeInfo[\u0027itemName\u0027]  \u003d itemName\n\tself.view.custom.routeInfo[\u0027itemPath\u0027]  \u003d itemPath\n\tself.view.custom.routeInfo[\u0027itemClassId\u0027] \u003d itemClassId\n\tself.view.custom.routeInfo[\u0027itemClassPath\u0027] \u003d itemClassPath\n\t\t\n\treturn"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "values": {
+                      "msgHandler": "itemSelected",
+                      "options": {
+                        "dragDrop": false,
+                        "expand": false,
+                        "multiSelect": false,
+                        "showBreadcrumb": true,
+                        "showClear": true,
+                        "showSelectedPath": false
+                      },
+                      "selection": [],
+                      "style": {
+                        "iconColor": "",
+                        "iconPath": null,
+                        "tooltip": null
+                      },
+                      "treePath": "itemPath"
+                    }
+                  },
+                  "path": "kanoa/core/templates/selectors/tree/selector"
+                },
+                "type": "ia.display.view"
+              },
+              {
+                "meta": {
+                  "domId": "lblSelectedItems",
+                  "name": "lblSelectedItems"
+                },
+                "position": {
+                  "display": false,
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.routeInfo"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif value[\u0027itemPath\u0027]: return system.kanoa.utilities.formatPath(value[\u0027itemPath\u0027], {})\n\tif value[\u0027itemClassPath\u0027]: return system.kanoa.utilities.formatPath(value[\u0027itemClassPath\u0027], {})\n\t\n\treturn value[\u0027itemName\u0027] or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "textStyle": {
+                    "colorX": "--kcOnSurfaceVariant"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxInput",
+              "name": "flxInput"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "alignContent": "flex-start",
+              "alignItems": "center",
+              "wrap": "wrap"
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "domId": "flxItems",
+          "name": "flxItems"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.routeInfo.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxEnabled",
+          "name": "flxEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\trouteInfo \u003d dict(self.view.custom.routeInfo)\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif routeInfo[\u0027routeId\u0027] is not None: \t#If name has changed, we need to check that it doesn\u0027t already exist\n\t\tcurrentRouteId \u003d system.kanoa.utilities.getFieldValue(\u0027routeId\u0027, system.kanoa.lot.getRoutes({\u0027routeName\u0027: routeInfo[\u0027routeName\u0027]}))\n\t\tif currentRouteId is not None and currentRouteId !\u003d routeInfo[\u0027routeId\u0027]:\n\t\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027This route already exists\u0027})\n\t\t\treturn\n\t\t\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Updating routeId %i \u0027%routeInfo[\u0027routeId\u0027]})\t\t\t\n\t\tretVal, msg \u003d system.kanoa.lot.updateRoute(routeInfo, userId)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Adding Route\u0027})\t\n\t\trouteId, msg \u003d system.kanoa.lot.addRoute(routeInfo, userId)\n\n\tsystem.perspective.sendMessage(\"updateRoutes\", {})\n\n\tif msg:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \"Couldn\u0027t save this Route. %s\"%msg})\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \"Route has been saved\"})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.routeInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn True if (value[\u0027routeName\u0027] or None) is not None else False",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "marginLeft": "5px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "itemSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\u0027itemSelected() msg rcvd with %s\u0027%payload)\n\tself.view.custom.routeInfo.itemId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemId\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\tself.view.custom.routeInfo.itemClass \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemClassId\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,374 @@
+{
+  "custom": {
+    "path": null,
+    "sections": [],
+    "tree": {}
+  },
+  "params": {
+    "values": {
+      "data": {
+        "$": [
+          "ds",
+          192,
+          1775525399346
+        ],
+        "$columns": [
+          {
+            "data": [],
+            "name": "stateCategoryId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "parentId",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "stateCategoryName",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "stateCategoryPath",
+            "type": "String"
+          },
+          {
+            "data": [],
+            "name": "enabled",
+            "type": "Boolean"
+          },
+          {
+            "data": [],
+            "name": "createdBy",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "createdDate",
+            "type": "Date"
+          },
+          {
+            "data": [],
+            "name": "changedBy",
+            "type": "Integer"
+          },
+          {
+            "data": [],
+            "name": "changedDate",
+            "type": "Date"
+          }
+        ]
+      },
+      "msgHandler": "",
+      "options": {
+        "showClear": false
+      },
+      "path": "",
+      "selectorId": "",
+      "treePath": null
+    }
+  },
+  "propConfig": {
+    "custom.path": {
+      "persistent": true
+    },
+    "custom.sections": {
+      "binding": {
+        "config": {
+          "path": "view.custom.path"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif (value or None) is None: return []\n\tinstances \u003d []\n\tsections \u003d value.split(\"\\\\\")\n\tfor i, section in enumerate(sections):\n\t\twidth \u003d 0 if section \u003d\u003d sections[0] else self.getChild(\"root\").getCharPixelSize(\u0027\u003e\u0027)\t#Adds space for the \u003e\n\t\twidth +\u003d self.getChild(\"root\").getCharPixelSize(section)\n\t\tpath \u003d \"\\\\\".join(sections[:i+1])\n\t\tinstances.append({\u0027instancePosition\u0027: {\"basis\": str(width + 5) + \u0027px\u0027}, \u0027values\u0027: {\u0027path\u0027:path, \u0027section\u0027: section, \u0027msgHandler\u0027: self.view.params.values.msgHandler, \u0027selectorId\u0027: self.params.values.selectorId}})\n\t\t\n\treturn instances",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\ttry:\n\t\tif len(self.custom.sections) \u003d\u003d 0:\n\t\t\tself.view.custom.path \u003d \u0027\u0027\n\t\t\tself.getChild(\"root\").sectionSelected(None)\n\texcept:\n\t\tpass\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.tree": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.data"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\ttreePath \u003d self.params.values.treePath or \u0027path\u0027\n\tmyDict \u003d {}\n\ttreeDict \u003d system.kanoa.utilities.convertDatasetToDict(value, str(treePath), None)\n\tdebug \u003d False\n\t\t\n\tfor key, keyValue in treeDict.items():\n\t\tif debug: system.perspective.print(\u0027item is %s\u0027%keyValue)\n\t\tnodeNames \u003d key.split(\"\\\\\")\n\t\tsortOrder \u003d 9999\n\t\tfor i, nodeName in enumerate(nodeNames):\n\t\t\tkey \u003d \"\\\\\".join(nodeNames[:i+1])\n\t\t\tif not treeDict.has_key(key):\n\t\t\t\titemInfo \u003d dict(keyValue)\n\t\t\t\tfor k, v in itemInfo.items(): itemInfo[k] \u003d None\n\t\t\t\titemInfo[\u0027path\u0027] \u003d key\n\t\t\telse:\n\t\t\t\titemInfo \u003d treeDict[key]\n\t\t\t\tif itemInfo.has_key(\u0027sortOrder\u0027): sortOrder \u003d itemInfo[\u0027sortOrder\u0027]\n\t\t\tmyDict[key] \u003d {\u0027nodeName\u0027: nodeName, \u0027sortOrder\u0027: sortOrder, \u0027data\u0027: itemInfo}\n\t\t\tif debug: system.perspective.print(\u0027i: %s, nodeName: %s, %s\u0027%(i, nodeName, myDict[key][\u0027data\u0027][\u0027path\u0027]))\n\t\t\n\treturn myDict\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tself.custom.path \u003d self.params.values.path if self.params.values.has_key(\u0027path\u0027) else None\n\t\n\treturn"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 28,
+      "width": 605
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tself.view.custom.path \u003d \u0027\u0027\n\tsystem.perspective.sendMessage(\"breadCrumbSectionSelected\", payload\u003d{\u0027path\u0027: None, \u0027selectorId\u0027: self.view.params.values.selectorId})\n\tself.parent.sectionSelected(None)\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnClear",
+          "name": "btnClear",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "Clear bread crumb"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "options": "{view.params.values.options}",
+                  "sections": "{view.custom.sections}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn len(value[\u0027sections\u0027] or []) \u003e 0 and value[\u0027options\u0027][\u0027showClear\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "height": 20,
+            "icon": {
+              "color": "--kcGray-50",
+              "path": "material/blur_off"
+            },
+            "width": 20
+          },
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      },
+      {
+        "meta": {
+          "domId": "flxRptPathSections",
+          "name": "flxRptPathSections"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.basis": {
+            "binding": {
+              "config": {
+                "path": "this.props.instances"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\twidth \u003d 6\n\tfor instance in value:\n\t\twidth +\u003d int(instance[\u0027instancePosition\u0027][\u0027basis\u0027].replace(\u0027px\u0027, \u0027\u0027))\n\t\n\treturn \"%spx\"%width",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.sections"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "center",
+          "elementPosition": {
+            "basis": "auto",
+            "grow": 0,
+            "shrink": 0
+          },
+          "path": "kanoa/core/templates/selectors/tree/labelSection",
+          "style": {
+            "height": "30px",
+            "overflow": "hidden"
+          },
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tself.parent.sectionSelected(self.props.value)\n\tself.props.value \u003d None\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "ddNextItem",
+          "name": "ddNextItem"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.basis": {
+            "binding": {
+              "config": {
+                "path": "this.props.options"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\tif not len(value): return \u00270px\u0027\n\tlabelLengths \u003d [self.parent.getCharPixelSize(row[\u0027label\u0027]) for row in value]\n\treturn str(max(labelLengths) + 40) + \u0027px\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "this.props.options"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn len(value) \u003e 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "path": "{view.custom.path}",
+                  "tree": "{view.custom.tree}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\timport re\n\t\n\tpath \u003d value[\u0027path\u0027] or \u0027\u0027\n\ttree \u003d value[\u0027tree\u0027] or {}\n\tpathLength \u003d len(path.split(\"\\\\\")) if path !\u003d \u0027\u0027 else 0\n\toptions \u003d []\n\t\n\tfor k, v in tree.items():\n\t\tif path:\n\t\t\tsections \u003d k.split(\"\\\\\")\n\t\t\tif len(sections) !\u003d pathLength + 1: continue\n\t\t\tif k.startswith(path + \"\\\\\"):\n\t\t\t\toptions.append({\u0027value\u0027: k, \u0027label\u0027: v[\u0027nodeName\u0027], \u0027sortOrder\u0027: v.get(\u0027sortOrder\u0027)})\n\t\telse:\n\t\t\tif \"\\\\\" not in k: options.append({\u0027value\u0027: k, \u0027label\u0027: v[\u0027nodeName\u0027], \u0027sortOrder\u0027: v.get(\u0027sortOrder\u0027)})\n\t\n\tdef naturalLabelKey(s):\n\t\tparts \u003d re.findall(r\u0027\\d+|[^\\d]+\u0027, (s or \u0027\u0027).strip().lower())\n\t\tkey \u003d []\n\t\tfor part in parts:\n\t\t\tif part.isdigit(): key.append((0, int(part)))\n\t\t\telse: key.append((1, part))\n\t\treturn tuple(key)\n\t\n\tdef sortFunc(x):\n\t\tsortOrder \u003d x.get(\u0027sortOrder\u0027)\n\t\tlabel \u003d x.get(\u0027label\u0027) or \u0027\u0027\n\t\treturn (sortOrder is None,\tsortOrder if sortOrder is not None else 0, naturalLabelKey(label))\n\t\n\treturn sorted(options, key\u003dsortFunc)",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\t\n\tself.parent.focus() # Needed to get the next section \u003e to show right after current section\n\treturn"
+            }
+          }
+        },
+        "props": {
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default",
+            "textAlign": "center"
+          },
+          "placeholder": {
+            "text": "\u003e"
+          },
+          "style": {
+            "classes": "kanoa/font/default BCnav"
+          },
+          "value": null
+        },
+        "type": "ia.input.dropdown"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignContent": "flex-start",
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": "5px",
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getCharPixelSize",
+          "params": [
+            "stringName"
+          ],
+          "script": "\n\tif (stringName or None) is None:\n\t\treturn 0\n\t\n\tfrom java.awt import Font\n\tfrom java.awt.image import BufferedImage\n\tfrom java.awt.font import FontRenderContext\n\tfrom java.awt.geom import AffineTransform\n\tfrom math import ceil\n\t\n\tfontName \u003d \"Roboto\"\n\tfontSize \u003d 12\n\tfontStyle \u003d Font.PLAIN\n\t\n\tfont \u003d Font(fontName, fontStyle, fontSize)\n\t\n\tfrc \u003d FontRenderContext(AffineTransform(), True, True)\n\t\n\tbounds \u003d font.getStringBounds(stringName, frc)\n\treturn int(ceil(bounds.getWidth()))"
+        },
+        {
+          "name": "sectionSelected",
+          "params": [
+            "path"
+          ],
+          "script": "\n#\tsystem.perspective.print(\"sectionSelected() called with %s\"%path)\n\tif path \u003d\u003d self.view.params.values.path: path \u003d \"\\\\\".join(path.split(\"\\\\\")[:-1]) if path else path\n\n\tself.view.custom.path \u003d path\n\t\n\tparams \u003d self.view.params.values\n\ttreePath \u003d params[\u0027treePath\u0027] if params[\u0027treePath\u0027] else \u0027path\u0027\n\t\t\n\tpayload \u003d {\u0027activity\u0027: \u0027nodeSelected\u0027, \u0027msgHandler\u0027: params[\u0027msgHandler\u0027], \u0027selection\u0027: [], \u0027selectorId\u0027: self.view.params.values.selectorId}\t\t\t\n\t\n\tif path: payload[\u0027selection\u0027] \u003d [{\u0027value\u0027: self.view.custom.tree[path][\u0027data\u0027]}]\n\n#\tsystem.perspective.print(\"Sending breadCrumbSelected msg with %s\"%payload)\n\tsystem.perspective.sendMessage(\"breadCrumbSelected\", payload\u003dpayload)\n\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "breadCrumbSectionSelected",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\"breadCrumbSectionSelected msg handler rcvd with %s\"%payload)\n\tselectorId \u003d self.view.params.values.selectorId if self.view.params.values.has_key(\u0027selectorId\u0027) else None\n\tif payload[\u0027selectorId\u0027] \u003d\u003d selectorId: self.sectionSelected(payload[\u0027path\u0027])\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

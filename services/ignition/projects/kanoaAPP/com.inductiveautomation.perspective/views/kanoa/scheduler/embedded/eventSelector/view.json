@@ -1,0 +1,463 @@
+{
+  "custom": {
+    "clearData": false,
+    "filter": {
+      "woOptions": "Item Enabled"
+    },
+    "search": "",
+    "woData": []
+  },
+  "params": {
+    "display": true,
+    "eqPath": ""
+  },
+  "propConfig": {
+    "custom.clearData": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif currentValue.value:\n\t\tself.custom.woData \u003d []\n\t\tself.custom.clearData \u003d False\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.filter.assetPath": {
+      "binding": {
+        "config": {
+          "path": "view.params.eqPath"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "custom.filter.woOrderStatus": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\torderStates \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.order.getProductionOrderStates({\u0027enabled\u0027: True, \u0027canSchedule\u0027: True}))\n\treturn [row[\u0027workOrderStatusName\u0027] for row in orderStates]",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.search": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \u0027\u0027\t#resets the search string on startup",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.woData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetPath\u0027] is None: return []\n\tassetPath \u003d value[\u0027assetPath\u0027] or \u0027\u0027\n\tif value[\u0027woOrderStatus\u0027] is None: return []\n\t\n\tif value[\u0027woOptions\u0027] \u003d\u003d \u0027Item Enabled\u0027:\n\t\titemSourceId \u003d system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: \u0027output\u0027}))\n\t\titemIdList \u003d [row[\u0027itemId\u0027] for row in system.kanoa.item.getAssetItems({\u0027assetPath\u0027: assetPath, \u0027itemSourceId\u0027: itemSourceId, \u0027enabled\u0027: True})]\n\t\tif len(itemIdList) \u003d\u003d 0: return []\n\t\tparamsDict \u003d {\u0027startDate\u0027: system.date.addWeeks(system.date.now(), -12), \u0027endDate\u0027: system.date.addWeeks(system.date.now(), 4), \u0027ignoreActualQty\u0027: False, \u0027workOrderStatusList\u0027: value[\u0027woOrderStatus\u0027], \u0027itemIdList\u0027: itemIdList}\n\t\tdata \u003d system.kanoa.order.getProductionOrders(paramsDict)\n\telse:\n\t\tparamsDict \u003d {\u0027startDate\u0027: system.date.addWeeks(system.date.now(), -12), \u0027endDate\u0027: system.date.addWeeks(system.date.now(), 4), \u0027ignoreActualQty\u0027: False, \u0027workOrderStatusList\u0027: value[\u0027woOrderStatus\u0027], \u0027assetPath\u0027: assetPath}\n\t\tdata \u003d system.kanoa.order.getProductionOrders(paramsDict)\t\t\n\t\n\treturn system.kanoa.utilities.convertDatasetToJSON(data)\n\t\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.display": {
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.eqPath": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 300
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge",
+                "textAlign": "center"
+              },
+              "text": "Orders"
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "rdoOptions",
+              "name": "rdoOptions",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Show any production orders that can be run on these assets or only show production orders specified for these assets"
+              }
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.woOptions"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "radios": [
+                {
+                  "selected": true,
+                  "text": "All Items",
+                  "value": "Item Enabled"
+                },
+                {
+                  "selected": false,
+                  "text": "Just for this asset",
+                  "value": "Asset Specific"
+                }
+              ]
+            },
+            "type": "ia.input.radio-group"
+          },
+          {
+            "meta": {
+              "domId": "ddOrderStatus",
+              "name": "ddOrderStatus"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn [{\u0027value\u0027: row[\u0027workOrderStatusName\u0027], \u0027label\u0027: row[\u0027workOrderStatusName\u0027]} for row in system.kanoa.order.getProductionOrderStates({\u0027enabled\u0027: True, \u0027canSchedule\u0027: True})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.woOrderStatus"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "multiSelect": true,
+              "placeholder": {
+                "text": "Filter by production order status..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minHeight": "30px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxOptions",
+          "name": "flxOptions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "classes": "kanoa/container",
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lbl",
+              "name": "lbl"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "Search by..."
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "txtSearch",
+              "name": "txtSearch"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.search"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false
+            },
+            "type": "ia.input.text-field"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.openPopup(\u0027findWorkOrder\u0027, \u0027kanoa/scheduler/embedded/searchOrder\u0027, params\u003d{\u0027value\u0027: {\u0027orderName\u0027: self.view.custom.search}}, title\u003d\u0027Search For Order\u0027, showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, viewPortBound\u003dTrue)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSearch",
+              "name": "btnSearch",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Search all scheduled events across assets for an order"
+              }
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/search"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxSearch",
+          "name": "flxSearch",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "Filters the orders by the search string"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "eventBox",
+          "name": "eventBox"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.events": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "data": "{view.custom.woData}",
+                  "search": "{view.custom.search}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tevents \u003d []\n\t\n\tassetPath \u003d self.view.custom.filter.assetPath\n\tif (assetPath or None) is None: return events\n\t\n\ttheme \u003d self.session.props.theme\n\ttimezone \u003d system.kanoa.date.getAssetTimeZoneInfo(assetPath)[assetPath][\u0027timeZone\u0027]\n\t\n\tfor rowNumber, row in enumerate(value[\u0027data\u0027]):\t\t\n\t\treqdQty \u003d float(row[\u0027reqdQty\u0027] or 0.0)\n\t\tactualQty \u003d float(row[\u0027actualQty\u0027] or 0.0)\n\t\tschedQty \u003d float(row[\u0027schedQty\u0027] or 0.0)\n\t\tunits \u003d row[\u0027itemUnitName\u0027] or \u0027units\u0027\n\t\tremainQty \u003d reqdQty - actualQty\n\t\t\n\t\ttitle \u003d \u0027\\nWO#: {:s} (ID{:d})\\n{:s}\u0027.format(row[\u0027workOrderTitle\u0027],row[\u0027workOrderId\u0027], row[\u0027itemName\u0027])\n\t\tif row[\u0027itemDescription\u0027] and row[\u0027itemDescription\u0027] !\u003d row[\u0027itemName\u0027]: title +\u003d \u0027 - %s\u0027%row[\u0027itemDescription\u0027]\n\t\treqd \u003d \"{:,g} {} required\".format(reqdQty, units)\n\t\tsched \u003d \" . {:,g} scheduled\".format(schedQty) if schedQty else \u0027\u0027\n\t\tactual \u003d \" . {:,g} already produced\".format(actualQty) if actualQty else \u0027\u0027\n\t\tremain \u003d \" . {:,g} remaining. \".format(remainQty) if remainQty !\u003d reqdQty else \u0027\u0027\n\t\ttitle +\u003d \"\\n%s %s %s %s\"%(reqd, sched, actual, remain)\n\t\t\n\t\tif row[\u0027note\u0027]: title +\u003d \u0027\\n{:s}\u0027.format(row[\u0027note\u0027])\n\t\tif row[\u0027assetPath\u0027]: title +\u003d \u0027\\nPath: {:s}\u0027.format(row[\u0027assetPath\u0027])\n\t\t\n\t\tif value[\u0027search\u0027] !\u003d \u0027\u0027 and value[\u0027search\u0027] not in title: continue\n\t\tbgColor \u003d row[\u0027itemColor\u0027] or \u0027#D5D5D5\u0027\n\t\tfgColor \u003d system.kanoa.utilities.getContrastingColor(bgColor)\n\t\toffsetMins \u003d system.kanoa.date.getTimeZoneOffsetMins(timezone, row[\u0027dueDate\u0027] or system.date.now())\n\t\t\n\t\tif row[\u0027dueDate\u0027]:\t\n\t\t\tdueDate \u003d system.date.addMinutes(row[\u0027dueDate\u0027], offsetMins)\t\t\t\n\t\t\ttitle +\u003d \u0027\\nDue Date: {:s}\u0027.format(system.date.format(dueDate, \u0027MMM d, H:mm\u0027))\n\t\telse:\n\t\t\tdueDate \u003d None\n\t\t\t\n\t\ttitle +\u003d \u0027\\n{}\u0027.format(row[\u0027workOrderStatusName\u0027])\n#\t\ttitle +\u003d \u0027\\n{}\u0027.format(\"workOrderId: %s\"%row[\u0027workOrderId\u0027])\n\t\tevents.append({\"woInfo\": row, \"title\": title, \"eventColor\": bgColor, \"textColor\": fgColor, \u0027dueDate\u0027: system.date.format(dueDate, \u0027yyyy-MM-dd HH:mm:ss\u0027) if dueDate is not None else \u0027\u0027})\n\t\n\treturn sorted(events, key \u003d lambda e: e[\u0027dueDate\u0027])",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "eventColor": "",
+          "flex": {
+            "rowGap": "5px"
+          },
+          "style": {
+            "classes": "kanoa/font/default",
+            "minHeight": "250px",
+            "overflow": "visible",
+            "overflowY": "visible"
+          }
+        },
+        "type": "bijc.display.caleventbox"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.sendMessage(\"closeEventSelector\", {})\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnClose",
+          "name": "btnClose",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "Close Order Selector"
+          }
+        },
+        "position": {
+          "basis": "20px",
+          "shrink": 0
+        },
+        "props": {
+          "path": "material/close",
+          "style": {
+            "classes": "kanoa/button/flatIcon",
+            "height": 20,
+            "left": 3,
+            "position": "absolute",
+            "top": 3,
+            "width": 20
+          }
+        },
+        "type": "ia.display.icon"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "enabled": true
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "minHeight": "200px",
+        "overflow": "visible",
+        "padding": 5,
+        "position": "relative"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "refreshEvents",
+          "pageScope": true,
+          "script": "\n#\tself.view.refreshBinding(\"custom.woData\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshOrders",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"refreshOrders msg rcvd with %s\"%payload)\n\tself.view.refreshBinding(\"custom.woData\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

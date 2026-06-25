@@ -1,0 +1,215 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "info": "some info",
+      "itemColor": "#FF4747",
+      "itemDesc": "some description",
+      "itemId": 45,
+      "itemName": "Product A1"
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 78,
+      "width": 298
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblItem",
+          "name": "lblItem"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.itemColor"
+              },
+              "type": "property"
+            }
+          },
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "path": "this.props.style.backgroundColor"
+              },
+              "transforms": [
+                {
+                  "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.itemName"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/border",
+            "fontWeight": "bold",
+            "textAlign": "center"
+          },
+          "textStyle": {
+            "classes": "kanoa/font/labelLarge"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblDesc",
+          "name": "lblDesc"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "transforms": [
+                {
+                  "code": "\n\tif value[\u0027itemDesc\u0027]:\n\t\treturn \u0027%s \\n %s\u0027%(value[\u0027info\u0027], value[\u0027itemDesc\u0027])\n\telse: return value[\u0027info\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignVertical": "top",
+          "style": {
+            "overflow": "hidden",
+            "textAlign": "center",
+            "white-space": "pre"
+          },
+          "textStyle": {
+            "classes": "kanoa/font/bodySmall"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\n\tsystem.perspective.sendMessage(\u0027itemSelection\u0027, {\u0027workOrderId\u0027:None, \u0027itemId\u0027: self.view.params.value.itemId, \u0027scheduleId\u0027: None})\n\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "enabled": true,
+        "location": "top"
+      }
+    },
+    "propConfig": {
+      "custom.itemSelection": {
+        "binding": {
+          "config": {
+            "path": "session.custom.kanoa"
+          },
+          "transforms": [
+            {
+              "code": "\treturn system.kanoa.utilities.getPageObject(self, \u0027itemSelection\u0027)",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "meta.tooltip.text": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.itemName"
+          },
+          "type": "property"
+        }
+      },
+      "props.style.borderColor": {
+        "binding": {
+          "config": {
+            "path": "this.custom.itemSelection"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\tif value is None: return \u0027--kcOutline\u0027\n\tif value.has_key(\u0027itemId\u0027) and value[\u0027itemId\u0027] \u003d\u003d self.view.params.value.itemId: return \u0027--kcPrimary\u0027\n\treturn \u0027--kcOutline\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.borderWidth": {
+        "binding": {
+          "config": {
+            "path": "this.custom.itemSelection"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\tif value is None: return \u00271px\u0027\n\tif value.has_key(\u0027itemId\u0027) and value[\u0027itemId\u0027] \u003d\u003d self.view.params.value.itemId: return \u00272px\u0027\n\treturn \u00271px\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurfaceVariant",
+        "borderStyle": "solid",
+        "gap": "5px",
+        "minHeight": 60,
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "itemSelection",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\u0027itemSelection msg rcvd with %s\u0027%payload)\n\tself.custom.itemSelection \u003d payload\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

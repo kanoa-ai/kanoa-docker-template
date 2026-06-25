@@ -1,0 +1,891 @@
+{
+  "custom": {
+    "workOrderCondition": {}
+  },
+  "params": {
+    "values": {
+      "assetId": null,
+      "assetName": null,
+      "assetPath": null,
+      "assignedTo": null,
+      "assignedUser": null,
+      "changedBy": 5,
+      "changedDate": {
+        "$": [
+          "ts",
+          192,
+          1775689322171
+        ],
+        "$ts": 1775687414710
+      },
+      "conditionId": null,
+      "conditionInfo": null,
+      "conditionName": null,
+      "createdBy": 5,
+      "createdDate": {
+        "$": [
+          "ts",
+          192,
+          1775689322171
+        ],
+        "$ts": 1774723152900
+      },
+      "description": "",
+      "dueDate": {
+        "$": [
+          "ts",
+          192,
+          1775689322171
+        ],
+        "$ts": 1774723012732
+      },
+      "enabled": true,
+      "isActive": false,
+      "lastGeneratedDate": null,
+      "lastGeneratedValue": null,
+      "maintenanceSubTypeId": null,
+      "maintenanceSubTypeName": null,
+      "maintenanceTypeColor": "--kcGreen-50",
+      "maintenanceTypeId": 8,
+      "maintenanceTypeName": "Project",
+      "occurrenceKey": null,
+      "procedureId": 32,
+      "procedureName": "Bake a cake",
+      "requestedBy": 5,
+      "requestedByUser": "jason",
+      "scheduleTypeId": 1,
+      "scheduleTypeName": "One Time",
+      "title": "Bake a Cake",
+      "workOrderConditionId": null,
+      "workOrderEventId": 56,
+      "workOrderEventName": "MWO00104",
+      "workOrderEventStatusCategoryId": 1,
+      "workOrderEventStatusCategoryName": "Open",
+      "workOrderEventStatusColor": "--kcGreen-50",
+      "workOrderEventStatusId": 3,
+      "workOrderEventStatusName": "Assigned",
+      "workOrderId": 76,
+      "workOrderPriorityColor": "--kcGray-10",
+      "workOrderPriorityIconPath": null,
+      "workOrderPriorityId": 1,
+      "workOrderPriorityName": "Low"
+    }
+  },
+  "propConfig": {
+    "custom.workOrderCondition": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027:\n\t\t\n\t\twoc \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getWorkOrderConditions({\u0027workOrderId\u0027: value[\u0027workOrderId\u0027]}),0)\n\t\tci \u003d system.kanoa.utilities.getFieldValue(\u0027conditionInfo\u0027, system.kanoa.cmms.getWorkOrderConditions({\u0027workOrderId\u0027: value[\u0027workOrderId\u0027]}))\n\t\tif woc[\u0027conditionInfo\u0027]: ci \u003d system.util.jsonDecode(woc[\u0027conditionInfo\u0027])\n\t\t\t\n\t\tlastGeneratedValue \u003d woc[\u0027lastGeneratedValue\u0027] or 0 if ci else None\n\t\tcounterValue \u003d system.kanoa.utilities.getFieldValue(\u0027value\u0027, system.kanoa.event.getCounterEventTotals({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: woc[\u0027lastGeneratedDate\u0027] or woc[\u0027createdDate\u0027]})) if ci else None\n\n\t\treturn {\n\t\t\t\t\u0027conditionName\u0027: woc[\u0027conditionName\u0027],\n#\t\t\t\t\u0027counterName\u0027: info[\u0027counterName\u0027],\n\t\t\t\t\u0027counterId\u0027: ci[\u0027counterId\u0027] if ci.has_key(\u0027counterId\u0027) else None,\n\t\t\t\t\u0027countThreshold\u0027: ci[\u0027valueThreshold\u0027],\n\t\t\t\t\u0027counterValue\u0027: (counterValue or 0.0) + (woc[\u0027lastGeneratedValue\u0027] or 0.0),\n\t\t\t\t\u0027lastGeneratedValue\u0027: woc[\u0027lastGeneratedValue\u0027],\n\t\t\t\t\u0027lastGeneratedDate\u0027: woc[\u0027lastGeneratedDate\u0027]\n\t\t\t}\n\n\treturn {}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 66,
+      "width": 584
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblWorkOrder"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.maintenanceTypeColor"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \"%s - %s\"%(value[\u0027workOrderEventName\u0027], value[\u0027title\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "icoDue",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right",
+                "text": "Work Order due"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "/root.custom.pulse.backgroundColor"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.style.transition": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.isActive"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027background-color 2.0s linear\u0027 if value else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "material/alarm",
+              "style": {
+                "borderBottomLeftRadius": 15,
+                "borderBottomRightRadius": 15,
+                "borderStyle": "none",
+                "borderTopLeftRadius": 15,
+                "borderTopRightRadius": 15,
+                "height": "25px"
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "name": "lblDueDate"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value[\u0027dueDate\u0027] is None: return \u0027\u0027\n\tclientOffsetMins \u003d system.kanoa.date.getClientOffsetMinsFromGateway(self.session.props.device.timezone.id, value[\u0027dueDate\u0027])\n\tdateValue \u003d system.date.format(system.date.addMinutes(value[\u0027dueDate\u0027], -clientOffsetMins), \u0027yy/MM/dd hh:mma\u0027)\n\treturn \"Due on %s\"%(dateValue )",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "evAvatar",
+              "tooltip": {
+                "enabled": true
+              }
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn \t\"%s %s\"%(value[\u0027firstName\u0027], value[\u0027lastName\u0027]) if value[\u0027firstName\u0027] and value[\u0027lastName\u0027] else value[\u0027userName\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.values": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.assignedTo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.security.getUsers({\u0027userId\u0027: value or -1}), 0)\n\treturn {\u0027lastName\u0027: info[\u0027lastName\u0027], \u0027firstName\u0027: info[\u0027firstName\u0027], \u0027userName\u0027: info[\u0027userName\u0027]}",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "kanoa/core/config/security/avatar",
+              "style": {
+                "height": "30px"
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "icoScheduleType",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right"
+                      }
+                    },
+                    "position": {
+                      "basis": "25px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "meta.tooltip.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Recurring\u0027: return \u0027Recurring scheduled work order\u0027\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027One Time\u0027: return \u0027One time work order scheduled by %s\u0027%value[\u0027requestedByUser\u0027]\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027: return \u0027Condition based work order\u0027\n\treturn \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Recurring\u0027: return \u0027material/access_time\u0027\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027One Time\u0027: return \u0027material/person\u0027\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027: return \u0027material/notification_important\u0027\n\treturn \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  }
+                ],
+                "meta": {
+                  "name": "flxSchedule",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Status"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "justify": "center"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "lblStatus"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "parent.props.style.backgroundColor"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.workOrderStatusName"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "fontWeight": "bold",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "flxStatus",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Status"
+                  }
+                },
+                "position": {
+                  "display": false,
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.values"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn value[\u0027workOrderStatusColor\u0027] or \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "justify": "center",
+                  "style": {
+                    "borderBottomLeftRadius": "5px",
+                    "borderBottomRightRadius": "5px",
+                    "borderStyle": "none",
+                    "borderTopLeftRadius": "5px",
+                    "borderTopRightRadius": "5px",
+                    "borderWidth": "1px",
+                    "gap": "5px",
+                    "height": "25px",
+                    "minWidth": "100px",
+                    "paddingLeft": "10px",
+                    "paddingRight": "10px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "icoPriority"
+                    },
+                    "position": {
+                      "basis": "30px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.workOrderPriorityIconPath"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value is not None",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.color": {
+                        "binding": {
+                          "config": {
+                            "path": "parent.props.style.backgroundColor"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn value[\u0027workOrderPriorityIconPath\u0027] or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  },
+                  {
+                    "meta": {
+                      "name": "lblPriority"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.workOrderPriorityColor"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.workOrderPriorityName"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "fontWeight": "bold",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "flxPriority",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Priority"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.values"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\treturn value[\u0027workOrderPriorityColor\u0027]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "borderBottomLeftRadius": "15px",
+                    "borderBottomRightRadius": "15px",
+                    "borderStyle": "none",
+                    "borderTopLeftRadius": "15px",
+                    "borderTopRightRadius": "15px",
+                    "borderWidth": "1px",
+                    "gap": "5px",
+                    "height": "25px",
+                    "paddingLeft": "10px",
+                    "paddingRight": "10px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "icoType"
+                    },
+                    "position": {
+                      "basis": "30px",
+                      "display": false,
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.workOrderPriorityIconPath"
+                          },
+                          "enabled": false,
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value is not None",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.color": {
+                        "binding": {
+                          "config": {
+                            "path": "parent.props.style.backgroundColor"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn value[\u0027workOrderPriorityIconPath\u0027] or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.icon"
+                  },
+                  {
+                    "meta": {
+                      "name": "lblType"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.maintenanceTypeColor"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.utilities.getContrastingColor(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.values.maintenanceTypeName"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "textStyle": {
+                        "fontWeight": "bold",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "flxType",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Priority"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "borderBottomLeftRadius": "15px",
+                    "borderBottomRightRadius": "15px",
+                    "borderColor": "var(--kcGray-50)",
+                    "borderStyle": "solid",
+                    "borderTopLeftRadius": "15px",
+                    "borderTopRightRadius": "15px",
+                    "borderWidth": "1px",
+                    "gap": "5px",
+                    "height": "25px",
+                    "paddingLeft": "10px",
+                    "paddingRight": "10px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "flxStatusPriority"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "lblAsset"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values.assetName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn system.kanoa.utilities.formatPath(value, {})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxFooter"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "custom": {
+      "pulse": {
+        "defaultColor": "--kcSurface",
+        "endDate": {
+          "$": [
+            "ts",
+            201,
+            1773929122360
+          ],
+          "$ts": 1768204800000
+        },
+        "pulseColor": "--kcRed-50"
+      }
+    },
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\t\n\tsystem.perspective.print(\"sending Message workOrderEventSelected\")\n\tsystem.perspective.sendMessage(\"workOrderEventSelected\", self.view.params.values.workOrderEventId)\n\t\n\treturn"
+          },
+          "preventDefault": true,
+          "scope": "G",
+          "stopPropagation": true,
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "name": "root"
+    },
+    "propConfig": {
+      "custom.pulse.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.values.isActive"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn \u0027--kcSurface\u0027 if value else \u0027\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "custom.pulse.enabled": {
+        "binding": {
+          "config": {
+            "struct": {
+              "condition": "{view.custom.workOrderCondition}",
+              "params": "{view.params.values}"
+            },
+            "waitOnAll": true
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t\n\tif not value[\u0027params\u0027][\u0027isActive\u0027]: return False\n\tif value[\u0027params\u0027][\u0027dueDate\u0027] \u003c\u003d system.date.now(): return True\n\tif value[\u0027params\u0027][\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027 and value[\u0027condition\u0027][\u0027counterValue\u0027] \u003e value[\u0027condition\u0027][\u0027countThreshold\u0027]: return True\n\t\n\treturn False",
+              "type": "script"
+            }
+          ],
+          "type": "expr-struct"
+        },
+        "onChange": {
+          "enabled": null,
+          "script": "\t\n\tif self.view.params.values.isActive:\n\t\tself.custom.pulse.backgroundColor \u003d self.custom.pulse.defaultColor\n\t\n\treturn"
+        }
+      },
+      "custom.pulse.timer": {
+        "binding": {
+          "config": {
+            "expression": "now(2000)"
+          },
+          "type": "expr"
+        },
+        "onChange": {
+          "enabled": null,
+          "script": "\n\tpulse \u003d self.custom.pulse\n\tif pulse.has_key(\u0027enabled\u0027) and pulse.enabled:\n\t\tpulse[\u0027backgroundColor\u0027] \u003d pulse[\u0027pulseColor\u0027] if pulse[\u0027backgroundColor\u0027] \u003d\u003d pulse[\u0027defaultColor\u0027] else pulse[\u0027defaultColor\u0027]\n\t\n\treturn"
+        }
+      },
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.values.maintenanceTypeColor"
+          },
+          "overlayOptOut": true,
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default kanoa/border",
+        "cursor": "pointer",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "2px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

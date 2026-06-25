@@ -1,0 +1,386 @@
+{
+  "custom": {
+    "filter": {
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1777649752989
+        ],
+        "$ts": 1777791600000
+      },
+      "eventTypes": [
+        "Mode"
+      ],
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1777649752989
+        ],
+        "$ts": 1777186800000
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": 1979
+    }
+  },
+  "propConfig": {
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.filter.assetId": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetId"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 775,
+      "width": 1041
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evDateSelector",
+              "name": "evDateSelector"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.dates.endDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.endDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.dates.startDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.value.assetPath": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\"assetId\": value or -1}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "dates": {
+                  "selectedRange": "This Week"
+                },
+                "value": {
+                  "display": {
+                    "showAutoRefresh": true,
+                    "showDateSelector": true,
+                    "showPeriodSelector": true
+                  },
+                  "enabled": true,
+                  "options": [
+                    {
+                      "enabled": true,
+                      "label": "Current Run"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Current Shift"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Previous Shift"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Today"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Yesterday"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Month"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Month"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Year To Date"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 24 Hrs"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 7 Days"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 14 Days"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Custom"
+                    }
+                  ]
+                }
+              },
+              "path": "kanoa/core/templates/selectors/dateSelector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\tself.props.value \u003d [\u0027Mode\u0027]"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "ddEvents",
+              "name": "ddEvents"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\toptions \u003d [{\"value\": \"Mode\", \"label\": \"Mode\" }, {\"value\": \"Schedule\", \"label\": \"Schedule\" }]\n\n\tif system.kanoa.utilities.getFieldValue(\u0027assetTypeName\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value})) !\u003d \u0027enterprise\u0027: options.append({\"value\": \"State\", \"label\": \"State\"})\n\tif \u0027State\u0027 in (self.props.value or \u0027\u0027): self.props.value.pop(self.props.value.index(\u0027State\u0027)) \n\t\n\treturn options",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filter.eventTypes"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "multiSelect": true,
+              "placeholder": {
+                "text": "Select Event Types..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "120px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "ddAssetTypes",
+              "name": "ddAssetTypes"
+            },
+            "position": {
+              "display": false,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "1"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn [{\u0027value\u0027: row[\u0027assetTypeId\u0027], \u0027label\u0027:row[\u0027assetTypeName\u0027]} for row in system.kanoa.asset.getAssetTypes({})]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "multiSelect": true,
+              "placeholder": {
+                "text": "Filter By Asset Type..."
+              },
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "160px"
+              },
+              "value": null
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "evRunChart",
+          "name": "evRunChart"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.params.values.endDate": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter.endDate"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value or system.date.now()",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.values.eqPath": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter.assetId"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tif value is None: return None\n\treturn system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.values.eventTypes": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter.eventTypes"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value is None: return {\"mode\": False, \"schedule\": False, \"state\": False}\n\t\t\n\treturn {\"mode\": \u0027Mode\u0027 in value, \"schedule\": \u0027Schedule\u0027 in value, \"state\": \u0027State\u0027 in value}",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params.values.startDate": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter.startDate"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "params": {
+            "update": {
+              "clear": false,
+              "refresh": false
+            },
+            "values": {
+              "assetTypes": []
+            }
+          },
+          "path": "kanoa/mes/analytics/runChart/equipmentSchedule"
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

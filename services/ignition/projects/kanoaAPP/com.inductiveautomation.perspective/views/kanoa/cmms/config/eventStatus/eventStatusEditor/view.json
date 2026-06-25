@@ -1,0 +1,705 @@
+{
+  "custom": {
+    "workOrderEventStatusInfo": {
+      "changedBy": null,
+      "changedByUser": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdByUser": null,
+      "createdDate": null,
+      "enabled": true,
+      "isActive": true,
+      "lastUpdatedBy": null,
+      "reservedBySystem": false,
+      "sortOrder": null,
+      "workOrderEventStatusCategoryId": null,
+      "workOrderEventStatusCategoryName": null,
+      "workOrderEventStatusColor": null,
+      "workOrderEventStatusId": null,
+      "workOrderEventStatusName": ""
+    }
+  },
+  "params": {
+    "values": {
+      "workOrderEventStatusId": 10
+    }
+  },
+  "propConfig": {
+    "custom.workOrderEventStatusInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.workOrderEventStatusId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tworkOrderEventStatusInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getWorkOrderEventStatus({\u0027workOrderEventStatusId\u0027:value or -1}),0)\n\tworkOrderEventStatusInfo[\u0027workOrderEventStatusName\u0027] \u003d workOrderEventStatusInfo[\u0027workOrderEventStatusName\u0027] or \u0027\u0027\n\tif workOrderEventStatusInfo[\u0027workOrderEventStatusId\u0027] is None:\n\t\tworkOrderEventStatusInfo[\u0027enabled\u0027] \u003d True\n\t\tworkOrderEventStatusInfo[\u0027isActive\u0027] \u003d True\n\t\tworkOrderEventStatusInfo[\u0027reservedBySystem\u0027] \u003d False\n\t\t\n\treturn workOrderEventStatusInfo\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 294,
+      "width": 350
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblname",
+              "name": "lblName"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Status"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\t\n\timport time\n\ttime.sleep(0.2)\n\tself.focus()"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "txtName",
+              "name": "txtName"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatusInfo.workOrderEventStatusName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "style": {
+                "classes": "kanoa/font/default kanoa/border"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxworkOrderEventStatusName",
+          "name": "flxStatus"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lbl",
+              "name": "lbl"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Type"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddCategory"
+            },
+            "position": {
+              "basis": "256px"
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tcategories \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getWorkOrderEventStatusCategory({}))\n\treturn [{\u0027value\u0027: item[\u0027workOrderEventStatusCategoryId\u0027], \u0027label\u0027: item[\u0027workOrderEventStatusCategoryName\u0027]} for item in categories]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatusInfo.workOrderEventStatusCategoryId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Type..."
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxworkOrderEventStatusColor",
+          "name": "flxCategory"
+        },
+        "position": {
+          "basis": "25px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatusInfo.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxworkOrderEventStatusEnabled",
+          "name": "flxEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lbl"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Is Active"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkIsActive"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatusInfo.isActive"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxworkOrderEventStatusEnabled",
+          "name": "flxIsActive"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Sort Order"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numSortOrder"
+            },
+            "position": {
+              "basis": "40px"
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.workOrderEventStatusInfo.sortOrder"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxmaintenanceTypeEnabled",
+          "name": "flxSortOrder"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblEnabled",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Reserved"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "chkEnabled",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatusInfo.reservedBySystem"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "enabled": false,
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxmaintenanceTypeEnabled",
+          "name": "flxReservedBySystem"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lbl",
+              "name": "lbl"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Color"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss\u003dTrue)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "lblColor",
+              "name": "lblColor"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatusInfo"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027workOrderEventStatusColor\u0027] or \u0027#D5D5D5\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/input"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxmaintenanceTypeColor",
+          "name": "flxColor"
+        },
+        "position": {
+          "basis": "25px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tworkOrderEventStatusInfo \u003d dict(self.view.custom.workOrderEventStatusInfo)\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif workOrderEventStatusInfo[\u0027workOrderEventStatusId\u0027] is not None: \t#If name has changed, we need to check that it doesn\u0027t already exist\n\t\tcurrentWorkOrderEventStatusId \u003d system.kanoa.utilities.getFieldValue(\u0027workOrderEventStatusId\u0027, system.kanoa.cmms.getWorkOrderEventStatus({\u0027workOrderEventStatusName\u0027: workOrderEventStatusInfo[\u0027workOrderEventStatusName\u0027], \u0027workOrderEventStatusId\u0027: workOrderEventStatusInfo[\u0027workOrderEventStatusId\u0027]}))\n\t\tif currentWorkOrderEventStatusId is not None and currentWorkOrderEventStatusId !\u003d workOrderEventStatusInfo[\u0027workOrderEventStatusId\u0027]:\n\t\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027This status already exists\u0027})\n\t\t\treturn\n\t\t\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Updating status %i \u0027%workOrderEventStatusInfo[\u0027workOrderEventStatusId\u0027]})\t\t\t\n\t\tretVal, msg \u003d system.kanoa.cmms.updateWorkOrderEventStatus(workOrderEventStatusInfo, userId)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Adding status\u0027})\t\n\t\tworkOrderEventStatusId, msg \u003d system.kanoa.cmms.addWorkOrderEventStatus(workOrderEventStatusInfo, userId)\n\t\t\n\tif msg:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \"Couldn\u0027t save this status. %s\"%msg})\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \"Status has been saved\"})\n\n\tsystem.perspective.sendMessage(\"refreshWorkOrderEventStatus\", {})\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.workOrderEventStatusInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif (value[\u0027workOrderEventStatusName\u0027] or None) is None: return False\n\tif value[\u0027workOrderEventStatusCategoryId\u0027] is None: return False\n\treturn True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "marginLeft": "5px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/container kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "colorPicked",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"colorPicked message received with payload \" + str(payload))\t\n\tself.view.custom.workOrderEventStatusInfo.workOrderEventStatusColor \u003d payload[\u0027color\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

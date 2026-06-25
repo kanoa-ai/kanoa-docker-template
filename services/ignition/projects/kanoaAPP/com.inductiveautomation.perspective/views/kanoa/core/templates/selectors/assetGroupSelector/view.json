@@ -1,0 +1,129 @@
+{
+  "custom": {
+    "assetGroups": [
+      {
+        "label": "Packaging", 
+        "value": 1
+      }, 
+      {
+        "label": "Bakery", 
+        "value": 2
+      }, 
+      {
+        "label": "Butchers", 
+        "value": 3
+      }, 
+      {
+        "label": "Wheels", 
+        "value": 83
+      }, 
+      {
+        "label": "PER'S TEST", 
+        "value": 93
+      }
+    ]
+  }, 
+  "params": {
+    "assetGroupId": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 174, 
+      "height": 33
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "justify": "center", 
+      "style": {
+        "minWidth": "175px", 
+        "overflow": "hidden"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/font/default"
+          }, 
+          "placeholder": {
+            "text": "Select Asset Group"
+          }
+        }, 
+        "meta": {
+          "domId": "dropdown", 
+          "name": "dropdown"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.custom.assetGroups"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.assetGroupId"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\n\tself.view.refreshBinding(\"custom.assetGroups\")\n\t\n\treturn", 
+          "messageType": "refreshAssetGroups", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "custom.assetGroups": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\tdata = system.kanoa.asset.getAssetGroups({'enabled':True})\n\treturn [{\"value\": row['assetGroupId'],\t\"label\": row['assetGroupName']} for row in data]", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "1"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.assetGroupId": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

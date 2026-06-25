@@ -1,0 +1,431 @@
+{
+  "custom": {
+    "lotAttributeInfo": {
+      "createdByUser": null, 
+      "lotAttributeValue": "", 
+      "lotId": 1, 
+      "lotName": null, 
+      "changedDate": null, 
+      "createdDate": null, 
+      "createdBy": null, 
+      "changedBy": null, 
+      "lotAttributeId": null, 
+      "changedByUser": null, 
+      "lotAttributeName": null
+    }
+  }, 
+  "params": {
+    "value": {
+      "lotId": 1, 
+      "lotAttributeId": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 782, 
+      "height": 147
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "classes": "kanoa/font/default", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "children": [
+          {
+            "type": "ia.display.label", 
+            "props": {
+              "text": "Lot Attribute"
+            }, 
+            "meta": {
+              "domId": "label", 
+              "name": "label"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "90px"
+            }
+          }, 
+          {
+            "type": "ia.input.dropdown", 
+            "props": {
+              "showClearIcon": true, 
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              }, 
+              "style": {
+                "classes": "kanoa/font/default"
+              }, 
+              "allowCustomOptions": true
+            }, 
+            "meta": {
+              "domId": "ddValue", 
+              "name": "ddValue"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\tdbName = system.kanoa.config.getDBName('mes')\n\tquery = \"SELECT DISTINCT lotAttributeName FROM mes.vwLotAttribute\"\n\tattributes = system.kanoa.utilities.convertDatasetToJSON(system.db.runQuery(query, dbName))\n\t\n\treturn [{'label': item['lotAttributeName'], 'value': item['lotAttributeName']} for item in attributes]", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "expr", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "expression": "now(0)"
+                  }
+                }
+              }, 
+              "props.value": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.lotAttributeInfo.lotAttributeName"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxLotAttributeName", 
+          "name": "flxLotAttributeName"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "flex-start", 
+          "style": {
+            "gap": "5px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.text-area", 
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }, 
+              "deferUpdates": false
+            }, 
+            "meta": {
+              "domId": "txtArea", 
+              "name": "txtArea"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": "view.custom.lotAttributeInfo.lotAttributeValue"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/clear"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "tooltip": {
+                "enabled": true, 
+                "location": "bottom-right", 
+                "text": "Clear attribute"
+              }, 
+              "domId": "btnClear", 
+              "name": "btnClear"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "20px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tself.view.custom.lotAttributeInfo.lotAttributeValue = ''\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn (value or None) is not None", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.lotAttributeInfo.lotAttributeValue"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxLotAttributeValue", 
+          "name": "flxLotAttributeValue"
+        }, 
+        "position": {
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "flex-end", 
+          "justify": "center", 
+          "style": {
+            "padding": "5px", 
+            "gap": "5px"
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/filled", 
+                "height": "35px"
+              }, 
+              "text": "Save"
+            }, 
+            "meta": {
+              "tooltip": {
+                "enabled": true, 
+                "location": "bottom"
+              }, 
+              "domId": "btnSave", 
+              "name": "btnSave"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "100px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tif self.view.getChild(\"root\").save(): \n\t\tsystem.perspective.sendMessage('refreshLotAttributes', payload={})\n\t\tsystem.perspective.closePopup('')\t\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value['lotId'] is None: return 'No lot selected'\n\tif (value['lotAttributeName'] or None) is None: return 'No name set for lot attribute'\n\tif (value['lotAttributeValue'] or None) is None: return 'No value set for lot attribute'\n\t\n\treturn ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.lotAttributeInfo"
+                  }
+                }
+              }, 
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value['lotId'] is not None and (value['lotAttributeValue'] or None) is not None and value['lotAttributeName'] is not None", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.custom.lotAttributeInfo"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/outlined", 
+                "height": "35px"
+              }, 
+              "text": "Close"
+            }, 
+            "meta": {
+              "tooltip": {
+                "text": "Close", 
+                "sustain": 0
+              }, 
+              "domId": "btnClose", 
+              "name": "btnClose"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "100px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\toptionName = 'showCloseButton'\n\treturn value['options'][optionName] if value.has_key('options') and value['options'].has_key(optionName) else True", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.value"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxActions", 
+          "name": "flxActions"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        }, 
+        "meta": {
+          "domId": "lblDebug", 
+          "name": "lblDebug"
+        }, 
+        "position": {
+          "display": false, 
+          "basis": "32px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn str(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tlotAttributeInfo = self.view.custom.lotAttributeInfo\n\t\n\tif lotAttributeInfo['lotAttributeId']:\t\n\t\tretVal, msg = system.kanoa.lot.updateLotAttribute(lotAttributeInfo, userId)\n\telse: \n\t\tlotAttributeId, msg = system.kanoa.lot.addLotAttribute(lotAttributeInfo, userId)\n\t\n\tif msg:\tsystem.perspective.sendMessage('showWarningToast', {'message': 'Lot attribute was not saved. %s'%msg})\t\t\t\n\telse: system.perspective.sendMessage('showSuccessfulToast', {'message': 'Lot attribute has been saved'})\n\t\n\tsystem.perspective.sendMessage('lotAttributeUpdated', {})\n\t\n\treturn True if msg is None else False", 
+          "name": "save"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.lotAttributeInfo": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tlotAttributeInfo = system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLotAttributes({'lotAttributeId': value['lotAttributeId'] or -1}), 0)\n\tif value['lotAttributeId'] is None: lotAttributeInfo['lotId'] = value['lotId']\n\tif lotAttributeInfo['lotAttributeValue'] is None: lotAttributeInfo['lotAttributeValue'] = ''\n\t\n\treturn lotAttributeInfo\n\t\t", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

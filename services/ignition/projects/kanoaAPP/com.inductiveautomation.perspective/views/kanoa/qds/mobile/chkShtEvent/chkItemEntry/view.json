@@ -1,0 +1,439 @@
+{
+  "custom": {
+    "showInstructions": false,
+    "valuePicker": {
+      "params": {},
+      "path": ""
+    }
+  },
+  "params": {
+    "enabled": true,
+    "value": {
+      "attributeId": null,
+      "calculation": null,
+      "chkItemGroupId": 363,
+      "chkItemGroupName": "Main",
+      "chkItemId": 2313,
+      "chkItemName": "Barcode Check",
+      "chkItemTriggerId": null,
+      "chkItemTypeId": 1,
+      "chkItemTypeName": "Check",
+      "comment": null,
+      "dataSourceEnabled": null,
+      "dataTypeId": 2,
+      "dataTypeName": "String",
+      "dynamic": false,
+      "engUnitId": null,
+      "engUnitName": null,
+      "format": null,
+      "ignoreZeroValues": null,
+      "instructions": null,
+      "isNumeric": false,
+      "measCount": 1,
+      "measurements": [
+        {
+          "chkItemEventId": 157899,
+          "chkItemStateColor": "--kcGoodContainer",
+          "chkItemStateId": 1,
+          "chkItemStateName": "PASS",
+          "chkItemTakenDate": {
+            "$": [
+              "ts",
+              0,
+              1733262310247
+            ],
+            "$ts": 1733255361060
+          },
+          "chkItemValue": "qw23",
+          "measNumber": 1
+        }
+      ],
+      "persistence": false,
+      "pickListId": 9,
+      "pickListName": "Barcode Scanner",
+      "pickListValues": "{\"script\":\"Left Four Chars\"}",
+      "required": false,
+      "scaleFactor": null,
+      "sortOrder": null,
+      "sourceTagPath": null,
+      "spec": {
+        "lcl": null,
+        "lel": null,
+        "lsl": null,
+        "tgt": null,
+        "ucl": null,
+        "uel": null,
+        "usl": null
+      },
+      "specification": null
+    }
+  },
+  "propConfig": {
+    "custom.showInstructions": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\treturn False",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.valuePicker": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn {\"params\": {}, \"path\": \"\"}",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.enabled": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 374,
+      "width": 399
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evValueEntry",
+              "name": "evValueEntry"
+            },
+            "position": {
+              "basis": "280px"
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "chkItem": "{view.params.value}",
+                      "enabled": "{view.params.enabled}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tchkItem \u003d value[\u0027chkItem\u0027]\n\t\n\tmeasInfo \u003d dict(value[\u0027chkItem\u0027][\u0027measurements\u0027][0])\n\tmeasInfo[\u0027chkItemId\u0027] \u003d chkItem[\u0027chkItemId\u0027]\n\tmeasInfo[\u0027enabled\u0027] \u003d value[\u0027enabled\u0027] and chkItem[\u0027chkItemTypeName\u0027] in (\u0027Check\u0027, \u0027Trigger\u0027)\n\tmeasInfo[\u0027dataTypeName\u0027] \u003d chkItem[\u0027dataTypeName\u0027]\n\tmeasInfo[\u0027measCount\u0027] \u003d chkItem[\u0027measCount\u0027]\n\tmeasInfo[\u0027pickListValues\u0027] \u003d chkItem[\u0027pickListValues\u0027] if chkItem[\u0027pickListName\u0027] !\u003d \u0027Barcode Scanner\u0027 else None\n\tself.props.params \u003d {\u0027value\u0027:measInfo}\n\t\n\t\t\n\tif chkItem[\u0027chkItemTypeName\u0027] \u003d\u003d \u0027Check\u0027:\n\t\tif chkItem[\u0027dataTypeName\u0027] in (\u0027Float\u0027, \u0027Integer\u0027): viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryNum\u0027\n\t\telif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Boolean\u0027: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryBool\u0027\n\t\telif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Datetime\u0027: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryDate\u0027\n\t\telif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Image\u0027: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryImage\u0027\n\t\telif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Geo Location\u0027: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryGPS\u0027\n\t\telse: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryTxt\u0027\n\telif chkItem[\u0027chkItemTypeName\u0027] \u003d\u003d \u0027Trigger\u0027:\n\t\tif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Boolean\u0027: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryTrigger\u0027\n\t\telif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Datetime\u0027: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryDate\u0027\n\t\telse: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryTxt\u0027\n\telif chkItem[\u0027chkItemTypeName\u0027] \u003d\u003d \u0027Calculated\u0027:\n\t\tviewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueCalculated\u0027\n\telse: viewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/valueEntryTxt\u0027\n\t\n\treturn viewPath",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "chkItemEventId": 157899,
+                  "chkItemId": 2313,
+                  "chkItemStateColor": "--kcGoodContainer",
+                  "chkItemStateId": 1,
+                  "chkItemStateName": "PASS",
+                  "chkItemTakenDate": {
+                    "$": [
+                      "ts",
+                      192,
+                      1763610712459
+                    ],
+                    "$ts": 1733255361060
+                  },
+                  "chkItemValue": "qw23",
+                  "dataTypeName": "String",
+                  "enabled": true,
+                  "measCount": 1,
+                  "measNumber": 1,
+                  "pickListValues": null
+                }
+              }
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "domId": "lblUnits",
+              "name": "lblUnits"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.engUnitName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value if value is not None else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxEntry",
+          "name": "flxEntry"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.chkItemTypeName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027--kcGray-10\u0027 if value \u003d\u003d \u0027Calculated\u0027 else \u0027--kcSurface\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "paddingLeft": "5px",
+            "paddingTop": "8px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "evValuePicker",
+          "name": "evValuePicker"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "viewPath": "{this.props.path}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn True if value[\u0027viewPath\u0027] else False",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.path": {
+            "binding": {
+              "config": {
+                "path": "view.custom.valuePicker"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tself.props.params \u003d value[\u0027params\u0027]\n\timport time\n\ttime.sleep(0.2)\n\t\n\treturn value[\u0027path\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.custom.showInstructions \u003d not self.view.custom.showInstructions\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnInstructions",
+              "name": "btnInstructions",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "Show / Hide Instructions"
+              }
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcBlue-60",
+                  "path": "material/info"
+                },
+                "style": {
+                  "marginBottom": 1,
+                  "marginLeft": 1,
+                  "marginTop": 1,
+                  "textAlign": "right"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "height": "40px"
+              },
+              "text": "",
+              "textStyle": {
+                "textAlign": "right"
+              }
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "Label"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.showInstructions"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.instructions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxInstructions",
+          "name": "flxInstructions"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.instructions"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": "5px",
+        "overflow": "visible",
+        "position": "relative",
+        "width": "390px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "openEditor",
+          "params": [
+            "measNumber"
+          ],
+          "script": "\n\tsystem.perspective.print(\"openEditor() called with %s\"%measNumber)\n\t\n\tif measNumber is None: \n\t\tself.view.custom.valuePicker \u003d {\u0027path\u0027: \u0027\u0027, \u0027params\u0027: {}}\n\t\treturn\n\n\tif not self.view.params.enabled: return\n\tif self.view.params.value.dataTypeName \u003d\u003d \u0027Boolean\u0027: return\t#Handled in the valueEntryBool view.\n\t\n\tviewPath \u003d None\n\tparams \u003d {}\n\tchkItem \u003d self.view.params.value\n\t\n\tsystem.perspective.closePopup(\u0027imageUploader\u0027)\n\tsystem.perspective.closePopup(\u0027chkValueSelector\u0027)\n\t\n\tif chkItem[\u0027dataTypeName\u0027] \u003d\u003d \u0027Image\u0027:\n\t\timageId \u003d system.kanoa.quality.image.getImageId(chkItem[\u0027chkItemId\u0027], chkItem.measurements[0].chkItemValue) if chkItem.measurements[0].chkItemValue else None\n\t\tparams \u003d {\u0027value\u0027: {\"chkItemId\": chkItem[\u0027chkItemId\u0027], \"imageType\": chkItem[\u0027chkItemName\u0027], \u0027imageId\u0027: imageId}}\n\t\tviewPath \u003d \u0027kanoa/qds/mobile/chkShtEvent/checkImageSelector\u0027\n\telif chkItem[\u0027pickListName\u0027] \u003d\u003d \u0027Barcode Scanner\u0027:\n\t\tviewPath \u003d \u0027\u0027\n\t\tparams \u003d {}\n\telif chkItem[\u0027pickListId\u0027]:\n\t\tparams \u003d {\u0027value\u0027: {\n\t\t\t\t\t\t\t\"chkItemId\": chkItem[\u0027chkItemId\u0027],\n\t\t\t\t\t\t\t\"chkItemTypeId\": chkItem[\u0027chkItemTypeId\u0027],\n\t\t\t\t\t\t\t\"dataTypeId\": chkItem[\u0027dataTypeId\u0027],\n\t\t\t\t\t\t\t\"engUnitId\": chkItem[\u0027engUnitId\u0027],\n\t\t\t\t\t\t\t\"pickListId\": chkItem[\u0027pickListId\u0027],\n\t\t\t\t\t\t\t\"pickListValues\": system.util.jsonDecode(chkItem[\u0027pickListValues\u0027]),\n\t\t\t\t\t\t\t\"specification\": system.util.jsonDecode(chkItem[\u0027specification\u0027]),\n\t\t\t\t\t\t\t\"tolerances\": chkItem[\u0027spec\u0027]\n\t\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\t\n\t\tviewPath \u003d \u0027kanoa/qds/schedule/popups/checkValueSelector\u0027\n\n\tself.view.custom.valuePicker \u003d {\u0027path\u0027: viewPath or \u0027\u0027, \u0027params\u0027: params}\n\t\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "chkItemSelected",
+          "pageScope": true,
+          "script": "\n\tif payload.has_key(\u0027chkItemId\u0027) and int(payload[\u0027chkItemId\u0027]) \u003d\u003d int(self.view.params.value.chkItemId):\n\t\tsystem.perspective.print(\"chkItemSelected msg rcvd with %s\"%payload)\n\t\tmeasNum \u003d payload[\u0027measNum\u0027] if payload.has_key(\u0027measNum\u0027) else None\n\t\tif measNum \u003d\u003d self.view.params.value.measurements[0].measNumber: \n\t\t\tself.openEditor(measNum)\n\t\t\treturn\n\n\tself.view.custom.valuePicker \u003d {\u0027path\u0027: \u0027\u0027, \u0027params\u0027: {}}\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

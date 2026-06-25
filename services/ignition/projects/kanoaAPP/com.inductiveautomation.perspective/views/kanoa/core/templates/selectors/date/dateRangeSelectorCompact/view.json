@@ -1,0 +1,408 @@
+{
+  "custom": {}, 
+  "params": {
+    "endDate": {
+      "$ts": 1737878400000, 
+      "$": [
+        "ts", 
+        192, 
+        1737867754708
+      ]
+    }, 
+    "enabled": true, 
+    "selectedRange": "Current Run", 
+    "startDate": {
+      "$ts": 1737792000000, 
+      "$": [
+        "ts", 
+        192, 
+        1737867754708
+      ]
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 640, 
+      "height": 41
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "style": {
+        "padding": "2px", 
+        "backgroundColor": "--kcSurface", 
+        "classes": "kanoa/font/default", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }, 
+      "wrap": "wrap"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "search": {
+            "enabled": false
+          }, 
+          "dropdownOptionStyle": {
+            "textAlign": "center", 
+            "classes": "kanoa/font/default"
+          }, 
+          "options": [
+            {
+              "label": "Today", 
+              "value": "Today"
+            }, 
+            {
+              "label": "Yesterday", 
+              "value": "Yesterday"
+            }, 
+            {
+              "label": "This Week", 
+              "value": "This Week"
+            }, 
+            {
+              "label": "Last Week", 
+              "value": "Last Week"
+            }, 
+            {
+              "label": "This Month", 
+              "value": "This Month"
+            }, 
+            {
+              "label": "Last Month", 
+              "value": "Last Month"
+            }, 
+            {
+              "label": "Year To Date", 
+              "value": "Year To Date"
+            }, 
+            {
+              "label": "Custom", 
+              "value": "Custom"
+            }
+          ], 
+          "style": {
+            "textAlign": "center", 
+            "classes": "kanoa/font/default", 
+            "minWidth": 160, 
+            "height": "25px"
+          }, 
+          "placeholder": {
+            "icon": {
+              "path": "material/calendar_today"
+            }
+          }
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "delay": 0, 
+            "location": "top", 
+            "text": "Date range"
+          }, 
+          "domId": "ddDateRange", 
+          "name": "ddDateRange"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.value": {
+            "onChange": {
+              "enabled": null, 
+              "script": "\t\n#\tsystem.perspective.print(\"dateRangeSelectorCompact ddDateRange binding change - %s\"%origin)\n\tif origin != 'Browser': return\n\t\n\tselectedRange = currentValue.value\n\tif selectedRange not in ('Custom', '') and selectedRange is not None:\t\n\t\tself.view.getChild(\"root\").setRange(selectedRange, None, None)\n\t\n\treturn"
+            }, 
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.selectedRange"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.date-time-input", 
+        "props": {
+          "dismissOnSelect": false, 
+          "format": "MM/DD/YY HH:mm z", 
+          "formattedValues": {
+            "date": "Jun 27, 2020", 
+            "datetime": "Jun 27, 2020 10:00 PM", 
+            "time": "10:00 PM"
+          }, 
+          "modalStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "inputProps": {
+            "style": {
+              "fontSize": "12px", 
+              "borderStyle": "none"
+            }
+          }, 
+          "formattedValue": "01/25/25 00:00 PST", 
+          "style": {
+            "borderColor": "--kcOutline", 
+            "textAlign": "center", 
+            "borderTopLeftRadius": "5px", 
+            "borderBottomLeftRadius": "5px", 
+            "borderWidth": "1px", 
+            "borderBottomRightRadius": "5px", 
+            "borderTopRightRadius": "5px", 
+            "borderStyle": "solid", 
+            "height": 25
+          }, 
+          "placeholder": "Select From Date"
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "delay": 0, 
+            "location": "top", 
+            "text": "Start date"
+          }, 
+          "domId": "dpStartDate", 
+          "name": "dpStartDate"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onSelect": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.getSibling(\"ddDateRange\").props.value = 'Custom'"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.locale": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "session.props.locale"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.startDate"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "params": {
+            "period": "Month", 
+            "addValue": 0
+          }, 
+          "path": "kanoa/core/templates/selectors/date/goArrows", 
+          "style": {
+            "height": 25
+          }
+        }, 
+        "meta": {
+          "domId": "evGoArrows", 
+          "name": "evGoArrows"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "150px"
+        }, 
+        "propConfig": {
+          "props.params.addValue": {
+            "onChange": {
+              "enabled": null, 
+              "script": "\t\n\tincrement = currentValue.value\n\tif increment != 0:\n\t\tperiod = self.props.params.period\n\t\tstartDate = self.getSibling(\"dpStartDate\").props.value\n\t\tendDate = self.getSibling(\"dpEndDate\").props.value\n\t\t\n\t\tif period == 'Day':\n\t\t\tstartDate = system.date.addDays(startDate, increment)\n\t\t\tendDate = system.date.addDays(endDate, increment)\n\t\telif period == 'Week':\n\t\t\tstartDate = system.date.addWeeks(startDate, increment)\n\t\t\tendDate = system.date.addWeeks(endDate, increment)\n\t\telif period == 'Month':\n\t\t\tstartDate = system.date.addMonths(startDate, increment)\n\t\t\tendDate = system.date.addMonths(endDate, increment)\n\t\telif period == 'Year':\n\t\t\tstartDate = system.date.addYears(startDate, increment)\n\t\t\tendDate = system.date.addYears(endDate, increment)\n\t\t\t\t\t\t\n\t\tself.getSibling(\"dpStartDate\").props.value= startDate\n\t\tself.getSibling(\"dpEndDate\").props.value= endDate\n\t\t\n\t\tself.getSibling(\"ddDateRange\").props.value = 'Custom'\n\t\tself.props.params.addValue = 0"
+            }
+          }, 
+          "meta.visible": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.date-time-input", 
+        "props": {
+          "dismissOnSelect": false, 
+          "format": "MM/DD/YY HH:mm z", 
+          "formattedValues": {
+            "date": "Jun 28, 2020", 
+            "datetime": "Jun 28, 2020 10:00 PM", 
+            "time": "10:00 PM"
+          }, 
+          "modalStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "inputProps": {
+            "style": {
+              "classes": "WM/Type/Subtitle2", 
+              "fontSize": "12px", 
+              "borderStyle": "none"
+            }
+          }, 
+          "formattedValue": "01/26/25 00:00 PST", 
+          "style": {
+            "borderColor": "--kcOutline", 
+            "textAlign": "center", 
+            "borderTopLeftRadius": "5px", 
+            "borderBottomLeftRadius": "5px", 
+            "borderWidth": "1px", 
+            "borderBottomRightRadius": "5px", 
+            "borderTopRightRadius": "5px", 
+            "borderStyle": "solid", 
+            "height": 25
+          }, 
+          "placeholder": "Select To Date"
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "delay": 0, 
+            "location": "top", 
+            "text": "End date"
+          }, 
+          "domId": "dpEndDate", 
+          "name": "dpEndDate"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onSelect": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.getSibling(\"ddDateRange\").props.value = 'Custom'"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.locale": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "session.props.locale"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.endDate"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [
+            "selectedDateRange", 
+            "startDate", 
+            "endDate"
+          ], 
+          "script": "\n\tif selectedDateRange not in ('Custom', '') and selectedDateRange is not None:\t\t\n\t\tclientTZ = self.session.props.device.timezone.id\n\t\tstartDate, endDate = system.kanoa.date.getDateRange({'selectedDateRange': selectedDateRange, 'clientTZ': clientTZ})\n\t\tself.view.params.startDate = startDate\n\t\tself.view.params.endDate = endDate\n\t\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, selectedDateRange)\n\t\t\n\treturn", 
+          "name": "setRange"
+        }, 
+        {
+          "params": [], 
+          "script": "\n\tsystem.perspective.print(\"dateRangeSelectorCompact update() called. Get dates from session properties\")\n\n\tdateRange = system.kanoa.utilities.getStoredDateRange(self)\n\tselectedRange = dateRange.selectedRange\n\tstartDate = dateRange.startDate\n\tendDate = dateRange.endDate\n\t\n\tsystem.perspective.print(\"getStoredDateRange returned %s %s %s\"%(selectedRange, startDate, endDate))\n\n\tif selectedRange is not None:\n\t\tself.view.params.selectedRange = selectedRange\t\n\t\tself.setRange(selectedRange, None, None)\n\telse:\t\n\t\tself.view.params.startDate = startDate\n\t\tself.view.params.endDate = endDate\t\n\t\n\treturn", 
+          "name": "update"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "events": {
+    "system": {
+      "onStartup": {
+        "type": "script", 
+        "scope": "G", 
+        "config": {
+          "script": "\n\tself.getChild(\"root\").update()\n\treturn"
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.selectedRange": {
+      "paramDirection": "output", 
+      "persistent": true
+    }, 
+    "params.startDate": {
+      "paramDirection": "output", 
+      "persistent": true
+    }, 
+    "params.endDate": {
+      "paramDirection": "output", 
+      "persistent": true
+    }
+  }
+}

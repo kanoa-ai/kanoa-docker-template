@@ -1,0 +1,160 @@
+{
+  "custom": {
+    "display": {
+      "color": "", 
+      "path": "material/view_carousel"
+    }, 
+    "displayPath": {
+      "color": "", 
+      "path": "material/view_carousel"
+    }, 
+    "id": "2128e213-1760-407c-987e-0ed0d728a9eb"
+  }, 
+  "params": {
+    "icon": {
+      "color": null, 
+      "path": null
+    }, 
+    "default": {
+      "color": "", 
+      "path": "material/view_carousel"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 30, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "custom": {
+      "test": false
+    }, 
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "3px", 
+        "width": 30
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "width": 30, 
+            "height": 30
+          }, 
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "delay": 0, 
+            "location": "top"
+          }, 
+          "domId": "btnIcon", 
+          "name": "btnIcon"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\tview = 'kanoa/core/templates/selectors/icons/iconPicker'\n\ttitle = 'Choose Icon'\n\t\n\tparams = {\n\t\t'id': self.view.custom.id,\n\t\t'icon': self.view.params.icon,\n\t\t'default': self.view.params.default\n\t}\n\t\n\tsystem.perspective.openPopup('icon picker', view, params, title, position={'height': 'auto'}, overlayDismiss=True, modal=True)"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.image.icon": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.display"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\t\n\tif payload['id'] == self.view.custom.id: self.view.params.icon = payload['icon']", 
+          "messageType": "icon-selection", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }, 
+    "propConfig": {
+      "custom.test": {
+        "onChange": {
+          "enabled": null, 
+          "script": "\tif currentValue.value:\n\t\tid = self.view.custom.id\n\t\ticon = {\n\t\t\t'path': None,\n\t\t\t'color': None\n\t\t}\n\t\t\n\t\tpayload = {\n\t\t\t'id': id,\n\t\t\t'icon': icon\n\t\t}\n\t\t\n\t\tsystem.perspective.sendMessage(messageType=\"icon-selection\", payload=payload)\n\t\tsystem.perspective.closePopup(\"\")\n\t\t\n\t\tself.custom.test = False"
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.default": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.icon": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "custom.display": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\tdefault = value.default\n\tselected = value.selected\n\t\n\tdisplay = {\n\t\t'path': selected.path or default.path,\n\t\t'color': selected.color or default.color\n\t}\n\treturn display", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr-struct", 
+        "config": {
+          "struct": {
+            "default": "{view.params.default}", 
+            "selected": "{view.params.icon}"
+          }, 
+          "waitOnAll": true
+        }
+      }, 
+      "persistent": true
+    }, 
+    "custom.id": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn str(system.kanoa.utilities.getUUID())", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "1"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

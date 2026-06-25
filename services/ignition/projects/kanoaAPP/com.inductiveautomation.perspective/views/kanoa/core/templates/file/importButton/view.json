@@ -1,0 +1,128 @@
+{
+  "custom": {
+    "uuid": "7f54dfdd-f7d4-438a-96cf-f602c2279f38"
+  },
+  "params": {
+    "clear": false,
+    "data": null,
+    "options": {
+      "exportType": "qualityCheckSheetData",
+      "importerName": "Import Quality Check Sheet Data",
+      "supportedFileTypes": [
+        "json"
+      ]
+    }
+  },
+  "propConfig": {
+    "custom.uuid": {
+      "binding": {
+        "config": {
+          "expression": "0"
+        },
+        "transforms": [
+          {
+            "code": "\timport uuid\n\t\n\treturn str(uuid.uuid4())",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.clear": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif not currentValue.value: return\n\tself.params.clear \u003d False\n\t\n\tself.params.data \u003d None\n\t"
+      },
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.data": {
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.options": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 30
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.openPopup(\n\t\tid \u003d \u0027import file\u0027,\n\t\tview \u003d \u0027kanoa/core/templates/file/importer\u0027,\n\t\tparams \u003d {\n\t\t\t\u0027callerId\u0027: self.view.custom.uuid,\n\t\t\t\u0027options\u0027: {\n\t\t\t\t\u0027supportedFileTypes\u0027: self.view.params.options.supportedFileTypes,\n\t\t\t\t\u0027exportType\u0027: self.view.params.options.exportType\n\t\t\t}\n\t\t},\n\t\ttitle \u003d self.view.params.options.importerName or \u0027Import\u0027,\n\t\tdraggable \u003d True,\n\t\tresizable \u003d True,\n\t\tviewportBound \u003d True\n\t)\n\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnImport",
+          "name": "btnImport",
+          "tooltip": {
+            "delay": 0,
+            "location": "top",
+            "sustain": 0,
+            "tail": false,
+            "text": "Import"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "image": {
+            "icon": {
+              "color": "--kcBlue-30",
+              "path": "material/get_app"
+            }
+          },
+          "style": {
+            "classes": "kanoa/button/flatIcon",
+            "height": "25px",
+            "width": "25px"
+          },
+          "text": ""
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "direction": "column",
+      "justify": "center",
+      "style": {
+        "backgroundColor": "transparent",
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "importer.import",
+          "pageScope": true,
+          "script": "\t\n\tif payload[\u0027callerId\u0027] !\u003d self.view.custom.uuid: return\n\t\n\tself.view.params.data \u003d payload[\u0027data\u0027]\n\t",
+          "sessionScope": true,
+          "viewScope": true
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

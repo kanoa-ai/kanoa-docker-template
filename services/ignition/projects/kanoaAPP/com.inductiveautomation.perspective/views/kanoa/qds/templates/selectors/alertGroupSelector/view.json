@@ -1,0 +1,221 @@
+{
+  "custom": {
+    "alertGroups": [
+      {
+        "alertGroupId": 94,
+        "alertGroupName": "2nd Cricket Team",
+        "changedBy": 5,
+        "changedByUser": "jason",
+        "changedDate": {
+          "$": [
+            "ts",
+            192,
+            1776367097231
+          ],
+          "$ts": 1732124818780
+        },
+        "createdBy": 5,
+        "createdByUser": "jason",
+        "createdDate": {
+          "$": [
+            "ts",
+            192,
+            1776367097231
+          ],
+          "$ts": 1732124116143
+        },
+        "emailList": "jason.coope@kanaoa.ai",
+        "enabled": true
+      },
+      {
+        "alertGroupId": 90,
+        "alertGroupName": "Kanoa Team",
+        "changedBy": 5,
+        "changedByUser": "jason",
+        "changedDate": {
+          "$": [
+            "ts",
+            192,
+            1776367097231
+          ],
+          "$ts": 1732118172853
+        },
+        "createdBy": 5,
+        "createdByUser": "jason",
+        "createdDate": {
+          "$": [
+            "ts",
+            192,
+            1776367097231
+          ],
+          "$ts": 1731974400000
+        },
+        "emailList": "jason.coope@kanoa.ai",
+        "enabled": true
+      },
+      {
+        "alertGroupId": 2,
+        "alertGroupName": "Operations Team",
+        "changedBy": 5,
+        "changedByUser": "jason",
+        "changedDate": {
+          "$": [
+            "ts",
+            192,
+            1776367097231
+          ],
+          "$ts": 1732577177717
+        },
+        "createdBy": null,
+        "createdByUser": null,
+        "createdDate": null,
+        "emailList": "jason.coope@kanoa.ai, nicole@kanoa.ai",
+        "enabled": true
+      },
+      {
+        "alertGroupId": 1,
+        "alertGroupName": "Quality Team",
+        "changedBy": null,
+        "changedByUser": null,
+        "changedDate": null,
+        "createdBy": null,
+        "createdByUser": null,
+        "createdDate": null,
+        "emailList": null,
+        "enabled": true
+      },
+      {
+        "alertGroupId": 3,
+        "alertGroupName": "Quality Team and Operations Team",
+        "changedBy": null,
+        "changedByUser": null,
+        "changedDate": null,
+        "createdBy": null,
+        "createdByUser": null,
+        "createdDate": null,
+        "emailList": null,
+        "enabled": true
+      }
+    ]
+  },
+  "params": {
+    "alertGroups": [],
+    "enabled": true
+  },
+  "propConfig": {
+    "custom.alertGroups": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\t\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.config.getAlertGroups({\u0027enabled\u0027: True}))",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.alertGroups": {
+      "paramDirection": "inout",
+      "persistent": true
+    },
+    "params.enabled": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 313
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "ddEmail",
+          "name": "ddEmail"
+        },
+        "position": {
+          "basis": "36px"
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.options": {
+            "binding": {
+              "config": {
+                "path": "view.custom.alertGroups"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn [{\u0027value\u0027:row[\u0027alertGroupId\u0027], \u0027label\u0027:row[\u0027alertGroupName\u0027]} for row in system.kanoa.quality.config.getAlertGroups({\u0027enabled\u0027: True})]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.value": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.alertGroups"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "multiSelect": true,
+          "placeholder": {
+            "text": "Select Email Group..."
+          },
+          "showClearIcon": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.dropdown"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "alertGroupsUpdated",
+          "pageScope": true,
+          "script": "\t\n\tsystem.perspective.print(\"alertGroupsUpdated() msg rcvd with %s\"%payload)\n\t\n\tself.view.refreshBinding(\"custom.alertGroups\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

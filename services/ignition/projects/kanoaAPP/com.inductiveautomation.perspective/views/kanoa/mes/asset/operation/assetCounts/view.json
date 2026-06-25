@@ -1,0 +1,334 @@
+{
+  "custom": {
+    "table": {
+      "selection": {
+        "col": null, 
+        "data": [
+          {
+            "itemValue": "168 units", 
+            "itemState": "Infeed", 
+            "itemName": "", 
+            "assetId": 1978, 
+            "assetPath": "Kanoa Inc Industries\\Tacoma\\Production\\Work Center 1"
+          }
+        ], 
+        "row": 0
+      }
+    }
+  }, 
+  "params": {
+    "values": {
+      "display": {
+        "showTime": false, 
+        "showAsset": false, 
+        "showOrder": true
+      }, 
+      "countInfo": [
+        {
+          "itemColor": null, 
+          "itemClassName": null, 
+          "earnedLaborSecs": 0, 
+          "itemStateClassPath": null, 
+          "counterName": "infeed", 
+          "itemName": null, 
+          "assetId": 1978, 
+          "assetPath": "Kanoa Inc Industries\\Tacoma\\Production\\Work Center 1", 
+          "counterTypeName": "infeed", 
+          "itemStateClassName": null, 
+          "itemStatePath": null, 
+          "value": 168, 
+          "itemStateClassId": null, 
+          "countState": "Infeed - ", 
+          "itemStateId": null, 
+          "counterId": 133653, 
+          "itemId": null, 
+          "itemClassPath": null, 
+          "itemPath": null, 
+          "workOrderName": null, 
+          "assetName": "Work Center 1", 
+          "itemClassColor": null, 
+          "workOrderId": null, 
+          "itemStateName": null
+        }, 
+        {
+          "itemColor": null, 
+          "itemClassName": null, 
+          "earnedLaborSecs": 0, 
+          "itemStateClassPath": null, 
+          "counterName": "outfeed", 
+          "itemName": null, 
+          "assetId": 1978, 
+          "assetPath": "Kanoa Inc Industries\\Tacoma\\Production\\Work Center 1", 
+          "counterTypeName": "outfeed", 
+          "itemStateClassName": null, 
+          "itemStatePath": null, 
+          "value": 166, 
+          "itemStateClassId": null, 
+          "countState": "Outfeed - ", 
+          "itemStateId": null, 
+          "counterId": 133652, 
+          "itemId": null, 
+          "itemClassPath": null, 
+          "itemPath": null, 
+          "workOrderName": null, 
+          "assetName": "Work Center 1", 
+          "itemClassColor": null, 
+          "workOrderId": null, 
+          "itemStateName": null
+        }
+      ], 
+      "filter": {
+        "endDate": {
+          "$ts": 1738522342451, 
+          "$": [
+            "ts", 
+            192, 
+            1738522477032
+          ]
+        }, 
+        "assetId": 1978, 
+        "assetPath": "Kanoa Inc Industries\\Tacoma\\Production\\Work Center 1", 
+        "startDate": {
+          "$ts": 1737835559427, 
+          "$": [
+            "ts", 
+            192, 
+            1738522477032
+          ]
+        }
+      }
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 434, 
+      "height": 556
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "cursor": "pointer", 
+        "backgroundColor": "--kcSurfaceVariant", 
+        "classes": "kanoa/font/default", 
+        "overflow": "hidden"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.table", 
+        "props": {
+          "footerStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "bodyStyle": {
+            "backgroundColor": "--kcSurfaceVariant", 
+            "classes": "kanoa/font/default"
+          }, 
+          "dragOrderable": false, 
+          "rows": {
+            "striped": {
+              "enabled": false
+            }
+          }, 
+          "headerStyle": {
+            "backgroundColor": "--kcSurfaceVariant", 
+            "classes": "kanoa/font/default"
+          }, 
+          "pager": {
+            "initialOption": 100, 
+            "bottom": false, 
+            "activeOption": 100
+          }, 
+          "selection": {}, 
+          "style": {
+            "background": "--kcSurfaceVariant", 
+            "borderStyle": "none"
+          }, 
+          "footerGroupStyle": {
+            "classes": "kanoa/font/default"
+          }
+        }, 
+        "meta": {
+          "domId": "tblCounts", 
+          "name": "tblCounts"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tself.parent.openCountEditor()\n\t\n\treturn"
+              }
+            }
+          }, 
+          "component": {
+            "onRowClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n\tself.parent.openCountEditor()\n\t\n\treturn"
+              }
+            }, 
+            "onSelectionChange": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\t\n#\tself.parent.openCountEditor()\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.footerGroups": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\tif len(value['countInfo'] or []) == 0: return [[]]\n\t\n#\timport time\n#\ttime.sleep(0.1)\n\t\n\tspan = 1\n\tif value['display']['showAsset']: span += 1 \n\tif value['display']['showOrder']: span += 1\n\t\n\tcols = []\n\t\n\tcols.append({\"title\": \"Total\", \"span\": span, \"justify\": \"right\", \"align\": \"center\", \"style\": {\"classes\": \"\", \"backgroundColor\": \"--kcSurfaceVariant\", \"fontWeight\": \"bold\"}})\n\t\n\tcount = str(int(system.math.sum([item['value'] for item in value['countInfo'] if item['value'] is not None])))\n\tcols.append({\"title\": count, \"span\": 1, \"justify\": \"right\", \"align\": \"center\", \"style\": {\"classes\": \"\", \"backgroundColor\": \"--kcSurfaceVariant\", \"fontWeight\": \"bold\"}})\n\t\n\tif value['display']['showTime']:\n\t\ttotalLaborSecs = system.math.sum([item['earnedLaborSecs'] for item in value['countInfo'] if item['earnedLaborSecs'] is not None])\n\t\ttotalLaborSecs = system.kanoa.utilities.secondsToText(totalLaborSecs, {'showDays': False, 'showSecs': False, 'showDays': False}) if totalLaborSecs > 0 else '0'\n\t\tcols.append({\"title\": totalLaborSecs, \"span\": 1, \"justify\": \"right\", \"align\": \"center\", \"style\": {\"classes\": \"\", \"backgroundColor\": \"--kcSurfaceVariant\", \"fontWeight\": \"bold\"}})\n\t\n\treturn [cols]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }, 
+          "props.data": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\tcountInfo = value['countInfo']\n\tdisplayInfo = value['display']\n\n\tinstances = []\n\tfor item in countInfo:\n\t\trowColor = '--kcRed-60' if item['counterName'] == 'waste' else ''\n\t\t\n\t\titemAsset = {\"value\": item['assetName'], \"style\": {\"color\": rowColor, 'textAlign': 'center'}}\n\t\t\n\t\titemName = {\"style\": {\"color\": rowColor}}\n\t\tif item['workOrderName'] and displayInfo['showOrder']: itemName['value'] = \"%s | %s\"%(item['workOrderName'], item['itemName'] or '')\n\t\telse: itemName['value'] = \"%s\"%(item['itemName'] or '')\n\t\t\n\t\tif item['itemStatePath']:\n#\t\t\tstateClass = '' if item['itemStateClassName'] == item['assetName'] else item['itemStateClassName'].split(\"\\\\\")[-1]\n\t\t\titemStateName = \"%s %s\"%(item['counterName'].title(), item['itemStateName'])\n#\t\t\tif item['counterName'] != 'waste':\titemStateName = \"%s %s %s\"%(item['counterName'].title(), stateClass, item['itemStateName'])\n#\t\t\telse: itemStateName = \"%s %s Failed\"%(item['counterName'].title(), stateClass)\t\t\n\t\telse: itemStateName = item['counterName'].title()\n\t\t\n\t\titemState = {\"value\": itemStateName, \"style\": {\"color\": rowColor}}\n\t\t\n\t\tunits = 'units' if item['value'] != 1 else 'unit '\n\t\tif item.has_key('earnedLaborSecs'):\n\t\t\tearnedLaborValue = system.kanoa.utilities.secondsToText(item['earnedLaborSecs'], {'showDays': False, 'showSecs': False, 'showDays': False}) if item['earnedLaborSecs'] > 0 else ''\n\t\telse:\n\t\t\tearnedLaborValue = ''\n\t\titemValue = \"{:,.0f} {}\".format(item['value'], units)\n\t\t\n\t\titemValue = {\"value\": itemValue, \"style\": {\"color\": rowColor, 'textAlign': 'center'}}\n\t\tearnedLaborValue = {\"value\": earnedLaborValue, \"style\": {\"color\": rowColor, 'textAlign': 'right'}}\n\t\tinstances.append({\"assetId\": item['assetId'], \"assetPath\": item['assetPath'], \"assetName\": itemAsset, \"itemName\": itemName, \"itemState\": itemState, \"itemValue\": itemValue, \"earnedLaborValue\": earnedLaborValue})\n\t\n\treturn instances", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }, 
+          "props.selection.selectedRow": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.table.selection.row"
+              }
+            }
+          }, 
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn len(value) > 0", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.values.countInfo"
+              }
+            }
+          }, 
+          "props.selection.selectedColumn": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.table.selection.col"
+              }
+            }
+          }, 
+          "props.enableFooterGroups": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn len(value) > 0", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "this.props.footerGroups[0]"
+              }
+            }
+          }, 
+          "props.columns": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\n\tdef buildColumn(field, visible, title, width, strictWidth):\n\t\treturn {\n\t\t\t\t    \"field\": field,\n\t\t\t\t    \"visible\": visible,\n\t\t\t\t    \"editable\": False,\n\t\t\t\t    \"render\": \"auto\",\n\t\t\t\t    \"justify\": \"right\",\n\t\t\t\t    \"align\": \"center\",\n\t\t\t\t    \"resizable\": True,\n\t\t\t\t    \"sortable\": False,\n\t\t\t\t    \"sort\": \"none\",\n\t\t\t\t    \"filter\": {\"enabled\": False, \"visible\": \"on-hover\", \"string\": {\"condition\": \"\", \"value\": \"\"},\n\t\t\t\t      \"number\": {\"condition\": \"\", \"value\": \"\"},\n\t\t\t\t      \"boolean\": {\"condition\": \"\"},\n\t\t\t\t      \"date\": {\"condition\": \"\", \"value\": \"\"}\n\t\t\t\t    },\n\t\t\t\t    \"viewPath\": \"\",\n\t\t\t\t    \"viewParams\": {},\n\t\t\t\t    \"boolean\": \"checkbox\",\n\t\t\t\t    \"number\": \"value\",\n\t\t\t\t    \"progressBar\": {\"max\": 100, \"min\": 0, \"bar\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"track\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"value\": {\"enabled\": True, \"format\": \"0,0.##\", \"justify\": \"center\", \"style\": {\"classes\": \"\"}}},\n\t\t\t\t    \"toggleSwitch\": {\"color\": {\"selected\": \"\", \"unselected\": \"\"}},\n\t\t\t\t    \"nullFormat\": {\"includeNullStrings\": False, \"strict\": False, \"nullFormatValue\": \"\"},\n\t\t\t\t    \"numberFormat\": \"0,0.##\",\n\t\t\t\t    \"dateFormat\": \"MM/DD/YYYY\",\n\t\t\t\t    \"width\": width,\n\t\t\t\t    \"strictWidth\": strictWidth,\n\t\t\t\t    \"header\": {\"title\": title, \"justify\": \"right\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t    \"footer\": {\"title\": \"\", \"justify\": \"left\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t    \"style\": {\"classes\": \"\"}\n\t\t\t\t  }\n\t\n\tcols = []\n\tcols.append(buildColumn('assetId', False, 'assetId', '', False))\n\tcols.append(buildColumn('assetPath', False, 'assetPath', '', False))\n\tif value['showAsset']: cols.append(buildColumn('assetName', True, 'Asset', '', False))\n\tif value['showOrder']: cols.append(buildColumn('itemName', True, 'Order/Item', '', False))\n\tif True: cols.append(buildColumn('itemState', True, 'Counter', '', False))\n\tif True: cols.append(buildColumn('itemValue', True, 'Count', '', False))\n\tif value['showTime']: cols.append(buildColumn('earnedLaborValue', True, 'Earned Time', '', False))\n\t\n\treturn cols\n\n\n\n\n", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.values.display"
+              }
+            }
+          }, 
+          "props.selection.data": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.table.selection.data"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\n\tsystem.perspective.print('openCountEditor() called')\n\tparams = dict(self.view.params.values.filter)\n\tif len(self.view.custom.table.selection.data) > 0:\n\t\tparams['assetId'] = self.view.custom.table.selection.data[0].assetId\n\t\tparams['assetPath'] = self.view.custom.table.selection.data[0].assetPath\n\t\n#\ttitle = '%s Count Editor'%system.kanoa.utilities.formatPath(params['assetPath'], {})\n\ttitle = 'Count Editor'\n\t\n\tsystem.perspective.openPopup('countViewer', 'kanoa/mes/asset/counts/countEditor', {'value': params}, title=title, resizable=True, draggable=True, showCloseIcon=True, viewPortBound=True)\n\tsystem.perspective.sendMessage(\"countParamsChanged\", params)\n\t\n\treturn", 
+          "name": "openCountEditor"
+        }
+      ], 
+      "extensionFunctions": null
+    }, 
+    "events": {
+      "dom": {
+        "onClick": {
+          "stopPropagation": true, 
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\n#\tself.openCountEditor()\n\t\n\treturn"
+          }, 
+          "preventDefault": true
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "custom.table": {
+      "persistent": true
+    }, 
+    "params.values": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

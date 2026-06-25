@@ -1,0 +1,100 @@
+{
+  "custom": {}, 
+  "params": {
+    "label": "", 
+    "value": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 50, 
+      "height": 50
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "2px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "style": {
+            "padding": "5px", 
+            "backgroundColor": "--kcPrimaryContainer", 
+            "classes": "kanoa/button/flatIcon", 
+            "minWidth": "40px", 
+            "align": "center", 
+            "justify": "center"
+          }, 
+          "textStyle": {
+            "color": "--kcOnPrimaryContainer", 
+            "align": "center", 
+            "justify": "center"
+          }
+        }, 
+        "meta": {
+          "domId": "Button", 
+          "name": "Button"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "34px"
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tpayload = {'value':self.view.params.value}\n\tsystem.perspective.print(\"Sending 'ValuePicked' message with \" + str(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope='page')\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.textStyle.fontSize": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "#\treturn len(value)\n\tif len(value) <= 40: return '12px'\n\tif len(value) <= 70: return '9px'\n\treturn '8px'\n\t", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "this.props.text"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.label"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.label": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

@@ -1,0 +1,256 @@
+{
+  "custom": {}, 
+  "params": {}, 
+  "props": {
+    "defaultSize": {
+      "width": 461, 
+      "height": 542
+    }
+  }, 
+  "root": {
+    "custom": {
+      "color": null
+    }, 
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.flex-repeater", 
+        "props": {
+          "alignItems": "center", 
+          "instances": [
+            {
+              "color": "primary"
+            }, 
+            {
+              "color": "neutral"
+            }, 
+            {
+              "color": "red"
+            }, 
+            {
+              "color": "orange"
+            }, 
+            {
+              "color": "yellow"
+            }, 
+            {
+              "color": "green"
+            }, 
+            {
+              "color": "blue"
+            }, 
+            {
+              "color": "purple"
+            }, 
+            {
+              "color": "pink"
+            }, 
+            {
+              "color": "gray"
+            }
+          ], 
+          "elementPosition": {
+            "grow": 0, 
+            "shrink": 0, 
+            "basis": "auto"
+          }, 
+          "useDefaultViewWidth": false, 
+          "alignContent": "center", 
+          "path": "kanoa/core/templates/colorThemePicker/embedded/colorRow", 
+          "justify": "center", 
+          "style": {
+            "classes": "kanoa/input", 
+            "overflow": "hidden", 
+            "width": 450, 
+            "borderStyle": "inset", 
+            "height": 500
+          }, 
+          "useDefaultViewHeight": false, 
+          "direction": "column"
+        }, 
+        "meta": {
+          "domId": "colorPalette", 
+          "name": "colorPalette"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "scripts": {
+          "messageHandlers": [
+            {
+              "viewScope": false, 
+              "script": "\t\n\tself.custom.selectedColor = payload[\"color\"]\n\t\n\treturn", 
+              "messageType": "color-clicked", 
+              "sessionScope": false, 
+              "pageScope": true
+            }
+          ], 
+          "customMethods": [], 
+          "extensionFunctions": null
+        }, 
+        "propConfig": {
+          "custom.selectedColor": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "/root.custom.color"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "justify": "center", 
+          "style": {
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.display.view", 
+            "props": {
+              "path": "kanoa/core/templates/colorThemePicker/embedded/colorTile", 
+              "style": {
+                "borderStyle": "inset"
+              }
+            }, 
+            "meta": {
+              "domId": "colorTile", 
+              "name": "colorTile"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "30px"
+            }, 
+            "propConfig": {
+              "props.params.color": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "path": "/root.custom.color"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "color": "--kcGreen-50", 
+                  "path": "material/check_box"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "domId": "btnOK", 
+              "name": "btnOK"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tcolor = self.view.getChild(\"root\").custom.color\n\tsystem.perspective.sendMessage(\"colorPicked\", payload={'color': color})\n\t\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn value is not None", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "/root.custom.color"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "domId": "btnCancel", 
+              "name": "btnCancel"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup('')\n\t\n\treturn\t"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxButtons", 
+          "name": "flxButtons"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "30px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "events": {
+    "system": {
+      "onStartup": {
+        "type": "script", 
+        "scope": "G", 
+        "config": {
+          "script": "\n\tself.getChild(\"root\").custom.color = None"
+        }
+      }
+    }
+  }
+}

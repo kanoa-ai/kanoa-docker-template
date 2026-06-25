@@ -1,0 +1,269 @@
+{
+  "custom": {
+    "stateEventInfo": {
+      "note": null, 
+      "stateCategoryId": null, 
+      "stateEventId": null, 
+      "stateTypeId": null, 
+      "origStateCode": null, 
+      "stateTypeName": null, 
+      "assetStateId": null, 
+      "stateCategoryName": null, 
+      "origAssetId": null, 
+      "stateName": null, 
+      "assetId": null, 
+      "assetPath": null, 
+      "changedBy": null, 
+      "tStamp": null, 
+      "stateStart": null, 
+      "stateCode": null, 
+      "stateEnd": null
+    }, 
+    "splitInfo": {
+      "units": null, 
+      "duration": null, 
+      "maxDuration": 0
+    }
+  }, 
+  "params": {
+    "values": {
+      "stateEventId": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 450, 
+      "height": 121
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 5, 
+        "classes": "kanoa/font/default", 
+        "overflow": "hidden", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.input.slider", 
+        "props": {
+          "labels": {
+            "show": true
+          }, 
+          "step": 100, 
+          "style": {
+            "margin": "5px 5px"
+          }
+        }, 
+        "meta": {
+          "domId": "Slider", 
+          "name": "Slider"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "33px"
+        }, 
+        "propConfig": {
+          "props.labels.interval": {
+            "binding": {
+              "type": "expr", 
+              "config": {
+                "expression": "if(toInt({this.props.max} / 12) = 0, 1, toInt({this.props.max} / 12))"
+              }
+            }
+          }, 
+          "props.max": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.splitInfo.maxDuration"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.splitInfo.duration"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "center", 
+            "classes": "kanoa/font/default"
+          }
+        }, 
+        "meta": {
+          "domId": "lblUnits", 
+          "name": "lblUnits"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "30px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value or ''", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.splitInfo.units"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "center", 
+          "justify": "center"
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/call_split"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "tooltip": {
+                "enabled": true, 
+                "text": "Split downtime event"
+              }, 
+              "domId": "btnSplit", 
+              "name": "btnSplit"
+            }, 
+            "position": {
+              "shrink": 0
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").split()\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxCntActions", 
+          "name": "flxCntActions"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "domId": "Label", 
+          "name": "Label"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "display": false
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn str(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.values"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [], 
+      "customMethods": [
+        {
+          "params": [], 
+          "script": "\n\tsi = dict(self.view.custom.stateEventInfo)\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\t\n\tduration = self.view.custom.splitInfo.duration\n\tif self.view.custom.splitInfo.units == 'Minutes': duration = duration * 60.0\n\n\tsi['note'] = si['note'] + \"\\n(Event split)\" if si['note'] else \"(Event split)\"\n\tsystem.kanoa.event.updateStateEvent(si, userId)\n\n\tsi['stateEventId'] = None\n\tsi['tStamp'] = system.date.addSeconds(si['tStamp'], int(duration))\n\tsi['note'] = 'Event split'\t\n\tstateEventId = system.kanoa.event.addStateEvent(si, userId)\n\tsystem.perspective.sendMessage(\"DTUpdated\", payload={})\t\t\t\n\tsystem.perspective.closePopup('')\n\treturn", 
+          "name": "split"
+        }
+      ], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "custom.splitInfo": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\tif not value or self.params.values.stateEventId is None: return {'maxDuration': 0, 'duration':None, 'units':None}\n\t\t\n\tduration = system.date.secondsBetween(value['stateStart'], value['stateEnd'] or system.date.now())\n\tunits = 'Minutes' if duration > 300 else 'Seconds'\n\tif units == 'Minutes': duration = duration / 60.0\n\treturn {'maxDuration':round(duration,1), 'units':units, 'duration': round(duration/2.0,1)}", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.custom.stateEventInfo"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.values": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.stateEventInfo": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getStateEventById(value), 0)", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.values.stateEventId"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

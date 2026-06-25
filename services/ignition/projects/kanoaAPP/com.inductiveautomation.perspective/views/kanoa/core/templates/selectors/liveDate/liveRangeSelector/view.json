@@ -1,0 +1,425 @@
+{
+  "custom": {
+    "timer": {
+      "enabled": true,
+      "refresh": false
+    }
+  },
+  "params": {
+    "assetId": 513,
+    "enabled": true,
+    "endDate": {
+      "$": [
+        "ts",
+        192,
+        1763672464449
+      ],
+      "$ts": 1763672464435
+    },
+    "selectedRange": "Current Run",
+    "startDate": {
+      "$": [
+        "ts",
+        192,
+        1763672464449
+      ],
+      "$ts": 1763672464435
+    }
+  },
+  "propConfig": {
+    "custom.timer": {
+      "persistent": true
+    },
+    "custom.timer.timeNow": {
+      "binding": {
+        "config": {
+          "expression": "now(60000*{/root/flxAutoRefresh/ddAutoRefreshPeriod.props.value})"
+        },
+        "type": "expr"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\tif self.custom.timer.enabled: self.custom.timer.refresh \u003d True"
+      }
+    },
+    "params.assetId": {
+      "onChange": {
+        "enabled": null,
+        "script": "\tsystem.perspective.print(\"liveRangeSelector assetId change - %s\"%origin)\n\tselectedRange \u003d self.params.selectedRange\n\tif selectedRange not in (\u0027Custom\u0027, \u0027\u0027) and selectedRange is not None:\t\n\t\tself.view.getChild(\"root\").setRange(selectedRange, None, None)"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.enabled": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.endDate": {
+      "paramDirection": "output",
+      "persistent": true
+    },
+    "params.selectedRange": {
+      "paramDirection": "output",
+      "persistent": true
+    },
+    "params.startDate": {
+      "paramDirection": "output",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 45,
+      "width": 917
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "system": {
+            "onStartup": {
+              "config": {
+                "script": "\tselectedRange \u003d self.view.params.selectedRange\n\tself.view.params.selectedRange \u003d None\n\tself.view.params.selectedRange \u003d selectedRange"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "ddDateRange",
+          "name": "ddDateRange",
+          "tooltip": {
+            "delay": 0,
+            "enabled": true,
+            "location": "top",
+            "tail": false,
+            "text": "Date range"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "custom.refresh": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.custom.timer.refresh"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\tif self.custom.refresh \u003d\u003d True:\n\t\tselectedRange \u003d self.props.value\n\t\tif selectedRange not in (\u0027Custom\u0027, \u0027\u0027) and selectedRange is not None:\t\n\t\t\tself.view.getChild(\"root\").setRange(selectedRange, None, None)\n\t\tself.custom.refresh \u003d False"
+            }
+          },
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.options": {
+            "binding": {
+              "config": {
+                "path": "view.params.assetId"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\toptions \u003d [\n  \t\t\t\t{\"value\": \"Last 24 Hours\", \"label\": \"Last 24 Hours\"},\n  \t\t\t\t{\"value\": \"Last 7 Days\", \"label\": \"Last 7 Days\"},\n  \t\t\t\t{\"value\": \"Last 14 Days\", \"label\": \"Last 14 Days\"}\n\t\t\t]\n\t\n\tif value:\n\t\toptions.insert(0, {\"value\": \"Current Run\", \"label\": \"Current Run\"})\n\t\t\n\treturn options",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.value": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.selectedRange"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\t\n\tsystem.perspective.print(\"dateRangeSelectorCompact ddDateRange binding change - %s\"%origin)\n\tselectedRange \u003d currentValue.value\n\tif selectedRange not in (\u0027Custom\u0027, \u0027\u0027) and selectedRange is not None:\t\n\t\tself.view.getChild(\"root\").setRange(selectedRange, None, None)"
+            }
+          }
+        },
+        "props": {
+          "dropdownOptionStyle": {
+            "textAlign": "center"
+          },
+          "placeholder": {
+            "icon": {
+              "path": "material/calendar_today"
+            }
+          },
+          "search": {
+            "enabled": false
+          },
+          "showClearIcon": true,
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "height": "30px",
+            "minWidth": 140,
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.input.dropdown"
+      },
+      {
+        "meta": {
+          "domId": "dtiStart",
+          "name": "dtiStart"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.value": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.startDate"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tself.getSibling(\"ddDateRange\").props.value \u003d None\n\t\n\treturn"
+            }
+          }
+        },
+        "props": {
+          "formattedValue": "Nov 20, 2025 1:01 PM",
+          "inputProps": {
+            "style": {
+              "backgroundColor": "--kcSurface",
+              "color": "--kcOnSurface"
+            }
+          },
+          "style": {
+            "height": "30px"
+          }
+        },
+        "type": "ia.input.date-time-input"
+      },
+      {
+        "meta": {
+          "domId": "lblTo",
+          "name": "lblTo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "text": "to",
+          "textStyle": {
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "dtiEnd",
+          "name": "dtiEnd"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.value": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.params.endDate"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tself.getSibling(\"ddDateRange\").props.value \u003d None\n\t\n\treturn"
+            }
+          }
+        },
+        "props": {
+          "formattedValue": "Nov 20, 2025 1:01 PM",
+          "inputProps": {
+            "style": {
+              "backgroundColor": "--kcSurface",
+              "color": "--kcOnSurface"
+            }
+          },
+          "style": {
+            "height": "30px"
+          }
+        },
+        "type": "ia.input.date-time-input"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "tglAutoRefresh",
+              "name": "tglAutoRefresh",
+              "tooltip": {
+                "enabled": true
+              }
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.timer.timeNow"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn \"Last Update: {0}\".format(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.timer.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\tif self.props.selected: self.view.custom.timer.timeNow \u003d system.date.now()"
+                }
+              }
+            },
+            "type": "ia.input.toggle-switch"
+          },
+          {
+            "meta": {
+              "domId": "lblAutoRefresh",
+              "name": "lblAutoRefresh"
+            },
+            "position": {
+              "basis": "85px"
+            },
+            "props": {
+              "text": "Auto-Refresh"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddAutoRefreshPeriod",
+              "name": "ddAutoRefreshPeriod"
+            },
+            "position": {
+              "basis": "150px"
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "../tglAutoRefresh.props.selected"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "options": [
+                {
+                  "label": "1 Minute",
+                  "value": 1
+                },
+                {
+                  "label": "5 Minutes",
+                  "value": 5
+                },
+                {
+                  "label": "15 Minutes",
+                  "value": 15
+                },
+                {
+                  "label": "1 Hour",
+                  "value": 60
+                }
+              ],
+              "value": 5
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxAutoRefresh",
+          "name": "flxAutoRefresh"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "flex-end"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": "10px",
+        "overflow": "hidden",
+        "padding": "2px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "setRange",
+          "params": [
+            "selectedDateRange",
+            "startDate",
+            "endDate"
+          ],
+          "script": "\t\n\tif selectedDateRange not in (\u0027Custom\u0027, \u0027\u0027) and selectedDateRange is not None:\n\t\tclientTZOffset \u003d self.session.props.device.timezone.utcOffset\t\n\t\tstartDate, endDate \u003d self.getRelativeDateRange({\u0027selectedDateRange\u0027: selectedDateRange, \u0027clientOffset\u0027: clientTZOffset, \u0027assetId\u0027: self.view.params.assetId})\n\t\tself.view.params.startDate \u003d startDate\n\t\tself.view.params.endDate \u003d endDate\n\t\tsystem.perspective.print(\"storeDateRangeSelection() called wth %s by dateRangeSelectorCompact setRange() function\"%selectedDateRange)\n\t\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, selectedDateRange)\n\treturn"
+        },
+        {
+          "name": "update",
+          "params": [],
+          "script": "\treturn\n\tsystem.perspective.print(\"dateRangeSelectorCompact update() called. Get dates from session properties\")\n\n\tdateRange \u003d system.kanoa.utilities.getStoredDateRange(self)\n\tselectedRange \u003d dateRange.selectedRange\n\tstartDate \u003d dateRange.startDate\n\tendDate \u003d dateRange.endDate\n\n\tif selectedRange is not None:\n\t\tself.view.params.selectedRange \u003d None\n\t\tself.view.params.selectedRange \u003d selectedRange\t\n\telse:\t\n\t\tself.view.params.startDate \u003d startDate\n\t\tself.view.params.endDate \u003d endDate\t\n\t\n\treturn"
+        },
+        {
+          "name": "getRelativeDateRange",
+          "params": [
+            "paramsDict"
+          ],
+          "script": "\n\t\u0027\u0027\u0027\n\tReturn relative Date ranges (kanoaCore)\n\t\n\tArgs:\n\t    selectedRelativeRange: str, one of \u0027Last 24 Hours\u0027, \u0027Last 7 Days\u0027, \u0027Last 14 Days\u0027, \u0027Current Run\u0027\n\t    clientTZOffset: int, client timezone offset value in minutes (default: 0)\n\t    assetId: int, asset ID (default: 0)\n\tReturns:\n\t    startDate: datetime, start date and time\n\t    endDate: datetime, end date and time\n\t    \n\tUpdated:\n\t\tsr - 1/6/24 5:35pm Created\n\t\u0027\u0027\u0027\n\tclientOffset \u003d paramsDict[\u0027clientTZOffset\u0027] if paramsDict.has_key(\u0027clientTZOffset\u0027) and paramsDict[\u0027clientTZOffset\u0027] is not None else 0\n\tselectedRelativeRange \u003d paramsDict[\u0027selectedDateRange\u0027] if paramsDict.has_key(\u0027selectedDateRange\u0027) and paramsDict[\u0027selectedDateRange\u0027] is not None else \u0027\u0027\n\tassetId \u003d paramsDict[\u0027assetId\u0027] if paramsDict.has_key(\u0027assetId\u0027) and paramsDict[\u0027assetId\u0027] is not None else None\n\t\n\tgatewayOffSetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\ttzOffsetMins \u003d gatewayOffSetMins + int(clientOffset * 60.0)\n\tstartOfDay \u003d system.date.setTime(system.date.addMinutes(system.date.now(), tzOffsetMins), 0,0,0)\n\n\tend_time \u003d system.date.now()\n\n\tif selectedRelativeRange \u003d\u003d \u0027Last 24 Hours\u0027: start_time \u003d system.date.addDays(end_time, -1)\n\telif selectedRelativeRange \u003d\u003d \u0027Last 7 Days\u0027: start_time \u003d system.date.addDays(end_time, -7)\n\telif selectedRelativeRange \u003d\u003d \u0027Last 14 Days\u0027: start_time \u003d system.date.addDays(end_time, -14)\n\telif selectedRelativeRange \u003d\u003d \u0027Current Run\u0027:\n\t\tif assetId: \n\t\t\ttagPath \u003d system.kanoa.asset.getAssetTagPath({\u0027assetId\u0027: assetId})\n\t\t\tstart_time \u003d system.tag.read(tagPath + \u0027/Line/OEE/startDate\u0027).value if tagPath else end_time\n\t\telse:\n\t\t\tstart_time \u003d end_time\n\telse: raise ValueError(\"Invalid selectedRelativeRange: \" + selectedRelativeRange)\n\t\n\tif start_time is None: start_time \u003d end_time\n\treturn start_time, end_time"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

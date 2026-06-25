@@ -1,0 +1,184 @@
+{
+  "custom": {
+    "display": {}
+  },
+  "params": {
+    "value": {
+      "assetId": null
+    }
+  },
+  "propConfig": {
+    "custom.display": {
+      "persistent": true
+    },
+    "custom.display.showNavigation": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tif not value: return False\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))\n\treturn True if system.kanoa.asset.getClosestAncestorAttribute(assetPath, \u0027_assetOperationNavLocation\u0027) \u003d\u003d \u0027Left Panel\u0027 else False",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 471
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evAssetInfo",
+              "name": "evAssetInfo"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.value.assetId": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {}
+              },
+              "path": "kanoa/mes/asset/operation/infoPanel/embedded/assetInfo"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxAssetInfo",
+          "name": "flxAssetInfo"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evNavitems",
+              "name": "evNavitems"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.display"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\ttry:\n\t\treturn value[\u0027showNavigation\u0027] or False\n\texcept:\n\t\tFalse",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.params.value.assetPath": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value or -1}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {}
+              },
+              "path": "kanoa/mes/asset/operation/navigation/navSelector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxNavItems",
+          "name": "flxNavItems"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.display"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tif not value.has_key(\u0027showNavigation\u0027): return False\n\treturn value[\u0027showNavigation\u0027] or False",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "navLocationUpdated",
+          "pageScope": true,
+          "script": "\t\n\tself.view.refreshBinding(\"custom.display.showNavigation\")\n\t\n\treturn",
+          "sessionScope": true,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

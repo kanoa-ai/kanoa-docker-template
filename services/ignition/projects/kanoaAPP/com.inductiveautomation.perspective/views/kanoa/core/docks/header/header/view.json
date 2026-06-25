@@ -1,0 +1,390 @@
+{
+  "custom": {},
+  "params": {},
+  "props": {
+    "defaultSize": {
+      "height": 41,
+      "width": 991
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "evLogo",
+          "name": "evLogo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.path": {
+            "binding": {
+              "config": {
+                "path": "page.props.dimensions.viewport"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn \u0027kanoa/core/docks/navigation/homeLogo\u0027 if self.page.props.dimensions.viewport.width \u003e 500 else \u0027kanoa/core/docks/navigation/homeLogoSmall\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tsystem.perspective.toggleDock(\u0027NavBar\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "icoMenu",
+              "name": "icoMenu",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Open navigation menu"
+              }
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "props": {
+              "color": "--kcDockColor",
+              "path": "material/menu",
+              "style": {
+                "backgroundColor": "--kcDockBackground",
+                "classes": "kanoa/button/flatIcon",
+                "cursor": "pointer",
+                "height": "30px",
+                "width": "30px"
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\n\tparams\u003d {\n\t\t\t\t\t\"path\": \u0027/\u0027,\n\t\t\t\t\t\"name\": \u0027Home\u0027,\n\t\t\t\t\t\"type\": \u0027page\u0027,\n\t\t\t\t\t\"params\": None\n\t\t\t\t}\n\t\n\tsystem.perspective.sendMessage(\u0027dashboardSelected\u0027, payload\u003d{\u0027selection\u0027: [{\u0027value\u0027: {\u0027dashboardId\u0027: None}}]})\n\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams, scope \u003d \"page\")\n\t\n\treturn\n"
+                  },
+                  "scope": "G",
+                  "stopPropagation": true,
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "icoHome",
+              "name": "icoHome",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Navigate to home page"
+              }
+            },
+            "position": {
+              "basis": "30px",
+              "shrink": 0
+            },
+            "props": {
+              "color": "--kcDockColor",
+              "path": "material/home",
+              "style": {
+                "backgroundColor": "--kcDockBackground",
+                "classes": "kanoa/button/flatIcon"
+              }
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntButtonsLeft",
+          "name": "flxCntButtonsLeft"
+        },
+        "position": {
+          "basis": "70px",
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "space-between",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden",
+            "padding": "2px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "evNavHistory"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "path": "kanoa/core/docks/header/navButtons"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "lblCurrentPage",
+          "name": "lblCurrentPage",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Name of current page"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "parent.custom.navHistory"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\ttry:\t#If page is refreshed afte ran update, sometimes there is no index\n\t\treturn value[\u0027history\u0027][value[\u0027currentIndex\u0027]].name\n\texcept:\n\t\t\u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "borderBottomLeftRadius": "15px",
+            "borderBottomRightRadius": "15px",
+            "borderStyle": "none",
+            "borderTopLeftRadius": "15px",
+            "borderTopRightRadius": "15px",
+            "height": "30px",
+            "marginLeft": "10px",
+            "minWidth": "150px"
+          },
+          "textStyle": {
+            "classes": "kanoa/font/titleMedium",
+            "textAlign": "left"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblSpacer",
+          "name": "lblSpacer",
+          "tooltip": {
+            "delay": 0,
+            "location": "bottom",
+            "sustain": 0
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "textStyle": {
+            "color": "--kcDockColor"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "evStatusInfo"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "path": "kanoa/core/docks/header/infoStatus"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "name": "evUserLogin"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "path": "kanoa/core/docks/header/userLogin"
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\t\n\tsystem.perspective.toggleDock(\u0027options\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "icoOptions",
+          "name": "icoOptions",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-right",
+            "text": "Options"
+          }
+        },
+        "position": {
+          "basis": "25px",
+          "shrink": 0
+        },
+        "props": {
+          "color": "--kcDockColor",
+          "path": "material/more_vert",
+          "style": {
+            "backgroundColor": "--kcDockBackground",
+            "classes": "kanoa/button/flatIcon"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "custom": {
+          "test": false
+        },
+        "meta": {
+          "domId": "toast",
+          "name": "toast"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "custom.test": {
+            "onChange": {
+              "enabled": null,
+              "script": "\tif currentValue.value:\n\t\t# showToast\n\t\t# showSuccessfulToast\n\t\t# showFailerToast\n\t\t# showBugToast\n\t\t# showWarningToast\n\t\t# showInfoToast\n\t\t\n\t\tpayload \u003d {\n\t\t\t\u0027message\u0027: \u0027This is a test\u0027,\n\t\t\t\u0027bgColor\u0027: \u0027green\u0027,\n\t\t\t\u0027fgColor\u0027: \u0027white\u0027,\n\t\t\t\u0027icon\u0027: \u0027material/bubble_chart\u0027,\n\t\t}\n\t\n\t\tsystem.perspective.sendMessage(\u0027showToast\u0027, payload)\n\t\tself.custom.test \u003d False"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/core/docks/toast",
+          "style": {
+            "width": "auto"
+          }
+        },
+        "type": "ia.display.view"
+      },
+      {
+        "meta": {
+          "domId": "mdThemes",
+          "name": "mdThemes"
+        },
+        "position": {
+          "basis": "0px",
+          "display": false,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.source": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "enabled": false,
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tstyles \u003d [\n\t\t(\u0027kcPrimary-80\u0027, \u0027pink\u0027),\n\t\t(\u0027kcPrimary-90\u0027, \u0027green\u0027),\n\t]\n\t\n\treturn \"\"\"\u003cstyle\u003e:root{--kcPrimary-80: #BADA55;}\u003c/style\u003e\"\"\".replace(\"\\n\", \" \").replace(\"\\t\", \"\")\n\t",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "markdown": {
+            "escapeHtml": false
+          },
+          "source": "",
+          "style": {
+            "position": "absolute"
+          }
+        },
+        "type": "ia.display.markdown"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "sustain": 0
+      }
+    },
+    "propConfig": {
+      "custom.navHistory": {
+        "binding": {
+          "config": {
+            "struct": {
+              "navHistory": "{session.custom.kanoa}",
+              "pageId": "{page.props.pageId}"
+            },
+            "waitOnAll": true
+          },
+          "transforms": [
+            {
+              "code": "\t\n\tif value[\u0027navHistory\u0027] is None: \u0027\u0027\n\tpageId \u003d value[\u0027pageId\u0027]\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\treturn value[\u0027navHistory\u0027][pageId][\u0027navigation\u0027]",
+              "type": "script"
+            }
+          ],
+          "type": "expr-struct"
+        }
+      }
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcDockBackground",
+        "classes": "kanoa/font/default",
+        "color": "--kcDockColor",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 2
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "getFrameworkInfo",
+          "params": [],
+          "script": "\t\n\tfilePath \u003d \u0027C:\\Program Files\\Inductive Automation\\Ignition\\data\\projects\\KanoaFrameworkInfo.json\u0027\n\tif system.file.fileExists(filePath):\n\t\tjsonFile \u003d system.file.readFileAsString(filePath)\n\t\tself.session.custom.kanoa.frameworkInfo \u003d system.util.jsonDecode(jsonFile)\n\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,610 @@
+{
+  "custom": {
+    "oeeColors": {
+      "availability": "--kcBad",
+      "oee": "--kcBad",
+      "performance": "--kcBad",
+      "quality": "--kcBad"
+    },
+    "oeeThresholds": {
+      "a": 0.75,
+      "aTolerance": 0.03,
+      "oee": 0.7,
+      "oeeTolerance": 0.1,
+      "p": 0.8,
+      "pTolerance": 0.1,
+      "q": 0.8,
+      "qTolerance": 0.1,
+      "update": false
+    },
+    "tagOEEInfo": {
+      "availability": null,
+      "durationSecs": 866110,
+      "endDate": null,
+      "iconPath": "kanoa/engineering",
+      "infeedCount": null,
+      "infeedRateSecs": null,
+      "infeedUnits": null,
+      "itemDescription": null,
+      "itemId": null,
+      "itemName": null,
+      "modeColor": "#f96900",
+      "modeId": 7,
+      "modeName": "Engineering",
+      "modeSourceName": "Operator",
+      "modeTypeName": "Other",
+      "outfeedCount": null,
+      "outfeedRatePerMinute": null,
+      "outfeedUnits": null,
+      "packageCount": 1,
+      "performance": null,
+      "period": null,
+      "plannedDowntimeSecs": null,
+      "quality": null,
+      "refresh": false,
+      "reqdQty": null,
+      "runtimeSecs": null,
+      "scheduleBlockId": null,
+      "scheduleEnd": 1776272400000,
+      "scheduleStart": 1776254400000,
+      "shiftEnd": 1777150800000,
+      "shiftId": 490,
+      "shiftName": "2nd Shift",
+      "shiftNameId": 2,
+      "shiftStart": 1777114800000,
+      "standardRate": null,
+      "startDate": 1776258478063,
+      "stateColor": "#00639a",
+      "stateIconPath": "kanoa/running",
+      "stateName": "Running",
+      "stateTypeColor": "#00639a",
+      "stateTypeName": "Running",
+      "targetCount": null,
+      "unplannedDowntimeSecs": null,
+      "userName": "jason",
+      "wasteCount": null,
+      "wasteUnits": null,
+      "woActualQty": null,
+      "woRemainingMinutes": null,
+      "workOrderId": null,
+      "workOrderName": null,
+      "workOrderTitle": null
+    }
+  },
+  "params": {
+    "value": {
+      "assetInfo": {
+        "assetGroupColor": null,
+        "assetGroupId": 1,
+        "assetGroupName": "Packaging",
+        "assetId": 901,
+        "assetName": "Box Line 1",
+        "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1",
+        "assetTypeId": 5,
+        "assetTypeName": "line",
+        "assetTypePath": "enterprise\\site\\area\\line",
+        "displayPath": "Kanoa Box Co \u003e Box Plant \u003e Packaging \u003e Box Line 1",
+        "enabled": true,
+        "iconPath": "kanoa/line",
+        "oeeEnabled": true,
+        "parentId": 1709,
+        "path": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1",
+        "processTypeId": 2,
+        "processTypeName": "discrete",
+        "sortOrder": 0,
+        "tagPath": "[Kanoa]/Kanoa Box Co/Box Plant/Packaging/Box Line 1",
+        "timeZone": "Eastern Standard Time"
+      }
+    }
+  },
+  "propConfig": {
+    "custom.oeeColors": {
+      "binding": {
+        "config": {
+          "struct": {
+            "tagInfo": "{view.custom.tagOEEInfo}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\ta \u003d value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0\n\tp \u003d value[\u0027tagInfo\u0027][\u0027performance\u0027]  or 0.0\n\tq \u003d value[\u0027tagInfo\u0027][\u0027quality\u0027]  or 0.0\n\toee \u003d a * p * q\t\n\t\n\tparamsDict \u003d {\u0027assetPath\u0027 : self.params.value.assetInfo.assetPath or \u0027none\u0027}\n\tif self.custom.oeeThresholds: paramsDict[\u0027oeeThresholds\u0027] \u003d self.custom.oeeThresholds\n\toeeColors \u003d system.kanoa.event.getOEEColors(paramsDict, oee, a, p, q)\n\t\t\n\treturn {\u0027availability\u0027: oeeColors[\u0027availability\u0027], \u0027performance\u0027: oeeColors[\u0027performance\u0027], \u0027quality\u0027: oeeColors[\u0027quality\u0027], \u0027oee\u0027: oeeColors[\u0027oee\u0027]}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.oeeThresholds": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.params.value.assetInfo.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value[\u0027oeeThresholds\u0027]",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      },
+      "persistent": true
+    },
+    "custom.tagOEEInfo": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.params.value.assetInfo.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "transforms": [
+          {
+            "code": "\treturn value[\u0027OEE\u0027]",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 37,
+      "width": 366
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "icoModeSet",
+              "name": "icoModeSet",
+              "tooltip": {
+                "enabled": true
+              }
+            },
+            "position": {
+              "basis": "28px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagOEEInfo"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return \u0027\u0027\n\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn \u0027Mode set by %s\u0027%name or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagOEEInfo"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return \u0027\u0027\n\t\n\tmodeSourceName \u003d value[\u0027modeSourceName\u0027]\n\tif modeSourceName \u003d\u003d \u0027Schedule\u0027: icon \u003d \u0027material/calendar_today\u0027\n\telif modeSourceName \u003d\u003d \u0027PLC\u0027: icon \u003d \u0027kanoa/cell\u0027\n\telif modeSourceName in (\u0027Operator\u0027, \u0027Operator Run\u0027): icon \u003d \u0027material/engineering\u0027\n\telse: icon \u003d \u0027\u0027\n\t\n\treturn icon",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "color": "--kcOnSurfaceVariant",
+              "style": {
+                "maxHeight": 30
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "meta": {
+              "domId": "icoState",
+              "name": "icoState",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right"
+              }
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "tagValues": "{view.custom.tagOEEInfo}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\t\n\tif value.tagValues is None: return \u0027Asset Off line\u0027\n\tif value[\u0027tagValues\u0027][\u0027modeName\u0027] is None: return \u0027Unknown mode\u0027\n\tif value[\u0027tagValues\u0027][\u0027stateName\u0027] is None: return \u0027Unknown state\u0027\n\tif value[\u0027tagValues\u0027][\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027:return value[\u0027tagValues\u0027][\u0027stateName\u0027]\n\treturn value[\u0027tagValues\u0027][\u0027modeName\u0027]\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.color": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.style.backgroundColor"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif (value or None) is None: return \u0027\u0027\n\treturn system.kanoa.utilities.getContrastingColor(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagOEEInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif value is None: return \u0027material/link_off\u0027\n\tif value[\u0027modeName\u0027] is None: return \u0027kanoa/unknown\u0027\n\tif value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: return value[\u0027stateIconPath\u0027] or value[\u0027iconPath\u0027]\n\treturn value[\u0027iconPath\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.tagOEEInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return None\n\tif value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: return value[\u0027stateTypeColor\u0027] or value[\u0027stateColor\u0027]\n\treturn value[\u0027modeColor\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.classes": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "tagValues": "{view.custom.tagOEEInfo}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif value.tagValues is None: return \u0027\u0027\n\treturn \u0027kanoa/animation/flashRed\u0027 if value.tagValues.stateTypeName \u003d\u003d \u0027Unplanned Downtime\u0027 and value.tagValues.modeName \u003d\u003d \u0027Production\u0027 else \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "borderBottomLeftRadius": "3px",
+                "borderBottomRightRadius": "3px",
+                "borderTopLeftRadius": "3px",
+                "borderTopRightRadius": "3px",
+                "maxHeight": 25,
+                "transition": "background-color 1s ease"
+              }
+            },
+            "type": "ia.display.icon"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblStatus",
+                  "name": "lblStatus"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.text"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value !\u003d \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "tagValues": "{view.custom.tagOEEInfo}"
+                        },
+                        "waitOnAll": false
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\ttagValues \u003d value.tagValues\n\tlocale \u003d self.session.props.locale\n\t\n\tassetName \u003d system.kanoa.utilities.formatPath(self.view.params.value.assetInfo.assetName or \u0027\u0027, {\u0027locale\u0027:self.session.props.locale})\n\t\n\tif tagValues is None: labelStatus \u003d system.util.translate(\u0027PLC Tags not configured\u0027, locale)\n\telif tagValues[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: labelStatus \u003d system.util.translate(str(tagValues[\u0027stateName\u0027] or \u0027Unknown\u0027), locale)\n\telse: labelStatus \u003d tagValues[\u0027modeName\u0027] or \u0027No mode set\u0027\n\t\n\treturn \"%s - %s\"%(assetName, labelStatus)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": "",
+                    "maxHeight": "35px"
+                  },
+                  "textStyle": {
+                    "classes": "kanoa/font/bodySmall",
+                    "textOverflow": "ellipsis",
+                    "whiteSpace": "pre-wrap"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblOrderItemInfo",
+                  "name": "lblOrderItemInfo",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "bottom-left"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.text"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.text"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value !\u003d \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "tagValues": "{view.custom.tagOEEInfo}"
+                        },
+                        "waitOnAll": false
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\ttagValues \u003d value.tagValues\n\tlocale \u003d self.session.props.locale\n\n\tif tagValues is None: return \u0027\u0027\n\tif tagValues[\u0027modeName\u0027] !\u003d \u0027Production\u0027: return \u0027\u0027\n\tworkOrder \u003d tagValues[\u0027workOrderTitle\u0027] if tagValues.has_key(\u0027workOrderTitle\u0027) else tagValues[\u0027workOrderName\u0027]\n\tvalues \u003d [workOrder, tagValues[\u0027itemName\u0027], tagValues[\u0027itemDescription\u0027]]\n\treturn \" \".join(v for v in values if v not in (None, \"\"))\n",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "color": ""
+                  },
+                  "textStyle": {
+                    "classes": "kanoa/font/bodySmall",
+                    "overflow": "hidden",
+                    "textOverflow": "ellipsis",
+                    "whiteSpace": "nowrap"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxInfo",
+              "name": "flxInfo"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "icoOEE",
+              "name": "icoOEE",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right"
+              }
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.oeeColors"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return \u0027\u0027\n\t\n\ttagInfo \u003d self.view.custom.tagOEEInfo\n\tif tagInfo is None: return \u0027\u0027\n\t\n\tif tagInfo[\u0027modeTypeName\u0027] !\u003d \u0027Production\u0027: return \u0027\u0027\n\ta \u003d tagInfo[\u0027availability\u0027] or 0.0\n\tp \u003d tagInfo[\u0027performance\u0027] or 0.0\n\tq \u003d tagInfo[\u0027quality\u0027] or 0.0\n\toee \u003d round((a*p*q)* 100.0, 1)\n\t\n\tif value[\u0027oee\u0027] \u003d\u003d \u0027--kcGood\u0027: return \u0027OEE On Target %s%%\u0027%oee\n\tif value[\u0027oee\u0027] \u003d\u003d \u0027--kcOk\u0027: return \u0027OEE within Threshold %s%%\u0027%oee\n\tif value[\u0027oee\u0027] \u003d\u003d \u0027--kcBad\u0027: return \u0027OEE Below Target %s%%\u0027%oee\n\treturn \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.oeeColors.oee"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.oeeColors"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif value is None: return \u0027\u0027\n\t\n\ttagInfo \u003d self.view.custom.tagOEEInfo\n\tif tagInfo is None or not tagInfo.has_key(\u0027modeTypeName\u0027): return \u0027\u0027\n\tif tagInfo[\u0027modeTypeName\u0027] !\u003d \u0027Production\u0027: return \u0027\u0027\n\tif value[\u0027oee\u0027] \u003d\u003d \u0027--kcGood\u0027: return \u0027material/check\u0027\n\tif value[\u0027oee\u0027] \u003d\u003d \u0027--kcOk\u0027: return \u0027material/warning\u0027\n\tif value[\u0027oee\u0027] \u003d\u003d \u0027--kcBad\u0027: return \u0027material/error\u0027\n\t\n\treturn \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": ""
+              }
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxBody",
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\t\n\tsystem.kanoa.utilities.storeAssetPath(self, self.view.params.value.assetInfo.assetPath)\n\tparams\u003d {\"path\": \"kanoa/mes/asset/operation/main\", \"name\": \"Asset Operation\", \"type\": \"view\", \"params\": {}}\n\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams)\n\t\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "enabled": true
+      }
+    },
+    "propConfig": {
+      "meta.visible": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.assetInfo.assetPath"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn (value or None) is not None",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "alignItems": "center",
+      "justify": "center",
+      "style": {
+        "backgroundColor": "--kcSurfaceVariant",
+        "borderBottomLeftRadius": 5,
+        "borderBottomRightRadius": 5,
+        "borderColor": "--kcOutlineVariant",
+        "borderStyle": "solid",
+        "borderTopLeftRadius": 5,
+        "borderTopRightRadius": 5,
+        "borderWidth": "1px",
+        "classes": "kanoa/font/default",
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

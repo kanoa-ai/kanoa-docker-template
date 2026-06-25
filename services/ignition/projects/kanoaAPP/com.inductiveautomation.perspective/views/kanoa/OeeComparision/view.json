@@ -1,0 +1,1859 @@
+{
+  "custom": {
+    "assetInfo": {
+      "assetGroupColor": null,
+      "assetGroupId": null,
+      "assetGroupName": null,
+      "assetId": 2542,
+      "assetName": "Resin Reactor",
+      "assetPath": "Enterprise 1\\Site 1\\Area 1\\Resin Reactor",
+      "assetTypeId": 5,
+      "assetTypeName": "line",
+      "assetTypePath": "enterprise\\site\\area\\line",
+      "displayPath": "Enterprise 1 \u003e Site 1 \u003e Area 1 \u003e Resin Reactor",
+      "enabled": true,
+      "iconPath": "kanoa/line",
+      "oeeEnabled": true,
+      "parentId": 2540,
+      "path": "Enterprise 1\\Site 1\\Area 1\\Resin Reactor",
+      "processTypeId": 3,
+      "processTypeName": "batch",
+      "sortOrder": 383,
+      "tagPath": "[Kanoa]/Enterprise 1/Site 1/Area 1/Resin Reactor",
+      "timeZone": "Arabic Standard Time"
+    },
+    "data": {},
+    "filter": {
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1779726427034
+          ],
+          "$ts": 1774411200000
+        },
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1779726427034
+          ],
+          "$ts": 1774324800000
+        }
+      },
+      "interval": null
+    }
+  },
+  "params": {},
+  "propConfig": {
+    "custom.assetInfo": {
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.comparisonRows": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetInfo": "{view.custom.assetInfo}",
+            "events": "{view.custom.data.eventsRaw}",
+            "interval": "{view.custom.data.intervalRaw}",
+            "summary": "{view.custom.data.summaryRaw}"
+          },
+          "waitOnAll": true
+        },
+        "transforms": [
+          {
+            "code": "\n    summary_rows \u003d value.get(\u0027summary\u0027) or []\n    interval_rows \u003d value.get(\u0027interval\u0027) or []\n    events_rows \u003d value.get(\u0027events\u0027) or []\n    asset_info \u003d value.get(\u0027assetInfo\u0027) or {}\n\n    def first_present(row, keys):\n        for key in keys:\n            if key in row and row.get(key) not in [None, \u0027\u0027]:\n                return row.get(key)\n        return None\n\n    def to_float(v):\n        if v in [None, \u0027\u0027]:\n            return None\n        try:\n            return float(v)\n        except Exception:\n            return None\n\n    def get_colors(a, p, q, oee):\n        default \u003d {\n            \u0027oeeColor\u0027: \u0027#d5d5d5\u0027,\n            \u0027availabilityColor\u0027: \u0027#d5d5d5\u0027,\n            \u0027performanceColor\u0027: \u0027#d5d5d5\u0027,\n            \u0027qualityColor\u0027: \u0027#d5d5d5\u0027\n        }\n        asset_path \u003d asset_info.get(\u0027assetPath\u0027)\n        if not asset_path or a is None or p is None or q is None or oee is None:\n            return default\n        try:\n            colors \u003d system.kanoa.event.getOEEColors({\u0027assetPath\u0027: asset_path}, oee, a, min(p, 1.0), q)\n            return {\n                \u0027oeeColor\u0027: colors.get(\u0027oee\u0027) or \u0027#d5d5d5\u0027,\n                \u0027availabilityColor\u0027: colors.get(\u0027availability\u0027) or \u0027#d5d5d5\u0027,\n                \u0027performanceColor\u0027: colors.get(\u0027performance\u0027) or \u0027#d5d5d5\u0027,\n                \u0027qualityColor\u0027: colors.get(\u0027quality\u0027) or \u0027#d5d5d5\u0027\n            }\n        except Exception:\n            return default\n\n    def build_row(source, rows):\n        result \u003d {\n            \u0027source\u0027: source,\n            \u0027returnedRowCount\u0027: len(rows),\n            \u0027oee\u0027: None,\n            \u0027availability\u0027: None,\n            \u0027performance\u0027: None,\n            \u0027quality\u0027: None,\n            \u0027oeeColor\u0027: \u0027#d5d5d5\u0027,\n            \u0027availabilityColor\u0027: \u0027#d5d5d5\u0027,\n            \u0027performanceColor\u0027: \u0027#d5d5d5\u0027,\n            \u0027qualityColor\u0027: \u0027#d5d5d5\u0027\n        }\n\n        if len(rows) \u003d\u003d 0:\n            return result\n\n        dict_rows \u003d [r for r in rows if hasattr(r, \u0027get\u0027)]\n        if len(dict_rows) \u003d\u003d 0:\n            return result\n\n        first \u003d dict_rows[0]\n        if first.get(\u0027error\u0027) not in [None, \u0027\u0027]:\n            return result\n\n        result[\u0027availability\u0027] \u003d first_present(first, [\u0027availability\u0027, \u0027availabilityRatio\u0027])\n        result[\u0027performance\u0027] \u003d first_present(first, [\u0027performance\u0027, \u0027performanceRatio\u0027])\n        result[\u0027quality\u0027] \u003d first_present(first, [\u0027quality\u0027, \u0027qualityRatio\u0027])\n\n        a \u003d to_float(result[\u0027availability\u0027])\n        p \u003d to_float(result[\u0027performance\u0027])\n        q \u003d to_float(result[\u0027quality\u0027])\n        if a is not None and p is not None and q is not None:\n            result[\u0027oee\u0027] \u003d a * min(p, 1.0) * q\n\n        result.update(get_colors(a, p, q, result[\u0027oee\u0027]))\n        return result\n\n    return [\n        build_row(\u0027getOEESummary()\u0027, summary_rows),\n        build_row(\u0027getOEEDataByInterval()\u0027, interval_rows),\n        build_row(\u0027getAssetProductionEvents()\u0027, events_rows)\n    ]\n",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.data.eventsRaw": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "transforms": [
+          {
+            "code": "    \n    if value.get(\u0027assetId\u0027) is None or value[\u0027dateRange\u0027].get(\u0027startDate\u0027) is None or value[\u0027dateRange\u0027].get(\u0027endDate\u0027) is None:\n        return []\n    paramsDict \u003d {\n        \u0027assetId\u0027: value[\u0027assetId\u0027],\n        \u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027],\n        \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027],\n        \u0027strictDates\u0027: True\n    }\n    try:\n        data \u003d system.kanoa.event.getAssetProductionEvents(paramsDict)\n        return system.kanoa.utilities.convertDatasetToJSON(data)\n    except Exception as e:\n        return [{\u0027error\u0027: str(e)}]\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.intervalRaw": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "transforms": [
+          {
+            "code": "    \n    if value.get(\u0027assetId\u0027) is None or value[\u0027dateRange\u0027].get(\u0027startDate\u0027) is None or value[\u0027dateRange\u0027].get(\u0027endDate\u0027) is None:\n        return []\n    interval \u003d value.get(\u0027interval\u0027) or \u0027Hour\u0027\n    try:\n        data \u003d system.kanoa.event.getOEEDataByInterval(\n            value[\u0027assetId\u0027],\n            value[\u0027dateRange\u0027][\u0027startDate\u0027],\n            value[\u0027dateRange\u0027][\u0027endDate\u0027],\n            interval\n        )\n        return system.kanoa.utilities.convertDatasetToJSON(data)\n    except Exception as e:\n        return [{\u0027error\u0027: str(e)}]\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.summaryRaw": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filter"
+        },
+        "transforms": [
+          {
+            "code": "    \n    if value.get(\u0027assetId\u0027) is None or value[\u0027dateRange\u0027].get(\u0027startDate\u0027) is None or value[\u0027dateRange\u0027].get(\u0027endDate\u0027) is None:\n        return []\n    try:\n        data \u003d system.kanoa.event.getOEESummary({\n            \u0027assetId\u0027: value[\u0027assetId\u0027],\n            \u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027],\n            \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027],\n            \u0027groupByAsset\u0027: False,\n            \u0027groupByItem\u0027: False\n        })\n        return system.kanoa.utilities.convertDatasetToJSON(data)\n    except Exception as e:\n        return [{\u0027error\u0027: str(e)}]\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.filter.assetId": {
+      "binding": {
+        "config": {
+          "path": "view.custom.assetInfo.assetId"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    },
+    "custom.filter.assetPath": {
+      "binding": {
+        "config": {
+          "path": "view.custom.assetInfo.assetPath"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 1180,
+      "width": 1400
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "basis": "572.2px"
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/displayMedium",
+                "color": "--kcOnSurface",
+                "fontWeight": "700"
+              },
+              "text": "OEE Comparison"
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "HeroSection"
+        },
+        "props": {
+          "style": {
+            "alignItems": "center",
+            "backgroundColor": "--kcSurface",
+            "borderRadius": "18px",
+            "classes": "kanoa/container",
+            "flexWrap": "wrap",
+            "gap": "16px",
+            "justifyContent": "space-between",
+            "padding": "18px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblFilters",
+              "name": "lblFilters"
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/titleMedium",
+                "color": "--kcOnSurface",
+                "fontWeight": "600"
+              },
+              "text": "Filters"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "evAssetSelector",
+                  "name": "evAssetSelector"
+                },
+                "position": {
+                  "basis": "360px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.params.assetInfo": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.assetInfo"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "value": {
+                      "assetPath": null,
+                      "options": {
+                        "dragDrop": false,
+                        "expand": false,
+                        "multiSelect": false,
+                        "showBreadcrumb": true,
+                        "showClear": true,
+                        "showSelectedPath": false
+                      },
+                      "parentPathList": [],
+                      "persistent": true,
+                      "useSessionValue": true
+                    }
+                  },
+                  "path": "kanoa/core/templates/selectors/assetSelector"
+                },
+                "type": "ia.display.view"
+              },
+              {
+                "meta": {
+                  "domId": "evDateSelector",
+                  "name": "evDateSelector"
+                },
+                "position": {
+                  "basis": "540px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.params.dates.endDate": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.filter.dateRange.endDate"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.params.dates.startDate": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.filter.dateRange.startDate"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.params.value.assetPath": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.filter.assetPath"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "dates": {
+                      "selectedRange": "Today"
+                    },
+                    "value": {
+                      "display": {
+                        "persistent": true,
+                        "showAutoRefresh": true,
+                        "showDateSelector": true,
+                        "showPeriodSelector": true
+                      },
+                      "enabled": true,
+                      "options": [
+                        {
+                          "enabled": true,
+                          "label": "Current Run"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Current Shift"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Previous Shift"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Today"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Yesterday"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "This Week"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Last Week"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "This Month"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Last Month"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Year To Date"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Last 24 Hrs"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Last 7 Days"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Last 14 Days"
+                        },
+                        {
+                          "enabled": true,
+                          "label": "Custom"
+                        }
+                      ]
+                    }
+                  },
+                  "path": "kanoa/core/templates/selectors/dateSelector",
+                  "style": {
+                    "minWidth": "650px"
+                  }
+                },
+                "type": "ia.display.view"
+              },
+              {
+                "meta": {
+                  "domId": "ddInterval",
+                  "name": "ddInterval",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "bottom-left",
+                    "text": "Leave blank for default Hour grouping, or override the interval for testing."
+                  }
+                },
+                "position": {
+                  "basis": "190px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.filter.interval"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "dropdownOptionStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "options": [
+                    {
+                      "label": "Auto / Hour",
+                      "value": null
+                    },
+                    {
+                      "label": "By Hour",
+                      "value": "Hour"
+                    },
+                    {
+                      "label": "By Day",
+                      "value": "Day"
+                    },
+                    {
+                      "label": "By Week",
+                      "value": "Week"
+                    }
+                  ],
+                  "placeholder": {
+                    "text": "Group by..."
+                  },
+                  "showClearIcon": true,
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              }
+            ],
+            "meta": {
+              "name": "FilterRow"
+            },
+            "props": {
+              "style": {
+                "alignItems": "center",
+                "flexWrap": "wrap",
+                "gap": "10px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "FilterPanel"
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "borderRadius": "16px",
+            "classes": "kanoa/container",
+            "gap": "12px",
+            "padding": "16px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "cardSummaryTitle",
+                  "name": "cardSummaryTitle"
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/bodySmall",
+                    "color": "--neutral-60",
+                    "fontWeight": "600"
+                  },
+                  "text": "getOEESummary()"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardSummaryOEE"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027oeeColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027oeeColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027oee\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027OEE --\u0027\n\ttry:\n\t    return \u0027OEE \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027OEE \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardSummaryA"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027availabilityColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027availabilityColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027availability\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027A --\u0027\n\ttry:\n\t    return \u0027A \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027A \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardSummaryP"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027performanceColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027performanceColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027performance\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027P --\u0027\n\ttry:\n\t    return \u0027P \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027P \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardSummaryQ"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027qualityColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027qualityColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 0\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027quality\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027Q --\u0027\n\ttry:\n\t    return \u0027Q \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027Q \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardSummaryPills"
+                },
+                "props": {
+                  "style": {
+                    "flexWrap": "wrap",
+                    "gap": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "cardSummary"
+            },
+            "position": {
+              "basis": "220px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "borderRadius": "16px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.06)",
+                "classes": "kanoa/container",
+                "flex": "1",
+                "gap": "6px",
+                "minWidth": "220px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "cardIntervalTitle",
+                  "name": "cardIntervalTitle"
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/bodySmall",
+                    "color": "--neutral-60",
+                    "fontWeight": "600"
+                  },
+                  "text": "getOEEDataByInterval()"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardIntervalOEE"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027oeeColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027oeeColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027oee\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027OEE --\u0027\n\ttry:\n\t    return \u0027OEE \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027OEE \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardIntervalA"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027availabilityColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027availabilityColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027availability\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027A --\u0027\n\ttry:\n\t    return \u0027A \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027A \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardIntervalP"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027performanceColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027performanceColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027performance\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027P --\u0027\n\ttry:\n\t    return \u0027P \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027P \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardIntervalQ"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027qualityColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027qualityColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 1\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027quality\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027Q --\u0027\n\ttry:\n\t    return \u0027Q \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027Q \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardIntervalPills"
+                },
+                "props": {
+                  "style": {
+                    "flexWrap": "wrap",
+                    "gap": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "cardInterval"
+            },
+            "position": {
+              "basis": "220px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "borderRadius": "16px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.06)",
+                "classes": "kanoa/container",
+                "flex": "1",
+                "gap": "6px",
+                "minWidth": "220px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "cardEventsTitle",
+                  "name": "cardEventsTitle"
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/bodySmall",
+                    "color": "--neutral-60",
+                    "fontWeight": "600"
+                  },
+                  "text": "getAssetProductionEvents()"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardEventsOEE"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027oeeColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027oeeColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027oee\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027OEE --\u0027\n\ttry:\n\t    return \u0027OEE \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027OEE \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardEventsA"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027availabilityColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027availabilityColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027availability\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027A --\u0027\n\ttry:\n\t    return \u0027A \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027A \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardEventsP"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027performanceColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027performanceColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027performance\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027P --\u0027\n\ttry:\n\t    return \u0027P \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027P \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardEventsQ"
+                    },
+                    "propConfig": {
+                      "props.style.backgroundColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#d5d5d5\u0027\n\trow \u003d rows[index] or {}\n\treturn row.get(\u0027qualityColor\u0027) or \u0027#d5d5d5\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027#1f1f1f\u0027\n\trow \u003d rows[index] or {}\n\tcolor \u003d (row.get(\u0027qualityColor\u0027) or \u0027#d5d5d5\u0027).lower()\n\tif color in [\u0027#f4c430\u0027, \u0027#ffd54f\u0027, \u0027#ffeb3b\u0027, \u0027#ffe082\u0027, \u0027#fdd835\u0027]:\n\t    return \u0027#1f1f1f\u0027\n\treturn \u0027#ffffff\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.comparisonRows"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\trows \u003d value or []\n\tindex \u003d 2\n\tif len(rows) \u003c\u003d index:\n\t    return \u0027--\u0027\n\trow \u003d rows[index] or {}\n\tv \u003d row.get(\u0027quality\u0027)\n\tif v in [None, \u0027\u0027]:\n\t    return \u0027Q --\u0027\n\ttry:\n\t    return \u0027Q \u0027 + \u0027{:.0f}%\u0027.format(float(v) * 100.0)\n\texcept Exception:\n\t    return \u0027Q \u0027 + str(v)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "borderRadius": "999px",
+                        "fontSize": "14px",
+                        "fontWeight": "700",
+                        "padding": "6px 12px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardEventsPills"
+                },
+                "props": {
+                  "style": {
+                    "flexWrap": "wrap",
+                    "gap": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "cardEvents"
+            },
+            "position": {
+              "basis": "220px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "borderRadius": "16px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.06)",
+                "classes": "kanoa/container",
+                "flex": "1",
+                "gap": "6px",
+                "minWidth": "220px",
+                "padding": "16px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "MetricRow"
+        },
+        "props": {
+          "style": {
+            "flexWrap": "wrap",
+            "gap": "12px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblCompHdr",
+                  "name": "lblCompHdr"
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/titleMedium",
+                    "color": "--kcOnSurface",
+                    "fontWeight": "600"
+                  },
+                  "text": "Simple Score Comparison"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "lblComparisonStatus",
+                  "name": "lblComparisonStatus"
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/bodySmall",
+                    "color": "--neutral-70"
+                  },
+                  "text": "Simple OEE, Availability, and Quality exactly as returned by each function, with the raw responses below for troubleshooting"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "ComparisonHeader"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "4px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "tblComparison",
+              "name": "tblComparison"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.columns": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.comparisonRows"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn [\n\t    {\u0027field\u0027: \u0027source\u0027, \u0027header\u0027: {\u0027title\u0027: \u0027function\u0027}, \u0027visible\u0027: True, \u0027editable\u0027: False},\n\t    {\u0027field\u0027: \u0027returnedRowCount\u0027, \u0027header\u0027: {\u0027title\u0027: \u0027rowCount\u0027}, \u0027visible\u0027: True, \u0027editable\u0027: False},\n\t    {\u0027field\u0027: \u0027oee\u0027, \u0027header\u0027: {\u0027title\u0027: \u0027OEE\u0027}, \u0027visible\u0027: True, \u0027editable\u0027: False},\n\t    {\u0027field\u0027: \u0027availability\u0027, \u0027header\u0027: {\u0027title\u0027: \u0027availability\u0027}, \u0027visible\u0027: True, \u0027editable\u0027: False},\n\t    {\u0027field\u0027: \u0027performance\u0027, \u0027header\u0027: {\u0027title\u0027: \u0027performance\u0027}, \u0027visible\u0027: True, \u0027editable\u0027: False},\n\t    {\u0027field\u0027: \u0027quality\u0027, \u0027header\u0027: {\u0027title\u0027: \u0027quality\u0027}, \u0027visible\u0027: True, \u0027editable\u0027: False}\n\t]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.comparisonRows"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "bodyStyle": {
+                "fontSize": "12px"
+              },
+              "emptyMessage": {
+                "enabled": true,
+                "overlay": false,
+                "text": "Select an asset and date range to compare OEE sources."
+              },
+              "headerStyle": {
+                "backgroundColor": "--neutral-10",
+                "color": "--kcOnSurface",
+                "fontWeight": "600"
+              },
+              "nullFormat": {
+                "includeNullStrings": true
+              },
+              "pager": {
+                "activeOption": 10
+              },
+              "rows": {
+                "hover": true,
+                "striped": true
+              },
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "borderRadius": "12px",
+                "classes": "kanoa/border kanoa/font/default",
+                "minHeight": "220px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.display.table"
+          }
+        ],
+        "meta": {
+          "name": "ComparisonSection"
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "borderRadius": "16px",
+            "classes": "kanoa/container",
+            "gap": "12px",
+            "padding": "16px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblRawHeader",
+                  "name": "lblRawHeader"
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/titleMedium",
+                    "color": "--kcOnSurface",
+                    "fontWeight": "600"
+                  },
+                  "text": "Raw API Data for Troubleshooting"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "RawDataHeader"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "4px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "RawSummarySectionTitle",
+                      "name": "RawSummarySectionTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/titleMedium",
+                        "color": "--kcOnSurface",
+                        "fontWeight": "600"
+                      },
+                      "text": "Summary Response"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "RawSummarySectionSubtitle",
+                      "name": "RawSummarySectionSubtitle"
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/bodySmall",
+                        "color": "--neutral-70"
+                      },
+                      "text": "Raw rows returned by getOEESummary()"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "tblSummaryRaw",
+                      "name": "tblSummaryRaw"
+                    },
+                    "propConfig": {
+                      "props.columns": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.summaryRaw"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\nrows \u003d value or []\nif len(rows) \u003d\u003d 0 or not hasattr(rows[0], \u0027keys\u0027):\n    return []\npriority \u003d [\u0027timestamp\u0027,\u0027startDate\u0027,\u0027endDate\u0027,\u0027assetId\u0027,\u0027assetPath\u0027,\u0027modeName\u0027,\u0027availability\u0027,\u0027performance\u0027,\u0027quality\u0027,\u0027oee\u0027,\u0027runtimeSecs\u0027,\u0027unplannedDowntimeSecs\u0027,\u0027targetCount\u0027,\u0027infeedCount\u0027,\u0027wasteCount\u0027,\u0027durationSecs\u0027,\u0027error\u0027]\nfirst \u003d rows[0]\nfields \u003d [f for f in priority if f in first] + [f for f in first.keys() if f not in priority]\ncols \u003d []\nfor f in fields:\n    cols.append({\n        \u0027field\u0027: f,\n        \u0027visible\u0027: True,\n        \u0027editable\u0027: False,\n        \u0027header\u0027: {\u0027title\u0027: f},\n        \u0027resizable\u0027: True,\n        \u0027sortable\u0027: True,\n        \u0027justify\u0027: \u0027left\u0027,\n        \u0027align\u0027: \u0027center\u0027\n    })\nreturn cols\n",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.data": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.summaryRaw"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "bodyStyle": {
+                        "fontSize": "12px"
+                      },
+                      "emptyMessage": {
+                        "enabled": true,
+                        "overlay": false,
+                        "text": "No data returned for the current filter."
+                      },
+                      "headerStyle": {
+                        "backgroundColor": "--neutral-10",
+                        "color": "--kcOnSurface",
+                        "fontWeight": "600"
+                      },
+                      "rows": {
+                        "hover": true,
+                        "striped": true
+                      },
+                      "style": {
+                        "backgroundColor": "--kcSurface",
+                        "borderRadius": "12px",
+                        "classes": "kanoa/border kanoa/font/default",
+                        "minHeight": "260px",
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.display.table"
+                  }
+                ],
+                "meta": {
+                  "name": "RawSummarySection"
+                },
+                "position": {
+                  "basis": "420px",
+                  "grow": 1
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "--kcSurface",
+                    "borderRadius": "16px",
+                    "classes": "kanoa/container",
+                    "gap": "8px",
+                    "padding": "16px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "RawIntervalSectionTitle",
+                      "name": "RawIntervalSectionTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/titleMedium",
+                        "color": "--kcOnSurface",
+                        "fontWeight": "600"
+                      },
+                      "text": "Interval Response"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "RawIntervalSectionSubtitle",
+                      "name": "RawIntervalSectionSubtitle"
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/bodySmall",
+                        "color": "--neutral-70"
+                      },
+                      "text": "Raw rows returned by getOEEDataByInterval()"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "tblIntervalRaw",
+                      "name": "tblIntervalRaw"
+                    },
+                    "propConfig": {
+                      "props.columns": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.intervalRaw"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\nrows \u003d value or []\nif len(rows) \u003d\u003d 0 or not hasattr(rows[0], \u0027keys\u0027):\n    return []\npriority \u003d [\u0027timestamp\u0027,\u0027startDate\u0027,\u0027endDate\u0027,\u0027assetId\u0027,\u0027assetPath\u0027,\u0027modeName\u0027,\u0027availability\u0027,\u0027performance\u0027,\u0027quality\u0027,\u0027oee\u0027,\u0027runtimeSecs\u0027,\u0027unplannedDowntimeSecs\u0027,\u0027targetCount\u0027,\u0027infeedCount\u0027,\u0027wasteCount\u0027,\u0027durationSecs\u0027,\u0027error\u0027]\nfirst \u003d rows[0]\nfields \u003d [f for f in priority if f in first] + [f for f in first.keys() if f not in priority]\ncols \u003d []\nfor f in fields:\n    cols.append({\n        \u0027field\u0027: f,\n        \u0027visible\u0027: True,\n        \u0027editable\u0027: False,\n        \u0027header\u0027: {\u0027title\u0027: f},\n        \u0027resizable\u0027: True,\n        \u0027sortable\u0027: True,\n        \u0027justify\u0027: \u0027left\u0027,\n        \u0027align\u0027: \u0027center\u0027\n    })\nreturn cols\n",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.data": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.intervalRaw"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "bodyStyle": {
+                        "fontSize": "12px"
+                      },
+                      "emptyMessage": {
+                        "enabled": true,
+                        "overlay": false,
+                        "text": "No data returned for the current filter."
+                      },
+                      "headerStyle": {
+                        "backgroundColor": "--neutral-10",
+                        "color": "--kcOnSurface",
+                        "fontWeight": "600"
+                      },
+                      "rows": {
+                        "hover": true,
+                        "striped": true
+                      },
+                      "style": {
+                        "backgroundColor": "--kcSurface",
+                        "borderRadius": "12px",
+                        "classes": "kanoa/border kanoa/font/default",
+                        "minHeight": "260px",
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.display.table"
+                  }
+                ],
+                "meta": {
+                  "name": "RawIntervalSection"
+                },
+                "position": {
+                  "basis": "420px",
+                  "grow": 1
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "--kcSurface",
+                    "borderRadius": "16px",
+                    "classes": "kanoa/container",
+                    "gap": "8px",
+                    "padding": "16px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "RawEventsSectionTitle",
+                      "name": "RawEventsSectionTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/titleMedium",
+                        "color": "--kcOnSurface",
+                        "fontWeight": "600"
+                      },
+                      "text": "Production Events Response"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "RawEventsSectionSubtitle",
+                      "name": "RawEventsSectionSubtitle"
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/bodySmall",
+                        "color": "--neutral-70"
+                      },
+                      "text": "Raw rows returned by getAssetProductionEvents()"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "tblEventsRaw",
+                      "name": "tblEventsRaw"
+                    },
+                    "propConfig": {
+                      "props.columns": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.eventsRaw"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\nrows \u003d value or []\nif len(rows) \u003d\u003d 0 or not hasattr(rows[0], \u0027keys\u0027):\n    return []\npriority \u003d [\u0027timestamp\u0027,\u0027startDate\u0027,\u0027endDate\u0027,\u0027assetId\u0027,\u0027assetPath\u0027,\u0027modeName\u0027,\u0027availability\u0027,\u0027performance\u0027,\u0027quality\u0027,\u0027oee\u0027,\u0027runtimeSecs\u0027,\u0027unplannedDowntimeSecs\u0027,\u0027targetCount\u0027,\u0027infeedCount\u0027,\u0027wasteCount\u0027,\u0027durationSecs\u0027,\u0027error\u0027]\nfirst \u003d rows[0]\nfields \u003d [f for f in priority if f in first] + [f for f in first.keys() if f not in priority]\ncols \u003d []\nfor f in fields:\n    cols.append({\n        \u0027field\u0027: f,\n        \u0027visible\u0027: True,\n        \u0027editable\u0027: False,\n        \u0027header\u0027: {\u0027title\u0027: f},\n        \u0027resizable\u0027: True,\n        \u0027sortable\u0027: True,\n        \u0027justify\u0027: \u0027left\u0027,\n        \u0027align\u0027: \u0027center\u0027\n    })\nreturn cols\n",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.data": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.eventsRaw"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "bodyStyle": {
+                        "fontSize": "12px"
+                      },
+                      "emptyMessage": {
+                        "enabled": true,
+                        "overlay": false,
+                        "text": "No data returned for the current filter."
+                      },
+                      "headerStyle": {
+                        "backgroundColor": "--neutral-10",
+                        "color": "--kcOnSurface",
+                        "fontWeight": "600"
+                      },
+                      "rows": {
+                        "hover": true,
+                        "striped": true
+                      },
+                      "style": {
+                        "backgroundColor": "--kcSurface",
+                        "borderRadius": "12px",
+                        "classes": "kanoa/border kanoa/font/default",
+                        "minHeight": "260px",
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.display.table"
+                  }
+                ],
+                "meta": {
+                  "name": "RawEventsSection"
+                },
+                "position": {
+                  "basis": "420px",
+                  "grow": 1
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "--kcSurface",
+                    "borderRadius": "16px",
+                    "classes": "kanoa/container",
+                    "gap": "8px",
+                    "padding": "16px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "RawSections"
+            },
+            "position": {
+              "basis": "380.4px"
+            },
+            "props": {
+              "style": {
+                "flexWrap": "wrap",
+                "gap": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "RawContainer"
+        },
+        "position": {
+          "basis": "405px"
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "12px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcBackground",
+        "classes": "kanoa/font/default",
+        "gap": "12px",
+        "padding": "14px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,394 @@
+{
+  "custom": {
+    "timerTag": {
+      "data": null,
+      "debug": false,
+      "description": "Checks the schedule to see if the asset mode should be changed",
+      "enable": true,
+      "error": "",
+      "intervalSecs": 60,
+      "lastUpdated": {
+        "$": [
+          "ts",
+          192,
+          1777946162580
+        ],
+        "$ts": 1777946159745
+      },
+      "update": false,
+      "updateTrigger": {
+        "$": [
+          "ts",
+          192,
+          1777946159745
+        ],
+        "$ts": 1777946159745
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "canEdit": false,
+      "tagPath": "[Kanoa]kanoa/timers/checkAssetScheduleTimer"
+    }
+  },
+  "propConfig": {
+    "custom.timerTag": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.tagPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\ttags \u003d system.tag.browse(value)\n\ttagValues \u003d {}\n\tfor tag in tags:\n\t\ttagValues[str(tag[\u0027fullPath\u0027]).split(\u0027/\u0027)[-1]] \u003d tag[\u0027value\u0027]\n\t\t\n\treturn tagValues",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 60,
+      "width": 1113
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblTagName",
+          "name": "lblTagName",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Timer"
+          }
+        },
+        "position": {
+          "basis": "250px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.tagPath"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value.split(\u0027/\u0027)[-1]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblTimer",
+          "name": "lblTimer",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Update frequency"
+          }
+        },
+        "position": {
+          "basis": "180px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/intervalSecs"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\t\n\treturn \u0027Updates every %s seconds\u0027%value",
+                  "type": "script"
+                }
+              ],
+              "type": "tag"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblDescription",
+          "name": "lblDescription",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "Timer description"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/description"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "tag"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblLastUpdated",
+          "name": "lblLastUpdated",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Shows wthe last time this timer function ran"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/lastUpdated"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\toffset \u003d self.session.props.device.timezone.utcOffset\n\treturn \u0027Last update %s\u0027%system.date.format(system.date.addHours(value, offset), \u0027YY-MM-dd HH:mm:ss\u0027)",
+                  "type": "script"
+                }
+              ],
+              "type": "tag"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "lblLastError",
+          "name": "lblLastError",
+          "tooltip": {
+            "location": "bottom"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/error"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "tag"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "domId": "chkEnabled",
+          "name": "chkEnabled",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Timer can be disabled or enabled"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.canEdit"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.selected": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/enable"
+              },
+              "overlayOptOut": true,
+              "type": "tag"
+            }
+          }
+        },
+        "props": {
+          "text": "Enabled"
+        },
+        "type": "ia.input.checkbox"
+      },
+      {
+        "meta": {
+          "domId": "chkUpdate",
+          "name": "chkUpdate",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "When true, an update is taking place"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.canEdit"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.selected": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/update"
+              },
+              "overlayOptOut": true,
+              "type": "tag"
+            }
+          }
+        },
+        "props": {
+          "text": "Update"
+        },
+        "type": "ia.input.checkbox"
+      },
+      {
+        "meta": {
+          "domId": "chkDebug",
+          "name": "chkDebug",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom-left",
+            "text": "When true, an update is taking place"
+          }
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.canEdit"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.selected": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "fallbackDelay": 2.5,
+                "mode": "indirect",
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                },
+                "tagPath": "{tagPath}/debug"
+              },
+              "overlayOptOut": true,
+              "type": "tag"
+            }
+          }
+        },
+        "props": {
+          "text": "Debug"
+        },
+        "type": "ia.input.checkbox"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "classes": "kanoa/container kanoa/font/default",
+        "gap": "5px",
+        "margin": "5px",
+        "minHeight": "60px",
+        "padding": "5px"
+      },
+      "wrap": "wrap"
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "custom": {},
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\t\n\tself.getChild(\"root\").custom.mesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\t"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": null
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 696,
+      "width": 1202
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTxtFilter",
+              "name": "lblTxtFilter"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Filter..."
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "TextField",
+              "name": "TextField"
+            },
+            "position": {
+              "basis": "150px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "/root.custom.filterStr"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntFilter",
+          "name": "flxCntFilter"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "FlexRepeater",
+          "name": "flxRptOrders"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "data": "{parent.custom.data}",
+                  "filterStr": "{parent.custom.filterStr}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tdata \u003d value[\u0027data\u0027]\t\t\n\tinstances \u003d []\n\tfilterStr \u003d value[\u0027filterStr\u0027].lower()\n\tif filterStr !\u003d \u0027\u0027:\n\t\tfor row in data:\n\t\t\tif filterStr in row[\u0027workOrderName\u0027].lower() or filterStr in row[\u0027itemName\u0027].lower():\n\t\t\t\tinstances.append({\u0027value\u0027: row})\n\t\treturn instances\n\telse:\n\t\treturn [{\u0027value\u0027: value} for value in data]\n",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "path": "kanoa/mes/asset/runControl/woInfo",
+          "style": {
+            "gap": "5px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "custom": {
+      "filterStr": "",
+      "mesTagProvider": "[Kanoa]"
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "propConfig": {
+      "custom.assetItems": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.assetId"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t\n\titemSourceId \u003d system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: \u0027Output\u0027}))\n\titems \u003d system.dataset.toPyDataSet(system.kanoa.item.getAssetItems({\u0027itemSourceId\u0027: itemSourceId, \u0027assetId\u0027: value or -1, \u0027enabled\u0027:True}))\n\treturn [item[\u0027itemId\u0027] for item in items]",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "custom.data": {
+        "binding": {
+          "config": {
+            "struct": {
+              "activeWorkOrders": "{this.custom.woData}",
+              "assetItems": "{this.custom.assetItems}"
+            },
+            "waitOnAll": true
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\tif len(value[\u0027assetItems\u0027]) \u003d\u003d 0: return []\n\n\tworkOrders \u003d system.dataset.toPyDataSet(value[\u0027activeWorkOrders\u0027])\n\tdeleteRows \u003d [i for i, workOrder in enumerate(workOrders) if workOrder[\u0027itemId\u0027] not in value[\u0027assetItems\u0027] or not workOrder[\u0027canExecute\u0027]]\n\tdata \u003d system.dataset.deleteRows(value[\u0027activeWorkOrders\u0027], deleteRows)\n\tdata \u003d system.dataset.sort(data, \u0027workOrderName\u0027)\n\treturn system.kanoa.utilities.convertDatasetToJSON(data)",
+              "type": "script"
+            }
+          ],
+          "type": "expr-struct"
+        },
+        "onChange": {
+          "enabled": null,
+          "script": "\t\n\tsystem.perspective.print(\"root data value change\")"
+        }
+      },
+      "custom.woData": {
+        "binding": {
+          "config": {
+            "fallbackDelay": 2.5,
+            "mode": "indirect",
+            "references": {},
+            "tagPath": "[Kanoa]kanoa/timers/getActiveOrdersTimer/data"
+          },
+          "type": "tag"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

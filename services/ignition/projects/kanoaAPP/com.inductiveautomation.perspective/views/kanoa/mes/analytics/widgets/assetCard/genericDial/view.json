@@ -1,0 +1,211 @@
+{
+  "custom": {}, 
+  "params": {
+    "label": "OEE", 
+    "fontSizeMultiplier": 4, 
+    "value": 0
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 247, 
+      "height": 211
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "overflow": "visible"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.coord", 
+        "props": {
+          "aspectRatio": "1:1", 
+          "mode": "percent", 
+          "style": {
+            "overflow": "visible"
+          }
+        }, 
+        "children": [
+          {
+            "type": "kyvislabs.display.apexchart", 
+            "props": {
+              "type": "radialBar", 
+              "series": [
+                null
+              ], 
+              "options": {
+                "plotOptions": {
+                  "radialBar": {
+                    "startAngle": -140, 
+                    "endAngle": 140, 
+                    "hollow": {
+                      "dropShadow": {
+                        "enabled": false
+                      }, 
+                      "size": "60%"
+                    }, 
+                    "dataLabels": {
+                      "name": {
+                        "show": true, 
+                        "offsetY": 40, 
+                        "fontSize": "24px"
+                      }, 
+                      "value": {
+                        "formatter": "function(val) { return parseInt(val); }", 
+                        "offsetY": -10, 
+                        "fontWeight": "bold"
+                      }
+                    }, 
+                    "track": {
+                      "strokeWidth": "97%", 
+                      "margin": 5, 
+                      "background": "var(--kcNeutral-50)"
+                    }
+                  }
+                }, 
+                "stroke": {
+                  "lineCap": "round"
+                }, 
+                "colors": [
+                  "function({ value, seriesIndex, w }) { \n     if (value < 50) return 'var(--kcBad)'    // Red\n     else if (value < 75) return 'var(--kcOK)'; // Yellow\n     else return 'var(--kcPrimary)';                // Green\n  }"
+                ], 
+                "labels": [
+                  null
+                ], 
+                "responsive": [
+                  {
+                    "breakpoint": 480, 
+                    "options": {
+                      "legend": {
+                        "position": "bottom"
+                      }, 
+                      "chart": {
+                        "width": 200
+                      }
+                    }
+                  }
+                ], 
+                "chart": {
+                  "type": "pie", 
+                  "width": 380, 
+                  "events": {
+                    "dataPointSelection": false, 
+                    "beforeResetZoom": false, 
+                    "markerClick": false, 
+                    "mouseMove": false, 
+                    "beforeMount": false, 
+                    "dataPointMouseLeave": false, 
+                    "scrolled": false, 
+                    "click": false, 
+                    "dataPointMouseEnter": false, 
+                    "mounted": false, 
+                    "mouseLeave": false, 
+                    "xAxisLabelClick": false, 
+                    "zoomed": false, 
+                    "animationEnd": false, 
+                    "brushScrolled": false, 
+                    "legendClick": false, 
+                    "selection": false, 
+                    "beforeZoom": false, 
+                    "updated": false
+                  }
+                }
+              }
+            }, 
+            "meta": {
+              "domId": "apexchart", 
+              "name": "apexchart"
+            }, 
+            "position": {
+              "width": 1.4, 
+              "x": "-.2", 
+              "y": "-.125", 
+              "height": 1.4
+            }, 
+            "propConfig": {
+              "props.options.plotOptions.radialBar.dataLabels.value.color": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\tif value < 50:\n\t    return 'var(--kcBad)'\n\telif value < 75:\n\t    return 'var(--kcOK)'\n\telse:\n\t    return 'var(--kcPrimary)'", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "this.props.series[0]"
+                  }
+                }
+              }, 
+              "props.series[0]": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.value"
+                  }
+                }
+              }, 
+              "props.options.plotOptions.radialBar.dataLabels.value.fontSize": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn \"{}vw\".format(value)", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "overlayOptOut": true, 
+                  "config": {
+                    "path": "view.params.fontSizeMultiplier"
+                  }
+                }
+              }, 
+              "props.options.labels[0]": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "path": "view.params.label"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "CoordinateContainer", 
+          "name": "CoordinateContainer"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "200px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "position": {
+      "x": -0.7867, 
+      "y": -0.782
+    }
+  }, 
+  "propConfig": {
+    "params.label": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.fontSizeMultiplier": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

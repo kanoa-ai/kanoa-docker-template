@@ -1,0 +1,248 @@
+{
+  "custom": {
+    "widgetInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "dashboardWidgetId": null,
+      "enabled": null,
+      "path": null,
+      "sortOrder": null,
+      "viewParams": "",
+      "viewPath": null,
+      "widgetCategoryId": null,
+      "widgetCategoryName": null,
+      "widgetDescription": "",
+      "widgetId": null,
+      "widgetName": null,
+      "widgetPath": null
+    }
+  },
+  "params": {
+    "configuring": false,
+    "value": {
+      "dashboardId": null,
+      "dashboardWidgetId": null,
+      "widgetId": null
+    }
+  },
+  "propConfig": {
+    "custom.widgetInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027dashboardWidgetId\u0027]:\n\t\tdashboardWidgetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getDashboardWidgets({\u0027dashboardWidgetId\u0027: value[\u0027dashboardWidgetId\u0027] or -1}),0)\n\telse:\n\t\tdashboardWidgetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getWidgets({\u0027widgetId\u0027: value[\u0027widgetId\u0027] or -1}),0)\n\t\tdashboardWidgetInfo[\u0027dashboardWidgetId\u0027] \u003d None\n\t\t\n\tdashboardWidgetInfo[\u0027widgetDescription\u0027] \u003d dashboardWidgetInfo[\u0027widgetDescription\u0027]  or \u0027\u0027\n\tdashboardWidgetInfo[\u0027viewParams\u0027] \u003d dashboardWidgetInfo[\u0027viewParams\u0027]  or \u0027\u0027\n\t\n\treturn dashboardWidgetInfo",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.widgetInfo.widget": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.widgetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getWidgets({\u0027widgetId\u0027: value or -1}),0)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "params.configuring": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n#\tsystem.perspective.print(\"configuring change origin %s\"%(origin))\n\twidgetInfo \u003d dict(self.custom.widgetInfo)\n#\tsystem.perspective.print(\"widgetInfo %s\"%(widgetInfo))\n\tif widgetInfo and widgetInfo[\u0027viewPath\u0027]:\n\t\tparams \u003d {\u0027value\u0027:{\u0027widgetId\u0027: self.params.value.widgetId, \u0027dashboardWidgetId\u0027: self.params.value.dashboardWidgetId}}\n\t\tif currentValue.value:\tsystem.perspective.openPopup(widgetInfo[\u0027viewPath\u0027], \u0027kanoa/core/dbp/dashboards/dashboardWidgetConfigurator\u0027, params, title \u003d \u0027Configure Widget\u0027, overlayDismiss \u003d True, resizable\u003dTrue, showCloseIcon\u003dTrue, draggable\u003dTrue)\t\n\t\telse: system.perspective.closePopup(widgetInfo[\u0027viewPath\u0027])\n\t\n\treturn"
+      },
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 471,
+      "width": 892
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evWidget",
+              "name": "evWidget"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.value": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo.viewParams"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif (value or None) is None: return {}\n\treturn system.util.jsonDecode(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo.viewPath"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027kanoa/core/dbp/blankView\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxWidget",
+          "name": "flxWidget"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblFilter",
+              "name": "lblFilter"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.widgetInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblParams",
+              "name": "lblParams"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn str(value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxDebug",
+          "name": "flxDebug"
+        },
+        "position": {
+          "display": false,
+          "grow": 1
+        },
+        "props": {
+          "direction": "column"
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurfacwe",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 3
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"widgetAssetSelected msg rcvd with %s\"%payload)\n\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshDashboardWidgetParams",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"refreshDashboardWidgetParams msg rcvd with %s\"%payload)\t\t\n\tif self.view.params.value.dashboardWidgetId \u003d\u003d payload[\u0027dashboardWidgetId\u0027]:\n\t\tsystem.perspective.print(\"refreshing widgetInfo\")\n\t\tself.view.refreshBinding(\"custom.widgetInfo\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

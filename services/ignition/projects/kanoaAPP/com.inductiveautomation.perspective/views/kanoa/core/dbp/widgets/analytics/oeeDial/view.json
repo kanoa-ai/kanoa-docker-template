@@ -1,0 +1,334 @@
+{
+  "custom": {
+    "asset": {},
+    "dateRangeOEE": {},
+    "displayValue": 0,
+    "filters": {
+      "assetId": null,
+      "assetPath": "Kanoa Foods and Beverages\\Buffalo Bakery\\Production\\Mix Line 1",
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777649647426
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "ignoreDateRange": true,
+      "oeeBy": "OEE",
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": "Kanoa Foods and Beverages\\Buffalo Bakery\\Production\\Mix Line 1",
+      "oeeBy": "OEE"
+    }
+  },
+  "propConfig": {
+    "custom.asset": {
+      "persistent": true
+    },
+    "custom.asset.tagInfo": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.asset.tagPath}"
+          },
+          "tagPath": "{1}/Line"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value.OEE",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      }
+    },
+    "custom.asset.tagPath": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters.assetId"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.kanoa.asset.getAssetTagPath({\u0027assetId\u0027: value})",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.dateRangeOEE": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "transforms": [
+          {
+            "code": "\tif self.custom.filters.ignoreDateRange: \n\t\treturn {}\n\tstartDate \u003d value[\u0027dateRange\u0027][\u0027startDate\u0027]\n\tendDate \u003d value[\u0027dateRange\u0027][\u0027endDate\u0027]\n\tprodModeId \u003d system.kanoa.utilities.getFieldValue(\u0027modeId\u0027, system.kanoa.asset.getModes({\u0027modeName\u0027: \u0027Production\u0027}))\n\tpeSummary \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027modeId\u0027: prodModeId, \u0027strictDates\u0027: True}))\n\t\n\toeeData \u003d {\u0027a\u0027: 0, \u0027p\u0027: 0, \u0027q\u0027: 0, \u0027oee\u0027: 0}\n\ttotalRuntime \u003d sum(val[\u0027runtimeSecs\u0027] for val in peSummary)\n\t\n\tfor pe in peSummary:\n\t\toeeData[\u0027a\u0027] +\u003d (pe[\u0027availability\u0027]) * (pe[\u0027runtimeSecs\u0027] / totalRuntime) if pe[\u0027availability\u0027] \u003e 0 else 0\n\t\toeeData[\u0027p\u0027] +\u003d (pe[\u0027performance\u0027]) * (pe[\u0027runtimeSecs\u0027] / totalRuntime) if pe[\u0027performance\u0027] \u003e 0 else 0\n\t\toeeData[\u0027q\u0027] +\u003d (pe[\u0027quality\u0027]) * (pe[\u0027runtimeSecs\u0027] / totalRuntime) if pe[\u0027quality\u0027] \u003e 0 else 0\n\toeeData[\u0027oee\u0027] \u003d oeeData[\u0027a\u0027] * oeeData[\u0027p\u0027] * oeeData[\u0027q\u0027]\n\t\n\treturn oeeData",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.displayValue": {
+      "binding": {
+        "config": {
+          "struct": {
+            "dateRangeOEE": "{view.custom.dateRangeOEE}",
+            "filters": "{view.custom.filters}",
+            "tagInfo": "{view.custom.asset.tagInfo}"
+          },
+          "waitOnAll": false
+        },
+        "transforms": [
+          {
+            "code": "\n\toeeBy \u003d value[\u0027filters\u0027][\u0027oeeBy\u0027].lower()\n\tliveDataMode \u003d value[\u0027filters\u0027][\u0027ignoreDateRange\u0027]\n\n\tif value[\u0027tagInfo\u0027] is not None:\n\t\ta \u003d (value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0) if liveDataMode else (value[\u0027dateRangeOEE\u0027][\u0027a\u0027] or 0.0)\n\t\tp \u003d (value[\u0027tagInfo\u0027][\u0027performance\u0027] or 0.0) if liveDataMode else (value[\u0027dateRangeOEE\u0027][\u0027p\u0027] or 0.0)\n\t\tq \u003d (value[\u0027tagInfo\u0027][\u0027quality\u0027] or 0.0) if liveDataMode else (value[\u0027dateRangeOEE\u0027][\u0027q\u0027] or 0.0)\n\telse:\n\t\ta, p, q \u003d 0.0, 0.0, 0.0\n\tdisplayValue \u003d 0\n\n\tif oeeBy \u003d\u003d \u0027availability\u0027 or oeeBy \u003d\u003d \u0027a\u0027:\n\t\tdisplayValue \u003d a * 100\n\telif oeeBy \u003d\u003d \u0027performance\u0027 or oeeBy \u003d\u003d \u0027p\u0027:\n\t\tdisplayValue \u003d p * 100\n\telif oeeBy \u003d\u003d \u0027quality\u0027 or oeeBy \u003d\u003d \u0027q\u0027:\n\t\tdisplayValue \u003d q * 100\n\telse:\n\t\tdisplayValue \u003d (a * p * q) * 100 if liveDataMode else value[\u0027dateRangeOEE\u0027][\u0027oee\u0027] * 100\n\n\tmsg \u003d \"oeeDial: asset {} with value {}\".format(value[\u0027filters\u0027][\u0027assetPath\u0027], displayValue)\n\tsystem.perspective.print(msg)\n\n\treturn max(0.0, min(100.0, displayValue))",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027ignoreDateRange\u0027):\n\t\tfilters[\u0027ignoreDateRange\u0027] \u003d True\n\t\t\n\tif value[\u0027viewParams\u0027].has_key(\u0027assetPath\u0027) and value[\u0027viewParams\u0027][\u0027assetPath\u0027] is not None:\n\t\tfilters[\u0027assetPath\u0027] \u003d value[\u0027viewParams\u0027][\u0027assetPath\u0027]\n\t\t\n\t#system.perspective.print(\u0027returning oeeDial filters {}\u0027.format(filters))\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 211,
+      "width": 247
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "apexchart",
+          "name": "apexchart",
+          "tooltip": {
+            "text": "{\"ignoreDateRange\":true,\"dateRange\":{\"selectedRange\":\"Last Week\",\"endDate\":1755403200000,\"startDate\":1754798400000},\"assetPath\":\"Kanoa Foods and Beverages\\\\Buffalo Bakery\\\\Production\",\"assetId\":496,\"woInfo\":{\"product\":null,\"woId\":null,\"scheduleId\":null},\"oeeBy\":\"OEE\"}"
+          }
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.options.labels[0]": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.oeeBy"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.options.plotOptions.radialBar.dataLabels.value.color": {
+            "binding": {
+              "config": {
+                "path": "this.props.series[0]"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tif value \u003c 50:\n\t    return \u0027var(--kcBad)\u0027\n\telif value \u003c 75:\n\t    return \u0027var(--kcOK)\u0027\n\telse:\n\t    return \u0027var(--kcPrimary)\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.options.plotOptions.radialBar.dataLabels.value.fontSize": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\tif value.has_key(\u0027valueFontSize\u0027) and value[\u0027valueFontSize\u0027] is not None:\n\t\treturn value[\u0027valueFontSize\u0027]\n\telse:\n\t\treturn \u002774px\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series[0]": {
+            "binding": {
+              "config": {
+                "path": "view.custom.displayValue"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "options": {
+            "chart": {
+              "events": {
+                "animationEnd": false,
+                "beforeMount": false,
+                "beforeResetZoom": false,
+                "beforeZoom": false,
+                "brushScrolled": false,
+                "click": false,
+                "dataPointMouseEnter": false,
+                "dataPointMouseLeave": false,
+                "dataPointSelection": false,
+                "legendClick": false,
+                "markerClick": false,
+                "mounted": false,
+                "mouseLeave": false,
+                "mouseMove": false,
+                "scrolled": false,
+                "selection": false,
+                "updated": false,
+                "xAxisLabelClick": false,
+                "zoomed": false
+              },
+              "type": "pie",
+              "width": 380
+            },
+            "colors": [
+              "function({ value, seriesIndex, w }) { \n     if (value \u003c 50) return \u0027var(--kcBad)\u0027    // Red\n     else if (value \u003c 75) return \u0027var(--kcOK)\u0027; // Yellow\n     else return \u0027var(--kcPrimary)\u0027;                // Green\n  }"
+            ],
+            "labels": [
+              null
+            ],
+            "plotOptions": {
+              "radialBar": {
+                "dataLabels": {
+                  "name": {
+                    "fontSize": "24px",
+                    "offsetY": 40,
+                    "show": true
+                  },
+                  "value": {
+                    "fontWeight": "bold",
+                    "formatter": "function(val) { return parseInt(val); }",
+                    "offsetY": -10
+                  }
+                },
+                "endAngle": 140,
+                "hollow": {
+                  "dropShadow": {
+                    "enabled": false
+                  },
+                  "size": "60%"
+                },
+                "startAngle": -140,
+                "track": {
+                  "background": "var(--kcNeutral-50)",
+                  "margin": 5,
+                  "strokeWidth": "97%"
+                }
+              }
+            },
+            "responsive": [
+              {
+                "breakpoint": 480,
+                "options": {
+                  "chart": {
+                    "width": 200
+                  },
+                  "legend": {
+                    "position": "bottom"
+                  }
+                }
+              }
+            ],
+            "stroke": {
+              "lineCap": "round"
+            }
+          },
+          "series": [
+            null
+          ],
+          "style": {
+            "overflow": "hidden"
+          },
+          "type": "radialBar"
+        },
+        "type": "kyvislabs.display.apexchart"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root",
+      "tooltip": {
+        "text": "{\"ignoreDateRange\":true,\"dateRange\":{\"selectedRange\":\"This Week\",\"endDate\":1756033200000,\"startDate\":1755428400000},\"assetPath\":\"Kanoa Foods and Beverages\\\\Buffalo Bakery\\\\Production\\\\Mix Line 1\",\"assetId\":null,\"woInfo\":{\"product\":null,\"woId\":null,\"scheduleId\":null},\"oeeBy\":\"OEE\"}"
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

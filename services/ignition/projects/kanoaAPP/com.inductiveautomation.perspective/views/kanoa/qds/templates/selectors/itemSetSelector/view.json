@@ -1,0 +1,181 @@
+{
+  "custom": {
+    "itemSets": [
+      {
+        "label": "QA Test Script Item Set", 
+        "value": 49
+      }, 
+      {
+        "label": "Set A", 
+        "value": 12
+      }, 
+      {
+        "label": "Set B", 
+        "value": 15
+      }, 
+      {
+        "label": "Set D", 
+        "value": 4
+      }, 
+      {
+        "label": "Set E", 
+        "value": 44
+      }, 
+      {
+        "label": "Set F", 
+        "value": 22
+      }, 
+      {
+        "label": "SET G", 
+        "value": 45
+      }, 
+      {
+        "label": "TEST", 
+        "value": 46
+      }
+    ]
+  }, 
+  "params": {
+    "itemSets": null, 
+    "enabled": true, 
+    "multiSelect": true
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 236, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "backgroundColor": "--kcSurface", 
+        "overflow": "hidden"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.dropdown", 
+        "props": {
+          "showClearIcon": true, 
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          }, 
+          "style": {
+            "classes": "kanoa/border kanoa/font/default", 
+            "minWidth": "150px"
+          }, 
+          "placeholder": {}
+        }, 
+        "meta": {
+          "domId": "dropdown", 
+          "name": "dropdown"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.placeholder.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'Select Item Sets...' if value else 'Select Item Set'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.multiSelect"
+              }
+            }
+          }, 
+          "props.options": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.itemSets"
+              }
+            }
+          }, 
+          "props.multiSelect": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.params.multiSelect"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.itemSets"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "path": "view.params.enabled"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "scripts": {
+      "messageHandlers": [
+        {
+          "viewScope": false, 
+          "script": "\n\tself.view.refreshBinding(\"custom.itemSets\")\n\n\treturn", 
+          "messageType": "refreshItemSets", 
+          "sessionScope": false, 
+          "pageScope": true
+        }
+      ], 
+      "customMethods": [], 
+      "extensionFunctions": null
+    }
+  }, 
+  "propConfig": {
+    "params.enabled": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.itemSets": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.multiSelect": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.itemSets": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn [{'value':row['itemSetId'], 'label':row['itemSetName']} for row in system.kanoa.quality.config.getItemSets({'enabled': True})]", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "overlayOptOut": true, 
+        "config": {
+          "expression": "1"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

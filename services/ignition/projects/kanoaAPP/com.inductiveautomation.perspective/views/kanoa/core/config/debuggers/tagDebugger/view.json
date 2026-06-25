@@ -1,0 +1,135 @@
+{
+  "custom": {
+    "timerTag": true
+  }, 
+  "params": {
+    "value": {
+      "canEdit": true, 
+      "tagPath": "[Kanoa]kanoa/debug/tags/debugDTAnalysis"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 283, 
+      "height": 60
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "margin": "5px", 
+        "classes": "kanoa/container kanoa/font/default", 
+        "minHeight": "60px", 
+        "gap": "5px"
+      }, 
+      "wrap": "wrap"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom", 
+            "text": "Timer"
+          }, 
+          "domId": "lblTagName", 
+          "name": "lblTagName"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "160px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value.split('/')[-1]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.tagPath"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.checkbox", 
+        "props": {
+          "text": "Enabled"
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "location": "bottom", 
+            "text": "Timer can be disabled or enabled"
+          }, 
+          "domId": "chkEnabled", 
+          "name": "chkEnabled"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.selected": {
+            "binding": {
+              "type": "tag", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "references": {
+                  "tagPath": "{view.params.value.tagPath}"
+                }, 
+                "fallbackDelay": 2.5, 
+                "mode": "indirect", 
+                "tagPath": "{tagPath}"
+              }
+            }
+          }, 
+          "props.enabled": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.canEdit"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.timerTag": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\treturn system.tag.read(value).value", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.value.tagPath"
+        }
+      }, 
+      "persistent": true
+    }
+  }
+}

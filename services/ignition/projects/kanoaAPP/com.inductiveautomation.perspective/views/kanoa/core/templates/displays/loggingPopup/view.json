@@ -1,0 +1,162 @@
+{
+  "custom": {
+    "logs": [],
+    "sampleLogs": [
+      "log1",
+      "log2",
+      "log3",
+      "log4"
+    ]
+  },
+  "params": {
+    "logs": [],
+    "popupId": ""
+  },
+  "propConfig": {
+    "custom.logs": {
+      "binding": {
+        "config": {
+          "path": "view.params.logs"
+        },
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.sampleLogs": {
+      "persistent": true
+    },
+    "params.logs": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.popupId": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 310,
+      "width": 520
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "txtContent",
+          "name": "txtContent"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.logs"
+              },
+              "transforms": [
+                {
+                  "code": "\t\t\t\n\treturn \"\\n\".join(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "spellcheck": false,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.text-area"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(self.view.params.popupId)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right",
+                "text": "Close this popup"
+              }
+            },
+            "position": {
+              "basis": "100px"
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "padding": "5px",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "receiveNewLogs",
+          "pageScope": true,
+          "script": "\t\t\n#\tpayload \u003d {\n#\t\t\u0027msgs\u0027: (list[string]),\n#\t}\n\tnewLogs \u003d payload[\u0027msgs\u0027]\n\tself.view.custom.logs \u003d newLogs\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

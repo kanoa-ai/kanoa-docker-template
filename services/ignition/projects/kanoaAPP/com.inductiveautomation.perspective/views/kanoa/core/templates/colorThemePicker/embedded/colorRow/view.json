@@ -1,0 +1,103 @@
+{
+  "custom": {
+    "colorValue": "Primary"
+  }, 
+  "params": {
+    "color": "primary"
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 450, 
+      "height": 50
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "textAlign": "right"
+          }
+        }, 
+        "meta": {
+          "domId": "lblColor", 
+          "name": "lblColor"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "display": false, 
+          "basis": "100px"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.custom.colorValue"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.flex-repeater", 
+        "props": {
+          "path": "kanoa/core/templates/colorThemePicker/embedded/colorTile"
+        }, 
+        "meta": {
+          "domId": "rptColorTiles", 
+          "name": "rptColorTiles"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tif value == 'Gray':\n\t\tvalues = range(0, 101, 10)\n\t\treturn [{\"color\": \"--kc\" + value + \"-\" + str(intensity)} for intensity in values if intensity != 40 and intensity != 60]\n\telse:\n\t\tvalues = range(10, 91, 10)\n\t\treturn [{\"color\": \"--kc\" + value + \"-\" + str(intensity)} for intensity in values]", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.colorValue"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "custom.colorValue": {
+      "binding": {
+        "transforms": [
+          {
+            "code": "\t\n\treturn (value[0].upper() + value[1:].lower())", 
+            "type": "script"
+          }
+        ], 
+        "type": "property", 
+        "overlayOptOut": true, 
+        "config": {
+          "path": "view.params.color"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.color": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

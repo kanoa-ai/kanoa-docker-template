@@ -1,0 +1,201 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 310, 
+      "height": 421
+    }
+  }, 
+  "root": {
+    "custom": {
+      "source": "keypad"
+    }, 
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcSurface", 
+        "overflow": "hidden", 
+        "gap": "5px"
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.container.flex", 
+        "children": [
+          {
+            "type": "ia.input.text-field", 
+            "meta": {
+              "domId": "TextField", 
+              "name": "TextField"
+            }, 
+            "position": {
+              "grow": 1
+            }, 
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property", 
+                  "config": {
+                    "bidirectional": true, 
+                    "path": ".../Keypad.props.params.value"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/clear"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "tooltip": {
+                "tail": false, 
+                "enabled": true, 
+                "delay": 0, 
+                "location": "top", 
+                "text": "Clear check item value"
+              }, 
+              "domId": "btnClear", 
+              "name": "btnClear"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "20px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tself.getSibling(\"TextField\").props.text = ''\n\t\n\treturn\t"
+                  }
+                }
+              }
+            }, 
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "transforms": [
+                    {
+                      "code": "\treturn value != ''", 
+                      "type": "script"
+                    }
+                  ], 
+                  "type": "property", 
+                  "config": {
+                    "path": "view.custom.inputValue"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/keyboard_return"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              }, 
+              "text": ""
+            }, 
+            "meta": {
+              "domId": "btnEnter", 
+              "name": "btnEnter"
+            }, 
+            "position": {
+              "shrink": 0, 
+              "basis": "100px"
+            }, 
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tif self.getSibling(\"TextField\").props.text == '': return\n\tpayload = {'value':self.getSibling(\"TextField\").props.text}\n\tsystem.perspective.print(\"Sending 'ValuePicked' message with %s from KeyPad\"%(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope='page')\n\tself.getSibling(\"TextField\").props.text = ''\n\n\treturn"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxInput", 
+          "name": "flxInput"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "30px"
+        }
+      }, 
+      {
+        "type": "ia.display.view", 
+        "props": {
+          "useDefaultViewWidth": true, 
+          "params": {
+            "dataType": "Integer"
+          }, 
+          "path": "kanoa/core/templates/inputs/keypad/keypad"
+        }, 
+        "meta": {
+          "domId": "Keypad", 
+          "name": "Keypad"
+        }, 
+        "position": {
+          "basis": "379px"
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tself.parent.custom.source = 'keypad'"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.params.value": {
+            "binding": {
+              "type": "property", 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }
+  }
+}

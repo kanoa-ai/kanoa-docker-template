@@ -1,0 +1,209 @@
+{
+  "custom": {
+    "enabled": false
+  },
+  "params": {
+    "value": {
+      "assetGroupId": 1,
+      "assetGroupName": "Packaging",
+      "assetId": 901,
+      "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1",
+      "assetTypeId": 5,
+      "assetTypeName": "line",
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": 35,
+      "createdDate": {
+        "$": [
+          "ts",
+          192,
+          1751137201981
+        ],
+        "$ts": 1715197098717
+      },
+      "currentState": "Faulted",
+      "enabled": true,
+      "iconPath": "kanoa/faulted",
+      "linkEnabled": true,
+      "parentId": 1709,
+      "reservedBySystem": false,
+      "stateAssetGroupName": null,
+      "stateAssetLinkId": 6231,
+      "stateCategoryId": 6,
+      "stateCategoryName": "Operations",
+      "stateCode": 5,
+      "stateColor": "#FFFFCC",
+      "stateEnabled": true,
+      "stateId": 6,
+      "stateName": "Not enough personnel",
+      "stateTypeColor": "#ba1a1a",
+      "stateTypeId": 4,
+      "stateTypeName": "Unplanned Downtime",
+      "tagPath": "[Kanoa]/Kanoa Box Co/Box Plant/Packaging/Box Line 1",
+      "userEdit": false
+    }
+  },
+  "propConfig": {
+    "custom.enabled": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn False if value[\u0027userEdit\u0027] \u003d\u003d False or (value[\u0027currentState\u0027] or \u0027Unknown\u0027) \u003d\u003d value[\u0027stateName\u0027] else True",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 54,
+      "width": 166
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tvalues \u003d self.view.params.value\n\tstateInfo \u003d {\u0027assetId\u0027: values[\u0027assetId\u0027], \u0027assetStateId\u0027: values[\u0027assetId\u0027], \u0027stateCode\u0027: values[\u0027stateCode\u0027], \u0027tStamp\u0027: system.date.now(), \u0027note\u0027: None}\n\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\n\t#We\u0027ll update the OEE state values for display purposes\n\ttagPath \u003d \u0027%s%s\u0027%(values[\u0027tagPath\u0027], \u0027/Line/OEE/\u0027)\n\tstateInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetStates({\u0027assetId\u0027: values[\u0027assetId\u0027], \u0027stateCode\u0027:values[\u0027stateCode\u0027]}),0)\n\t\n\ttagPathList \u003d [tagPath+\u0027stateName\u0027, tagPath+\u0027stateTypeName\u0027, tagPath+\u0027stateTypeColor\u0027, tagPath+\u0027stateColor\u0027, tagPath+\u0027stateIconPath\u0027]\n\ttagPathValues \u003d [stateInfo[\u0027stateName\u0027], stateInfo[\u0027stateTypeName\u0027] or \u0027\u0027, stateInfo[\u0027stateTypeColor\u0027] or \u0027\u0027, stateInfo[\u0027stateColor\u0027] or stateInfo[\u0027stateTypeColor\u0027] or \u0027\u0027, stateInfo[\u0027iconPath\u0027] or \u0027\u0027]\n\tsystem.tag.writeBlocking(tagPathList, tagPathValues)\n\t\t\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027State has been changed\u0027})\n\t\n\ttry:\t#this is a custom script that may not exist. It allows the client to extend what happens the state changes such as set the line state when the cell changes\n\t\tkanoaScripts.custom.ops.asset.stateChange({\u0027assetInfo\u0027: values}, userId)\n\texcept:\n\t\tpass\n\t\n\treturn\n\n"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "btnState",
+          "name": "btnState"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "path": "view.custom.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.image.icon.color": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value[\u0027stateColor\u0027] or value[\u0027stateTypeColor\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.image.icon.path": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.iconPath"
+              },
+              "type": "property"
+            }
+          },
+          "props.style.classes": {
+            "binding": {
+              "config": {
+                "path": "view.custom.enabled"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\treturn \u0027kanoa/button/outlined\u0027 if value else \u0027kanoa/button/filled\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.enabled"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\treturn \u0027--kcGray-00\u0027 if value else \u0027--kcGray-100\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.cursor": {
+            "binding": {
+              "config": {
+                "path": "this.props.enabled"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027pointer\u0027 if value else \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.stateName"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "image": {
+            "icon": {}
+          },
+          "justify": "start",
+          "style": {},
+          "textStyle": {
+            "classes": "kanoa/font/labelMedium"
+          }
+        },
+        "type": "ia.input.button"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColorX": "--kcSurface",
+        "maxHeight": "60px",
+        "minHeight": "30px",
+        "padding": "3px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "userId": "value", 
+      "itemId": "value", 
+      "assetId": 7, 
+      "modeCode": "value", 
+      "modeSourceId": "value", 
+      "workOrderId": "value"
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 502, 
+      "height": 185
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": 5, 
+        "background": "--kcSurface", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "text": "Run Permissive", 
+          "textStyle": {
+            "classes": "kanoa/font/titleMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "lblTitle", 
+          "name": "lblTitle"
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "text": "Demonstration screen to show how you can set an Asset Custom Property \"_runSetupViewPath\" to force the user to view a pop-up screen before starting a new Production Run.", 
+          "textStyle": {
+            "classes": "kanoa/font/bodyMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "lblDescription", 
+          "name": "lblDescription"
+        }
+      }, 
+      {
+        "type": "ia.container.flex", 
+        "props": {
+          "alignItems": "center", 
+          "justify": "center", 
+          "style": {
+            "gap": 5
+          }
+        }, 
+        "children": [
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/play_circle_filled"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/filled", 
+                "height": "48px"
+              }, 
+              "text": "Confirm"
+            }, 
+            "meta": {
+              "domId": "btnConfirm", 
+              "name": "btnConfirm"
+            }, 
+            "position": {
+              "basis": "128px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\t\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n#\tsystem.kanoa.event.assetOperationChange(params['assetId'], params['modeCode'], params['workOrderId'], params['itemId'], params['modeSourceId'], system.date.now(), True, params['userId'])\n#\tassetOperationInfo = {'assetId': assetId, 'modeCode': modecode, 'workOrderId': workOrderId, 'itemId': itemId, 'standardRate': standardRate, 'modeSourceId': modeSourceId, 'tStamp': system.date.now(), 'includeChildren': True}\n\tassetOperationInfo = dict(self.view.params.value)\n\tif not assetOperationInfo.has_key('standardRate'): assetOperationInfo['standardRate'] = None\n\tif not assetOperationInfo.has_key('tStamp'): assetOperationInfo['tStamp'] = system.date.now()\n\tif not assetOperationInfo.has_key('workOrderId'): assetOperationInfo['workOrderId'] = None\n\tif not assetOperationInfo.has_key('itemId'): assetOperationInfo['itemId'] = None\t\n\t\n\tmodeEventId, msg = system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\n\tif msg: system.perspective.sendMessage('showWarningToast', {'message': 'Could not change asset mode. %s'%msg})\n\telse: \n\t\tsystem.perspective.sendMessage('showSuccessfulToast', {'message': 'Asset mode has been changed'})\n\t\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }, 
+          {
+            "type": "ia.input.button", 
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/cancel"
+                }
+              }, 
+              "style": {
+                "classes": "kanoa/button/outlined", 
+                "height": "48px"
+              }, 
+              "text": "Cancel"
+            }, 
+            "meta": {
+              "domId": "btnCancel", 
+              "name": "btnCancel"
+            }, 
+            "position": {
+              "basis": "128px"
+            }, 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "type": "script", 
+                  "scope": "G", 
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                  }
+                }
+              }
+            }
+          }
+        ], 
+        "meta": {
+          "domId": "flxAction", 
+          "name": "flxAction"
+        }, 
+        "position": {
+          "grow": 1, 
+          "basis": "58px"
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

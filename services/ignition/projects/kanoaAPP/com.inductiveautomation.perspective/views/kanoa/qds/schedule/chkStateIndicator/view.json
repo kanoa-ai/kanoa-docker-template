@@ -1,0 +1,136 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": null
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 30, 
+      "height": 31
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "justify": "center", 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.icon", 
+        "meta": {
+          "domId": "Icon", 
+          "name": "Icon"
+        }, 
+        "position": {
+          "shrink": 0, 
+          "basis": "20px"
+        }, 
+        "propConfig": {
+          "props.color": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn '--kcRed-60' if value else '--kcGreen-60'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }, 
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value is not None", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }, 
+          "props.path": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'material/thumb_down' if value else 'material/thumb_up'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "tooltip": {
+            "enabled": true
+          }, 
+          "domId": "Label", 
+          "name": "Label"
+        }, 
+        "position": {
+          "display": false, 
+          "basis": "32px"
+        }, 
+        "propConfig": {
+          "meta.tooltip.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "this.props.text"
+              }
+            }
+          }, 
+          "props.text": {
+            "onChange": {
+              "enabled": false, 
+              "script": "\t\n#\tsystem.perspective.print(str(currentValue.value))\n\tif currentValue.value == 'Pass':\n\t\tself.getSibling(\"Icon\").props.path = 'material/thumb_up'\n\t\tself.getSibling(\"Icon\").props.color = '#00FF00'\n\t\tself.getSibling(\"Icon\").position.display = True\n\telif currentValue.value == 'Fail':\n\t\tself.getSibling(\"Icon\").props.path = 'material/thumb_down'\n\t\tself.getSibling(\"Icon\").props.color = '#FF0000'\n\t\tself.getSibling(\"Icon\").position.display = True\n\telif currentValue.value == 'Warning':\n\t\tself.getSibling(\"Icon\").props.path = 'material/thumb_up'\n\t\tself.getSibling(\"Icon\").props.color = '#FFAC47'\n\t\tself.getSibling(\"Icon\").position.display = True\t\t\n\telse:\n\t\tself.getSibling(\"Icon\").position.display = False\t\t\t"
+            }, 
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 'A' if value else 'B'", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value.value": {
+      "paramDirection": "input", 
+      "persistent": false
+    }, 
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

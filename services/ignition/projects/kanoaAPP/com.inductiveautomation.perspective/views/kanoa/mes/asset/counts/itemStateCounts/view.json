@@ -1,0 +1,337 @@
+{
+  "custom": {
+    "selected": false
+  }, 
+  "params": {
+    "value": {
+      "itemStateId": null, 
+      "itemColor": null, 
+      "itemClassName": null, 
+      "itemStateClassPath": null, 
+      "counterId": 132377, 
+      "counterName": "outfeed", 
+      "itemId": null, 
+      "itemClassPath": null, 
+      "itemName": null, 
+      "itemPath": null, 
+      "assetId": 901, 
+      "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1", 
+      "counterTypeName": "outfeed", 
+      "itemStateClassName": null, 
+      "workOrderName": null, 
+      "assetName": "Box Line 1", 
+      "itemClassColor": null, 
+      "itemStatePath": null, 
+      "workOrderId": null, 
+      "value": 243, 
+      "itemStateName": null, 
+      "itemStateClassId": null
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 112, 
+      "height": 60
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "alignItems": "center", 
+      "justify": "center", 
+      "style": {
+        "padding": "5px", 
+        "borderColor": "", 
+        "margin": "8px", 
+        "classes": "kanoa/border", 
+        "overflow": "visible", 
+        "gap": "5px", 
+        "position": "relative"
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "backgroundColor": "--kcSurface", 
+            "paddingRight": "5px", 
+            "top": -6, 
+            "left": 10, 
+            "fontSize": "10px", 
+            "position": "absolute", 
+            "paddingLeft": "5px"
+          }
+        }, 
+        "meta": {
+          "domId": "lblItemState", 
+          "name": "lblItemState"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn \"%s\"%(value['itemStateName'] or '')", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "meta": {
+          "domId": "lblCount", 
+          "name": "lblCount"
+        }, 
+        "position": {
+          "grow": 1, 
+          "shrink": 0, 
+          "display": false
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.numeric-entry-field", 
+        "props": {
+          "align": "center", 
+          "style": {
+            "classes": "kanoa/font/titleMedium", 
+            "borderStyle": "none", 
+            "height": "40px"
+          }, 
+          "spinner": {
+            "enabled": false
+          }
+        }, 
+        "meta": {
+          "domId": "numInput", 
+          "name": "numInput"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "events": {
+          "dom": {
+            "onFocus": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tself.view.custom.selected = True\n\t\n\treturn"
+              }
+            }, 
+            "onBlur": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tself.view.custom.selected = False\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.value": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.value.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "color": 60, 
+              "path": "material/clear"
+            }, 
+            "width": 20, 
+            "height": 20
+          }, 
+          "style": {
+            "classes": "kanoa/button/flatIcon"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "enabled": true, 
+            "text": "Delete this count value"
+          }, 
+          "domId": "btnDelete", 
+          "name": "btnDelete"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "dom": {
+            "onClick": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tsystem.perspective.print(\"sending itemStateCountUpdated msg\")\n\tsystem.perspective.sendMessage(\"itemStateCountUpdated\", {'change': 'delete', 'value': self.view.params.value})\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\t\n\treturn value and (self.view.params.value.value or 0) != 0", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.selected"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "style": {
+            "backgroundColor": "--kcSurface", 
+            "bottom": -6, 
+            "paddingRight": "5px", 
+            "left": 10, 
+            "fontSize": "10px", 
+            "position": "absolute", 
+            "paddingLeft": "5px"
+          }
+        }, 
+        "meta": {
+          "domId": "lblItemOrder", 
+          "name": "lblItemOrder"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn \"%s\"%(value['workOrderName'] or value['itemName'] or '')", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "events": {
+      "dom": {
+        "onMouseOver": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\n\tself.view.custom.selected = True\n\t\n\treturn"
+          }
+        }, 
+        "onMouseEnter": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\t\n#\tself.view.custom.selected = True\n\t\n\treturn"
+          }
+        }, 
+        "onMouseLeave": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\n\tself.view.custom.selected = False\n\t\n\treturn"
+          }
+        }
+      }
+    }, 
+    "propConfig": {
+      "props.style.borderColor": {
+        "binding": {
+          "transforms": [
+            {
+              "code": "\treturn '#0000FF' if value else ''", 
+              "type": "script"
+            }
+          ], 
+          "type": "property", 
+          "enabled": false, 
+          "overlayOptOut": true, 
+          "config": {
+            "path": "view.custom.selected"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "custom.selected": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\n\tcountInfo = self.params.value if self.custom.selected else None\n\tsystem.perspective.sendMessage(\"itemStateCountSelected\", {'value': countInfo})\n\t\n\treturn"
+      }, 
+      "binding": {
+        "transforms": [
+          {
+            "code": "\treturn False", 
+            "type": "script"
+          }
+        ], 
+        "type": "expr", 
+        "config": {
+          "expression": "now(0)"
+        }
+      }, 
+      "persistent": true
+    }, 
+    "params.value": {
+      "onChange": {
+        "enabled": null, 
+        "script": "\t\n\tif origin == 'BindingWriteback':\n\t\tsystem.perspective.print(\"sending itemStateCountUpdated msg\")\n\t\tsystem.perspective.sendMessage(\"itemStateCountUpdated\", {'change': 'update', 'value': self.params.value})\n\t\n\treturn"
+      }, 
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

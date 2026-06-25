@@ -1,0 +1,409 @@
+{
+  "custom": {
+    "filter": {
+      "assetId": null,
+      "assetPath": "null\n",
+      "dateRange": {
+        "endDate": {
+          "$": [
+            "ts",
+            192,
+            1777652457414
+          ],
+          "$ts": 1777791600000
+        },
+        "selectedRange": "This Week",
+        "startDate": {
+          "$": [
+            "ts",
+            192,
+            1777652457414
+          ],
+          "$ts": 1777186800000
+        }
+      },
+      "displayOptions": {
+        "showInfeed": true,
+        "showOutfeed": true,
+        "showTarget": true,
+        "showWaste": true
+      },
+      "interval": null,
+      "woInfo": {
+        "product": null,
+        "scheduleId": null,
+        "woId": null
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": "null\n",
+      "displayOptions": {
+        "showInfeed": true,
+        "showOutfeed": true,
+        "showTarget": true,
+        "showWaste": true
+      },
+      "interval": null
+    }
+  },
+  "propConfig": {
+    "custom.filter": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tviewFilter \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tviewFilter[\u0027interval\u0027] \u003d self.params.value[\u0027interval\u0027]\n\treturn viewFilter",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {},
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\t\n\tself.props.value \u003d None\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "ddInterval",
+              "name": "ddInterval",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "You can select the time interval or leave as auto-range. Auto range will show data by hour, by day or by week based on the selected date range"
+              }
+            },
+            "position": {
+              "basis": "160px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.value.interval"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "options": [
+                {
+                  "label": "Auto Range",
+                  "value": null
+                },
+                {
+                  "label": "By Hour",
+                  "value": "Hour"
+                },
+                {
+                  "label": "By Day",
+                  "value": "Day"
+                },
+                {
+                  "label": "By Week",
+                  "value": "Week"
+                }
+              ],
+              "placeholder": {
+                "text": "Group by..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "height": "30px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "chkInfeed",
+              "name": "chkInfeed"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.displayOptions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif not value[\u0027showInfeed\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.value.displayOptions.showInfeed"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Show Infeed"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "domId": "chkOutfeed",
+              "name": "chkOutfeed"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.displayOptions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif not value[\u0027showOutfeed\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.value.displayOptions.showOutfeed"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Show Outfeed"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "domId": "chkWaste",
+              "name": "chkWaste"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.displayOptions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif not value[\u0027showWaste\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.value.displayOptions.showWaste"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Show Waste"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "domId": "chkTarget",
+              "name": "chkTarget"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.displayOptions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif not value[\u0027showTarget\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.value.displayOptions.showTarget"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Show Target"
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "borderColor": "--kcOutline",
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "flxCountBars",
+          "name": "flxCountBars"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\t\n\tif value is None: return []\n\tassetPath \u003d value[\u0027assetPath\u0027] if (value[\u0027assetPath\u0027] or None) is not None else \u0027xxx\u0027\n\tassets \u003d system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027oeeEnabled\u0027: True, \u0027enabled\u0027: True})\n\treturn [{\u0027values\u0027: {\n\t\t\"assetId\": row[\u0027assetId\u0027], \n\t\t\"startDate\": value[\u0027dateRange\u0027][\u0027startDate\u0027],\n\t\t\"endDate\": value[\u0027dateRange\u0027][\u0027endDate\u0027],\n\t\t\"displayOptions\": value[\u0027displayOptions\u0027],\n\t\t\"interval\": self.view.params.value.interval}\n\t} for row in assets]",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            },
+            "persistent": true
+          }
+        },
+        "props": {
+          "direction": "column",
+          "elementPosition": {
+            "basis": "auto",
+            "shrink": 0
+          },
+          "path": "kanoa/mes/analytics/widgets/productionCounts/countBarChart",
+          "style": {
+            "gap": "5px"
+          },
+          "useDefaultViewWidth": false
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column"
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filter\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "custom": {}, 
+  "params": {
+    "value": {
+      "userId": 3, 
+      "assetId": 10, 
+      "attributeName": "QC Status", 
+      "attributeLabel": "QC Status", 
+      "dropdownList": [
+        {
+          "label": "Pass", 
+          "value": "Pass"
+        }, 
+        {
+          "label": "Fail", 
+          "value": "Fail"
+        }, 
+        {
+          "label": "Pending", 
+          "value": "Pending"
+        }
+      ]
+    }
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 240, 
+      "height": 60
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "padding": "5px", 
+        "backgroundColor": "--kcSurface", 
+        "overflow": "hidden", 
+        "gap": 5
+      }, 
+      "direction": "column"
+    }, 
+    "children": [
+      {
+        "type": "ia.display.label", 
+        "props": {
+          "textStyle": {
+            "classes": "kanoa/font/labelMedium"
+          }
+        }, 
+        "meta": {
+          "domId": "Label", 
+          "name": "Label"
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn value['attributeLabel'] or value['attributeName']", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.dropdown", 
+        "meta": {
+          "domId": "dropdown", 
+          "name": "dropdown"
+        }, 
+        "position": {
+          "basis": "36px"
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\tlinkId = system.kanoa.attribute.getAttributeAssetLinks({'assetId': self.view.params.value.assetId, 'attributeName': self.view.params.value.attributeName})\n\tif linkId is not None:\n\t\tlinkId = linkId[0]['attributeAssetLinkId']\n\t\tsystem.kanoa.attribute.addAttributeEvent({'attributeAssetLinkId': linkId, 'value': self.props.value, 'tStamp': system.date.now()}, self.view.params.value.userId)"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value.dropdownList"
+              }
+            }
+          }, 
+          "props.value": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\tattributeId = system.kanoa.utilities.getFieldValue('attributeId', system.kanoa.attribute.getAttributes({'attributeName': value['attributeName']}))\n\treturn system.kanoa.utilities.getFieldValue('value', system.kanoa.attribute.getPreviousAttributeEvent(value['assetId'], attributeId, system.date.now()))", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.value"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }
+  }, 
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input", 
+      "persistent": true
+    }
+  }
+}

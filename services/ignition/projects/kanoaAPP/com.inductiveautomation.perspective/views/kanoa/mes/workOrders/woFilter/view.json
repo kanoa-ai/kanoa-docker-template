@@ -1,0 +1,502 @@
+{
+  "custom": {
+    "workOrderStates": {
+      "$": [
+        "ds",
+        192,
+        1767833410062
+      ],
+      "$columns": [
+        {
+          "data": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            9
+          ],
+          "name": "workOrderStatusId",
+          "type": "Integer"
+        },
+        {
+          "data": [
+            "Closed",
+            "Hold",
+            "In Progress",
+            "Released",
+            "Scheduled",
+            "new",
+            "newer"
+          ],
+          "name": "workOrderStatusName",
+          "type": "String"
+        },
+        {
+          "data": [
+            "#D9D900",
+            "#D90000",
+            "#00D9D9",
+            "#D97700",
+            "#123456",
+            null,
+            null
+          ],
+          "name": "statusColor",
+          "type": "String"
+        },
+        {
+          "data": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "name": "enabled",
+          "type": "Boolean"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            5,
+            5
+          ],
+          "name": "createdBy",
+          "type": "Integer"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            1767055108037,
+            1767055250643
+          ],
+          "name": "createdDate",
+          "type": "Date"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "name": "changedBy",
+          "type": "Integer"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "name": "changedDate",
+          "type": "Date"
+        }
+      ]
+    }
+  },
+  "events": {
+    "system": {
+      "onStartup": {
+        "config": {
+          "script": "\t\n\tself.getChild(\"root\").custom.mesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\n\t\n\treturn"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "filterStates": [
+      "Scheduled",
+      "Released",
+      "Closed",
+      "In Progress",
+      "Hold",
+      "Completed"
+    ]
+  },
+  "propConfig": {
+    "custom.workOrderStates": {
+      "binding": {
+        "config": {
+          "expression": "1"
+        },
+        "transforms": [
+          {
+            "code": "\treturn system.kanoa.order.getProductionOrderStates({\u0027enabled\u0027:True})",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "params.filterStates": {
+      "binding": {
+        "config": {
+          "struct": {
+            "closed": "{/root/tglClosed.props.selected}",
+            "completed": "{/root/tglCompleted.props.selected}",
+            "hold": "{/root/tglHold.props.selected}",
+            "inProgress": "{/root/tglInProgress.props.selected}",
+            "released": "{/root/tglReleased.props.selected}",
+            "scheduled": "{/root/tglScheduled.props.selected}"
+          },
+          "waitOnAll": false
+        },
+        "transforms": [
+          {
+            "code": "\tfilterStates \u003d []\n\tif value[\u0027scheduled\u0027]:\tfilterStates.append(\u0027Scheduled\u0027)\n\tif value[\u0027released\u0027]: filterStates.append(\u0027Released\u0027)\n\tif value[\u0027closed\u0027]: filterStates.append(\u0027Closed\u0027)\t\t\n\tif value[\u0027inProgress\u0027]: filterStates.append(\u0027In Progress\u0027)\t\t\n\tif value[\u0027hold\u0027]: filterStates.append(\u0027Hold\u0027)\n\tif value[\u0027completed\u0027]:\tfilterStates.append(\u0027Completed\u0027)\n\t\n\treturn filterStates",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "paramDirection": "output",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 223,
+      "width": 150
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "tglScheduled",
+          "name": "tglScheduled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.color.selected": {
+            "binding": {
+              "config": {
+                "expression": "lookup({view.custom.workOrderStates}, {this.props.label.text}, \u0027#FFFFFF\u0027, \u0027workOrderStatusName\u0027, \u0027statusColor\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": {
+            "unselected": "#D5D5D5"
+          },
+          "label": {
+            "text": "Scheduled"
+          },
+          "selected": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.toggle-switch"
+      },
+      {
+        "meta": {
+          "domId": "tglReleased",
+          "name": "tglReleased"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.color.selected": {
+            "binding": {
+              "config": {
+                "expression": "lookup({view.custom.workOrderStates}, {this.props.label.text}, \u0027#FFFFFF\u0027, \u0027workOrderStatusName\u0027, \u0027statusColor\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": {
+            "unselected": "#D5D5D5"
+          },
+          "label": {
+            "text": "Released"
+          },
+          "selected": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.toggle-switch"
+      },
+      {
+        "meta": {
+          "domId": "tglClosed",
+          "name": "tglClosed"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.color.selected": {
+            "binding": {
+              "config": {
+                "expression": "lookup({view.custom.workOrderStates}, {this.props.label.text}, \u0027#FFFFFF\u0027, \u0027workOrderStatusName\u0027, \u0027statusColor\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": {
+            "unselected": "#D5D5D5"
+          },
+          "label": {
+            "text": "Closed"
+          },
+          "selected": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.toggle-switch"
+      },
+      {
+        "meta": {
+          "domId": "tglInProgress",
+          "name": "tglInProgress"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.color.selected": {
+            "binding": {
+              "config": {
+                "expression": "lookup({view.custom.workOrderStates}, {this.props.label.text}, \u0027#FFFFFF\u0027, \u0027workOrderStatusName\u0027, \u0027statusColor\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": {
+            "unselected": "#D5D5D5"
+          },
+          "label": {
+            "text": "In Progress"
+          },
+          "selected": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.toggle-switch"
+      },
+      {
+        "meta": {
+          "domId": "tglHold",
+          "name": "tglHold"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.color.selected": {
+            "binding": {
+              "config": {
+                "expression": "lookup({view.custom.workOrderStates}, {this.props.label.text}, \u0027#FFFFFF\u0027, \u0027workOrderStatusName\u0027, \u0027statusColor\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": {
+            "unselected": "#D5D5D5"
+          },
+          "label": {
+            "text": "Hold"
+          },
+          "selected": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.toggle-switch"
+      },
+      {
+        "meta": {
+          "domId": "tglCompleted",
+          "name": "tglCompleted"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.color.selected": {
+            "binding": {
+              "config": {
+                "expression": "lookup({view.custom.workOrderStates}, {this.props.label.text}, \u0027#FFFFFF\u0027, \u0027workOrderStatusName\u0027, \u0027statusColor\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": {
+            "unselected": "#D5D5D5"
+          },
+          "label": {
+            "text": "Completed"
+          },
+          "selected": true,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.toggle-switch"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").setToggleSwitches(not self.view.getChild(\"root\").custom.toggle)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btn_ClearAll",
+              "name": "btn_ClearAll",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "tail": false
+              }
+            },
+            "position": {
+              "basis": "38px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "/root.custom.toggle"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Toggle all filters %s\u0027%(\u0027off\u0027 if value else \u0027on\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.image.icon.path": {
+                "binding": {
+                  "config": {
+                    "path": "/root.custom.toggle"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027material/toggle_off\u0027 if value else \u0027material/toggle_on\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {}
+              },
+              "style": {
+                "backgroundColor": "--kcGray-0",
+                "classes": "kanoa/button/flatIcon",
+                "color": "--kcGray-40"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "FlexCntButtons",
+          "name": "FlexCntButtons"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "custom": {
+      "mesTagProvider": "[Kanoa]",
+      "toggle": true
+    },
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "setToggleSwitches",
+          "params": [
+            "state"
+          ],
+          "script": "\t\n\tself.getChild(\"tglScheduled\").props.selected \u003d state\n\tself.getChild(\"tglReleased\").props.selected \u003d state\n\tself.getChild(\"tglHold\").props.selected \u003d state\n\tself.getChild(\"tglClosed\").props.selected \u003d state\n\tself.getChild(\"tglInProgress\").props.selected \u003d state\n\tself.getChild(\"tglCompleted\").props.selected \u003d state\n\tself.custom.toggle \u003d state\n\t\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

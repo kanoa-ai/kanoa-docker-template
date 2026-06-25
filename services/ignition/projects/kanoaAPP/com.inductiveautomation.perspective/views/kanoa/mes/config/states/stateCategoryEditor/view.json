@@ -1,0 +1,627 @@
+{
+  "custom": {
+    "stateCategoryInfo": {
+      "changedBy": null,
+      "changedDate": null,
+      "createdBy": null,
+      "createdDate": null,
+      "enabled": true,
+      "parentId": null,
+      "stateCategoryId": null,
+      "stateCategoryName": "",
+      "stateCategoryPath": null
+    }
+  },
+  "params": {
+    "values": {
+      "add": true,
+      "stateCategoryId": null
+    }
+  },
+  "propConfig": {
+    "custom.stateCategoryInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tstateCategoryInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getStateCategory({\u0027stateCategoryId\u0027: value[\u0027stateCategoryId\u0027] or -1}),0)\n\n\tif value[\u0027stateCategoryId\u0027] is not None and value[\u0027add\u0027]:\n\t\tstateCategoryInfo[\u0027parentId\u0027] \u003d stateCategoryInfo[\u0027stateCategoryId\u0027]\t\t\n\t\tstateCategoryInfo[\u0027stateCategoryId\u0027] \u003d None\n\t\tstateCategoryInfo[\u0027stateCategoryName\u0027] \u003d None\n\n\tstateCategoryInfo[\u0027stateCategoryName\u0027] \u003d stateCategoryInfo[\u0027stateCategoryName\u0027] or \u0027\u0027\n\n\tif value[\u0027stateCategoryId\u0027] is None: stateCategoryInfo[\u0027enabled\u0027] \u003d True\n\t\n\treturn stateCategoryInfo\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 155,
+      "width": 440
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "lblStateCategoryPath"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "State Category Path"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "lblPath"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateCategoryInfo.stateCategoryPath"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n#\treturn \u0027 \u003e \u0027.join(value.split(\"\\\\\")[:-1]) if value and \"\\\\\" in value else (value or \u0027\u0027)\n\treturn \u0027 \u003e \u0027.join(value.split(\"\\\\\")) if value and \"\\\\\" in value else (value or \u0027\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tself.view.custom.stateCategoryInfo.parentId \u003d None\n\tself.view.custom.stateCategoryInfo.stateCategoryPath \u003d \u0027\u0027\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "icoClear",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "Clear category path"
+              }
+            },
+            "position": {
+              "basis": "15px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateCategoryInfo.parentId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "path": "material/close"
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxStateName",
+          "name": "flxStateCategoryPath"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label",
+              "name": "lblStateCategoryName"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "State Category Name"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "system": {
+                "onStartup": {
+                  "config": {
+                    "script": "\n\timport time\n\ttime.sleep(0.2)\n\tself.focus()\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "TextField",
+              "name": "txtStateCategoryName"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.stateCategoryInfo.stateCategoryName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "deferUpdates": false,
+              "style": {
+                "classes": "kanoa/font/default kanoa/border"
+              }
+            },
+            "type": "ia.input.text-field"
+          }
+        ],
+        "meta": {
+          "domId": "flxStateName",
+          "name": "flxStateCategoryName"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "label",
+              "name": "label"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Color"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t\n\tself.view.getChild(\"root\").custom.selectedAttribute \u003d \u0027Color-Light\u0027\n\tsystem.perspective.openPopup(\"Color Picker\", \"kanoa/core/templates/colorPicker/main\", {}, overlayDismiss\u003dTrue)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "lblColor",
+              "name": "lblColor"
+            },
+            "position": {
+              "basis": "25px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027stateColor\u0027] or value[\u0027stateTypeColor\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/input",
+                "height": "25px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.custom.stateInfo.stateColor \u003d None\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Clear overridden state color"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027stateColor\u0027] is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "height": 20,
+                "icon": {
+                  "path": "material/close"
+                },
+                "width": 20
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon",
+                "marginLeft": "5px"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxColor",
+          "name": "flxColor"
+        },
+        "position": {
+          "basis": "30px",
+          "display": false,
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "Label-1",
+              "name": "lblEnabled"
+            },
+            "position": {
+              "basis": "120px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "Checkbox",
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.stateCategoryInfo.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "checkedIcon": {
+                "color": {
+                  "enabled": "--kcGray-60"
+                }
+              },
+              "text": ""
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "domId": "flxStateEnabled",
+          "name": "flxStateEnabled"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tparams \u003d self.view.params.values\n\tstateCategoryInfo \u003d dict(self.view.custom.stateCategoryInfo)\n\tstateCategoryId \u003d stateCategoryInfo[\u0027stateCategoryId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif params[\u0027add\u0027] or params[\u0027stateCategoryId\u0027] is None:\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Adding state category\u0027})\t\n\t\tstateCategoryId, msg \u003d system.kanoa.asset.addStateCategory(stateCategoryInfo, userId)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showInfoToast\u0027, {\u0027message\u0027: \u0027Updating state category Id %s\u0027%stateCategoryId})\t\t\t\n\t\tretVal, msg \u003d system.kanoa.asset.updateStateCategory(stateCategoryInfo, userId)\n\t\t\n\tsystem.perspective.sendMessage(\"updateStates\", {\u0027stateCategoryId\u0027: stateCategoryId})\n\n\tif msg: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \"Couldn\u0027t save state category. %s\"%msg})\n\telse: \n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027State category as been saved.\u0027})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnSave",
+              "name": "btnSave",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Save"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateCategoryInfo"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\treturn bool(value.get(\u0027stateCategoryName\u0027))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnClose-1",
+              "name": "btnClose",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Close"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "marginLeft": "5px"
+              },
+              "text": "Close"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxActions",
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "lblDebug"
+        },
+        "position": {
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.values"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "colorPicked",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"colorPicked msg rcvd with payload \" + str(payload))\n\tself.view.custom.stateInfo.stateColor \u003d payload[\u0027color\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "stateCategorySelected",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\"stateCategorySelected msg rcvd with payload \" + str(payload))\n\t\n\tstateCategoryId \u003d None\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tstateCategoryId \u003d payload[\u0027selection\u0027][0][\u0027stateCategoryId\u0027]\n\t\tstateCategoryName \u003d payload[\u0027selection\u0027][0][\u0027stateCategoryName\u0027]\n\t\tstateCategoryPath \u003d payload[\u0027selection\u0027][0][\u0027stateCategoryPath\u0027]\n\t\n\tself.view.custom.stateInfo.stateCategoryId \u003d stateCategoryId\n\tself.view.custom.stateInfo.stateCategoryName \u003d stateCategoryName\n\tself.view.custom.stateInfo.stateCategoryPath \u003d stateCategoryPath\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

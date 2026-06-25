@@ -1,0 +1,221 @@
+{
+  "custom": {
+    "hover": false
+  }, 
+  "params": {
+    "label": "", 
+    "attrId": "", 
+    "text": ""
+  }, 
+  "props": {
+    "defaultSize": {
+      "width": 350, 
+      "height": 30
+    }
+  }, 
+  "root": {
+    "type": "ia.container.flex", 
+    "props": {
+      "style": {
+        "classes": "flex-component", 
+        "gap": 5
+      }
+    }, 
+    "children": [
+      {
+        "type": "ia.input.text-field", 
+        "props": {
+          "style": {
+            "cursor": "pointer", 
+            "padding": 0, 
+            "backgroundColor": "transparent", 
+            "textAlign": "right", 
+            "classes": "kanoa/font/default", 
+            "minWidth": 80, 
+            "textOverflow": "ellipsis", 
+            "borderStyle": "none", 
+            "maxWidth": 250
+          }, 
+          "placeholder": "add label"
+        }, 
+        "meta": {
+          "domId": "label", 
+          "name": "label"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "propConfig": {
+          "props.style.width": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn '%dch' % len(value)", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.params.label"
+              }
+            }
+          }, 
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.label"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.text-field", 
+        "props": {
+          "style": {
+            "textAlign": "left", 
+            "classes": "kanoa/border", 
+            "minHeight": 30, 
+            "height": "auto"
+          }, 
+          "deferUpdates": false
+        }, 
+        "meta": {
+          "domId": "input", 
+          "name": "input"
+        }, 
+        "position": {
+          "grow": 1
+        }, 
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "bidirectional": true, 
+                "path": "view.params.text"
+              }
+            }
+          }
+        }
+      }, 
+      {
+        "type": "ia.input.button", 
+        "props": {
+          "image": {
+            "icon": {
+              "path": "material/clear"
+            }
+          }, 
+          "style": {
+            "classes": "kanoa/button/flatIcon", 
+            "focusable": "none", 
+            "transition": "0.1s"
+          }, 
+          "text": ""
+        }, 
+        "meta": {
+          "tooltip": {
+            "tail": false, 
+            "enabled": true, 
+            "delay": 0, 
+            "location": "top", 
+            "text": "Remove attribute"
+          }, 
+          "domId": "btnRemove", 
+          "name": "btnRemove"
+        }, 
+        "position": {
+          "shrink": 0
+        }, 
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "type": "script", 
+              "scope": "G", 
+              "config": {
+                "script": "\n\tsystem.perspective.sendMessage('deleteItemAttribute', self.view.params)\n\t\n\treturn"
+              }
+            }
+          }
+        }, 
+        "propConfig": {
+          "props.style.marginLeft": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn -3 if value else -5", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.hover"
+              }
+            }
+          }, 
+          "props.style.width": {
+            "binding": {
+              "transforms": [
+                {
+                  "code": "\treturn 30 if value else 0", 
+                  "type": "script"
+                }
+              ], 
+              "type": "property", 
+              "overlayOptOut": true, 
+              "config": {
+                "path": "view.custom.hover"
+              }
+            }
+          }
+        }
+      }
+    ], 
+    "meta": {
+      "domId": "root", 
+      "name": "root"
+    }, 
+    "events": {
+      "dom": {
+        "onMouseEnter": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\tself.view.custom.hover = True"
+          }
+        }, 
+        "onMouseLeave": {
+          "type": "script", 
+          "scope": "G", 
+          "config": {
+            "script": "\tself.view.custom.hover = False"
+          }
+        }
+      }
+    }
+  }, 
+  "propConfig": {
+    "params.label": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "params.attrId": {
+      "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "params.text": {
+      "paramDirection": "inout", 
+      "persistent": true
+    }, 
+    "custom.default": {
+      "persistent": true
+    }
+  }
+}
