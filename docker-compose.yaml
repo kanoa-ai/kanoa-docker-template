@@ -1,0 +1,79 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: kanoa-dev-db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "${SA_PASSWORD:?SA_PASSWORD must be set in .env}"
+      MSSQL_PID: Developer
+    # Uncomment to expose SQL Server directly on the host (e.g. for local tooling).
+    # ports:
+    #   - 1433:1433
+    volumes:
+      - sqldata:/var/opt/mssql
+    healthcheck:
+      # Marks the container healthy once SQL Server can answer a query.
+      # NOTE: the macOS override uses Azure SQL Edge, which has no sqlcmd, so it
+      # replaces this healthcheck — see .local/docker-compose.override.yaml.
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$SA_PASSWORD\" -Q 'SELECT 1' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - default
+
+  kanoa:
+    image: inductiveautomation/ignition:8.3.7
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./services/ignition/config:/usr/local/bin/ignition/data/config
+      - ./services/ignition/projects:/usr/local/bin/ignition/data/projects
+      - ./services/third-party-modules/Embr-Charts-6.0.1.modl:/usr/local/bin/ignition/user-lib/modules/Embr-Charts-Ignition.modl
+      - ./services/third-party-modules/KanoaMES_1.15.0-rc1.modl:/usr/local/bin/ignition/user-lib/modules/KanoaMES.modl
+
+      # Temporary volume to avoid commissioning
+      # - ./services/ignition/commissioning.json:/usr/local/bin/ignition/data/commissioning.json:ro
+    command: ["-n", "kanoa-local-dev", "--", "-Dperspective.websocket.max-message-size=4096"]
+    environment:
+      IGNITION_EDITION: "standard"
+      DISABLE_QUICKSTART: "true"
+      ACCEPT_IGNITION_EULA: "Y"
+      ACCEPT_MODULE_LICENSES: com.mussonindustrial.embr.charts,com.kanoacon.mes.kanoaMES
+      ACCEPT_MODULE_CERTS: com.mussonindustrial.embr.charts,com.kanoacon.mes.kanoaMES
+    user: "0:0"
+    # ---------------------------------------------------------------------------
+    # Access option A: external Traefik proxy (default).
+    # Requires the external "proxy" network defined at the bottom of this file.
+    # Comment this block out if you are NOT using Traefik.
+    labels:
+      traefik.enable: "true"
+      traefik.hostname: "kanoa-dev"
+    # ---------------------------------------------------------------------------
+    # Access option B: direct host port mapping (no Traefik).
+    # Uncomment to reach the Ignition gateway at http://localhost:8088
+    # ports:
+    #   - 8088:8088
+    # ---------------------------------------------------------------------------
+    networks:
+      - default
+      # Remove "proxy" below if you are not using the external Traefik proxy.
+      - proxy
+
+volumes:
+  sqldata:
+
+networks:
+  default:
+  # Only needed for the Traefik proxy (access option A). If you are not using
+  # Traefik, remove this and the "- proxy" entry under the kanoa service above.
+  # The network must already exist: `docker network create proxy`
+  proxy:
+    external: true
+    name: proxy
