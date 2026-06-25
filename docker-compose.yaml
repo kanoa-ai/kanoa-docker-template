@@ -27,11 +27,40 @@ services:
     networks:
       - default
 
-  kanoa:
-    image: inductiveautomation/ignition:8.3.7
+  # One-shot init: creates the application database if it doesn't already exist,
+  # then exits. Uses the standalone mssql-tools image so it works regardless of
+  # which image the db service uses (full SQL Server or Azure SQL Edge on macOS).
+  db-init:
+    image: mcr.microsoft.com/mssql-tools:latest
+    # mssql-tools only publishes an amd64 image; pin the platform so it also runs
+    # (via emulation) on Apple Silicon.
+    platform: linux/amd64
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      SA_PASSWORD: "${SA_PASSWORD:?SA_PASSWORD must be set in .env}"
+      DB_NAME: "${DB_NAME:-kanoa}"
+    # Idempotent: CREATE DATABASE only runs when the database is missing.
+    command:
+      - /bin/bash
+      - -c
+      - >
+        /opt/mssql-tools/bin/sqlcmd -S db -U sa -P "$$SA_PASSWORD" -b -Q
+        "IF DB_ID(N'$$DB_NAME') IS NULL BEGIN CREATE DATABASE [$$DB_NAME];
+        PRINT 'Created database ' + '$$DB_NAME'; END
+        ELSE PRINT 'Database ' + '$$DB_NAME' + ' already exists';"
+    restart: "no"
+    networks:
+      - default
+
+  kanoa:
+    image: inductiveautomation/ignition:8.3.6
+    depends_on:
+      db:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     volumes:
       - ./services/ignition/config:/usr/local/bin/ignition/data/config
       - ./services/ignition/projects:/usr/local/bin/ignition/data/projects
@@ -39,7 +68,7 @@ services:
       - ./services/third-party-modules/KanoaMES_1.15.0-rc1.modl:/usr/local/bin/ignition/user-lib/modules/KanoaMES.modl
 
       # Temporary volume to avoid commissioning
-      # - ./services/ignition/commissioning.json:/usr/local/bin/ignition/data/commissioning.json:ro
+      - ./services/ignition/commissioning.json:/usr/local/bin/ignition/data/commissioning.json:ro
     command: ["-n", "kanoa-local-dev", "--", "-Dperspective.websocket.max-message-size=4096"]
     environment:
       IGNITION_EDITION: "standard"

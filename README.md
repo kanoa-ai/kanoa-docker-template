@@ -9,6 +9,7 @@ starting point for your own project repos.
 | Service | Image | Description |
 | --- | --- | --- |
 | `db` | `mcr.microsoft.com/mssql/server:2022-latest` | SQL Server (Developer edition) |
+| `db-init` | `mcr.microsoft.com/mssql-tools:latest` | One-shot job that creates the application database on startup, then exits |
 | `kanoa` | `inductiveautomation/ignition:8.3.7` | Ignition gateway with the Embr Charts and KanoaMES modules |
 
 ## Prerequisites
@@ -94,6 +95,33 @@ If you are not running Traefik, edit `docker-compose.yaml`:
 
 The gateway is then reachable at <http://localhost:8088>.
 
+## Application database
+
+You shouldn't use SQL Server's built-in `master` database for application data,
+so the stack provisions a dedicated database automatically — no manual setup
+required:
+
+- A one-shot **`db-init`** service runs on `make up`. Once the `db` service is
+  healthy, it creates the application database (default name `kanoa`) if it
+  doesn't already exist, then exits. It's idempotent, so it's safe on every
+  startup.
+- The `kanoa` gateway waits for `db-init` to finish successfully before starting.
+- The Ignition `kanoaCore` connection is pre-configured to point at this database.
+
+### Changing the database name
+
+Set `DB_NAME` in your `.env` (defaults to `kanoa`). If you change it, also update
+the Ignition connection's `connectionProps` so the two stay in sync
+(`services/ignition/config/resources/core/ignition/database-connection/kanoaCore/config.json`):
+
+```diff
+- "connectionProps": "databaseName=kanoa",
++ "connectionProps": "databaseName=<your-db-name>",
+```
+
+After changing either, run `make restart`. You can confirm the connection is
+**Valid** on the Gateway's **Config → Databases → Connections** page.
+
 ## Database access
 
 By default the `db` service is only reachable from within the Compose network.
@@ -154,6 +182,7 @@ remove the override path from `COMPOSE_FILE` (or unset it to fall back to just
 | Variable | Description |
 | --- | --- |
 | `SA_PASSWORD` | SQL Server SA account password (**required**). |
+| `DB_NAME` | Application database created on startup (default `kanoa`). |
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name. |
 | `COMPOSE_FILE` | Compose files to load, including the local override. |
 
