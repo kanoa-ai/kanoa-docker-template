@@ -40,7 +40,7 @@ starting point for your own project repos.
 3. **Start the stack:**
 
    ```bash
-   make up        # or: docker compose up -d
+   docker compose up -d
    ```
 
    On startup, the `kanoa` gateway waits for the `db` service to pass its
@@ -49,34 +49,73 @@ starting point for your own project repos.
 
 ## Common commands
 
-A `Makefile` wraps the most-used Docker Compose commands. Run `make` (or
-`make help`) to see them all:
+The most-used Docker Compose commands (the compose file selection, including any
+local overrides, is driven by `COMPOSE_FILE` in `.env`):
 
 | Command | Description |
 | --- | --- |
-| `make up` | Start the stack in the background |
-| `make down` | Stop and remove the containers |
-| `make restart` | Restart the stack |
-| `make logs` | Tail all logs (`make logs s=kanoa` for one service) |
-| `make ps` | Show running services |
-| `make shell` | Open a shell in the Ignition container |
-| `make db-shell` | Open a shell in the db container |
-| `make config` | Validate and print the merged compose config |
-| `make clean` | Stop the stack and **delete volumes** (wipes the database) |
+| `docker compose up -d` | Start the stack in the background |
+| `docker compose down` | Stop and remove the containers |
+| `docker compose restart` | Restart the stack |
+| `docker compose logs -f` | Tail all logs (`docker compose logs -f kanoa` for one service) |
+| `docker compose ps` | Show running services |
+| `docker compose exec kanoa bash` | Open a shell in the Ignition container |
+| `docker compose exec db bash` | Open a shell in the db container |
+| `docker compose config` | Validate and print the merged compose config |
+| `docker compose down -v` | Stop the stack and **delete volumes** (wipes the database) |
 
 ## Accessing the Ignition gateway
 
 The template supports two mutually exclusive access options. Pick whichever fits
 your setup by editing `docker-compose.yaml`.
 
-### Option A — external Traefik proxy (default)
+### Option A — external Traefik proxy (default, preferred)
 
-The `kanoa` service is wired to an external Traefik proxy via the `traefik.*`
-labels and the external `proxy` network. This network must already exist:
+This is the recommended way to reach the gateway. Instead of juggling host
+ports, you get a clean hostname like <http://kanoa-dev.localtest.me> that routes
+straight to the container. `*.localtest.me` resolves to `127.0.0.1` for everyone
+with no `/etc/hosts` edits, so the same URL works on every machine.
 
-```bash
-docker network create proxy
+The proxy itself lives in a separate repo,
+[`kanoa-ai/traefik-proxy`](https://github.com/kanoa-ai/traefik-proxy) a small
+Docker Compose stack that runs a single Traefik container. You run it once and it
+serves every project that joins its network.
+
+**One-time setup:**
+
+1. Create the shared `proxy` network (the proxy and this stack both attach to
+   it):
+
+   ```bash
+   docker network create proxy
+   ```
+
+2. Clone and start the proxy (leave it running in the background):
+
+   ```bash
+   git clone https://github.com/kanoa-ai/traefik-proxy.git
+   cd traefik-proxy
+   docker compose up -d
+   ```
+
+**How this stack plugs in:** the `kanoa` service is already wired for the proxy —
+it joins the external `proxy` network and carries these labels in
+`docker-compose.yaml`:
+
+```yaml
+labels:
+  traefik.enable: "true"
+  traefik.hostname: "kanoa-dev"   # → http://kanoa-dev.localtest.me
 ```
+
+With the proxy running, `docker compose up -d` is all you need; the gateway is
+reachable at <http://kanoa-dev.localtest.me>.
+
+**Picking your own subdomain:** the `kanoa-dev` part is just the value of the
+`traefik.hostname` label on the `kanoa` service in `docker-compose.yaml`. Change
+it to anything you like and the gateway moves to `<your-name>.localtest.me`. For
+example, setting it to `traefik.hostname: "acme-line1"` makes the gateway
+available at <http://acme-line1.localtest.me> after a `docker compose up -d`.
 
 ### Option B — direct host port (no Traefik)
 
@@ -101,7 +140,7 @@ You shouldn't use SQL Server's built-in `master` database for application data,
 so the stack provisions a dedicated database automatically — no manual setup
 required:
 
-- A one-shot **`db-init`** service runs on `make up`. Once the `db` service is
+- A one-shot **`db-init`** service runs on `docker compose up`. Once the `db` service is
   healthy, it creates the application database (default name `kanoa`) if it
   doesn't already exist, then exits. It's idempotent, so it's safe on every
   startup.
@@ -119,7 +158,7 @@ the Ignition connection's `connectionProps` so the two stay in sync
 + "connectionProps": "databaseName=<your-db-name>",
 ```
 
-After changing either, run `make restart`. You can confirm the connection is
+After changing either, run `docker compose restart`. You can confirm the connection is
 **Valid** on the Gateway's **Config → Databases → Connections** page.
 
 ## Database access
