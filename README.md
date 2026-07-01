@@ -1,8 +1,11 @@
 # kanoa-docker-template
 
-A template repository for spinning up a local [Ignition](https://inductiveautomation.com/)
+A template repository for spinning up a local - version controlled [Ignition](https://inductiveautomation.com/)
 gateway with KanoaMES and a SQL Server database via Docker Compose. Use it as the
-starting point for your own project repos.
+starting point for your own implementation.
+
+> [!WARNING]
+> This repository is intended for development use only. Deploying this Docker stack in a production environment violates Microsoft SQL Server's licensing terms.
 
 ## Services
 
@@ -207,9 +210,8 @@ services:
       MSSQL_PID: Developer
 ```
 
-> **Note:** Azure SQL Edge reads the password from `MSSQL_SA_PASSWORD` rather
-> than `SA_PASSWORD`. Referencing `${SA_PASSWORD}` keeps a single source of
-> truth in your `.env`.
+> [!NOTE] Azure SQL Edge reads the password from `MSSQL_SA_PASSWORD` rather
+> than `SA_PASSWORD`. Referencing `${SA_PASSWORD}` keeps a single source of truth in your `.env`.
 
 With the `COMPOSE_FILE` line above set in `.env`, `docker compose up -d` will
 automatically apply the override — no extra flags needed. To run without it,
