@@ -13,7 +13,7 @@ starting point for your own implementation.
 | --- | --- | --- |
 | `db` | `mcr.microsoft.com/mssql/server:2022-latest` | SQL Server (Developer edition) |
 | `db-init` | `mcr.microsoft.com/mssql-tools:latest` | One-shot job that creates the application database on startup, then exits |
-| `kanoa` | `inductiveautomation/ignition:8.3.7` | Ignition gateway with the Embr Charts and KanoaMES modules |
+| `kanoa` | `inductiveautomation/ignition:8.3.7` | Ignition gateway with the Embr Charts(6.0.1) and KanoaMES modules(1.15.0) |
 
 ## Prerequisites
 
@@ -210,8 +210,8 @@ services:
       MSSQL_PID: Developer
 ```
 
-> [!NOTE] Azure SQL Edge reads the password from `MSSQL_SA_PASSWORD` rather
-> than `SA_PASSWORD`. Referencing `${SA_PASSWORD}` keeps a single source of truth in your `.env`.
+> [!NOTE] Azure SQL Edge reads the password from MSSQL_SA_PASSWORD rather
+> than SA_PASSWORD. Referencing ${SA_PASSWORD} keeps a single source of truth in your .env.
 
 With the `COMPOSE_FILE` line above set in `.env`, `docker compose up -d` will
 automatically apply the override — no extra flags needed. To run without it,
