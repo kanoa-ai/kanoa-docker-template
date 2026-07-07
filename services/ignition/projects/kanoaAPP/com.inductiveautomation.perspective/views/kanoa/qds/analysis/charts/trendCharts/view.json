@@ -5,7 +5,7 @@
       "$": [
         "ds",
         192,
-        1782231095966
+        1782330733465
       ],
       "$columns": [
         {
@@ -215,7 +215,7 @@
       "$": [
         "ds",
         192,
-        1782231095935
+        1782330784375
       ],
       "$columns": []
     },
@@ -330,7 +330,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tdefaultData \u003d system.dataset.toDataSet([],[])\n\tdisplayMin \u003d float(value[\u0027settings\u0027].min or 0)\n\tdisplayMax \u003d float(value[\u0027settings\u0027].max or 0)\n\tminRange \u003d None if displayMin \u003e\u003d displayMax else displayMin\n\tmaxRange \u003d None if displayMax \u003c\u003d displayMin else displayMax\n\n\tstartDate \u003d value.values.filters.startDate\n\tendDate \u003d value.values.filters.endDate\n\tself.custom.timeSeries.values \u003d []\t\n\t\n\tchkItemPaths \u003d value[\u0027values\u0027][\u0027chkItems\u0027]\n\tmasterChkShtId \u003d value[\u0027values\u0027][\u0027filters\u0027][\u0027masterChkShtId\u0027]\n\tif masterChkShtId is None: return defaultData\n\t\t\n\tdata \u003d system.kanoa.quality.analysis.queryChkItemEventData(masterChkShtId, chkItemPaths, startDate, endDate, minRange, maxRange)\n\tif data.rowCount \u003d\u003d 0: system.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027No data found\u0027})\t\n\treturn data",
+            "code": "\n\tdefaultData \u003d system.dataset.toDataSet([],[])\n\tdisplayMin \u003d float(value[\u0027settings\u0027].min or 0)\n\tdisplayMax \u003d float(value[\u0027settings\u0027].max or 0)\n\tminRange \u003d None if displayMin \u003e\u003d displayMax else displayMin\n\tmaxRange \u003d None if displayMax \u003c\u003d displayMin else displayMax\n\n\tstartDate \u003d value.values.filters.startDate\n\tendDate \u003d value.values.filters.endDate\n\tself.custom.timeSeries.values \u003d []\t\n\t\n\tchkItemPaths \u003d value[\u0027values\u0027][\u0027chkItems\u0027]\n\tmasterChkShtId \u003d value[\u0027values\u0027][\u0027filters\u0027][\u0027masterChkShtId\u0027]\n\tif masterChkShtId is None: return defaultData\n\t\t\n\tdata \u003d system.kanoa.quality.analysis.queryChkItemEventData(masterChkShtId, chkItemPaths, startDate, endDate, minRange, maxRange)\n\ttableFilter \u003d value[\u0027values\u0027][\u0027filters\u0027].get(\u0027tableFilter\u0027)\n\tif (tableFilter or None) is not None:\n\t\tchkItemEventInfo \u003d {\u0027masterChkShtId\u0027: masterChkShtId, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}\n\t\tcie, msg \u003d system.kanoa.quality.analysis.getChkItemEventsByColumn(chkItemEventInfo)\n\t\tchkItemEventData \u003d system.kanoa.utilities.convertDatasetToJSON(cie)\n\t\ttakenDateLookup \u003d {}\n\t\tfor row in chkItemEventData: takenDateLookup[row[\u0027takenDate\u0027]] \u003d any(tableFilter in str(columnValue) for columnValue in row.values())\n\t\tjsonData \u003d system.kanoa.utilities.convertDatasetToJSON(data)\n\t\tjsonData \u003d [row for row in jsonData if (takenDateLookup.has_key(row[\u0027takenDate\u0027]) and takenDateLookup[row[\u0027takenDate\u0027]])]\n\t\tdata \u003d system.dataset.toPyDataSet(system.kanoa.utilities.convertDictListToDataset(jsonData))\n\tif data.rowCount \u003d\u003d 0: system.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027No data found\u0027})\t\n\treturn data",
             "type": "script"
           }
         ],
@@ -6318,7 +6318,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\tdef buildColumn(field, label, render):\n\t\treturn {\n\t\t\t\t  \"field\": field,\n\t\t\t\t  \"visible\": True,\n\t\t\t\t  \"editable\": False,\n\t\t\t\t  \"render\": render,\n\t\t\t\t  \"justify\": \"center\",\n\t\t\t\t  \"align\": \"center\",\n\t\t\t\t  \"resizable\": True,\n\t\t\t\t  \"sortable\": True,\n\t\t\t\t  \"sort\": \"none\",\n\t\t\t\t  \"boolean\": \"checkbox\",\n\t\t\t\t  \"number\": \"value\",\n\t\t\t\t  \"nullFormat\": {\"includeNullStrings\": False, \"strict\": False, \"nullFormatValue\": \"\"},\n\t\t\t\t  \"numberFormat\": \"0,0.###\",\n\t\t\t\t  \"dateFormat\": \"MM/DD/YYYY HH:mm:ss\",\n\t\t\t\t  \"width\": \"\",\n\t\t\t\t  \"strictWidth\": False,\n\t\t\t\t  \"header\": {\"title\": label, \"justify\": \"center\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t  \"style\": {\"classes\": \"\"}\n\t\t\t\t}\n\n\tcols \u003d []\n\tcols.append(buildColumn(\"takenDate\", \u0027Taken On\u0027, \u0027date\u0027))\n\tcols.append(buildColumn(\"scheduledDate\", \u0027Schedule For\u0027, \u0027date\u0027))\n\n\tcolHdrs \u003d system.dataset.getColumnHeaders(value)\n\tcolHdrs.pop(colHdrs.index(\u0027scheduledDate\u0027))\n\tcolHdrs.pop(colHdrs.index(\u0027takenDate\u0027))\n\t\n\tchkItems \u003d self.view.custom.chkItems\n\t\n\tfor col in colHdrs:\n\t\tlabel \u003d system.kanoa.utilities.formatPath(chkItems[str(col)][\u0027path\u0027], {})\n\t\tcols.append(buildColumn(col, label, \u0027auto\u0027))\n\t\t\n\treturn cols",
+                              "code": "\n\tdef buildColumn(field, label, render):\n\t\treturn {\n\t\t\t\t  \"field\": field,\n\t\t\t\t  \"visible\": True,\n\t\t\t\t  \"editable\": False,\n\t\t\t\t  \"render\": render,\n\t\t\t\t  \"justify\": \"center\",\n\t\t\t\t  \"align\": \"center\",\n\t\t\t\t  \"resizable\": True,\n\t\t\t\t  \"sortable\": True,\n\t\t\t\t  \"sort\": \"none\",\n\t\t\t\t  \"boolean\": \"checkbox\",\n\t\t\t\t  \"number\": \"value\",\n\t\t\t\t  \"nullFormat\": {\"includeNullStrings\": False, \"strict\": False, \"nullFormatValue\": \"\"},\n\t\t\t\t  \"numberFormat\": \"0,0.###\",\n\t\t\t\t  \"dateFormat\": \"MM/DD/YYYY HH:mm:ss\",\n\t\t\t\t  \"width\": \"\",\n\t\t\t\t  \"strictWidth\": False,\n\t\t\t\t  \"header\": {\"title\": label, \"justify\": \"center\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t  \"style\": {\"classes\": \"\"}\n\t\t\t\t}\n\n\tcols \u003d []\n\tcols.append(buildColumn(\"takenDate\", \u0027Taken On\u0027, \u0027date\u0027))\n\tcols.append(buildColumn(\"scheduledDate\", \u0027Schedule For\u0027, \u0027date\u0027))\n\n\tcolHdrs \u003d system.dataset.getColumnHeaders(value)\n\tif \u0027scheduledDate\u0027 in colHdrs: colHdrs.pop(colHdrs.index(\u0027scheduledDate\u0027))\n\tif \u0027takenDate\u0027 in colHdrs:colHdrs.pop(colHdrs.index(\u0027takenDate\u0027))\n\t\n\tchkItems \u003d self.view.custom.chkItems\n\t\n\tfor col in colHdrs:\n\t\tlabel \u003d system.kanoa.utilities.formatPath(chkItems[str(col)][\u0027path\u0027], {})\n\t\tcols.append(buildColumn(col, label, \u0027auto\u0027))\n\t\t\n\treturn cols",
                               "type": "script"
                             }
                           ],

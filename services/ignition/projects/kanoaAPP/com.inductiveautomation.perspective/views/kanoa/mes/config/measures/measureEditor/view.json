@@ -7,13 +7,14 @@
       "assetId": null,
       "assetPath": null,
       "attributeId": null,
+      "attributeName": null,
       "changedBy": null,
       "changedDate": null,
       "changedbyUser": null,
       "createdBy": null,
       "createdDate": null,
       "createdbyUser": null,
-      "enabled": null,
+      "enabled": true,
       "lastUpdated": null,
       "lastUpdatedBy": null,
       "measureAggregationId": null,
@@ -31,13 +32,14 @@
       "assetId": null,
       "assetPath": null,
       "attributeId": null,
+      "attributeName": null,
       "changedBy": null,
       "changedDate": null,
       "changedbyUser": null,
       "createdBy": null,
       "createdDate": null,
       "createdbyUser": null,
-      "enabled": null,
+      "enabled": true,
       "lastUpdated": null,
       "lastUpdatedBy": null,
       "measureAggregationId": null,
@@ -288,7 +290,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tmeasureInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.measures.getMeasures({\u0027measureId\u0027: value[\u0027measureId\u0027] or -1}), 0)\n\tif measureInfo[\u0027measureName\u0027] is None: measureInfo[\u0027measureName\u0027] \u003d \u0027\u0027\n\tmeasureInfo[\u0027tag\u0027] \u003d True if value[\u0027tagPath\u0027] else False\n\tmeasureInfo[\u0027tagPath\u0027] \u003d value[\u0027tagPath\u0027]\n\t\n\tif \u0027attributeId\u0027 not in measureInfo: measureInfo[\u0027attributeId\u0027] \u003d None\n\t\n\treturn measureInfo",
+            "code": "\t\n\tmeasureInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.measures.getMeasures({\u0027measureId\u0027: value[\u0027measureId\u0027] or -1}), 0)\n\tif measureInfo[\u0027measureName\u0027] is None: \n\t\tmeasureInfo[\u0027measureName\u0027] \u003d \u0027\u0027\n\t\tmeasureInfo[\u0027enabled\u0027] \u003d True\n\tmeasureInfo[\u0027tag\u0027] \u003d True if value[\u0027tagPath\u0027] else False\n\tmeasureInfo[\u0027tagPath\u0027] \u003d value[\u0027tagPath\u0027]\n\t\n\tif \u0027attributeId\u0027 not in measureInfo: measureInfo[\u0027attributeId\u0027] \u003d None\n\t\n\treturn measureInfo",
             "type": "script"
           }
         ],
@@ -317,7 +319,7 @@
   },
   "props": {
     "defaultSize": {
-      "height": 326,
+      "height": 295,
       "width": 707
     }
   },
@@ -743,6 +745,21 @@
                   ],
                   "type": "expr"
                 }
+              },
+              "props.params.values.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.measureInfo.attributeId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif value is None: return None\n\treturn system.kanoa.utilities.getFieldValue(\u0027path\u0027, system.kanoa.quality.config.getAttributes({\u0027attributeId\u0027: value}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
               }
             },
             "props": {
@@ -757,7 +774,6 @@
                     "showClear": true,
                     "showSelectedPath": true
                   },
-                  "path": "",
                   "style": {
                     "iconColor": "",
                     "iconPath": null,
@@ -949,7 +965,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\n\tmeasureInfo \u003d dict(self.view.custom.measureInfo)\n\torigMeasureInfo \u003d self.view.custom.origMeasureInfo\n\tuserId \u003d self.view.custom.security.userId\n\tmsg \u003d None\n\t\n\timport re\n\tpattern \u003d re.compile(r\u0027^[A-Za-z_][A-Za-z0-9_\\-\\. ]*$\u0027)\n\tif not bool(pattern.match(measureInfo[\u0027measureName\u0027])):\n\t\tmsg \u003d \"Invalid measureName. Ignition tags requires that names start with a letter or _ and then letters, numbers, _, -, .\"\n\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: msg})\t\t\n\t\treturn\t\n\t\n\tmeasureId \u003d measureInfo[\u0027measureId\u0027]\t\n\tif measureId is not None: retVal,msg \u003d system.kanoa.measures.updateMeasure(measureInfo, userId)\n\telse: \n\t\tmeasureId \u003d system.kanoa.utilities.getFieldValue(\u0027measureId\u0027, system.kanoa.measures.getMeasures(measureInfo))\n\t\tif measureId: msg \u003d \u0027This measure already exists for this asset\u0027\n\t\telse: measureId, msg \u003d system.kanoa.measures.addMeasure(measureInfo, userId)\n\t\t\t\n\tif msg:\t\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\treturn\n\t\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Measure saved\u0027})\n\n\n\tsystem.perspective.print(\"Checking tag\")\n\tsystem.perspective.print(\"tag is %s\"%measureInfo[\u0027tag\u0027])\n\tsystem.perspective.print(\"tagPath is %s\"%measureInfo[\u0027tagPath\u0027])\n\tif measureInfo[\u0027tag\u0027]:\n\t\tif measureInfo[\u0027tagPath\u0027] is None:\n\t\t\ttagPath, msg \u003d system.kanoa.measures.addMeasureTag(measureId, userId)\n\t\t\tsystem.perspective.print(\"addMeasureTag() called with %s return %s, %s\"%(measureId, tagPath, msg))\n\t\t\tmeasureInfo[\u0027tagPath\u0027] \u003d tagPath\n\t\telif measureInfo[\u0027measureName\u0027] !\u003d origMeasureInfo[\u0027measureName\u0027]:\t#rename this tag\n\t\t\tparent \u003d measureInfo[\u0027tagPath\u0027].rsplit(\"/\", 1)[0]\n\t\t\tretVal \u003d system.tag.rename(measureInfo[\u0027tagPath\u0027], measureInfo[\u0027measureName\u0027], \"o\")\n\t\t\tmeasureInfo[\u0027tagPath\u0027] \u003d parent + \u0027/\u0027 + measureInfo[\u0027measureName\u0027]\n\t\t\tsystem.perspective.print(\"rename tag returned %s\"%(retVal))\n\t\telse:\n\t\t\tsystem.perspective.print(\"Nothing to do\")\n\t\t\tpass\t#nothing to do, tag already exists\n\telif measureInfo[\u0027tagPath\u0027]: \n\t\tretVal \u003d system.tag.deleteTags([measureInfo[\u0027tagPath\u0027]])\n\t\tmeasureInfo[\u0027tagPath\u0027] \u003d None\n\t\tsystem.perspective.print(\"delete tag returned %s\"%(retVal))\n\t\t\t\t\n\timport time\n\ttime.sleep(0.1)\t#think the tags need some time to update\n\tif msg:\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Measure tag saved\u0027})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\tself.view.custom.measureInfo \u003d measureInfo\n\tself.view.custom.origMeasureInfo \u003d measureInfo\n\tsystem.perspective.sendMessage(\u0027measuresUpdated\u0027, {})\n\t\n\treturn"
+                    "script": "\n\tmeasureInfo \u003d dict(self.view.custom.measureInfo)\n\torigMeasureInfo \u003d self.view.custom.origMeasureInfo\n\tuserId \u003d self.view.custom.security.userId\n\tmsg \u003d None\n\t\n\timport re\n\tpattern \u003d re.compile(r\u0027^[A-Za-z_][A-Za-z0-9_\\-\\. ]*$\u0027)\n\tif not bool(pattern.match(measureInfo[\u0027measureName\u0027])):\n\t\tmsg \u003d \"Invalid measureName. Ignition tags requires that names start with a letter or _ and then letters, numbers, _, -, .\"\n\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: msg})\t\t\n\t\treturn\t\n\t\n\tmeasureId \u003d measureInfo[\u0027measureId\u0027]\t\n\tif measureId is not None: retVal,msg \u003d system.kanoa.measures.updateMeasure(measureInfo, userId)\n\telse: \n\t\tmeasureId \u003d system.kanoa.utilities.getFieldValue(\u0027measureId\u0027, system.kanoa.measures.getMeasures(measureInfo))\n\t\tif measureId: msg \u003d \u0027This measure already exists for this asset\u0027\n\t\telse: measureId, msg \u003d system.kanoa.measures.addMeasure(measureInfo, userId)\n\t\t\t\n\tif msg:\t\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\treturn\n\t\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Measure saved\u0027})\n\n\tsystem.perspective.print(\"Checking tag\")\n\tif measureInfo[\u0027tag\u0027]:\n\t\tif measureInfo[\u0027tagPath\u0027] is None:\n\t\t\ttagPath, msg \u003d system.kanoa.measures.addMeasureTag(measureId, userId)\n\t\t\tsystem.perspective.print(\"addMeasureTag() called with %s return %s, %s\"%(measureId, tagPath, msg))\n\t\t\tmeasureInfo[\u0027tagPath\u0027] \u003d tagPath\n\t\telif measureInfo[\u0027measureName\u0027] !\u003d origMeasureInfo[\u0027measureName\u0027]:\t#rename this tag\n\t\t\tparent \u003d measureInfo[\u0027tagPath\u0027].rsplit(\"/\", 1)[0]\n\t\t\tretVal \u003d system.tag.rename(measureInfo[\u0027tagPath\u0027], measureInfo[\u0027measureName\u0027], \"o\")\n\t\t\tmeasureInfo[\u0027tagPath\u0027] \u003d parent + \u0027/\u0027 + measureInfo[\u0027measureName\u0027]\n\t\t\tsystem.perspective.print(\"rename tag returned %s\"%(retVal))\n\t\telse:\n\t\t\tsystem.perspective.print(\"Nothing to do\")\n\t\t\tpass\t#nothing to do, tag already exists\n\telif measureInfo[\u0027tagPath\u0027]: \n\t\tretVal \u003d system.tag.deleteTags([measureInfo[\u0027tagPath\u0027]])\n\t\tmeasureInfo[\u0027tagPath\u0027] \u003d None\n\t\tsystem.perspective.print(\"delete tag returned %s\"%(retVal))\n\t\t\t\t\n\timport time\n\ttime.sleep(0.1)\t#think the tags need some time to update\n\tif msg:\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Measure tag saved\u0027})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\tself.view.custom.measureInfo \u003d measureInfo\n\tself.view.custom.origMeasureInfo \u003d measureInfo\n\tsystem.perspective.sendMessage(\u0027measuresUpdated\u0027, {})\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"

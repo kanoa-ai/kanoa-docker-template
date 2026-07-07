@@ -11,7 +11,7 @@
         "$": [
           "ds",
           192,
-          1779199299745
+          1782325678293
         ],
         "$columns": []
       },
@@ -19,7 +19,8 @@
       "selection": {
         "col": null,
         "row": null
-      }
+      },
+      "textFilter": ""
     }
   },
   "params": {
@@ -33,10 +34,11 @@
       "$": [
         "ds",
         201,
-        1779199299745
+        1782325678293
       ],
       "$columns": []
     },
+    "tableFilter": "",
     "value": {
       "displaySettings": {
         "autoRefresh": false,
@@ -142,7 +144,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn [item for item in value[0]] if len(value) \u003e 0 else []",
+            "code": "\t\n\tnonCheckList \u003d [\u0027shiftName\u0027, \u0027takenDate\u0027, \u0027assetPath\u0027, \u0027chkShtStateName\u0027]\n\treturn [item for item in value[0] if item not in nonCheckList] if len(value) \u003e 0 else []",
             "type": "script"
           }
         ],
@@ -159,6 +161,17 @@
       "binding": {
         "config": {
           "path": "view.custom.table.data"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "paramDirection": "output",
+      "persistent": true
+    },
+    "params.tableFilter": {
+      "binding": {
+        "config": {
+          "path": "view.custom.table.textFilter"
         },
         "overlayOptOut": true,
         "type": "property"
@@ -693,6 +706,16 @@
                       "type": "expr-struct"
                     }
                   },
+                  "props.filter.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.table.textFilter"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
                   "props.footerGroups": {
                     "binding": {
                       "config": {
@@ -860,7 +883,7 @@
         {
           "name": "getData",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"getData() called\")\n\n\tfilters \u003d self.view.params.value.filters\n\tif filters.masterChkShtId is None: return system.dataset.toDataSet([],[])\n\n\tsystem.perspective.print(\"getData() called\")\n\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({\u0027enabled\u0027: True}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\tself.view.params.infoBar \u003d {\"showBar\": True, \"text\": \"Getting data...\", \"type\": \"INFO\"}\n\t\n\tchkShtEventInfo \u003d dict(filters)\t\n\tif chkShtEventInfo.has_key(\u0027assetPath\u0027) and chkShtEventInfo[\u0027assetPath\u0027] is not None: chkShtEventInfo[\u0027assetPath\u0027] \u003d chkShtEventInfo[\u0027assetPath\u0027] + \u0027%\u0027\n\t\n\tif chkShtEventInfo.has_key(\u0027itemClasses\u0027) and len(chkShtEventInfo[\u0027itemClasses\u0027]) \u003e 0: chkShtEventInfo[\u0027itemClassPath\u0027] \u003d chkShtEventInfo[\u0027itemClasses\u0027][0][\u0027itemClassPath\u0027] +\u0027%\u0027\n\tif chkShtEventInfo.has_key(\u0027items\u0027) and len(chkShtEventInfo[\u0027items\u0027]) \u003e 0: chkShtEventInfo[\u0027itemId\u0027] \u003d chkShtEventInfo[\u0027items\u0027][0][\u0027itemId\u0027]\n\n\tchkShtEventInfo[\u0027chkShtStateIds\u0027] \u003d [chkStates[\u0027Approved\u0027]]\n\tif chkShtEventInfo.has_key(\u0027itemClasses\u0027): chkShtEventInfo.pop(\u0027itemClasses\u0027)\n\tif chkShtEventInfo.has_key(\u0027items\u0027): chkShtEventInfo.pop(\u0027items\u0027)\t\n\tif chkShtEventInfo.has_key(\u0027chkStates\u0027): chkShtEventInfo.pop(\u0027chkStates\u0027)\n\n#\tdata, msg \u003d system.kanoa.quality.analysis.getChkItemEventsByColumn(chkShtEventInfo)\n\tdata, msg \u003d system.kanoa.quality.analysis.getChkItemEventsByColumn(chkShtEventInfo)\n\n\tself.view.params.infoBar \u003d {\"showBar\": False, \"text\": \"\", \"type\": \"INFO\"}\n\tif data.rowCount \u003d\u003d 0: system.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027No checks found\u0027})\n\treturn data"
+          "script": "\n\tsystem.perspective.print(\"getData() called\")\n\n\tfilters \u003d self.view.params.value.filters\n\tif filters.masterChkShtId is None: return system.dataset.toDataSet([],[])\n\n\tsystem.perspective.print(\"getData() called\")\n\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({\u0027enabled\u0027: True}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\tself.view.params.infoBar \u003d {\"showBar\": True, \"text\": \"Getting data...\", \"type\": \"INFO\"}\n\t\n\tchkShtEventInfo \u003d dict(filters)\t\n\tif chkShtEventInfo.has_key(\u0027assetPath\u0027) and chkShtEventInfo[\u0027assetPath\u0027] is not None: chkShtEventInfo[\u0027assetPath\u0027] \u003d chkShtEventInfo[\u0027assetPath\u0027] + \u0027%\u0027\n\t\n\tif chkShtEventInfo.has_key(\u0027itemClasses\u0027) and len(chkShtEventInfo[\u0027itemClasses\u0027]) \u003e 0: chkShtEventInfo[\u0027itemClassPath\u0027] \u003d chkShtEventInfo[\u0027itemClasses\u0027][0][\u0027itemClassPath\u0027] +\u0027%\u0027\n\tif chkShtEventInfo.has_key(\u0027items\u0027) and len(chkShtEventInfo[\u0027items\u0027]) \u003e 0: chkShtEventInfo[\u0027itemId\u0027] \u003d chkShtEventInfo[\u0027items\u0027][0][\u0027itemId\u0027]\n\n\tchkShtEventInfo[\u0027chkShtStateIds\u0027] \u003d [chkStates[\u0027Approved\u0027]]\n\tif chkShtEventInfo.has_key(\u0027itemClasses\u0027): chkShtEventInfo.pop(\u0027itemClasses\u0027)\n\tif chkShtEventInfo.has_key(\u0027items\u0027): chkShtEventInfo.pop(\u0027items\u0027)\t\n\tif chkShtEventInfo.has_key(\u0027chkStates\u0027): chkShtEventInfo.pop(\u0027chkStates\u0027)\n\t\n\tdata, msg \u003d system.kanoa.quality.analysis.getChkItemEventsByColumn(chkShtEventInfo)\n\n\tself.view.params.infoBar \u003d {\"showBar\": False, \"text\": \"\", \"type\": \"INFO\"}\n\tif data.rowCount \u003d\u003d 0: system.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027No checks found\u0027})\n\treturn data"
         },
         {
           "name": "clearData",

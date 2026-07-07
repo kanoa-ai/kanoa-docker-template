@@ -23,7 +23,7 @@
       "timeZone": null
     },
     "assetPath": null,
-    "selectorId": "4a3378ac-106b-45cd-a8b9-b36f97771afe"
+    "selectorId": "b2ef48c7-fc9e-4c06-9fc0-af1b6e8f7b96"
   },
   "params": {
     "assetInfo": {
@@ -80,7 +80,7 @@
       },
       "onChange": {
         "enabled": null,
-        "script": "\t\n\tsystem.perspective.sendMessage(\"assetSelectorUpdate\", self.custom.assetInfo)\n\t\n\treturn"
+        "script": "\t\n#\tsystem.perspective.print(\u0027assetSelector custom.assetInfo now selected: %s\u0027%self.custom.assetInfo[\u0027assetPath\u0027])\n\tsystem.perspective.sendMessage(\"assetSelectorUpdate\", self.custom.assetInfo)\n\t\n\treturn"
       },
       "persistent": true
     },
@@ -97,7 +97,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n#\tsystem.perspective.print(\"assetSelector assetPath change\")\n\tparams \u003d value[\u0027params\u0027]\n\tif not params.has_key(\u0027useSessionValue\u0027) or params[\u0027useSessionValue\u0027]: \n\t\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\t\tassetPath \u003d value[\u0027sessionCustomProps\u0027][page][\u0027selectors\u0027][\u0027assetPath\u0027]\n#\t\tsystem.perspective.print(\"session assetPath is %s\"%assetPath)\n\t\treturn assetPath\n\telif params.has_key(\u0027assetPath\u0027) and params[\u0027assetPath\u0027]: return params[\u0027assetPath\u0027]\n\t\n\treturn self.custom.assetPath",
+            "code": "\n#\tsystem.perspective.print(\"assetSelector - assetPath binding change\")\n\tparams \u003d value[\u0027params\u0027]\n\tif not params.has_key(\u0027useSessionValue\u0027) or params[\u0027useSessionValue\u0027]: \n\t\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\t\tassetPath \u003d value[\u0027sessionCustomProps\u0027][page][\u0027selectors\u0027][\u0027assetPath\u0027]\n\t\treturn assetPath\n\telif params.has_key(\u0027assetPath\u0027) and params[\u0027assetPath\u0027]: return params[\u0027assetPath\u0027]\n\t\n\treturn self.custom.assetPath",
             "type": "script"
           }
         ],
@@ -241,7 +241,7 @@
         {
           "messageType": "assetSelected",
           "pageScope": true,
-          "script": "\n#\tsystem.perspective.print(\"assetSelected msg rcvd with %s\"%payload)\n\tif payload[\u0027selectorId\u0027] is not None and payload[\u0027selectorId\u0027] !\u003d self.view.custom.selectorId: return\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeSelected\u0027: \n\t\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\tparams \u003d dict(self.view.params.value)\n\t\tif not (params.has_key(\u0027persistent\u0027) and params[\u0027persistent\u0027] \u003d\u003d False): system.kanoa.utilities.storeAssetPath(self, assetPath)\t\n\t\tself.view.custom.assetPath \u003d assetPath\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeDropped\u0027: system.perspective.print(\u0027asset drag and drop done\u0027)\n\treturn",
+          "script": "\n#\tsystem.perspective.print(\"assetSelector - assetSelected msg rcvd with %s\"%payload)\n\tif payload[\u0027selectorId\u0027] is not None and payload[\u0027selectorId\u0027] !\u003d self.view.custom.selectorId: return\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeSelected\u0027: \n\t\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\tparams \u003d dict(self.view.params.value)\n\t\tif not (params.has_key(\u0027persistent\u0027) and params[\u0027persistent\u0027] \u003d\u003d False): system.kanoa.utilities.storeAssetPath(self, assetPath)\t\n\t\tself.view.custom.assetPath \u003d assetPath\n\t\tself.view.params.value.assetPath \u003d assetPath\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeDropped\u0027: system.perspective.print(\u0027asset drag and drop done\u0027)\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },
