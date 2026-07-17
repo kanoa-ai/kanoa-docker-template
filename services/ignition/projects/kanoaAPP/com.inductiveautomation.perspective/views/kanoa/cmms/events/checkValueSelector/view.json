@@ -3,23 +3,16 @@
     "selection": [],
     "values": {
       "dataTypeInfo": {
-        "changedBy": 1,
+        "changedBy": null,
         "changedDate": null,
-        "createdBy": 1,
-        "createdDate": {
-          "$": [
-            "ts",
-            192,
-            1781366501347
-          ],
-          "$ts": 1752185628297
-        },
-        "dataTypeId": 1,
-        "dataTypeName": "Image",
-        "enabled": true,
-        "isNumeric": false,
-        "isTriggerType": false,
-        "pickListEnabled": false
+        "createdBy": null,
+        "createdDate": null,
+        "dataTypeId": null,
+        "dataTypeName": null,
+        "enabled": null,
+        "isNumeric": null,
+        "isTriggerType": null,
+        "pickListEnabled": null
       },
       "pickListInfo": {
         "data": {
@@ -80,10 +73,10 @@
           "value": ""
         },
         "setPoint": {
-          "operator": null,
-          "value": null
+          "operator": "\u003e\u003d",
+          "value": 1
         },
-        "specType": null,
+        "specType": "setPoint",
         "tolerance": {
           "lcl": null,
           "ldl": null,
@@ -101,7 +94,7 @@
   "params": {
     "value": {
       "checkConfig": {
-        "dataTypeId": "1",
+        "dataTypeId": null,
         "engUnitId": null,
         "pickListInfo": {
           "pickListId": null,
@@ -148,10 +141,10 @@
             "value": ""
           },
           "setPoint": {
-            "operator": null,
-            "value": null
+            "operator": "\u003e\u003d",
+            "value": 1
           },
-          "specType": null,
+          "specType": "setPoint",
           "tolerance": {
             "lcl": null,
             "ldl": null,
@@ -166,46 +159,46 @@
         }
       },
       "checkInfo": {
-        "changedBy": 17,
-        "changedByUser": "srussem",
+        "changedBy": null,
+        "changedByUser": "",
         "changedDate": {
           "$": [
             "ts",
             192,
-            1781364363182
+            1784034621811
           ],
-          "$ts": 1776864494320
+          "$ts": 1783969238737
         },
-        "checkConfig": "{\"engUnitId\":null,\"dataTypeId\":\"1\",\"specInfo\":{\"specType\":null,\"regex\":{\"value\":\"\"},\"setPoint\":{\"value\":null,\"operator\":null},\"range\":{\"min\":null,\"max\":null},\"tolerance\":{\"tgt\":null,\"lel\":null,\"lsl\":null,\"lcl\":null,\"ldl\":null,\"udl\":null,\"uel\":null,\"usl\":null,\"ucl\":null}},\"pickListInfo\":{\"pickListValues\":{\"Number\":{\"min\":null,\"max\":null,\"increment\":null},\"Tree\":\"\",\"Fraction\":{\"min\":null,\"max\":null,\"increment\":null},\"Text\":{\"PASS\":[],\"WARNING\":[],\"FAIL\":[],\"NEUTRAL\":[],\"multiSelect\":false},\"Time\":null,\"Barcode Scanner\":{\"script\":null},\"Boolean\":{\"enableNA\":false,\"TRUE\":[\"OK\"],\"FALSE\":[\"Not OK\"]}},\"pickListId\":null}}",
-        "checkDescription": "Capture an image showing the line in a safe stopped state or showing applied lockout/tagout.",
-        "checkName": "Safety Isolation Photo",
+        "checkConfig": "{}",
+        "checkDescription": "",
+        "checkName": "",
         "chkItemStateColor": "",
         "chkItemStateName": "",
         "comment": "",
-        "createdBy": 17,
-        "createdByUser": "srussem",
+        "createdBy": null,
+        "createdByUser": "",
         "createdDate": {
           "$": [
             "ts",
             192,
-            1781364363182
+            1784034621811
           ],
-          "$ts": 1776864479313
+          "$ts": 1783969220777
         },
         "enabled": true,
-        "lastUpdatedBy": "srussem on 2026-04-22 13:28:14.320",
-        "procedureId": 2,
-        "procedureName": "Packaging Line Emergency Stop Inspection",
+        "lastUpdatedBy": "",
+        "procedureId": 1,
+        "procedureName": "",
         "procedureStepCheckEventId": null,
-        "procedureStepCheckId": 4,
-        "procedureStepEventId": 5,
-        "procedureStepId": 4,
-        "required": false,
-        "sortOrder": 1,
+        "procedureStepCheckId": null,
+        "procedureStepEventId": null,
+        "procedureStepId": null,
+        "required": true,
+        "sortOrder": 0,
         "status": "",
-        "stepName": "Confirm Line is Safe and De-Energized",
+        "stepName": "",
         "value": "",
-        "workOrderEventId": 9
+        "workOrderEventId": null
       }
     }
   },
@@ -676,9 +669,16 @@
             },
             "propConfig": {
               "props.value": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.checkInfo.value"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
                 "onChange": {
                   "enabled": null,
-                  "script": "\n\tpayload \u003d {\u0027value\u0027: currentValue.value}\n\tsystem.perspective.sendMessage(\u0027checkValuePicked\u0027, payload, scope\u003d\u0027page\u0027)\n\t\n\treturn"
+                  "script": "\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tpayload \u003d {\u0027value\u0027: currentValue.value}\n\t\tsystem.perspective.sendMessage(\u0027checkValuePicked\u0027, payload, scope\u003d\u0027page\u0027)\n\t\n\treturn"
                 }
               }
             },
@@ -775,7 +775,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\treturn value.get(\u0027dataTypeName\u0027, \u0027\u0027).lower() \u003d\u003d \u0027image\u0027",
+                  "code": "\n\tif value.get(\u0027dataTypeName\u0027) is None: return False\n\treturn value.get(\u0027dataTypeName\u0027).lower() \u003d\u003d \u0027image\u0027",
                   "type": "script"
                 }
               ],

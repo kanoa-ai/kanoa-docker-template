@@ -1,0 +1,156 @@
+[
+  {
+    "dataType": "Int4",
+    "enabled": true,
+    "name": "chkEvents",
+    "readOnly": false,
+    "readPermissions": {
+      "securityLevels": [],
+      "type": "AllOf"
+    },
+    "tagGroup": "Default",
+    "tagType": "UdtType",
+    "typeColor": -47105,
+    "writePermissions": {
+      "securityLevels": [],
+      "type": "AllOf"
+    },
+    "tags": [
+      {
+        "dataType": "DataSet",
+        "enabled": true,
+        "name": "chkEventData",
+        "readOnly": false,
+        "readPermissions": {
+          "securityLevels": [],
+          "type": "AllOf"
+        },
+        "tagGroup": "Default",
+        "tagType": "AtomicTag",
+        "value": "{\"columns\":[],\"rows\":[]}",
+        "valueSource": "memory",
+        "writePermissions": {
+          "securityLevels": [],
+          "type": "AllOf"
+        }
+      },
+      {
+        "dataType": "DateTime",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "name": "lastUpdated",
+        "tagType": "AtomicTag",
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "DateTime",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\t#we\u0027ll update the chkEvents dat aif it hasn\u0027t changed for over a minute\t\n\tif system.date.secondsBetween(currentValue.timeStamp, system.tag.read(\"[.]lastUpdated\").value) \u003e 60: system.tag.write(\"[.]updateChkEventData\", 1)\n\t\n\treturn"
+          }
+        ],
+        "expression": "now(60000)",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "name": "timerUpdate",
+        "tagType": "AtomicTag",
+        "valueSource": "expr"
+      },
+      {
+        "dataType": "Boolean",
+        "enabled": true,
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif currentValue.value:\n\t\t\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\timport java.lang\n\t\t\n\t\ttry:\t\t\n\t\t\tchkEventFilterInfo \u003d {}\t\n\t\t\tchkEventFilterInfo[\u0027auto\u0027] \u003d False\n\t\t\tchkEventFilterInfo[\u0027chkShtStateNames\u0027] \u003d [\u0027Due\u0027, \u0027Overdue\u0027, \u0027Coming Due\u0027]\n\t\t\tdata \u003d system.kanoa.quality.event.getChkShtEvents(chkEventFilterInfo)\n\t\t\tif data !\u003d \u0027Kanoa QDS License Expired\u0027:\n\t\t\t\tchkEventFilterInfo \u003d {}\t\n\t\t\t\tchkEventFilterInfo[\u0027startDate\u0027] \u003d system.date.addDays(system.date.now(), -1)\n\t\t\t\tchkEventFilterInfo[\u0027endDate\u0027] \u003d system.date.now()\n\t\t\t\tchkEventFilterInfo[\u0027chkShtStateNames\u0027] \u003d [\u0027Approved\u0027, \u0027Submitted\u0027, \u0027Rejected\u0027, \u0027Missed\u0027, \u0027Canceled\u0027]\n\t\t\t\tchkEventFilterInfo[\u0027auto\u0027] \u003d False\n\t\t\t\n\t\t\t\tchkEvents \u003d system.dataset.appendDataset(data, system.kanoa.quality.event.getChkShtEvents(chkEventFilterInfo))\t\t\n\t\t\t\n\t\t\t\tsystem.tag.write(\"[.]chkEventData\", chkEvents)\n\t\t\t\t\n\t\t\tsystem.tag.write(\"[.]lastUpdated\", system.date.now())\n\n\t\texcept java.lang.Exception, e:\n\t\t\tlog.warn(\"%s timer script failed with %s\"%(tagPath, e.cause))\n\t\texcept:\n\t\t\tlog.warn(\"%s timer script failed\"%tagPath)\t\n\t\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t\t\t\n\n\t\tsystem.tag.writeBlocking([\u0027[.]updateChkEventData\u0027], [0], 5000)\t#Need token passing here as the updateScheduleChecksTag() also writes to it \t\t\n\t\t\n\treturn"
+          }
+        ],
+        "name": "updateChkEventData",
+        "readOnly": false,
+        "readPermissions": {
+          "securityLevels": [],
+          "type": "AllOf"
+        },
+        "tagGroup": "Default",
+        "tagType": "AtomicTag",
+        "value": false,
+        "valueSource": "memory",
+        "writePermissions": {
+          "securityLevels": [],
+          "type": "AllOf"
+        }
+      }
+    ]
+  },
+  {
+    "name": "chkShtTrigger",
+    "tagType": "UdtType",
+    "typeColor": -47105,
+    "tags": [
+      {
+        "dataType": "Int4",
+        "name": "chkShtVersionGroupId",
+        "tagType": "AtomicTag",
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "Boolean",
+        "name": "debug",
+        "tagType": "AtomicTag",
+        "value": false,
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "Boolean",
+        "name": "enabled",
+        "tagType": "AtomicTag",
+        "value": true,
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "String",
+        "name": "error",
+        "tagType": "AtomicTag",
+        "valueSource": "memory"
+      },
+      {
+        "name": "intervalSecs",
+        "tagType": "AtomicTag",
+        "value": 60,
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "DateTime",
+        "formatString": "yyyy-MM-dd h:mm:ss aa",
+        "name": "lastUpdated",
+        "tagType": "AtomicTag",
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "String",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\ttagPaths \u003d [\"[.]enabled\", \"[.]trigger\", \"[.]lastUpdated\", \"[.]intervalSecs\"]\n\ttagValues \u003d system.tag.readBlocking(tagPaths)\n\n\tenabled \u003d tagValues[0].value\n\tupdating \u003d tagValues[1].value\n\tlastUpdated \u003d tagValues[2].value\n\tintervalSecs \u003d tagValues[3].value or 60\n \n\tif enabled and not updating:\n\t\tif lastUpdated is None or system.date.secondsBetween(lastUpdated, system.date.now()) \u003e\u003d intervalSecs: \n\t\t\tsystem.tag.writeBlocking([\"[.]trigger\"], [True])\n\t\t\n\treturn"
+          }
+        ],
+        "name": "referenceTag",
+        "tagType": "AtomicTag",
+        "valueSource": "reference"
+      },
+      {
+        "dataType": "Boolean",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]chkShtVersionGroupId\", \"[.]../Line/EquipID\", \"[.]../Line/OEE/itemId\", \"[.]../Line/OEE/shiftNameId\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tchkShtVersionGroupId \u003d tagValues[1].value\n\t\tassetId \u003d tagValues[2].value\n\t\titemId \u003d tagValues[3].value\n\t\tshiftNameId \u003d tagValues[4].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tif chkShtVersionGroupId:\n\t\t\t\tif debug: log.info(\"%s tag change event looking for released check sheet version for chkShtVersionGroupId %s\"%(tagPath, chkShtVersionGroupId))\n\t\t\t\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\t\t\t\ttriggerTypeId \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeId\u0027, system.kanoa.quality.config.getTriggerTypes({\u0027triggerTypeName\u0027: \u0027manual\u0027}))\n\t\t\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027tagChange\u0027})\n\t\t\t\tchkShtId \u003d system.kanoa.utilities.getFieldValue(\u0027chkShtId\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtVersionGroupId\u0027: chkShtVersionGroupId, \u0027chkShtVersionStateName\u0027: \u0027Released\u0027}))\n\t\t\t\tif chkShtId: \n\t\t\t\t\tchkEventInfo \u003d {\u0027chkShtId\u0027: chkShtId, \u0027assetId\u0027: assetId, \u0027itemId\u0027: itemId, \u0027chkShtTriggerId\u0027: None, \u0027triggerTypeId\u0027: triggerTypeId, \u0027shiftNameId\u0027: shiftNameId, \u0027comment\u0027: None, \u0027scheduledDate\u0027: system.date.now(), \u0027chkShtStateId\u0027: chkStates[\u0027Coming Due\u0027]}\n\t\t\t\t\tchkShtEventId \u003d system.kanoa.quality.event.addCheckEvent(chkEventInfo, userId)\n\t\t\t\t\tif chkShtEventId is None:\n\t\t\t\t\t\terrorMsg \u003d \"addCheckEvent() didn\u0027t generate a chkShtEventId\"\n\t\t\t\t\t\tif debug: log.warn(errorMsg)\n\t\t\t\t\telse:\n\t\t\t\t\t\tif debug: log.info(\"addCheckEvent() generated chkShtEventId %s\"%chkShtEventId)\n\t\t\t\t\t\tcount \u003d system.kanoa.quality.schedule.updateScheduledAutoChecks()\n\t\t\t\t\t\tif count \u003d\u003d 0 and debug: log.warn(\"updateScheduledAutoChecks() didn\u0027t execute any new check sheets\")\n\t\t\t\telif debug: log.warn(\"%s tag change event couldn\u0027t find a released check sheet version for chkShtVersionGroupId %s\"%(tagPath, chkShtVersionGroupId))\n\t\t\telse: \n\t\t\t\terrorMsg \u003d \u0027Invalid chkShtVersionGroupId %s\u0027%chkShtVersionGroupId\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept Exception, e:\n\t\t\terrorMsg \u003d str(e)\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]trigger\", \"[.]error\"], [timeNow, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\t\n\treturn"
+          }
+        ],
+        "formatString": "#,##0.##",
+        "name": "trigger",
+        "tagType": "AtomicTag",
+        "value": false,
+        "valueSource": "memory"
+      }
+    ]
+  }
+]

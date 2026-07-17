@@ -2,638 +2,638 @@
   "custom": {
     "table": {
       "selection": {
-        "col": null, 
-        "data": [], 
+        "col": null,
+        "data": [],
         "row": null
       }
     }
-  }, 
-  "params": {}, 
+  },
+  "params": {},
+  "propConfig": {
+    "custom.table": {
+      "persistent": true
+    },
+    "custom.table.data": {
+      "binding": {
+        "config": {
+          "expression": "1"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn \tsystem.kanoa.quality.config.getItemSets({})",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    }
+  },
   "props": {
     "defaultSize": {
-      "width": 746, 
-      "height": 336
+      "height": 354,
+      "width": 746
     }
-  }, 
+  },
   "root": {
-    "type": "ia.container.flex", 
-    "props": {
-      "style": {
-        "classes": "kanoa/popup", 
-        "gap": 5
-      }, 
-      "direction": "column"
-    }, 
     "children": [
       {
-        "type": "ia.container.flex", 
-        "props": {
-          "style": {
-            "gap": 5
-          }
-        }, 
         "children": [
           {
-            "type": "ia.container.flex", 
-            "props": {
-              "style": {
-                "padding": "5px", 
-                "classes": "kanoa/container", 
-                "gap": 5
-              }, 
-              "direction": "column"
-            }, 
             "children": [
               {
-                "type": "ia.input.button", 
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tself.view.refreshBinding(\"custom.table.data\")\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "domId": "btnGetData",
+                  "name": "btnGetData",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Get data"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
                 "props": {
                   "image": {
                     "icon": {
                       "path": "material/motion_photos_on"
                     }
-                  }, 
+                  },
                   "style": {
                     "classes": "kanoa/button/flatIcon"
-                  }, 
+                  },
                   "text": ""
-                }, 
-                "meta": {
-                  "tooltip": {
-                    "enabled": true, 
-                    "delay": 0, 
-                    "location": "center-right", 
-                    "text": "Get data"
-                  }, 
-                  "domId": "btnGetData", 
-                  "name": "btnGetData"
-                }, 
-                "position": {
-                  "shrink": 0
-                }, 
+                },
+                "type": "ia.input.button"
+              },
+              {
                 "events": {
                   "component": {
                     "onActionPerformed": {
-                      "type": "script", 
-                      "scope": "G", 
                       "config": {
-                        "script": "\n\tself.view.refreshBinding(\"custom.table.data\")\n\t\n\treturn"
-                      }
+                        "script": "\t\n\tself.view.getChild(\"root\").addItemSet()\n\t\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
                     }
                   }
-                }
-              }, 
-              {
-                "type": "ia.input.button", 
+                },
+                "meta": {
+                  "domId": "btnAdd",
+                  "name": "btnAdd",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Add"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
                 "props": {
                   "image": {
                     "icon": {
                       "path": "material/add"
                     }
-                  }, 
+                  },
                   "style": {
                     "classes": "kanoa/button/flatIcon"
-                  }, 
+                  },
                   "text": ""
-                }, 
-                "meta": {
-                  "tooltip": {
-                    "enabled": true, 
-                    "delay": 0, 
-                    "location": "center-right", 
-                    "text": "Add"
-                  }, 
-                  "domId": "btnAdd", 
-                  "name": "btnAdd"
-                }, 
-                "position": {
-                  "shrink": 0
-                }, 
-                "events": {
-                  "component": {
-                    "onActionPerformed": {
-                      "type": "script", 
-                      "scope": "G", 
-                      "config": {
-                        "script": "\t\n\tself.view.getChild(\"root\").addItemSet()\n\t\n\treturn"
-                      }
-                    }
-                  }
-                }
-              }, 
+                },
+                "type": "ia.input.button"
+              },
               {
-                "type": "ia.input.button", 
-                "props": {
-                  "image": {
-                    "icon": {
-                      "color": "--kcRed-60", 
-                      "path": "material/delete_forever"
-                    }
-                  }, 
-                  "style": {
-                    "classes": "kanoa/button/flatIcon"
-                  }, 
-                  "text": ""
-                }, 
-                "meta": {
-                  "tooltip": {
-                    "enabled": true, 
-                    "delay": 0, 
-                    "location": "center-right", 
-                    "text": "Delete Item Set"
-                  }, 
-                  "domId": "btnDelete", 
-                  "name": "btnDelete"
-                }, 
-                "position": {
-                  "shrink": 0
-                }, 
                 "events": {
                   "component": {
                     "onActionPerformed": {
-                      "type": "script", 
-                      "scope": "G", 
                       "config": {
-                        "script": "\n\tmsg = \"Are you sure you want to delete this item set?\"\n\tsystem.perspective.openPopup('deleteItemSet', 'kanoa/core/templates/inputs/confirm', params={'text':msg, 'messageHandler':'deleteItemSet'})\t\n\t\t\n\t\t\t\t\n#\tself.view.getChild(\"root\").deleteItemSet()"
-                      }
+                        "script": "\n\tmsg \u003d \"Are you sure you want to delete this item set?\"\n\tsystem.perspective.openPopup(\u0027deleteItemSet\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, params\u003d{\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteItemSet\u0027})\t\n\t\t\n\t\t\t\t\n#\tself.view.getChild(\"root\").deleteItemSet()"
+                      },
+                      "scope": "G",
+                      "type": "script"
                     }
                   }
-                }, 
+                },
+                "meta": {
+                  "domId": "btnDelete",
+                  "name": "btnDelete",
+                  "tooltip": {
+                    "delay": 0,
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Delete Item Set"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
                 "propConfig": {
                   "position.display": {
                     "binding": {
-                      "transforms": [
-                        {
-                          "code": "\treturn value is not None", 
-                          "type": "script"
-                        }
-                      ], 
-                      "type": "property", 
-                      "overlayOptOut": true, 
                       "config": {
                         "path": "view.custom.table.selection.row"
-                      }
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn value is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
                     }
                   }
-                }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "color": "--kcRed-60",
+                      "path": "material/delete_forever"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
               }
-            ], 
+            ],
             "meta": {
-              "domId": "flxActions", 
+              "domId": "flxActions",
               "name": "flxActions"
-            }, 
+            },
             "position": {
               "shrink": 0
-            }
-          }, 
-          {
-            "type": "ia.display.table", 
+            },
             "props": {
-              "nullFormat": {
-                "includeNullStrings": true
-              }, 
-              "columns": [
-                {
-                  "visible": false, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "align": "center", 
-                  "viewPath": "", 
-                  "number": "value", 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "itemSetId", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "width": "", 
-                  "header": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "center", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto"
-                }, 
-                {
-                  "visible": true, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "resizable": true, 
-                  "editable": true, 
-                  "sort": "none", 
-                  "sortable": false, 
-                  "align": "center", 
-                  "viewPath": "", 
-                  "number": "value", 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "itemSetName", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "width": "", 
-                  "header": {
-                    "align": "center", 
-                    "title": "Item Set", 
-                    "justify": "center", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto"
-                }, 
-                {
-                  "visible": true, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "resizable": true, 
-                  "editable": true, 
-                  "sort": "none", 
-                  "sortable": false, 
-                  "align": "center", 
-                  "viewPath": "", 
-                  "number": "value", 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "itemSetDescription", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "width": "", 
-                  "header": {
-                    "align": "center", 
-                    "justify": "center", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto"
-                }, 
-                {
-                  "visible": true, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "resizable": true, 
-                  "editable": true, 
-                  "sort": "none", 
-                  "sortable": false, 
-                  "align": "center", 
-                  "viewPath": "", 
-                  "number": "value", 
-                  "boolean": "checkbox", 
-                  "strictWidth": true, 
-                  "field": "enabled", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "width": 80, 
-                  "header": {
-                    "align": "center", 
-                    "justify": "center", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto"
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/container",
+                "gap": 5,
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "events": {
+              "component": {
+                "onEditCellCommit": {
+                  "config": {
+                    "script": "\n\tself.props.data \u003d system.dataset.setValue(self.props.data, event.row, event.column, event.value)\n\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
                 }
-              ], 
+              }
+            },
+            "meta": {
+              "domId": "table",
+              "name": "table"
+            },
+            "position": {
+              "basis": "400px",
+              "grow": 1
+            },
+            "propConfig": {
+              "props.columns[2].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\"Description\")"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.columns[3].header.title": {
+                "binding": {
+                  "config": {
+                    "expression": "translate(\"Enabled\")"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.table.data"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\tif origin \u003d\u003d \u0027Script\u0027: self.view.getChild(\"root\").saveData()\n\t\n\treturn"
+                }
+              },
+              "props.selection.data": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.table.selection.data"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedColumn": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.table.selection.col"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedRow": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.table.selection.row"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
               "bodyStyle": {
                 "classes": "kanoa/font/default"
-              }, 
-              "rows": {
-                "striped": {
-                  "enabled": false
-                }
-              }, 
-              "headerStyle": {
-                "fontWeight": "bold"
-              }, 
+              },
               "cells": {
                 "style": {
                   "classes": "kanoa/font/default"
                 }
-              }, 
+              },
+              "columns": [
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "itemSetId",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": false,
+                  "width": ""
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": true,
+                  "field": "itemSetName",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Item Set"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": ""
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": true,
+                  "field": "itemSetDescription",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": ""
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": true,
+                  "field": "enabled",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    }
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": false,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                }
+              ],
+              "headerStyle": {
+                "fontWeight": "bold"
+              },
+              "nullFormat": {
+                "includeNullStrings": true
+              },
               "pager": {
                 "bottom": false
-              }, 
+              },
+              "rows": {
+                "striped": {
+                  "enabled": false
+                }
+              },
               "selection": {
                 "mode": "multiple interval"
-              }, 
+              },
               "style": {
                 "borderStyle": "none"
               }
-            }, 
-            "meta": {
-              "domId": "table", 
-              "name": "table"
-            }, 
-            "position": {
-              "grow": 1, 
-              "basis": "400px"
-            }, 
-            "events": {
-              "component": {
-                "onEditCellCommit": {
-                  "type": "script", 
-                  "scope": "G", 
-                  "config": {
-                    "script": "\n\tself.props.data = system.dataset.setValue(self.props.data, event.row, event.column, event.value)\n\n\treturn"
-                  }
-                }
-              }
-            }, 
-            "propConfig": {
-              "props.data": {
-                "onChange": {
-                  "enabled": null, 
-                  "script": "\t\n\tif origin == 'Script': self.view.getChild(\"root\").saveData()\n\t\n\treturn"
-                }, 
-                "binding": {
-                  "type": "property", 
-                  "overlayOptOut": true, 
-                  "config": {
-                    "bidirectional": true, 
-                    "path": "view.custom.table.data"
-                  }
-                }
-              }, 
-              "props.selection.selectedRow": {
-                "binding": {
-                  "type": "property", 
-                  "overlayOptOut": true, 
-                  "config": {
-                    "bidirectional": true, 
-                    "path": "view.custom.table.selection.row"
-                  }
-                }
-              }, 
-              "props.selection.selectedColumn": {
-                "binding": {
-                  "type": "property", 
-                  "overlayOptOut": true, 
-                  "config": {
-                    "bidirectional": true, 
-                    "path": "view.custom.table.selection.col"
-                  }
-                }
-              }, 
-              "props.columns[2].header.title": {
-                "binding": {
-                  "type": "expr", 
-                  "config": {
-                    "expression": "translate(\"Description\")"
-                  }
-                }
-              }, 
-              "props.columns[3].header.title": {
-                "binding": {
-                  "type": "expr", 
-                  "config": {
-                    "expression": "translate(\"Enabled\")"
-                  }
-                }
-              }, 
-              "props.selection.data": {
-                "binding": {
-                  "type": "property", 
-                  "overlayOptOut": true, 
-                  "config": {
-                    "bidirectional": true, 
-                    "path": "view.custom.table.selection.data"
-                  }
-                }
-              }
-            }
+            },
+            "type": "ia.display.table"
           }
-        ], 
+        ],
         "meta": {
-          "domId": "flxTable", 
+          "domId": "flxTable",
           "name": "flxTable"
-        }, 
+        },
         "position": {
-          "grow": 1, 
-          "basis": "150px"
-        }
+          "basis": "150px",
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
       }
-    ], 
+    ],
     "meta": {
-      "domId": "root", 
+      "domId": "root",
       "name": "root"
-    }, 
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/popup",
+        "gap": 5
+      }
+    },
     "scripts": {
-      "messageHandlers": [
-        {
-          "viewScope": false, 
-          "script": "\n\tself.deleteItemSet()\n\t\n\treturn", 
-          "messageType": "deleteItemSet", 
-          "sessionScope": false, 
-          "pageScope": true
-        }
-      ], 
       "customMethods": [
         {
-          "params": [], 
-          "script": "\t\n#\tsystem.perspective.print(\"saveData called\")\n\t\t\n \titemSetInfo = system.kanoa.utilities.convertDatasetRowToJSON(self.view.custom.table.data, self.view.custom.table.selection.row)\n \tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user) \t\n \t\n \tif itemSetInfo['itemSetId']:\n\t\tretVal, msg = system.kanoa.quality.config.updateItemSet(itemSetInfo, userId)\n\telse:\n\t\tretVal, msg = system.kanoa.quality.config.addItemSet(itemSetInfo, userId)\n \t\n\tif retVal: system.perspective.sendMessage('showSuccessfulToast', {'message': msg})\n\telse: system.perspective.sendMessage('showFailerToast', {'message': msg})\n\t\n\tself.view.refreshBinding(\"custom.table.data\")\n\tsystem.perspective.sendMessage(\"refreshItemSets\", {})\n\t\n\treturn", 
-          "name": "saveData"
-        }, 
+          "name": "saveData",
+          "params": [],
+          "script": "\t\n#\tsystem.perspective.print(\"saveData called\")\n\t\t\n \titemSetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(self.view.custom.table.data, self.view.custom.table.selection.row)\n \tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user) \t\n \t\n \tif itemSetInfo[\u0027itemSetId\u0027]:\n\t\tretVal, msg \u003d system.kanoa.quality.config.updateItemSet(itemSetInfo, userId)\n\telse:\n\t\tretVal, msg \u003d system.kanoa.quality.config.addItemSet(itemSetInfo, userId)\n \t\n\tif retVal: system.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: msg})\n\telse: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\t\n\tself.view.refreshBinding(\"custom.table.data\")\n\tsystem.perspective.sendMessage(\"refreshItemSets\", {})\n\t\n\treturn"
+        },
         {
-          "params": [], 
-          "script": "\t\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal, msg = system.kanoa.quality.config.deleteItemSet(row['itemSetId'], userId)\n\t\tif not retVal: system.perspective.sendMessage('showFailerToast', {'message': msg})\n\t\telse: system.perspective.sendMessage('showSuccessfulToast', {'message': msg})\n\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn\t\t\t", 
-          "name": "deleteItemSet"
-        }, 
+          "name": "deleteItemSet",
+          "params": [],
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\terrors \u003d []\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteItemSet(row[\u0027itemSetId\u0027], userId)\n\t\tif msg: errors.append(str(msg))\n\t\t\t\n\tself.view.refreshBinding(\"custom.table.data\")\n\t\n\tif len(errors): system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \". \".join(errors)})\n\telse: system.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Item Set(s) deleted\u0027})\n\n\treturn\t\t\t"
+        },
         {
-          "params": [], 
-          "script": "\n#\t\"itemSetId\",\"itemSetName\",\"itemSetDescription\",\"enabled\",\"createdBy\",\"createdDate\",\"changedBy\",\"changedDate\"\n\tself.view.custom.table.data = system.dataset.addRow(self.view.custom.table.data, 0, [None, '','', False, None, None, None, None])\n\t\n\treturn", 
-          "name": "addItemSet"
+          "name": "addItemSet",
+          "params": [],
+          "script": "\n#\t\"itemSetId\",\"itemSetName\",\"itemSetDescription\",\"enabled\",\"createdBy\",\"createdDate\",\"changedBy\",\"changedDate\"\n\tself.view.custom.table.data \u003d system.dataset.addRow(self.view.custom.table.data, 0, [None, \u0027\u0027,\u0027\u0027, False, None, None, None, None])\n\t\n\treturn"
         }
-      ], 
-      "extensionFunctions": null
-    }
-  }, 
-  "propConfig": {
-    "custom.table": {
-      "persistent": true
-    }, 
-    "custom.table.data": {
-      "binding": {
-        "transforms": [
-          {
-            "code": "\treturn \tsystem.kanoa.quality.config.getItemSets({})", 
-            "type": "script"
-          }
-        ], 
-        "type": "expr", 
-        "overlayOptOut": true, 
-        "config": {
-          "expression": "1"
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "deleteItemSet",
+          "pageScope": true,
+          "script": "\n\tself.deleteItemSet()\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
         }
-      }
-    }
+      ]
+    },
+    "type": "ia.container.flex"
   }
 }

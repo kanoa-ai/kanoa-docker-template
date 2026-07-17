@@ -11,7 +11,7 @@
       "$": [
         "ds",
         192,
-        1768336190450
+        1783775179608
       ],
       "$columns": [
         {
@@ -23,7 +23,10 @@
             5,
             6,
             7,
-            172
+            172,
+            182,
+            183,
+            184
           ],
           "name": "assetTypeId",
           "type": "Integer"
@@ -37,7 +40,10 @@
             1,
             4,
             4,
-            6
+            1,
+            1,
+            182,
+            1
           ],
           "name": "parentId",
           "type": "Integer"
@@ -51,7 +57,10 @@
             "line",
             "site",
             "region",
-            "truck"
+            "truck",
+            "Storage Location",
+            "Storage Bin",
+            "vat"
           ],
           "name": "assetTypeName",
           "type": "String"
@@ -65,7 +74,10 @@
             "enterprise\\site\\area\\line",
             "enterprise\\site",
             "enterprise\\region",
-            "enterprise\\site\\truck"
+            "enterprise\\site\\area\\truck",
+            "enterprise\\site\\area\\Storage Location",
+            "enterprise\\site\\area\\Storage Location\\Storage Bin",
+            "enterprise\\site\\area\\vat"
           ],
           "name": "assetTypePath",
           "type": "String"
@@ -79,7 +91,10 @@
             "enterprise\\site\\area\\line",
             "enterprise\\site",
             "enterprise\\region",
-            "enterprise\\site\\truck"
+            "enterprise\\site\\area\\truck",
+            "enterprise\\site\\area\\Storage Location",
+            "enterprise\\site\\area\\Storage Location\\Storage Bin",
+            "enterprise\\site\\area\\vat"
           ],
           "name": "path",
           "type": "String"
@@ -93,13 +108,19 @@
             "kanoa/line",
             "kanoa/site",
             null,
-            "material/local_shipping"
+            "material/local_shipping",
+            "material/apps",
+            "material/inbox",
+            "kanoa/area"
           ],
           "name": "iconPath",
           "type": "String"
         },
         {
           "data": [
+            true,
+            true,
+            true,
             true,
             true,
             true,
@@ -121,6 +142,9 @@
             true,
             true,
             false,
+            false,
+            true,
+            true,
             false
           ],
           "name": "reservedBySystem",
@@ -135,6 +159,26 @@
             null,
             null,
             null,
+            null,
+            null,
+            null,
+            false
+          ],
+          "name": "mobile",
+          "type": "Boolean"
+        },
+        {
+          "data": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            5,
+            39,
+            39,
             5
           ],
           "name": "createdBy",
@@ -149,7 +193,10 @@
             null,
             null,
             null,
-            1754317163877
+            1754317163877,
+            1778972164643,
+            1778972164647,
+            1783720161073
           ],
           "name": "createdDate",
           "type": "Date"
@@ -163,7 +210,10 @@
             5,
             5,
             null,
-            null
+            null,
+            39,
+            39,
+            5
           ],
           "name": "changedBy",
           "type": "Integer"
@@ -177,7 +227,10 @@
             1768327595350,
             1768246776593,
             null,
-            null
+            null,
+            1778972424473,
+            1778972424477,
+            1783775191013
           ],
           "name": "changedDate",
           "type": "Date"
@@ -193,8 +246,9 @@
       "changedDate": null,
       "createdBy": null,
       "createdDate": null,
-      "enabled": null,
+      "enabled": true,
       "iconPath": null,
+      "mobile": false,
       "parentId": null,
       "path": null,
       "reservedBySystem": null
@@ -275,7 +329,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027:value or -1}), 0)\n\tif data[\u0027assetTypeName\u0027] is None: data[\u0027assetTypeName\u0027] \u003d \u0027\u0027\n\t\n\treturn data",
+            "code": "\n\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027:value or -1}), 0)\n\tif data[\u0027assetTypeName\u0027] is None: data[\u0027assetTypeName\u0027] \u003d \u0027\u0027\n\tif data[\u0027assetTypeId\u0027] is None: \n\t\tdata[\u0027enabled\u0027] \u003d True\n\t\tdata[\u0027mobile\u0027] \u003d False\n\t\n\treturn data",
             "type": "script"
           }
         ],
@@ -455,7 +509,6 @@
                         },
                         "props": {
                           "style": {
-                            "classes": "kanoa/font/default",
                             "textAlign": "right"
                           },
                           "text": "Parent"
@@ -532,7 +585,7 @@
                           "style": {
                             "textAlign": "right"
                           },
-                          "text": "Asset Type Name"
+                          "text": "Name"
                         },
                         "type": "ia.display.label"
                       },
@@ -640,8 +693,8 @@
                     "children": [
                       {
                         "meta": {
-                          "domId": "lblActive",
-                          "name": "lblAEnabled"
+                          "domId": "lblMobile",
+                          "name": "lblMobile"
                         },
                         "position": {
                           "basis": "100px",
@@ -649,7 +702,77 @@
                         },
                         "props": {
                           "style": {
-                            "classes": "kanoa/font/default",
+                            "textAlign": "right"
+                          },
+                          "text": "Mobile"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "chkMobile",
+                          "name": "chkMobile",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "Mobile assets such as racks, trays that do not have a fixed location"
+                          }
+                        },
+                        "position": {
+                          "basis": "25px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.selected": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.mobile"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "checkedIcon": {
+                            "color": {
+                              "enabled": "--kcGray-60"
+                            }
+                          },
+                          "text": ""
+                        },
+                        "type": "ia.input.checkbox"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxCntEnabled",
+                      "name": "flxCntMobile"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 5,
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblActive",
+                          "name": "lblEnabled"
+                        },
+                        "position": {
+                          "basis": "100px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
                             "textAlign": "right"
                           },
                           "text": "Enabled"
@@ -716,7 +839,6 @@
                         },
                         "props": {
                           "style": {
-                            "classes": "kanoa/font/default",
                             "textAlign": "right"
                           },
                           "text": "Reserved"
@@ -789,7 +911,6 @@
                         },
                         "props": {
                           "style": {
-                            "classes": "kanoa/font/default",
                             "textAlign": "right"
                           },
                           "text": "Icon"
@@ -800,6 +921,9 @@
                         "meta": {
                           "domId": "evIconPicker",
                           "name": "evIconPicker"
+                        },
+                        "position": {
+                          "shrink": 0
                         },
                         "propConfig": {
                           "props.params.icon.path": {
@@ -1080,7 +1204,6 @@
     },
     "props": {
       "style": {
-        "backgroundColor": "--kcSurface",
         "classes": "kanoa/font/default",
         "gap": "5px",
         "overflow": "hidden",

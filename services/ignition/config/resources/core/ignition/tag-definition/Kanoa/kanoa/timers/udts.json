@@ -1,14 +1,14 @@
 [
   {
-    "name": "getAssetShiftOEETimer",
-    "typeId": "Kanoa/tagTimer",
+    "name": "checkAssetScheduleTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tendDate \u003d system.date.now()\n\t\t\tstartDate \u003d system.date.addDays(endDate, -1)\n\t\t\tdata \u003d system.kanoa.event.getAssetProductionEventsByShift({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate})\n\t\t\tsystem.tag.writeBlocking(\"[.]data\", [data])\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tsystem.kanoa.schedule.checkAssetSchedule({})\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
           }
         ],
         "name": "update",
@@ -17,15 +17,15 @@
     ]
   },
   {
-    "name": "getActiveOrdersTimer",
-    "typeId": "Kanoa/tagTimer",
+    "name": "checkCMMSSchedule",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tparamsDict \u003d {\u0027startDate\u0027: system.date.addWeeks(system.date.now(), -4), \u0027endDate\u0027: system.date.addWeeks(system.date.now(), 4), \u0027ignoreActualQty\u0027: True, \u0027isActive\u0027: True}\n\t\t\tdata \u003d system.kanoa.order.getProductionOrders(paramsDict)\n\t\t\tsystem.tag.writeBlocking(\"[.]data\", [data])\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\tdebug \u003d system.tag.readBlocking([\"[.]debug\"])[0].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\tif debug: log.info(\"%s update called\"%tagPath)\n\t\t\n\t\ttry:\n\t\t\tif not system.tag.readBlocking([\"[kanoaMES]licenseInfo/cmmsActive\"])[0].value:\n\t\t\t\terrorMsg \u003d \u0027CMMS is inactive\u0027\n\t\t\t\tif debug: log.info(errorMsg)\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\t\n\t\tif errorMsg:\n\t\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [timeNow, 0, errorMsg])\n\t\t\treturn\t\t\t\t\n\t\t\n\t\ttry:\n\t\t\tsystem.kanoa.cmms.checkWorkOrderSchedule()\n\t\t\tsystem.kanoa.cmms.checkWorkOrderConditions()\t\t\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [system.date.now(), 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
           }
         ],
         "name": "update",
@@ -34,15 +34,15 @@
     ]
   },
   {
-    "name": "shiftEventTimer",
-    "typeId": "Kanoa/tagTimer",
+    "name": "checkForDuplicateEvents",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tsystem.kanoa.shift.updateShiftEvents({})\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027SYSTEM\u0027})\n\t\t\tsystem.kanoa.event.checkForDuplicateModeEvents({}, userId)\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
           }
         ],
         "name": "update",
@@ -52,8 +52,8 @@
   },
   {
     "name": "checkZeroCounts",
-    "typeId": "Kanoa/tagTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
@@ -69,8 +69,8 @@
   },
   {
     "name": "getActiveAssetScheduleTimer",
-    "typeId": "Kanoa/tagTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
@@ -85,15 +85,15 @@
     ]
   },
   {
-    "name": "checkForDuplicateEvents",
-    "typeId": "Kanoa/tagTimer",
+    "name": "getActiveOrdersTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027SYSTEM\u0027})\n\t\t\tsystem.kanoa.event.checkForDuplicateModeEvents({}, userId)\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tparamsDict \u003d {\u0027startDate\u0027: system.date.addWeeks(system.date.now(), -4), \u0027endDate\u0027: system.date.addWeeks(system.date.now(), 4), \u0027ignoreActualQty\u0027: True, \u0027isActive\u0027: True}\n\t\t\tdata \u003d system.kanoa.order.getProductionOrders(paramsDict)\n\t\t\tsystem.tag.writeBlocking(\"[.]data\", [data])\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
           }
         ],
         "name": "update",
@@ -102,15 +102,15 @@
     ]
   },
   {
-    "name": "checkCMMSSchedule",
-    "typeId": "Kanoa/tagTimer",
+    "name": "getAssetShiftOEETimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\tdebug \u003d system.tag.readBlocking([\"[.]debug\"])[0].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\tif debug: log.info(\"%s update called\"%tagPath)\n\t\t\n\t\ttry:\n\t\t\tif not system.tag.readBlocking([\"[kanoaMES]licenseInfo/cmmsActive\"])[0].value:\n\t\t\t\terrorMsg \u003d \u0027CMMS is inactive\u0027\n\t\t\t\tif debug: log.info(errorMsg)\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\t\n\t\tif errorMsg:\n\t\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [timeNow, 0, errorMsg])\n\t\t\treturn\t\t\t\t\n\t\t\n\t\ttry:\n\t\t\tsystem.kanoa.cmms.checkWorkOrderSchedule()\n\t\t\tsystem.kanoa.cmms.checkWorkOrderConditions()\t\t\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [system.date.now(), 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tendDate \u003d system.date.now()\n\t\t\tstartDate \u003d system.date.addDays(endDate, -1)\n\t\t\tdata \u003d system.kanoa.event.getAssetProductionEventsByShift({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate})\n\t\t\tsystem.tag.writeBlocking(\"[.]data\", [data])\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
           }
         ],
         "name": "update",
@@ -120,8 +120,8 @@
   },
   {
     "name": "qdsIntervalTimer",
-    "typeId": "Kanoa/tagTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
@@ -137,8 +137,8 @@
   },
   {
     "name": "qdsScheduleChecks",
-    "typeId": "Kanoa/tagTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
@@ -153,15 +153,15 @@
     ]
   },
   {
-    "name": "checkAssetScheduleTimer",
-    "typeId": "Kanoa/tagTimer",
+    "name": "shiftEventTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tsystem.kanoa.schedule.checkAssetSchedule({})\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\n\t\timport java.lang\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]updateTrigger\"])\n\t\tdebug \u003d tagValues[0].value\n\t\tupdateTriggerTime \u003d tagValues[1].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\t\n\t\ttry:\n\t\t\tsystem.kanoa.shift.updateShiftEvents({})\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.5)\t#in case tag is being triggered manually, the change will be visible to the person\n\t\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\"%(tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [updateTriggerTime, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\"%(tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
           }
         ],
         "name": "update",
@@ -171,8 +171,8 @@
   },
   {
     "name": "updateAssetOEETimer",
-    "typeId": "Kanoa/tagTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [
@@ -188,8 +188,8 @@
   },
   {
     "name": "updateAssetShiftTimer",
-    "typeId": "Kanoa/tagTimer",
     "tagType": "UdtInstance",
+    "typeId": "Kanoa/tagTimer",
     "tags": [
       {
         "eventScripts": [

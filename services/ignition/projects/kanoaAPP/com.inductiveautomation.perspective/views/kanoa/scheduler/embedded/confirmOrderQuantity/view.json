@@ -1,22 +1,62 @@
 {
   "custom": {
-    "eventInfo": {
-      "allDay": false,
-      "endDate": null,
-      "endTime": null,
-      "eventColor": "#6448E1",
-      "eventTextColor": "#FFFFFF",
-      "qtySelected": true,
-      "selectedQty": 5,
-      "startDate": "2025-03-03 15:00:00",
-      "startTime": "15:00:00",
-      "title": "WO#: WO-7890\nProduct: Testing Material 60PPH\n5.0 units required.  0.0 units scheduled.  0.0 units already produced.  5.0 units remaining. "
-    },
-    "option": "All",
+    "option": "Custom",
     "remainingQty": 5,
     "validation": {
-      "msg": "",
+      "msg": "Quantity scheduled is greater than what is required",
       "valid": true
+    },
+    "woInfo": {
+      "actualQty": null,
+      "assetId": null,
+      "assetPath": null,
+      "changedBy": 1,
+      "changedByUser": "SYSTEM",
+      "changedDate": {
+        "$": [
+          "ts",
+          0,
+          1741545354613
+        ],
+        "$ts": 1741464014620
+      },
+      "createdBy": 6,
+      "createdByUser": "ncoope",
+      "createdDate": {
+        "$": [
+          "ts",
+          0,
+          1741545354613
+        ],
+        "$ts": 1741461912970
+      },
+      "dueDate": null,
+      "itemClassColor": "#FF8C00",
+      "itemClassDescription": null,
+      "itemClassName": "Testing",
+      "itemColor": null,
+      "itemId": 589,
+      "itemName": "Testing Material 60PPH",
+      "itemPath": "Testing\\Testing Material 60PPH",
+      "itemUnitId": 1,
+      "itemUnitName": "units",
+      "modeColor": "#489FE2",
+      "modeId": 2,
+      "modeName": "Production",
+      "modeTypeName": "Production",
+      "note": null,
+      "parentId": null,
+      "reqdQty": 5,
+      "schedQty": null,
+      "selectedQty": 100,
+      "statusColor": "#00D9D9",
+      "workOrderId": 17,
+      "workOrderName": "WO-7890",
+      "workOrderSourceId": null,
+      "workOrderSourceImagePath": null,
+      "workOrderSourceName": null,
+      "workOrderStatusId": 3,
+      "workOrderStatusName": "In Progress"
     }
   },
   "params": {
@@ -40,16 +80,6 @@
         "sortOrder": null,
         "tagPath": null,
         "timeZone": null
-      },
-      "eventInfo": {
-        "allDay": false,
-        "endDate": null,
-        "endTime": null,
-        "eventColor": "#6448E1",
-        "eventTextColor": "#FFFFFF",
-        "startDate": "2025-03-03 15:00:00",
-        "startTime": "15:00:00",
-        "title": "WO#: WO-7890\nProduct: Testing Material 60PPH\n5.0 units required.  0.0 units scheduled.  0.0 units already produced.  5.0 units remaining. "
       },
       "woInfo": {
         "actualQty": null,
@@ -93,6 +123,7 @@
         "parentId": null,
         "reqdQty": 5,
         "schedQty": null,
+        "selectedQty": 0,
         "statusColor": "#00D9D9",
         "workOrderId": 17,
         "workOrderName": "WO-7890",
@@ -105,22 +136,6 @@
     }
   },
   "propConfig": {
-    "custom.eventInfo": {
-      "binding": {
-        "config": {
-          "path": "view.params.value.eventInfo"
-        },
-        "overlayOptOut": true,
-        "transforms": [
-          {
-            "code": "\n\teventInfo \u003d dict(value)\n\teventInfo[\u0027selectedQty\u0027] \u003d None\n\teventInfo[\u0027qtySelected\u0027] \u003d True\n\t\n\treturn eventInfo",
-            "type": "script"
-          }
-        ],
-        "type": "property"
-      },
-      "persistent": true
-    },
     "custom.option": {
       "binding": {
         "config": {
@@ -144,7 +159,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tqty \u003d max(0, (value[\u0027reqdQty\u0027] or 0.0) - (value[\u0027schedQty\u0027] or 0.0) - (value[\u0027actualQty\u0027] or 0.0))\n\tself.custom.eventInfo.selectedQty \u003d qty\n\t\n\treturn qty",
+            "code": "\t\n\tqty \u003d max(0, (value[\u0027reqdQty\u0027] or 0.0) - (value[\u0027schedQty\u0027] or 0.0) - (value[\u0027actualQty\u0027] or 0.0))\n\tself.custom.woInfo.selectedQty \u003d qty\n\t\n\treturn qty",
             "type": "script"
           }
         ],
@@ -155,7 +170,7 @@
     "custom.validation": {
       "binding": {
         "config": {
-          "path": "view.custom.eventInfo"
+          "path": "view.custom.woInfo"
         },
         "overlayOptOut": true,
         "transforms": [
@@ -164,6 +179,16 @@
             "type": "script"
           }
         ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.woInfo": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.woInfo"
+        },
+        "overlayOptOut": true,
         "type": "property"
       },
       "persistent": true
@@ -324,16 +349,17 @@
             },
             "props": {
               "align": "start",
+              "index": 1,
               "radioStyle": {
                 "fontSize": "12px"
               },
               "radios": [
                 {
-                  "selected": true,
+                  "selected": false,
                   "value": "All"
                 },
                 {
-                  "selected": false,
+                  "selected": true,
                   "text": "Partial",
                   "value": "Custom"
                 }
@@ -370,7 +396,7 @@
                 "binding": {
                   "config": {
                     "bidirectional": true,
-                    "path": "view.custom.eventInfo.selectedQty"
+                    "path": "view.custom.woInfo.selectedQty"
                   },
                   "overlayOptOut": true,
                   "type": "property"
@@ -497,7 +523,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tpayload \u003d {\u0027eventInfo\u0027: self.view.custom.eventInfo}\n\tpayload[\u0027eventInfo\u0027][\u0027skipQtySelect\u0027] \u003d True\n\tsystem.perspective.sendMessage(\"workOrderQtySelected\", payload)\n\tsystem.perspective.closePopup(\u0027workOrderQtySelect\u0027)\n\t\n\treturn"
+                    "script": "\t\n#\tpayload \u003d {\u0027eventInfo\u0027: self.view.custom.eventInfo}\n#\tpayload[\u0027eventInfo\u0027][\u0027skipQtySelect\u0027] \u003d True\n\n\tpayload \u003d {\u0027woInfo\u0027: self.view.custom.woInfo}\n\tpayload[\u0027woInfo\u0027][\u0027skipQtySelect\u0027] \u003d True\n\n\tsystem.perspective.sendMessage(\"workOrderQtySelected\", payload)\n\tsystem.perspective.closePopup(\u0027workOrderQtySelect\u0027)\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"

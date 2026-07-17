@@ -10,6 +10,9 @@
         }
       }
     },
+    "displayOptions": {
+      "lblBasis": "80px"
+    },
     "security": {
       "config": {
         "allowGuest": "1",
@@ -377,6 +380,9 @@
         ],
         "type": "property"
       }
+    },
+    "custom.displayOptions": {
+      "persistent": true
     },
     "custom.security": {
       "binding": {
@@ -2028,8 +2034,9 @@
                               "position.basis": {
                                 "binding": {
                                   "config": {
-                                    "path": "/root.custom.labelBasis"
+                                    "path": "view.custom.displayOptions.lblBasis"
                                   },
+                                  "overlayOptOut": true,
                                   "type": "property"
                                 }
                               }
@@ -2086,6 +2093,7 @@
                                   "config": {
                                     "path": "view.custom.dataSource.info.assetId"
                                   },
+                                  "enabled": false,
                                   "overlayOptOut": true,
                                   "transforms": [
                                     {
@@ -2121,11 +2129,12 @@
                                   "timeZone": null
                                 },
                                 "value": {
+                                  "assetPath": null,
                                   "options": {
                                     "dragDrop": false,
                                     "expand": false,
                                     "multiSelect": false,
-                                    "showBreadcrumb": true,
+                                    "showBreadcrumb": false,
                                     "showClear": true,
                                     "showSelectedPath": false
                                   },
@@ -2137,6 +2146,33 @@
                               "path": "kanoa/core/templates/selectors/assetSelector"
                             },
                             "type": "ia.display.view"
+                          },
+                          {
+                            "meta": {
+                              "domId": "lblAsset",
+                              "name": "lblAssetPath"
+                            },
+                            "position": {
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.text": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.dataSource.info.assetId"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\tif value is None: return \u0027\u0027\n\treturn system.kanoa.utilities.formatPath(system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value})), {})",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "type": "ia.display.label"
                           }
                         ],
                         "meta": {
@@ -2168,15 +2204,15 @@
                               "position.basis": {
                                 "binding": {
                                   "config": {
-                                    "path": "/root.custom.labelBasis"
+                                    "path": "view.custom.displayOptions.lblBasis"
                                   },
+                                  "overlayOptOut": true,
                                   "type": "property"
                                 }
                               }
                             },
                             "props": {
                               "style": {
-                                "classes": "kanoa/font/default",
                                 "textAlign": "right"
                               },
                               "text": "Tag"
@@ -2282,12 +2318,6 @@
                                   ],
                                   "type": "property"
                                 }
-                              }
-                            },
-                            "props": {
-                              "style": {
-                                "classes": "kanoa/font/default",
-                                "marginLeft": "5px"
                               }
                             },
                             "type": "ia.display.label"
@@ -2794,13 +2824,6 @@
           "messageType": "TagSelected",
           "pageScope": true,
           "script": "\t\n\tsystem.perspective.print(\"TagSelected Message Received by attributesDetailEditor with payload %s\"%(payload))\n\tself.view.custom.dataSource.info.sourceTagPath \u003d payload[\"tagPath\"]\n\t\t\n\treturn",
-          "sessionScope": false,
-          "viewScope": false
-        },
-        {
-          "messageType": "AssetSelected",
-          "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"AssetSelected Message Received by attributeDetailsEditor with payload \" + str(payload))\n\t\n\tassetId \u003d None if len(payload[\u0027selectedAssets\u0027]) \u003d\u003d 0 else payload[\u0027selectedAssets\u0027][0][\u0027assetId\u0027]\n\tif payload[\u0027popupId\u0027] \u003d\u003d \u0027assetDataSourceSelector\u0027: self.view.custom.dataSource.info.assetId \u003d assetId\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },
