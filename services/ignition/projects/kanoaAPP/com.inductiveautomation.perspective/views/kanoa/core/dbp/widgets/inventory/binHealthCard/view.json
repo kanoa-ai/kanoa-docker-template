@@ -1,0 +1,344 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "binName": null,
+      "binPath": null,
+      "partCount": 0,
+      "totalQty": 0,
+      "belowSafetyCount": 0,
+      "belowReorderCount": 0
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 118,
+      "width": 240
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "row",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/border",
+        "borderRadius": 10,
+        "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+        "overflow": "hidden",
+        "borderLeftWidth": "6px",
+        "borderLeftStyle": "solid"
+      }
+    },
+    "propConfig": {
+      "props.style.borderLeftColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.value"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\t# Green is reserved for states that are fine but worth a second look.\n\tif value['belowSafetyCount'] > 0:\n\t\treturn 'var(--kcBad)'\n\telif value['belowReorderCount'] > 0:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxContent",
+          "name": "flxContent"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "padding": "12px",
+            "gap": "10px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "flxTop",
+              "name": "flxTop"
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between",
+              "style": {
+                "gap": "8px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblBinName",
+                  "name": "lblBinName"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 600,
+                    "fontSize": "15px",
+                    "color": "--kcGray-100"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.binName"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblBadge",
+                  "name": "lblBadge"
+                },
+                "props": {
+                  "style": {
+                    "borderRadius": 999,
+                    "padding": "4px 8px",
+                    "color": "--kcGray-0",
+                    "classes": "kanoa/font/labelSmall",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.03em"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tif value['belowSafetyCount'] > 0:\n\t\treturn '%s Critical' % value['belowSafetyCount']\n\telif value['belowReorderCount'] > 0:\n\t\treturn '%s Low' % value['belowReorderCount']\n\telse:\n\t\treturn 'Stocked'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\t# Green is reserved for states that are fine but worth a second look.\n\tif value['belowSafetyCount'] > 0:\n\t\treturn 'var(--kcBad)'\n\telif value['belowReorderCount'] > 0:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "flxStats",
+              "name": "flxStats"
+            },
+            "props": {
+              "alignItems": "flex-end",
+              "style": {
+                "gap": "14px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.container.flex",
+                "meta": {
+                  "domId": "flxStatParts",
+                  "name": "flxStatParts"
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": "1px"
+                  }
+                },
+                "children": [
+                  {
+                    "type": "ia.display.label",
+                    "meta": {
+                      "domId": "lblPartCount",
+                      "name": "lblPartCount"
+                    },
+                    "props": {
+                      "style": {
+                        "fontFamily": "Roboto",
+                        "fontWeight": 700,
+                        "fontSize": "24px",
+                        "color": "--kcGray-100",
+                        "lineHeight": "1"
+                      }
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.value.partCount"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\treturn str(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "ia.display.label",
+                    "meta": {
+                      "domId": "lblPartCountCaption",
+                      "name": "lblPartCountCaption"
+                    },
+                    "props": {
+                      "text": "parts",
+                      "style": {
+                        "classes": "kanoa/font/labelSmall",
+                        "color": "--kcGray-60",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "0.03em"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "ia.container.flex",
+                "meta": {
+                  "domId": "flxDivider",
+                  "name": "flxDivider"
+                },
+                "props": {
+                  "style": {
+                    "width": "1px",
+                    "height": "28px",
+                    "backgroundColor": "--kcGray-30"
+                  }
+                }
+              },
+              {
+                "type": "ia.container.flex",
+                "meta": {
+                  "domId": "flxStatQty",
+                  "name": "flxStatQty"
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "gap": "1px"
+                  }
+                },
+                "children": [
+                  {
+                    "type": "ia.display.label",
+                    "meta": {
+                      "domId": "lblTotalQty",
+                      "name": "lblTotalQty"
+                    },
+                    "props": {
+                      "style": {
+                        "fontFamily": "Roboto",
+                        "fontWeight": 700,
+                        "fontSize": "24px",
+                        "lineHeight": "1"
+                      }
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.value.totalQty"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\treturn str(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.value"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\t# Green is reserved for states that are fine but worth a second look.\n\tif value['belowSafetyCount'] > 0:\n\t\treturn 'var(--kcBad)'\n\telif value['belowReorderCount'] > 0:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "ia.display.label",
+                    "meta": {
+                      "domId": "lblTotalQtyCaption",
+                      "name": "lblTotalQtyCaption"
+                    },
+                    "props": {
+                      "text": "units on hand",
+                      "style": {
+                        "classes": "kanoa/font/labelSmall",
+                        "color": "--kcGray-60",
+                        "textTransform": "uppercase",
+                        "letterSpacing": "0.03em"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

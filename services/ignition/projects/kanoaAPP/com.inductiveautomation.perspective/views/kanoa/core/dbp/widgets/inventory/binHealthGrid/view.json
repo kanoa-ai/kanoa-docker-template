@@ -1,0 +1,193 @@
+{
+  "custom": {
+    "data": {
+      "bins": []
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.bins": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value.has_key('assetPath') and value['assetPath']):\n\t\treturn []\n\n\tchildAssets = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({'assetPath': value['assetPath'] + '\\\\%'}))\n\tchildAssets = sorted(childAssets, key=lambda a: a.get('sortOrder') or 0)\n\n\tinstances = []\n\tfor asset in childAssets:\n\t\tstockRows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getPartInventoryStock({'inventoryAssetPath': asset['assetPath']}))\n\t\tif len(stockRows) == 0:\n\t\t\tcontinue\n\n\t\tpartCount = len(stockRows)\n\t\ttotalQty = sum(row['quantityOnHand'] or 0 for row in stockRows)\n\t\tbelowSafetyCount = sum(1 for row in stockRows if row['isBelowSafetyStock'])\n\t\tbelowReorderCount = sum(1 for row in stockRows if row['isBelowReorderThreshold'] and not row['isBelowSafetyStock'])\n\n\t\tinstances.append({'value': {\n\t\t\t'binName': asset['assetName'],\n\t\t\t'binPath': asset['assetPath'],\n\t\t\t'partCount': partCount,\n\t\t\t'totalQty': totalQty,\n\t\t\t'belowSafetyCount': belowSafetyCount,\n\t\t\t'belowReorderCount': belowReorderCount\n\t\t}})\n\n\treturn instances",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 700
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "auto",
+        "padding": "8px",
+        "gap": "8px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "flex-start",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Bin Health - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.flex-repeater",
+        "meta": {
+          "domId": "flxRptBins",
+          "name": "flxRptBins"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "path": "kanoa/core/dbp/widgets/inventory/binHealthCard",
+          "style": {
+            "gap": 10
+          },
+          "wrap": "wrap"
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.bins"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

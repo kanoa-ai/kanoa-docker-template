@@ -1,6 +1,6 @@
 {
   "custom": {
-    "sessionSecurity": "Jason Coope Configure Quality, Configure Assets, Schedule Shifts, Edit Operations, Schedule Operations, Configure Items, Enter Quality Check, Configure Lots, Configure Security, Approve Quality Check, Is Gateway Admin, Operate Assets"
+    "sessionSecurity": "Jason Coope Approve Work Orders, Configure Quality, Configure Assets, Schedule Shifts, Configure Work Orders, Edit Operations, Schedule Operations, Configure Items, Enter Quality Check, Configure Lots, Configure Security, Approve Quality Check, Is Gateway Admin, Enter Work Orders, Operate Assets"
   },
   "params": {},
   "propConfig": {
@@ -104,7 +104,7 @@
             },
             "onChange": {
               "enabled": null,
-              "script": "\t\n\tlog \u003d system.util.getLogger(\u0027kanoaSecurity\u0027)\n\ttry: \t#wrap this in try block in case client is not using our security schema\n\t\tuserId \u003d system.kanoa.security.storeNewIDPUser(self.session.props.auth)\n\t\tif len(system.kanoa.security.getUsers({\u0027gatewayAdmin\u0027: True})) \u003d\u003d 0: system.kanoa.security.updateUserField(userId, \u0027gatewayAdmin\u0027, 1, userId)\n\n\t\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\t\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\t\tself.session.custom.kanoa[\u0027security\u0027] \u003d {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}\n\n\texcept:\n\t\tlog.warn(\"Unable to storeNewIDPUser\")\n\t\tpass\n\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\n\tsessionSecurity \u003d {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}\n\tlog.trace(\"Setting session security to %s\"%sessionSecurity)\n\tself.session.custom.kanoa[\u0027security\u0027] \u003d sessionSecurity\t\t\n\t\n\treturn"
+              "script": "\t\n\tlog \u003d system.util.getLogger(\u0027kanoa_security\u0027)\n\t\n\tuser \u003d self.session.props.auth.user\n\tlog.trace(\"user change for %s\"%user[\u0027userName\u0027])\n\t\n\tif user[\u0027userName\u0027] is None: userId \u003d -1\t#User has logged out and we afre back to guest\n\telse:\n\t\ttry: \t#wrap this in try block in case client is not using our security schema\n\t\t\tuserId \u003d system.kanoa.security.storeNewIDPUser(self.session.props.auth)\n\t\t\tif len(system.kanoa.security.getUsers({\u0027gatewayAdmin\u0027: True})) \u003d\u003d 0: system.kanoa.security.updateUserField(userId, \u0027gatewayAdmin\u0027, 1, userId)\n\t\texcept:\n\t\t\tlog.warn(\"Unable to storeNewIDPUser - %s\"%user[\u0027userName\u0027])\n\t\t\tpass\n\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\t\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tsessionSecurity \u003d {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}\n\tlog.trace(\"Setting session security to %s\"%sessionSecurity)\n\tself.session.custom.kanoa[\u0027security\u0027] \u003d sessionSecurity\t\t\n\t\n\treturn"
             }
           }
         },

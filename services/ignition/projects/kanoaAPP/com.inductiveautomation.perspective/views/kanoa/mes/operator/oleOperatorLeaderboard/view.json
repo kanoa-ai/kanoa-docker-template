@@ -1,0 +1,286 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "assetId": null,
+      "attributionMode": "EvenSplit",
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1784995644478
+        ],
+        "$ts": 1785049200000
+      },
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1784681842524
+        ],
+        "$ts": 1784617200000
+      }
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 250
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "lblTitle"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontSize": "13.5px",
+            "fontWeight": "600"
+          },
+          "text": "Operator Leaderboard"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "lblSubtitle"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "color": "var(--neutral-60)",
+            "fontSize": "11.5px"
+          },
+          "text": "Ranked by POLE for the selected range"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "hdrRank"
+            },
+            "position": {
+              "basis": "24px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "hdrName"
+            },
+            "position": {
+              "basis": "140px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              },
+              "text": "Operator"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "hdrAttendance"
+            },
+            "position": {
+              "basis": "140px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              },
+              "text": "Attendance"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "hdrOle"
+            },
+            "position": {
+              "basis": "140px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              },
+              "text": "OLE"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "hdrPole"
+            },
+            "position": {
+              "basis": "140px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              },
+              "text": "POLE"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "hdrPerformance"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              },
+              "text": "Performance"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "hdrQuality"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11px",
+                "fontWeight": "600"
+              },
+              "text": "Quality"
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "borderBottom": "1px solid var(--neutral-30)",
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "flxRows"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value[\u0027assetId\u0027] is None or value[\u0027startDate\u0027] is None or value[\u0027endDate\u0027] is None:\n\t\treturn []\n\n\tdata \u003d system.kanoa.operators.getOLEOperatorLeaderboard(\n\t\tvalue[\u0027assetId\u0027], value[\u0027startDate\u0027], value[\u0027endDate\u0027], value[\u0027attributionMode\u0027] or \u0027EvenSplit\u0027\n\t)\n\n\tinstances \u003d []\n\trank \u003d 0\n\tfor row in system.dataset.toPyDataSet(data):\n\t\trank +\u003d 1\n\t\tscheduledSecs \u003d row[\u0027scheduledSecs\u0027] or 0\n\t\tattendance \u003d ((row[\u0027loggedInSecs\u0027] or 0) / float(scheduledSecs)) if scheduledSecs \u003e 0 else 0\n\t\tinstances.append({\u0027value\u0027: {\n\t\t\t\u0027rank\u0027: rank,\n\t\t\t\u0027userName\u0027: row[\u0027userName\u0027],\n\t\t\t\u0027attendance\u0027: round(attendance, 3),\n\t\t\t\u0027ole\u0027: round(row[\u0027ole\u0027] or 0, 3),\n\t\t\t\u0027pole\u0027: round(row[\u0027pole\u0027] or 0, 3),\n\t\t\t\u0027performance\u0027: round(row[\u0027performance\u0027] or 0, 3),\n\t\t\t\u0027quality\u0027: round(row[\u0027quality\u0027] or 0, 3)\n\t\t}})\n\n\treturn instances\n\t",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "path": "kanoa/mes/operator/oleLeaderboardRow",
+          "style": {
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.display.flex-repeater"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "border": "1px solid var(--neutral-30)",
+        "borderRadius": "8px",
+        "gap": "6px",
+        "overflow": "hidden",
+        "padding": "12px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "operatorSelected",
+          "pageScope": true,
+          "script": "\t\n\tparams \u003d dict(self.view.params.value)\n\tparams[\u0027userName\u0027] \u003d payload[\u0027userName\u0027]\n\t\n\tsystem.perspective.openPopup(\u0027userAssetInfo\u0027, \u0027kanoa/mes/operator/oleOperatorBreakdown\u0027, {\u0027value\u0027: params}, \u0027Operator Asset Assignment\u0027, showCloseIcon\u003dTrue, draggable\u003dTrue, resizable\u003dTrue)\n\tsystem.perspective.sendMessage(\u0027operatorUpdate\u0027, {\u0027value\u0027: params})\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

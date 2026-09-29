@@ -1,60 +1,34 @@
 {
   "custom": {
-    "createOptions": {},
     "errorMessage": "No name provided.",
     "hasName": false,
+    "isSelfPath": false,
     "newPath": "",
     "oldPath": "",
     "pathCorrect": true,
     "unique": false
   },
   "params": {
+    "assetId": null,
     "assetPath": "",
-    "createItems": true,
-    "createModes": true,
-    "createStates": true
+    "mode": "import"
   },
   "propConfig": {
-    "custom.createOptions.createItems": {
-      "binding": {
-        "config": {
-          "path": "view.params.createItems"
-        },
-        "overlayOptOut": true,
-        "type": "property"
-      }
-    },
-    "custom.createOptions.createModes": {
-      "binding": {
-        "config": {
-          "path": "view.params.createModes"
-        },
-        "overlayOptOut": true,
-        "type": "property"
-      }
-    },
-    "custom.createOptions.createStates": {
-      "binding": {
-        "config": {
-          "path": "view.params.createStates"
-        },
-        "overlayOptOut": true,
-        "type": "property"
-      }
-    },
     "custom.errorMessage": {
       "binding": {
         "config": {
           "struct": {
             "hasName": "{view.custom.hasName}",
             "pathCorrect": "{view.custom.pathCorrect}",
-            "unique": "{view.custom.unique}"
+            "unique": "{view.custom.unique}",
+            "isSelfPath": "{view.custom.isSelfPath}",
+            "mode": "{view.params.mode}"
           },
           "waitOnAll": true
         },
         "transforms": [
           {
-            "code": "\t\n\tif not value.hasName: return \u0027No name provided.\u0027\n\t\n\tif not value.unique: return \u0027The provided name must be unique within the parent path.\u0027\n\t\n\tif not value.pathCorrect: return \u0027The parent path must be at the same level as the imported file.\u0027\n\t\n\treturn \u0027\u0027",
+            "code": "\t\n\tif not value.hasName: return 'No name provided.'\n\t\n\tif not value.pathCorrect: return 'The parent path must be at the same level as the imported file.'\n\t\n\tif not value.unique and value.isSelfPath and value.mode == 'duplicate': return 'Please provide a new name to duplicate this asset.'\n\t\n\treturn ''",
             "type": "script"
           }
         ],
@@ -70,7 +44,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\treturn \u0027\\\\\u0027.join(value.split(\u0027\\\\\u0027)[:-1])\n\t",
+            "code": "\t\n\treturn '\\\\'.join(value.split('\\\\')[:-1])\n\t",
             "type": "script"
           }
         ],
@@ -85,11 +59,31 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tname \u003d value or None\n\t\n\treturn name is not None\n\t",
+            "code": "\t\n\tname = value or None\n\t\n\treturn name is not None\n\t",
             "type": "script"
           }
         ],
         "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.isSelfPath": {
+      "binding": {
+        "config": {
+          "struct": {
+            "newPath": "{view.custom.newPath}",
+            "oldPath": "{view.custom.oldPath}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value.newPath == value.oldPath",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
       },
       "persistent": true
     },
@@ -101,7 +95,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\treturn value.split(\u0027\\\\\u0027)[-1]\n\t",
+            "code": "\t\n\treturn value.split('\\\\')[-1]\n\t",
             "type": "script"
           }
         ],
@@ -120,7 +114,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn \u0027\\\\\u0027.join(value.folder.split(\u0027\\\\\u0027) + [value.name]) if value.folder else value.name",
+            "code": "\treturn '\\\\'.join(value.folder.split('\\\\') + [value.name]) if value.folder else value.name",
             "type": "script"
           }
         ],
@@ -150,7 +144,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn len(value.oldPath.split(\u0027\\\\\u0027)) \u003d\u003d len(value.newPath.split(\u0027\\\\\u0027))",
+            "code": "\treturn len(value.oldPath.split('\\\\')) == len(value.newPath.split('\\\\'))",
             "type": "script"
           }
         ],
@@ -166,7 +160,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tnewPath \u003d value or None\n\t\n\tif newPath is None: return False\n\t\n\tunique \u003d len(system.kanoa.asset.getAssets({\u0027assetPath\u0027: newPath})) \u003d\u003d 0\n\t\n\treturn unique\n\t",
+            "code": "\t\n\tnewPath = value or None\n\t\n\tif newPath is None: return False\n\t\n\tunique = len(system.kanoa.asset.getAssets({'assetPath': newPath})) == 0\n\t\n\treturn unique\n\t",
             "type": "script"
           }
         ],
@@ -174,19 +168,15 @@
       },
       "persistent": true
     },
+    "params.assetId": {
+      "paramDirection": "input",
+      "persistent": true
+    },
     "params.assetPath": {
       "paramDirection": "input",
       "persistent": true
     },
-    "params.createItems": {
-      "paramDirection": "input",
-      "persistent": true
-    },
-    "params.createModes": {
-      "paramDirection": "input",
-      "persistent": true
-    },
-    "params.createStates": {
+    "params.mode": {
       "paramDirection": "input",
       "persistent": true
     }
@@ -211,7 +201,7 @@
           "style": {
             "marginBottom": 5
           },
-          "text": "All asset names must be unique within its parent. Please update the current name.",
+          "text": "Provide a name for this asset. If the name already exists, you'll be asked to confirm overwriting it.",
           "textStyle": {
             "fontWeight": "bold"
           }
@@ -335,7 +325,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn value and len(value.split(\u0027\\\\\u0027)) \u003e 1",
+                      "code": "\treturn value and len(value.split('\\\\')) > 1",
                       "type": "script"
                     }
                   ],
@@ -373,218 +363,11 @@
       {
         "children": [
           {
-            "custom": {
-              "name": "mode"
-            },
-            "meta": {
-              "domId": "cbxCreateModes",
-              "name": "cbxCreateModes",
-              "tooltip": {
-                "delay": 0,
-                "enabled": true,
-                "location": "top",
-                "sustain": 0,
-                "tail": false
-              }
-            },
-            "position": {
-              "shrink": 0
-            },
-            "propConfig": {
-              "meta.tooltip.text": {
-                "binding": {
-                  "config": {
-                    "path": "this.props.selected"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\tname \u003d self.custom.name\n\t\n\treturn \u0027If the %s can be created, then create it.\u0027%name if value else \u0027Even if the %s can be created, do not create it.\u0027%name",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              },
-              "props.selected": {
-                "binding": {
-                  "config": {
-                    "bidirectional": true,
-                    "path": "view.custom.createOptions.createModes"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "checkedIcon": {
-                "style": {
-                  "marginRight": -6
-                }
-              },
-              "style": {
-                "fontWeight": "bold"
-              },
-              "text": "Create Modes",
-              "uncheckedIcon": {
-                "style": {
-                  "marginRight": -6
-                }
-              }
-            },
-            "type": "ia.input.checkbox"
-          },
-          {
-            "custom": {
-              "name": "state"
-            },
-            "meta": {
-              "domId": "cbxCreateStates",
-              "name": "cbxCreateStates",
-              "tooltip": {
-                "delay": 0,
-                "enabled": true,
-                "location": "top",
-                "sustain": 0,
-                "tail": false
-              }
-            },
-            "position": {
-              "shrink": 0
-            },
-            "propConfig": {
-              "meta.tooltip.text": {
-                "binding": {
-                  "config": {
-                    "path": "this.props.selected"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\tname \u003d self.custom.name\n\t\n\treturn \u0027If the %s can be created, then create it.\u0027%name if value else \u0027Even if the %s can be created, do not create it.\u0027%name",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              },
-              "props.selected": {
-                "binding": {
-                  "config": {
-                    "bidirectional": true,
-                    "path": "view.custom.createOptions.createStates"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "checkedIcon": {
-                "style": {
-                  "marginRight": -6
-                }
-              },
-              "style": {
-                "fontWeight": "bold"
-              },
-              "text": "Create States",
-              "uncheckedIcon": {
-                "style": {
-                  "marginRight": -6
-                }
-              }
-            },
-            "type": "ia.input.checkbox"
-          },
-          {
-            "custom": {
-              "name": "item"
-            },
-            "meta": {
-              "domId": "cbxCreateItems",
-              "name": "cbxCreateItems",
-              "tooltip": {
-                "delay": 0,
-                "enabled": true,
-                "location": "top",
-                "sustain": 0,
-                "tail": false
-              }
-            },
-            "position": {
-              "shrink": 0
-            },
-            "propConfig": {
-              "meta.tooltip.text": {
-                "binding": {
-                  "config": {
-                    "path": "this.props.selected"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\tname \u003d self.custom.name\n\t\n\treturn \u0027If the %s can be created, then create it.\u0027%name if value else \u0027Even if the %s can be created, do not create it.\u0027%name",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              },
-              "props.selected": {
-                "binding": {
-                  "config": {
-                    "bidirectional": true,
-                    "path": "view.custom.createOptions.createItems"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "checkedIcon": {
-                "style": {
-                  "marginRight": -6
-                }
-              },
-              "style": {
-                "fontWeight": "bold"
-              },
-              "text": "Create Items",
-              "uncheckedIcon": {
-                "style": {
-                  "marginRight": -6
-                }
-              }
-            },
-            "type": "ia.input.checkbox"
-          }
-        ],
-        "meta": {
-          "domId": "flxCreateOptions",
-          "name": "flxCreateOptions"
-        },
-        "position": {
-          "shrink": 0
-        },
-        "props": {
-          "justify": "center",
-          "style": {
-            "gap": 10
-          }
-        },
-        "type": "ia.container.flex"
-      },
-      {
-        "children": [
-          {
             "events": {
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tsystem.perspective.print(\u0027Confirm button pressed\u0027)\n\tif not self.view.custom.hasName:\n\t\tsystem.perspective.sendMessage(\u0027ShowWarningToast\u0027, \u0027No name was provided.\u0027)\n\t\treturn\n\t\n\tif not self.view.custom.unique: \n\t\tsystem.perspective.sendMessage(\u0027ShowWarningToast\u0027, \u0027The name is not unique within the parent path.\u0027)\n\t\treturn\n\t\n\tnewPath \u003d self.view.custom.newPath\t\n\toldPath \u003d self.view.custom.oldPath\n\t\n\tcreateModes \u003d self.view.custom.createOptions.createModes\n\tcreateStates \u003d self.view.custom.createOptions.createStates\n\tcreateItems \u003d self.view.custom.createOptions.createItems\n\t\n\tsystem.perspective.print(\u0027Sending message assetImportUpdate\u0027)\n\t\n\tsystem.perspective.sendMessage(\n\t\tmessageType \u003d \u0027assetImportUpdate\u0027, \n\t\tpayload \u003d { \n\t\t\t\u0027oldPath\u0027: oldPath, \n\t\t\t\u0027newPath\u0027: newPath, \n\t\t\t\u0027createModes\u0027: createModes,\n\t\t\t\u0027createStates\u0027: createStates,\n\t\t\t\u0027createItems\u0027: createItems,\n\t\t}\n\t)\n\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn\n\t"
+                    "script": "\t\n\tif not self.view.custom.hasName:\n\t\tsystem.perspective.sendMessage('ShowWarningToast', 'No name was provided.')\n\t\treturn\n\t\n\tif not self.view.custom.pathCorrect:\n\t\tsystem.perspective.sendMessage('ShowWarningToast', 'The parent path must be at the same level as the imported file.')\n\t\treturn\n\t\n\tif not self.view.custom.unique and self.view.custom.isSelfPath and self.view.params.mode == 'duplicate':\n\t\tsystem.perspective.sendMessage('ShowWarningToast', 'Please provide a new name to duplicate this asset.')\n\t\treturn\n\t\n\tnewPath = self.view.custom.newPath\n\toldPath = self.view.custom.oldPath\n\toverwrite = not self.view.custom.unique\n\t\n\tsystem.perspective.sendMessage(\n\t\tmessageType='assetImportUpdate',\n\t\tpayload={\n\t\t\t'oldPath': oldPath,\n\t\t\t'newPath': newPath,\n\t\t\t'mode': self.view.params.mode,\n\t\t\t'assetId': self.view.params.assetId,\n\t\t\t'overwrite': overwrite,\n\t\t}\n\t)\n\t\n\tsystem.perspective.closePopup('')\n\t\n\treturn\n\t"
                   },
                   "scope": "G",
                   "type": "script"
@@ -624,7 +407,22 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn value \u003d\u003d \u0027\u0027",
+                      "code": "\treturn value == ''",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.unique"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn 'Confirm' if value else 'Overwrite'",
                       "type": "script"
                     }
                   ],
@@ -650,7 +448,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t"
+                    "script": "\t\n\tsystem.perspective.closePopup('')\n\t"
                   },
                   "scope": "G",
                   "type": "script"

@@ -1,0 +1,194 @@
+{
+  "custom": {
+    "data": {
+      "transactions": []
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.transactions": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value.has_key('assetPath') and value['assetPath']):\n\t\treturn []\n\n\trows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getInventoryTransactions({'inventoryAssetPath': value['assetPath']}))\n\trows = sorted(rows, key=lambda r: r['transactionDate'], reverse=True)\n\trows = rows[:10]\n\n\treturn [{'value': row} for row in rows]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 460
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "auto",
+        "padding": "8px",
+        "gap": "4px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "flex-start",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Recent Activity - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.flex-repeater",
+        "meta": {
+          "domId": "flxRptActivity",
+          "name": "flxRptActivity"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "stretch",
+          "direction": "column",
+          "path": "kanoa/core/dbp/widgets/inventory/inventoryActivityCard",
+          "style": {
+            "gap": 6
+          },
+          "wrap": "nowrap"
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.transactions"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

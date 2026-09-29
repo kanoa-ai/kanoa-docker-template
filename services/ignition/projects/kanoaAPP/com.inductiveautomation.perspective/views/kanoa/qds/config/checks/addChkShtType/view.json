@@ -100,7 +100,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\tpath \u003d value[\u0027path\u0027] or \u0027\u0027\n\tname \u003d value[\u0027chkShtTypeName\u0027] or \u0027\u0027\n\treturn \u0027 \u003e \u0027.join(path.split(\"\\\\\")).replace(name, \u0027\u0027)",
+                          "code": "\tpath \u003d value[\u0027path\u0027] or \u0027\u0027\n\tname \u003d value[\u0027chkShtTypeName\u0027] or \u0027\u0027\n\treturn \u0027 \u003e \u0027.join(path.split(\"\\\\\"))",
                           "type": "script"
                         }
                       ],
@@ -572,7 +572,7 @@
         {
           "name": "save",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"save() called\")\n\tinfo \u003d dict(self.view.custom.values)\n\tchkShtTypeId \u003d info[\u0027chkShtTypeId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif self.view.params.value.action \u003d\u003d \u0027add\u0027:\n\t\tif system.kanoa.quality.sheet.getSheets({\u0027chkShtTypeName\u0027: info[\u0027chkShtTypeName\u0027], \u0027parentId\u0027: info[\u0027parentId\u0027]}).rowCount \u003e 0:\n\t\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027This Type already exists\u0027})\n\t\t\treturn\n\t\n\t\tchkShtTypeId \u003d system.kanoa.quality.sheet.addSheetType(info, userId)\n\telif self.view.params.value.action \u003d\u003d \u0027edit\u0027:\n\t\tsystem.kanoa.quality.sheet.updateSheetType(info, userId)\n\telse:\n\t\treturn\n\t\t\n\tself.view.params.value.chkShtTypeId \u003d chkShtTypeId\n\t\n\tsystem.perspective.sendMessage(\"refreshChkShtTypes\", {})\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Check Sheet Type saved\u0027})\n\t\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"save() called\")\n\tinfo \u003d dict(self.view.custom.values)\n\tchkShtTypeId \u003d info[\u0027chkShtTypeId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif self.view.params.value.action \u003d\u003d \u0027add\u0027:\n\t\tbasePath \u003d info[\u0027path\u0027]\n\t\tfullPath \u003d info[\u0027chkShtTypeName\u0027] if basePath is None else \u0027%s\\%s\u0027%(basePath, info[\u0027chkShtTypeName\u0027])\n\t\tif system.kanoa.quality.sheet.getSheetTypes({\u0027path\u0027: fullPath}).rowCount \u003e 0:\n\t\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: \u0027This Type already exists\u0027})\n\t\t\treturn\n\t\n\t\tchkShtTypeId \u003d system.kanoa.quality.sheet.addSheetType(info, userId)\n\telif self.view.params.value.action \u003d\u003d \u0027edit\u0027:\n\t\tsystem.kanoa.quality.sheet.updateSheetType(info, userId)\n\telse:\n\t\treturn\n\t\t\n\tself.view.params.value.chkShtTypeId \u003d chkShtTypeId\n\t\n\tsystem.perspective.sendMessage(\"refreshChkShtTypes\", {})\n\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Check Sheet Type saved\u0027})\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,

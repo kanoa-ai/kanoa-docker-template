@@ -1,0 +1,297 @@
+{
+  "custom": {
+    "chart": {},
+    "data": {
+      "stockData": []
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.chart": {
+      "persistent": true
+    },
+    "custom.chart.donutData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.data.stockData"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# Fixed order keeps slice color/legend order stable even when a bucket is empty\n\torder = ['Below Safety Stock', 'Below Reorder Point', 'In Stock']\n\tcounts = {'Below Safety Stock': 0, 'Below Reorder Point': 0, 'In Stock': 0}\n\n\tfor row in value:\n\t\tif row['isBelowSafetyStock']:\n\t\t\tcounts['Below Safety Stock'] += 1\n\t\telif row['isBelowReorderThreshold']:\n\t\t\tcounts['Below Reorder Point'] += 1\n\t\telse:\n\t\t\tcounts['In Stock'] += 1\n\n\treturn {\n\t\t'labels': order,\n\t\t'series': [counts[status] for status in order]\n\t}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.stockData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value.has_key('assetPath') and value['assetPath']:\n\t\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getPartInventoryStock({'inventoryAssetPath': value['assetPath']}))\n\telse:\n\t\treturn []",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 450,
+      "width": 550
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "hidden",
+        "padding": "8px",
+        "gap": "8px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Reorder Status - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "kyvislabs.display.apexchart",
+        "meta": {
+          "domId": "apexDonutReorderStatus",
+          "name": "apexDonutReorderStatus"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "props": {
+          "type": "donut",
+          "options": {
+            "chart": {
+              "type": "donut",
+              "width": "auto",
+              "events": {
+                "animationEnd": false,
+                "beforeMount": false,
+                "beforeResetZoom": false,
+                "beforeZoom": false,
+                "brushScrolled": false,
+                "click": false,
+                "dataPointMouseEnter": false,
+                "dataPointMouseLeave": false,
+                "dataPointSelection": false,
+                "legendClick": false,
+                "markerClick": false,
+                "mounted": false,
+                "mouseLeave": false,
+                "mouseMove": false,
+                "scrolled": false,
+                "selection": false,
+                "updated": false,
+                "zoomed": false
+              }
+            },
+            "colors": [
+              "var(--kcBad)",
+              "var(--kcOK)",
+              "var(--kcGood)"
+            ],
+            "dataLabels": {
+              "enabled": true
+            },
+            "legend": {
+              "position": "bottom",
+              "show": true
+            },
+            "plotOptions": {
+              "pie": {
+                "donut": {
+                  "labels": {
+                    "show": true,
+                    "total": {
+                      "show": true,
+                      "label": "Total Parts",
+                      "formatter": "function(w) { return w.globals.seriesTotals.reduce(function(a,b){return a+b},0) }"
+                    }
+                  }
+                }
+              }
+            },
+            "responsive": [
+              {
+                "breakpoint": 480,
+                "options": {
+                  "legend": {
+                    "position": "bottom"
+                  }
+                }
+              }
+            ],
+            "theme": {},
+            "title": {
+              "text": ""
+            }
+          }
+        },
+        "propConfig": {
+          "props.options.labels": {
+            "binding": {
+              "config": {
+                "path": "view.custom.chart.donutData.labels"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.options.theme.mode": {
+            "binding": {
+              "config": {
+                "path": "session.props.theme"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif 'dark' in value: return 'dark'\n\telse: return 'light'",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.series": {
+            "binding": {
+              "config": {
+                "path": "view.custom.chart.donutData.series"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\t\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

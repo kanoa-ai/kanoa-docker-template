@@ -1,0 +1,470 @@
+{
+  "custom": {
+    "data": {
+      "kpis": {}
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.kpis": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value.has_key('assetPath') and value['assetPath']):\n\t\treturn {'totalParts': 0, 'totalUnits': 0, 'belowReorder': 0, 'belowSafety': 0}\n\n\tstockRows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getPartInventoryStock({'inventoryAssetPath': value['assetPath']}))\n\n\treturn {\n\t\t'totalParts': len(stockRows),\n\t\t'totalUnits': sum(row['quantityOnHand'] or 0 for row in stockRows),\n\t\t'belowReorder': sum(1 for row in stockRows if row['isBelowReorderThreshold'] and not row['isBelowSafetyStock']),\n\t\t'belowSafety': sum(1 for row in stockRows if row['isBelowSafetyStock'])\n\t}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 140,
+      "width": 760
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "hidden",
+        "padding": "8px",
+        "gap": "8px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "flex-start",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Inventory Snapshot - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxTiles",
+          "name": "flxTiles"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": "10px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "tileParts",
+              "name": "tileParts"
+            },
+            "position": {
+              "grow": 1,
+              "basis": "0px"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/border",
+                "borderRadius": 10,
+                "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+                "padding": "12px",
+                "gap": "2px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tilePartsValue",
+                  "name": "tilePartsValue"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 700,
+                    "fontSize": "28px",
+                    "lineHeight": "1"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.kpis.totalParts"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn str(value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tilePartsCaption",
+                  "name": "tilePartsCaption"
+                },
+                "props": {
+                  "text": "Total Parts",
+                  "style": {
+                    "classes": "kanoa/font/labelSmall",
+                    "color": "--kcGray-60",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.03em"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "tileUnits",
+              "name": "tileUnits"
+            },
+            "position": {
+              "grow": 1,
+              "basis": "0px"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/border",
+                "borderRadius": 10,
+                "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+                "padding": "12px",
+                "gap": "2px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tileUnitsValue",
+                  "name": "tileUnitsValue"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 700,
+                    "fontSize": "28px",
+                    "lineHeight": "1"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.kpis.totalUnits"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn str(value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tileUnitsCaption",
+                  "name": "tileUnitsCaption"
+                },
+                "props": {
+                  "text": "Units On Hand",
+                  "style": {
+                    "classes": "kanoa/font/labelSmall",
+                    "color": "--kcGray-60",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.03em"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "tileReorder",
+              "name": "tileReorder"
+            },
+            "position": {
+              "grow": 1,
+              "basis": "0px"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/border",
+                "borderRadius": 10,
+                "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+                "padding": "12px",
+                "gap": "2px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tileReorderValue",
+                  "name": "tileReorderValue"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 700,
+                    "fontSize": "28px",
+                    "lineHeight": "1",
+                    "color": "var(--kcOK)"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.kpis.belowReorder"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn str(value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tileReorderCaption",
+                  "name": "tileReorderCaption"
+                },
+                "props": {
+                  "text": "Below Reorder",
+                  "style": {
+                    "classes": "kanoa/font/labelSmall",
+                    "color": "--kcGray-60",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.03em"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "tileSafety",
+              "name": "tileSafety"
+            },
+            "position": {
+              "grow": 1,
+              "basis": "0px"
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/border",
+                "borderRadius": 10,
+                "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+                "padding": "12px",
+                "gap": "2px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tileSafetyValue",
+                  "name": "tileSafetyValue"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 700,
+                    "fontSize": "28px",
+                    "lineHeight": "1",
+                    "color": "var(--kcBad)"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.kpis.belowSafety"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn str(value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "tileSafetyCaption",
+                  "name": "tileSafetyCaption"
+                },
+                "props": {
+                  "text": "Below Safety Stock",
+                  "style": {
+                    "classes": "kanoa/font/labelSmall",
+                    "color": "--kcGray-60",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.03em"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

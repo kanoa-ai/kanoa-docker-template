@@ -1,0 +1,209 @@
+{
+  "custom": {
+    "assetInfo": {
+      "assetGroupColor": null,
+      "assetGroupId": null,
+      "assetGroupName": null,
+      "assetId": null,
+      "assetName": null,
+      "assetPath": null,
+      "assetTypeId": null,
+      "assetTypeName": null,
+      "assetTypePath": null,
+      "displayPath": null,
+      "enabled": null,
+      "iconPath": null,
+      "mobile": null,
+      "oeeEnabled": null,
+      "parentId": null,
+      "path": null,
+      "processTypeId": null,
+      "processTypeName": null,
+      "sortOrder": null,
+      "tagPath": null,
+      "timeZone": null
+    },
+    "filter": {}
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetSelector": false
+    }
+  },
+  "propConfig": {
+    "custom.assetInfo": {
+      "persistent": true
+    },
+    "custom.filter": {
+      "persistent": true
+    },
+    "custom.filter.assetPath": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetInfo": "{view.custom.assetInfo}",
+            "params": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value[\u0027params\u0027].get(\u0027assetPath\u0027) or value[\u0027assetInfo\u0027].get(\u0027assetPath\u0027)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1038
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "evAssetSelector",
+              "name": "evAssetSelector",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "Select an asset"
+              }
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.assetInfo": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.assetInfo"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "assetPath": null,
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "parentPathList": [],
+                  "persistent": true,
+                  "useSessionValue": false
+                }
+              },
+              "path": "kanoa/core/templates/selectors/assetSelector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value.get(\u0027showAssetSelector\u0027, 0) or False",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignContent": "center",
+          "alignItems": "center",
+          "style": {
+            "backgroundColor": "--kcSurface",
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "evOperatorSessions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.params.values": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filter"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/mes/operator/operatorSessionsTable"
+        },
+        "type": "ia.display.view"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "5px",
+        "padding": "5px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "operatorLoginUpdated",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.sessions\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

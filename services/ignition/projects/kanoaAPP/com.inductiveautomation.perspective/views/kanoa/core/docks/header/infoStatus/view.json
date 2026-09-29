@@ -1,32 +1,35 @@
 {
   "custom": {
     "configInfo": {
-      "enableKanoaCMMS": "1",
+      "enableKanoaCMMS": "0",
+      "enableKanoaInv": "0",
       "enableKanoaQDS": "1",
       "enableKanoaTrace": "1",
-      "environment": "development"
+      "environment": "production"
     },
     "installError": false,
     "installInfo": {
       "dbProduct": "Microsoft SQL Server",
-      "dbVersion": "15.00.2000",
-      "driverName": "Microsoft JDBC Driver 9.4 for SQL Server",
-      "driverVersion": "9.4.0.0",
+      "dbVersion": "16.00.4255",
+      "driverName": "Microsoft JDBC Driver 13.4 for SQL Server",
+      "driverVersion": "13.4.0.0",
       "hawthornStatus": "Database tables present but no changeSet",
-      "ignitionVersion": "8.1.50 (b2025093011)",
-      "installationDate": "2026-06-09T14:14:20.774886300",
-      "kanoaMESVersion": "1.15.0-beta9",
+      "ignitionVersion": "8.3.8 (b2026071409)",
+      "installationDate": "2026-08-04T21:16:59.847478896",
+      "kanoaMESVersion": "1.15.1-beta2",
       "systemTimeZone": "Etc/UTC"
     },
     "licenseState": {
       "cmmsActive": true,
-      "cmmsLicensed": true,
+      "cmmsLicensed": false,
+      "invActive": true,
+      "invLicensed": false,
       "opsActive": true,
-      "opsLicensed": true,
+      "opsLicensed": false,
       "qdsActive": true,
-      "qdsLicensed": true,
+      "qdsLicensed": false,
       "traceActive": true,
-      "traceLicensed": true,
+      "traceLicensed": false,
       "trialActive": true
     }
   },
@@ -86,6 +89,8 @@
           "struct": {
             "cmmsActive": "{[kanoaMES]licenseInfo/cmmsActive}",
             "cmmsLicensed": "{[kanoaMES]licenseInfo/cmmsLicensed}",
+            "invActive": "{[kanoaMES]licenseInfo/invActive}",
+            "invLicensed": "{[kanoaMES]licenseInfo/invLicensed}",
             "opsActive": "{[kanoaMES]licenseInfo/opsActive}",
             "opsLicensed": "{[kanoaMES]licenseInfo/opsLicensed}",
             "qdsActive": "{[kanoaMES]licenseInfo/qdsActive}",
@@ -241,7 +246,7 @@
           "component": {
             "onActionPerformed": {
               "config": {
-                "script": "\n\tinfo \u003d [{\"name\": k, \"value\": v} for k,v in self.view.custom.installInfo.items()]\n\t\n\tsession \u003d self.session.props\n\ttimezoneInfo \u003d [\n#\t\t\t\t\t\t{\"name\": \"Gateway Timezone\", \"value\": \"%s (%s)\"%(session[\u0027gateway\u0027][\u0027timezone\u0027][\u0027name\u0027], session[\u0027gateway\u0027][\u0027timezone\u0027][\u0027utcOffset\u0027])},\n\t\t\t\t\t\t{\"name\": \"Client Timezone\", \"value\": \"%s (%s)\"%(session[\u0027device\u0027][\u0027timezone\u0027][\u0027id\u0027], session[\u0027device\u0027][\u0027timezone\u0027][\u0027utcOffset\u0027])},\n\t\t\t\t\t\t{\"name\": \"Database Timezone\", \"value\": system.db.runScalarQuery(\"SELECT FORMAT(SYSDATETIMEOFFSET(), \u0027zzz\u0027)\", system.kanoa.config.getDBName(\u0027mes\u0027))}\n\t\t\t\t\t]\n\t\n\tinfo.extend(timezoneInfo)\n\tmdInfo \u003d \"| Name | Value |\\n|---|---|\\n\" + \"\\n\".join(\"| {} | {} |\".format(d[\"name\"], d[\"value\"])for d in info)\n\tsystem.perspective.openPopup(\"infoPopup\", \"kanoa/core/templates/displays/diagnosticsPopup\", {\u0027text\u0027:mdInfo}, title\u003d\u0027Diagnostics Info\u0027, draggable\u003dTrue, resizable\u003d True)\n\t\n\treturn"
+                "script": "\n\tinfo \u003d [{\"name\": k, \"value\": v} for k,v in self.view.custom.installInfo.items()]\n\t\n\tsession \u003d self.session.props\n\ttimezoneInfo \u003d [\n#\t\t\t\t\t\t{\"name\": \"Gateway Timezone\", \"value\": \"%s (%s)\"%(session[\u0027gateway\u0027][\u0027timezone\u0027][\u0027name\u0027], session[\u0027gateway\u0027][\u0027timezone\u0027][\u0027utcOffset\u0027])},\n\t\t\t\t\t\t{\"name\": \"Client Timezone\", \"value\": \"%s (%s)\"%(session[\u0027device\u0027][\u0027timezone\u0027][\u0027id\u0027], session[\u0027device\u0027][\u0027timezone\u0027][\u0027utcOffset\u0027])},\n\t\t\t\t\t\t{\"name\": \"Database Timezone\", \"value\": system.db.runScalarQuery(\"SELECT FORMAT(SYSDATETIMEOFFSET(), \u0027zzz\u0027)\", system.kanoa.config.getDBName(\u0027mes\u0027))}\n\t\t\t\t\t]\n\t\n\tinfo.extend(timezoneInfo)\n\t\n\tinfo.extend([{\"name\": k, \"value\": v} for k,v in self.view.custom.licenseState.items()])\n\t\n\tmdInfo \u003d \"|||\\n|---|---|\\n\" + \"\\n\".join(\"| {} | {} |\".format(d[\"name\"], d[\"value\"])for d in info)\n\tsystem.perspective.openPopup(\"infoPopup\", \"kanoa/core/templates/displays/diagnosticsPopup\", {\u0027text\u0027:mdInfo}, title\u003d\u0027Diagnostics Info\u0027, draggable\u003dTrue, resizable\u003d True)\n\t\n\treturn"
               },
               "scope": "G",
               "type": "script"

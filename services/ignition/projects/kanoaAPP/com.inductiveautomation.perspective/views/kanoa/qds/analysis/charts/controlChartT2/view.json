@@ -1,0 +1,474 @@
+{
+  "custom": {
+    "alpha": null,
+    "chkItemPaths": [],
+    "filters": {
+      "chkItemPaths": [
+        "Main\\Motor Amps",
+        "Main\\Pressure Inlet Oil"
+      ],
+      "endDate": {
+        "$": [
+          "ts",
+          0,
+          1785780358087
+        ],
+        "$ts": 1785906000000
+      },
+      "masterChkShtId": null,
+      "startDate": {
+        "$": [
+          "ts",
+          0,
+          1785780341048
+        ],
+        "$ts": 1785474000000
+      }
+    },
+    "primarySeries": {
+      "options": {
+        "chart": {
+          "animations": {
+            "enabled": false
+          },
+          "redrawOnParentResize": false,
+          "redrawOnWindowResize": false,
+          "toolbar": {
+            "show": false
+          }
+        },
+        "dataLabels": {
+          "enabled": false
+        },
+        "xaxis": {
+          "title": {
+            "text": "Observation"
+          },
+          "type": "numeric"
+        },
+        "yaxis": {
+          "decimalsInFloat": 1,
+          "title": {
+            "text": "T2"
+          }
+        }
+      },
+      "series": []
+    },
+    "rawData": {
+      "rows": [],
+      "variableNames": []
+    },
+    "t2Result": {
+      "aboveUCL": [],
+      "chartType": "t2",
+      "covariance": null,
+      "error": null,
+      "mean": null,
+      "n": 0,
+      "outOfControl": false,
+      "p": 0,
+      "points": [],
+      "ucl": null,
+      "variableNames": []
+    }
+  },
+  "params": {
+    "values": {
+      "chkItemPaths": [
+        "Main\\Motor Amps",
+        "Main\\Pressure Inlet Oil"
+      ],
+      "endDate": {
+        "$": [
+          "ts",
+          0,
+          1785780358087
+        ],
+        "$ts": 1785906000000
+      },
+      "masterChkShtId": null,
+      "startDate": {
+        "$": [
+          "ts",
+          0,
+          1785780341048
+        ],
+        "$ts": 1785474000000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.alpha": {
+      "persistent": true
+    },
+    "custom.chkItemPaths": {
+      "persistent": true
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.primarySeries": {
+      "binding": {
+        "config": {
+          "struct": {
+            "t2": "{view.custom.t2Result}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tt2 \u003d value[\u0027t2\u0027]\n\tpoints \u003d t2.get(\u0027points\u0027) or []\n\tn \u003d len(points)\n\n\tbaseOptions \u003d {\n\t\t\u0027chart\u0027: {\u0027animations\u0027: {\u0027enabled\u0027: False}, \u0027toolbar\u0027: {\u0027show\u0027: False}, \u0027redrawOnParentResize\u0027: False, \u0027redrawOnWindowResize\u0027: False},\n\t\t\u0027dataLabels\u0027: {\u0027enabled\u0027: False},\n\t\t\u0027xaxis\u0027: {\u0027title\u0027: {\u0027text\u0027: \u0027Observation\u0027}, \u0027type\u0027: \u0027numeric\u0027},\n\t\t\u0027yaxis\u0027: {\u0027title\u0027: {\u0027text\u0027: \u0027T2\u0027}, \u0027decimalsInFloat\u0027: 1}\n\t}\n\n\tif n \u003d\u003d 0:\n\t\treturn {\u0027series\u0027: [], \u0027options\u0027: baseOptions}\n\n\tmainData \u003d [{\u0027x\u0027: i, \u0027y\u0027: points[i]} for i in range(n)]\n\n\tseries \u003d [{\u0027name\u0027: \u0027T2\u0027, \u0027type\u0027: \u0027line\u0027, \u0027data\u0027: mainData}]\n\tcolors \u003d [\u0027#1E88E5\u0027]\n\tstrokeWidths \u003d [2]\n\tdashArrays \u003d [0]\n\tmarkerSizes \u003d [0]\n\n\taboveUCL \u003d t2.get(\u0027aboveUCL\u0027) or []\n\tif aboveUCL:\n\t\tseries.append({\u0027name\u0027: \u0027Out of Control\u0027, \u0027type\u0027: \u0027scatter\u0027, \u0027data\u0027: [{\u0027x\u0027: i, \u0027y\u0027: points[i]} for i in aboveUCL]})\n\t\tcolors.append(\u0027#E53935\u0027)\n\t\tstrokeWidths.append(0)\n\t\tdashArrays.append(0)\n\t\tmarkerSizes.append(6)\n\n\tyAnnotations \u003d []\n\tucl \u003d t2.get(\u0027ucl\u0027)\n\tif ucl is not None:\n\t\tyAnnotations.append({\n\t\t\t\t\u0027y\u0027: ucl,\n\t\t\t\t\u0027borderColor\u0027: \u0027#D32F2F\u0027,\n\t\t\t\t\u0027strokeDashArray\u0027: 4,\n\t\t\t\t\u0027label\u0027: {\u0027text\u0027: \u0027UCL\u0027, \u0027style\u0027: {\u0027color\u0027: \u0027#fff\u0027, \u0027background\u0027: \u0027#D32F2F\u0027}}\n\t\t\t})\n\n\toptions \u003d dict(baseOptions)\n\toptions[\u0027stroke\u0027] \u003d {\u0027curve\u0027: \u0027straight\u0027, \u0027width\u0027: strokeWidths, \u0027dashArray\u0027: dashArrays}\n\toptions[\u0027markers\u0027] \u003d {\u0027size\u0027: markerSizes}\n\toptions[\u0027colors\u0027] \u003d colors\n\toptions[\u0027legend\u0027] \u003d {\u0027show\u0027: True, \u0027fontSize\u0027: \u002712px\u0027}\n\toptions[\u0027annotations\u0027] \u003d {\u0027yaxis\u0027: yAnnotations}\n\toptions[\u0027tooltip\u0027] \u003d {\u0027shared\u0027: False}\n\n\treturn {\u0027series\u0027: series, \u0027options\u0027: options}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.rawData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsystem.perspective.print(\"filter change on T2 %s\"%value)\n\t\n\tchkItemPaths \u003d value[\u0027chkItemPaths\u0027] or []\n\tmasterChkShtId \u003d value[\u0027masterChkShtId\u0027]\n\tstartDate \u003d value[\u0027startDate\u0027]\n\tendDate \u003d value[\u0027endDate\u0027]\n\n\tempty \u003d {\u0027rows\u0027: [], \u0027variableNames\u0027: []}\n\tif any(x is None for x in (masterChkShtId, startDate, endDate)) or len(chkItemPaths) \u003c 2: return empty\n\t\n#\tsystem.perspective.print(\"calling getMultiVariateChartData() with %s %s %s %s\"%(masterChkShtId, chkItemPaths, startDate, endDate))\n\tdata \u003d system.kanoa.quality.analysis.getMultiVariateChartData(masterChkShtId, chkItemPaths, startDate, endDate)\n\tcolHdrs \u003d system.dataset.getColumnHeaders(data)\n\tvariableNames \u003d [c for c in colHdrs if c !\u003d \u0027takenDate\u0027]\n\trawRows \u003d system.kanoa.utilities.convertDatasetToJSON(data)\n\trows \u003d [[r.get(v) for v in variableNames] for r in rawRows]\n\trows \u003d [row for row in rows if all(x is not None for x in row)]\n\n\treturn {\u0027rows\u0027: rows, \u0027variableNames\u0027: variableNames}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.t2Result": {
+      "binding": {
+        "config": {
+          "struct": {
+            "alpha": "{view.custom.alpha}",
+            "raw": "{view.custom.rawData}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\traw \u003d value[\u0027raw\u0027]\n\trows \u003d raw.get(\u0027rows\u0027) or []\n\tvariableNames \u003d raw.get(\u0027variableNames\u0027) or []\n\talpha \u003d value[\u0027alpha\u0027]\n\n\tif len(variableNames) \u003c 2: return {\u0027chartType\u0027: \u0027t2\u0027, \u0027error\u0027: None, \u0027p\u0027: len(variableNames), \u0027n\u0027: len(rows), \u0027variableNames\u0027: variableNames, \u0027mean\u0027: None, \u0027covariance\u0027: None, \u0027points\u0027: [], \u0027ucl\u0027: None, \u0027aboveUCL\u0027: [], \u0027outOfControl\u0027: False}\n\tif len(rows) \u003c len(variableNames) + 1: return {\u0027chartType\u0027: \u0027t2\u0027, \u0027error\u0027: \u0027Not enough data\u0027, \u0027p\u0027: len(variableNames), \u0027n\u0027: len(rows), \u0027variableNames\u0027: variableNames, \u0027mean\u0027: None, \u0027covariance\u0027: None, \u0027points\u0027: [], \u0027ucl\u0027: None, \u0027aboveUCL\u0027: [], \u0027outOfControl\u0027: False}\n\n\treturn system.kanoa.quality.spc.spcCheckT2(rows, variableNames, alpha)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1367
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblChkItems"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.chkItemPaths"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif not value: return \u0027\u0027\n\treturn \u0027, \u0027.join(p.split(\u0027\\\\\u0027)[-1] for p in value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblAlpha",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "False-alarm rate for the UCL. Leave blank for the default (0.0027, ~3-sigma equivalent)."
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "Alpha"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numAlpha",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-right",
+                "text": "False-alarm rate for the UCL. Leave blank for the default (0.0027, ~3-sigma equivalent)."
+              }
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.alpha"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "25px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "name": "lblT2Error"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.t2Result.error"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "color": "--kcRed-60"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "8px",
+            "padding": "4px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "tblRaw"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.rawData"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\trows \u003d value.get(\u0027rows\u0027) or []\n\tvariableNames \u003d list(value.get(\u0027variableNames\u0027, [])) or []\n\treturn system.dataset.toDataSet(variableNames, [list(r) for r in rows])",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "borderStyle": "none"
+                  }
+                },
+                "type": "ia.display.table"
+              }
+            ],
+            "meta": {
+              "name": "flxTable"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "apexT2"
+            },
+            "position": {
+              "tabIndex": 1
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.primarySeries.options"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.primarySeries.series"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "type": "kyvislabs.display.apexchart"
+          }
+        ],
+        "meta": {
+          "name": "tabCharts"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.currentTabIndex": {
+            "binding": {
+              "config": {
+                "expression": "1"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "contentStyle": {
+            "borderStyle": "none"
+          },
+          "menuType": "modern",
+          "tabSize": {
+            "width": 150
+          },
+          "tabStyle": {
+            "active": {
+              "classes": "kanoa/font/default"
+            },
+            "inactive": {
+              "classes": "kanoa/font/default"
+            }
+          },
+          "tabs": [
+            {
+              "name": "table",
+              "text": "Table"
+            },
+            {
+              "name": "chart",
+              "text": "Control Chart"
+            }
+          ]
+        },
+        "type": "ia.container.tab"
+      },
+      {
+        "meta": {
+          "name": "lblDebug"
+        },
+        "position": {
+          "basis": "32px",
+          "display": false
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn str(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "4px",
+        "overflow": "hidden",
+        "padding": "4px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

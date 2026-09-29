@@ -1,6 +1,45 @@
 {
-  "custom": {},
+  "custom": {
+    "data": [
+      {
+        "name": "Home",
+        "params": null,
+        "path": "/",
+        "type": "page"
+      },
+      {
+        "name": "Asset Nav Mobile",
+        "params": "null",
+        "path": "kanoa/mobile/assetNav",
+        "type": "view"
+      },
+      {
+        "name": "Loggers",
+        "params": "null",
+        "path": "kanoa/core/config/loggerTable",
+        "type": "view"
+      }
+    ]
+  },
   "params": {},
+  "propConfig": {
+    "custom.data": {
+      "binding": {
+        "config": {
+          "path": "page.props.pageId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tpageId \u003d value\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\treturn self.session.custom.kanoa[pageId].navigation.history",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
   "props": {
     "defaultSize": {
       "height": 408,
@@ -32,14 +71,9 @@
           "props.data": {
             "binding": {
               "config": {
-                "path": "page.props.pageId"
+                "path": "view.custom.data"
               },
-              "transforms": [
-                {
-                  "code": "\t\n\tpageId \u003d value\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\treturn self.session.custom.kanoa[pageId].navigation.history",
-                  "type": "script"
-                }
-              ],
+              "overlayOptOut": true,
               "type": "property"
             }
           }
@@ -140,7 +174,7 @@
               "dom": {
                 "onClick": {
                   "config": {
-                    "script": "\t\n\tpageId \u003d self.page.props.pageId\n\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\n\tnavHistory \u003d self.session.custom.kanoa[pageId].navigation \n\tnavHistory.history \u003d [navHistory.history[navHistory.currentIndex]]\n\tnavHistory.currentIndex \u003d 0\n\tself.parent.parent.getChild(\"Table\").refreshBinding(\"props.data\")"
+                    "script": "\t\n\tsystem.kanoa.config.clearNavigationHistory\t(self)\n\tself.view.refreshBinding(\"custom.data\")\n\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"

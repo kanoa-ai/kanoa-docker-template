@@ -1,0 +1,260 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "partNumber": null,
+      "transactionTypeCode": null,
+      "transactionTypeName": null,
+      "quantity": 0,
+      "quantitySign": 1,
+      "uomCode": null,
+      "transactionDate": null,
+      "notes": null
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 64,
+      "width": 400
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/border kanoa/font/default",
+        "borderRadius": 10,
+        "boxShadow": "0 2px 6px rgba(0,36,60,0.12), 0 1px 2px rgba(0,36,60,0.08)",
+        "gap": "10px",
+        "padding": "8px 12px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxAvatar",
+          "name": "flxAvatar"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "width": "34px",
+            "height": "34px",
+            "borderRadius": "17px"
+          }
+        },
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.transactionTypeCode"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t# Literal Kanoa brand tint values (design system tokens.colors.css)\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn '#e6f3d5'\n\telif value in downTypes:\n\t\treturn '#fbe6e3'\n\telse:\n\t\treturn '--kcGray-10'",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.icon",
+            "meta": {
+              "domId": "icoActivity",
+              "name": "icoActivity"
+            },
+            "props": {
+              "style": {
+                "width": "18px",
+                "height": "18px"
+              }
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.transactionTypeCode"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t# RECEIPT, RETURN, TRANSFER_IN -> up; ISSUE, TRANSFER_OUT -> down; everything else -> sync\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn 'material/arrow_upward'\n\telif value in downTypes:\n\t\treturn 'material/arrow_downward'\n\telse:\n\t\treturn 'material/sync_alt'",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.transactionTypeCode"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn '#3d8b40'  # literal Kanoa success green - var(--kcGood) renders blue in the live theme\n\telif value in downTypes:\n\t\treturn 'var(--kcBad)'\n\telse:\n\t\treturn 'var(--kcGray-100)'",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxText",
+          "name": "flxText"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "0px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblPartQty",
+              "name": "lblPartQty"
+            },
+            "props": {
+              "style": {
+                "fontFamily": "Roboto",
+                "fontWeight": 600,
+                "fontSize": "14px",
+                "color": "--kcGray-100"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value['partNumber']",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          },
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblSubline",
+              "name": "lblSubline"
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "color": "--kcGray-60"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tdateStr = system.date.format(value['transactionDate'], 'MMM d, h:mm a') if value['transactionDate'] else ''\n\treturn '%s - %s' % (value['transactionTypeName'] or value['transactionTypeCode'], dateStr)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.label",
+        "meta": {
+          "domId": "lblQty",
+          "name": "lblQty"
+        },
+        "props": {
+          "style": {
+            "borderRadius": 999,
+            "padding": "4px 10px",
+            "color": "--kcGray-0",
+            "fontFamily": "Roboto",
+            "fontWeight": 700,
+            "fontSize": "13px"
+          }
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tsign = '+' if value['quantitySign'] >= 0 else ''\n\tsignedQty = value['quantitySign'] * (value['quantity'] or 0)\n\treturn '%s%s %s' % (sign, signedQty, value['uomCode'] or '')",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.transactionTypeCode"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn '#3d8b40'  # literal Kanoa success green - var(--kcGood) renders blue in the live theme\n\telif value in downTypes:\n\t\treturn 'var(--kcBad)'\n\telse:\n\t\treturn 'var(--kcGray-100)'",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

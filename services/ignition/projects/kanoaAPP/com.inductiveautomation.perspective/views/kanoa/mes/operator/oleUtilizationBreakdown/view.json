@@ -1,0 +1,569 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "assetId": 4,
+      "attributionMode": "EvenSplit",
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1784681128070
+        ],
+        "$ts": 1784703600000
+      },
+      "interval": "Hour",
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1784681128070
+        ],
+        "$ts": 1784617200000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.absentPct": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oleRow"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tscheduledSecs \u003d value.get(\u0027scheduledSecs\u0027) or 0\n\tif scheduledSecs \u003c\u003d 0: return 0\n\tloggedInSecs \u003d value.get(\u0027loggedInSecs\u0027) or 0\n\treturn 100.0 * max(0, scheduledSecs - loggedInSecs) / scheduledSecs\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.loggedInPct": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oleRow"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tscheduledSecs \u003d value.get(\u0027scheduledSecs\u0027) or 0\n\tif scheduledSecs \u003c\u003d 0: return 0\n\treturn 100.0 * (value.get(\u0027loggedInSecs\u0027) or 0) / scheduledSecs\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.oleRow": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetId\u0027] is None or value[\u0027startDate\u0027] is None or value[\u0027endDate\u0027] is None: return {}\n\n\tdata \u003d system.kanoa.operators.getOLEDataAsset(value[\u0027assetId\u0027], value[\u0027startDate\u0027], value[\u0027endDate\u0027])\n\tif data.rowCount \u003d\u003d 0: \treturn {}\n\n\trow \u003d system.dataset.toPyDataSet(data)[0]\n\treturn {\n\t\t\u0027scheduledSecs\u0027: row[\u0027scheduledSecs\u0027],\n\t\t\u0027loggedInSecs\u0027: row[\u0027loggedInSecs\u0027],\n\t\t\u0027productiveSecs\u0027: row[\u0027productiveSecs\u0027],\n\t\t\u0027unplannedDowntimeSecs\u0027: row[\u0027unplannedDowntimeSecs\u0027],\n\t\t\u0027plannedDowntimeSecs\u0027: row[\u0027plannedDowntimeSecs\u0027]\n\t}\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.plannedPct": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oleRow"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tscheduledSecs \u003d value.get(\u0027scheduledSecs\u0027) or 0\n\tif scheduledSecs \u003c\u003d 0: return 0\n\treturn 100.0 * (value.get(\u0027plannedDowntimeSecs\u0027) or 0) / scheduledSecs\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.productivePct": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oleRow"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tscheduledSecs \u003d value.get(\u0027scheduledSecs\u0027) or 0\n\tif scheduledSecs \u003c\u003d 0: return 0\n\treturn 100.0 * (value.get(\u0027productiveSecs\u0027) or 0) / scheduledSecs\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.unplannedPct": {
+      "binding": {
+        "config": {
+          "path": "view.custom.oleRow"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tscheduledSecs \u003d value.get(\u0027scheduledSecs\u0027) or 0\n\tif scheduledSecs \u003c\u003d 0: return 0\n\treturn 100.0 * (value.get(\u0027unplannedDowntimeSecs\u0027) or 0) / scheduledSecs\n\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 187
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "lblTitle"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontSize": "13.5px",
+            "fontWeight": "600"
+          },
+          "text": "Where Scheduled Time Went"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "lblAssetTime"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "color": "var(--neutral-60)",
+            "fontSize": "11px"
+          },
+          "text": "Asset Time"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "barProductive"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.basis": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.productivePct"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn str(value) + \u0027%\u0027\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "#3b6fd6",
+                "borderRadius": "3px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "barUnplanned"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.basis": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.unplannedPct"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn str(value) + \u0027%\u0027\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "#c0392b",
+                "borderRadius": "3px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "barPlanned"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.basis": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.plannedPct"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn str(value) + \u0027%\u0027\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "#8a94a6",
+                "borderRadius": "3px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "flxBarAsset"
+        },
+        "position": {
+          "basis": "20px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "2px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblProductive"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.productivePct"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027Productive: %d%%\u0027 % round(value)\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "#3b6fd6",
+                "fontSize": "11.5px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblUnplanned"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.unplannedPct"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027Unplanned downtime: %d%%\u0027 % round(value)\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "#c0392b",
+                "fontSize": "11.5px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblPlanned"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.plannedPct"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027Planned downtime: %d%%\u0027 % round(value)\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "#8a94a6",
+                "fontSize": "11.5px"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxLegendAsset"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "14px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "lblLaborTime"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "color": "var(--neutral-60)",
+            "fontSize": "11px"
+          },
+          "text": "Labor Time"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "barLoggedIn"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.basis": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.loggedInPct"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn str(value) + \u0027%\u0027\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "#1a7f5a",
+                "borderRadius": "3px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "barAbsent"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.basis": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.absentPct"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn str(value) + \u0027%\u0027\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "var(--neutral-30)",
+                "borderRadius": "3px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "flxBarLabor"
+        },
+        "position": {
+          "basis": "20px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "2px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblLoggedIn"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.loggedInPct"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027Logged in: %d%%\u0027 % round(value)\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "#1a7f5a",
+                "fontSize": "11.5px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblAbsent"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.absentPct"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn \u0027Absent: %d%%\u0027 % round(value)\n\t",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "var(--neutral-60)",
+                "fontSize": "11.5px"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxLegendLabor"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "14px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "border": "1px solid var(--neutral-30)",
+        "borderRadius": "8px",
+        "gap": "6px",
+        "padding": "12px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

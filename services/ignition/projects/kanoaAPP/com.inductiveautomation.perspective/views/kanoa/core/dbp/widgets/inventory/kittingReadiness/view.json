@@ -1,0 +1,246 @@
+{
+  "custom": {
+    "data": {
+      "bomRows": []
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.bomRows": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value.has_key('assetPath') and value['assetPath']):\n\t\treturn []\n\n\tbomRows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getAssetBom({'assetPath': value['assetPath']}))\n\tif len(bomRows) == 0:\n\t\treturn []\n\n\t# getAssetBom doesn't carry available quantity, so cross-reference plant-wide\n\t# totals per part (not location-scoped, since a BOM line isn't tied to a bin).\n\ttotals = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getPartInventoryTotals({}))\n\ttotalsByPartId = {}\n\tfor t in totals:\n\t\ttotalsByPartId[t['partId']] = t\n\n\trows = []\n\tfor bom in bomRows:\n\t\ttotalInfo = totalsByPartId.get(bom['partId'])\n\t\tavailableQty = totalInfo['totalQuantityAvailable'] if totalInfo else 0\n\t\trequiredQty = bom['quantity'] or 0\n\t\trows.append({\n\t\t\t'partNumber': bom['partNumber'],\n\t\t\t'partDescription': bom['partDescription'],\n\t\t\t'requiredQty': requiredQty,\n\t\t\t'availableQty': availableQty,\n\t\t\t'uomCode': bom['uomCode'],\n\t\t\t'_sortKey': (0 if availableQty <= 0 else 1 if availableQty < requiredQty else 2)\n\t\t})\n\n\trows = sorted(rows, key=lambda r: r['_sortKey'])\n\tfor r in rows:\n\t\tdel r['_sortKey']\n\n\treturn [{'value': r} for r in rows]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.data.summary": {
+      "binding": {
+        "config": {
+          "path": "view.custom.data.bomRows"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tvalue = [row['value'] for row in value]\n\tmissing = sum(1 for r in value if r['availableQty'] <= 0)\n\tshort = sum(1 for r in value if 0 < r['availableQty'] < r['requiredQty'])\n\tif missing > 0:\n\t\treturn {'text': '%s Missing' % missing, 'color': 'var(--kcBad)'}\n\telif short > 0:\n\t\treturn {'text': '%s Short' % short, 'color': 'var(--kcOK)'}\n\telif len(value) > 0:\n\t\treturn {'text': 'Ready to Build', 'color': 'var(--kcGood)'}\n\telse:\n\t\treturn {'text': 'No BOM Found', 'color': 'var(--kcGray-60)'}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 480
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "auto",
+        "padding": "8px",
+        "gap": "8px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "space-between",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Kitting Readiness - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          },
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblSummaryBadge",
+              "name": "lblSummaryBadge"
+            },
+            "props": {
+              "style": {
+                "borderRadius": 999,
+                "padding": "4px 8px",
+                "color": "--kcGray-0",
+                "classes": "kanoa/font/labelSmall",
+                "textTransform": "uppercase",
+                "letterSpacing": "0.03em"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.summary.text"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.data.summary.color"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.flex-repeater",
+        "meta": {
+          "domId": "flxRptBom",
+          "name": "flxRptBom"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "stretch",
+          "direction": "column",
+          "path": "kanoa/core/dbp/widgets/inventory/kittingReadinessCard",
+          "style": {
+            "gap": 8
+          },
+          "wrap": "nowrap"
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.bomRows"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

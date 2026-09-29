@@ -1,0 +1,265 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "partNumber": null,
+      "partDescription": null,
+      "requiredQty": 0,
+      "availableQty": 0,
+      "uomCode": null
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 104,
+      "width": 340
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "row",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/border",
+        "borderRadius": 10,
+        "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+        "overflow": "hidden",
+        "padding": "10px",
+        "gap": "10px",
+        "borderLeftWidth": "6px",
+        "borderLeftStyle": "solid"
+      }
+    },
+    "propConfig": {
+      "props.style.borderLeftColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.value"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\tif value['availableQty'] <= 0:\n\t\treturn 'var(--kcBad)'\n\telif value['availableQty'] < value['requiredQty']:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxContent",
+          "name": "flxContent"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "6px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "flxTop",
+              "name": "flxTop"
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between",
+              "style": {
+                "gap": "8px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblPartNumber",
+                  "name": "lblPartNumber"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 600,
+                    "fontSize": "15px",
+                    "color": "--kcGray-100"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.partNumber"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblStatus",
+                  "name": "lblStatus"
+                },
+                "props": {
+                  "style": {
+                    "borderRadius": 999,
+                    "padding": "4px 8px",
+                    "color": "--kcGray-0",
+                    "classes": "kanoa/font/labelSmall",
+                    "textTransform": "uppercase",
+                    "letterSpacing": "0.03em"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tif value['availableQty'] <= 0:\n\t\treturn 'Missing'\n\telif value['availableQty'] < value['requiredQty']:\n\t\treturn 'Short'\n\telse:\n\t\treturn 'Covered'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\tif value['availableQty'] <= 0:\n\t\treturn 'var(--kcBad)'\n\telif value['availableQty'] < value['requiredQty']:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblDescription",
+              "name": "lblDescription"
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "color": "--kcGray-60"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn '%s - need %s, have %s %s' % (value['partDescription'] or 'No description', value['requiredQty'], value['availableQty'], value['uomCode'] or '')",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "flxTrack",
+              "name": "flxTrack"
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "--kcGray-30",
+                "borderRadius": 999,
+                "height": "10px",
+                "overflow": "hidden"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblFill",
+                  "name": "lblFill"
+                },
+                "props": {
+                  "style": {
+                    "height": "100%",
+                    "borderRadius": 999
+                  }
+                },
+                "propConfig": {
+                  "props.style.width": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\trequired = value['requiredQty'] or 0\n\tavailable = value['availableQty'] or 0\n\tif required <= 0:\n\t\treturn '100%'\n\tratio = min(available / float(required), 1.0)\n\treturn '%s%%' % int(round(ratio * 100))",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\tif value['availableQty'] <= 0:\n\t\treturn 'var(--kcBad)'\n\telif value['availableQty'] < value['requiredQty']:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1132 @@
+{
+  "custom": {
+    "display": {
+      "yMax": null,
+      "yMin": null
+    },
+    "filters": {
+      "chartType": "individuals",
+      "chkItemPath": "",
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1785884619345
+        ],
+        "$ts": 1785992400000
+      },
+      "masterChkShtId": null,
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1785884619345
+        ],
+        "$ts": 1785733200000
+      }
+    },
+    "primarySeries": {
+      "options": {
+        "annotations": {
+          "yaxis": []
+        },
+        "chart": {
+          "animations": {
+            "enabled": false
+          },
+          "redrawOnParentResize": false,
+          "redrawOnWindowResize": false,
+          "toolbar": {
+            "show": false
+          }
+        },
+        "dataLabels": {
+          "enabled": false
+        },
+        "xaxis": {
+          "title": {
+            "text": "Sample"
+          },
+          "type": "numeric"
+        },
+        "yaxis": {
+          "decimalsInFloat": 1,
+          "title": {
+            "text": "Value"
+          }
+        }
+      },
+      "series": []
+    },
+    "rawData": {
+      "chartType": "individuals",
+      "sampleSizes": [],
+      "setLimits": {},
+      "timestamps": [],
+      "values": []
+    },
+    "secondarySeries": {
+      "options": {
+        "chart": {
+          "animations": {
+            "enabled": false
+          },
+          "redrawOnParentResize": false,
+          "redrawOnWindowResize": false,
+          "toolbar": {
+            "show": false
+          }
+        },
+        "dataLabels": {
+          "enabled": false
+        },
+        "xaxis": {
+          "title": {
+            "text": "Subgroup"
+          },
+          "type": "numeric"
+        },
+        "yaxis": {
+          "decimalsInFloat": 1,
+          "title": {
+            "text": "Value"
+          }
+        }
+      },
+      "series": []
+    },
+    "spcResult": {
+      "chartType": "individuals",
+      "error": "Not enough data",
+      "outOfControl": false,
+      "points": [],
+      "setLimits": {}
+    },
+    "spcSettings": {
+      "lsl": null,
+      "ruleSet": null,
+      "subGroupSize": null,
+      "usl": null
+    },
+    "statsSummary": {
+      "rows": []
+    }
+  },
+  "params": {
+    "values": {
+      "chkItemPath": "",
+      "endDate": {
+        "$": [
+          "ts",
+          0,
+          1785698275293
+        ],
+        "$ts": 1785992400000
+      },
+      "masterChkShtId": null,
+      "startDate": {
+        "$": [
+          "ts",
+          0,
+          1785872635127
+        ],
+        "$ts": 1785733200000
+      }
+    }
+  },
+  "propConfig": {
+    "custom.display": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\treturn {\"yMin\": None, \"yMax\": None}",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\tinfo \u003d dict(value)\n\tinfo[\u0027chartType\u0027] \u003d info.get(\u0027chartType\u0027) or \u0027individuals\u0027\n\t\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.primarySeries": {
+      "binding": {
+        "config": {
+          "struct": {
+            "display": "{view.custom.display}",
+            "spc": "{view.custom.spcResult}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tspc \u003d value[\u0027spc\u0027]\n\tdisplay \u003d value[\u0027display\u0027]\n\tpoints \u003d spc.get(\u0027points\u0027) or []\n\tn \u003d len(points)\n\tsetLimits \u003d spc.get(\u0027setLimits\u0027) or {}\n\tyMin \u003d display.get(\u0027yMin\u0027)\n\tyMax \u003d display.get(\u0027yMax\u0027)\n\tusedUsl \u003d spc.get(\u0027usl\u0027)\n\tusedLsl \u003d spc.get(\u0027lsl\u0027)\n\n\tbaseOptions \u003d {\n\t\t\u0027chart\u0027: {\u0027animations\u0027: {\u0027enabled\u0027: False}, \u0027toolbar\u0027: {\u0027show\u0027: False}, \u0027redrawOnParentResize\u0027: False, \u0027redrawOnWindowResize\u0027: False},\n\t\t\u0027dataLabels\u0027: {\u0027enabled\u0027: False},\n\t\t\u0027xaxis\u0027: {\u0027title\u0027: {\u0027text\u0027: \u0027Sample\u0027}, \u0027type\u0027: \u0027numeric\u0027},\n\t}\n\n\tyAnnotations \u003d []\n\trangeValues \u003d []\n\tdef zoneLine(val, label, color, dash\u003d0):\n\t\tif val is None: return\n\t\trangeValues.append(val)\n\t\tyAnnotations.append({\n\t\t\t\t\u0027y\u0027: val,\n\t\t\t\t\u0027borderColor\u0027: color,\n\t\t\t\t\u0027strokeDashArray\u0027: dash,\n\t\t\t\t\u0027label\u0027: {\u0027text\u0027: label, \u0027style\u0027: {\u0027color\u0027: \u0027#fff\u0027, \u0027background\u0027: color}}\n\t\t\t})\n\n\tdef closeEnough(a, b):\n\t\treturn a is not None and b is not None and abs(a - b) \u003c 1e-9\n\n\tif not closeEnough(setLimits.get(\u0027lsl\u0027), usedLsl):\n\t\tzoneLine(setLimits.get(\u0027lsl\u0027), \u0027Set LSL\u0027, \u0027#7B1FA2\u0027, dash\u003d2)\n\tzoneLine(setLimits.get(\u0027lcl\u0027), \u0027Set LCL\u0027, \u0027#7B1FA2\u0027, dash\u003d2)\n\tzoneLine(setLimits.get(\u0027tgt\u0027), \u0027Set Target\u0027, \u0027#7B1FA2\u0027, dash\u003d2)\n\tzoneLine(setLimits.get(\u0027ucl\u0027), \u0027Set UCL\u0027, \u0027#7B1FA2\u0027, dash\u003d2)\n\tif not closeEnough(setLimits.get(\u0027usl\u0027), usedUsl):\n\t\tzoneLine(setLimits.get(\u0027usl\u0027), \u0027Set USL\u0027, \u0027#7B1FA2\u0027, dash\u003d2)\n\n\tdef yAxisWithRange():\n\t\tyaxis \u003d {\u0027title\u0027: {\u0027text\u0027: \u0027Value\u0027}, \u0027decimalsInFloat\u0027: 1}\n\t\tallValues \u003d list(rangeValues) + points\n\t\tif allValues:\n\t\t\tloVal, hiVal \u003d min(allValues), max(allValues)\n\t\t\tpad \u003d (hiVal - loVal) * 0.05 if hiVal \u003e loVal else max(abs(hiVal), 1.0) * 0.05\n\t\t\tyaxis[\u0027min\u0027] \u003d yMin if yMin is not None else loVal - pad\n\t\t\tyaxis[\u0027max\u0027] \u003d yMax if yMax is not None else hiVal + pad\n\t\telse:\n\t\t\tif yMin is not None: yaxis[\u0027min\u0027] \u003d yMin\n\t\t\tif yMax is not None: yaxis[\u0027max\u0027] \u003d yMax\n\t\treturn yaxis\n\n\tif n \u003d\u003d 0:\n\t\toptions \u003d dict(baseOptions)\n\t\toptions[\u0027yaxis\u0027] \u003d yAxisWithRange()\n\t\toptions[\u0027annotations\u0027] \u003d {\u0027yaxis\u0027: yAnnotations}\n\t\treturn {\u0027series\u0027: [], \u0027options\u0027: options}\n\n\tchartType \u003d spc.get(\u0027chartType\u0027)\n\tmainData \u003d [{\u0027x\u0027: i, \u0027y\u0027: points[i]} for i in range(n)]\n\n\tseries \u003d []\n\tcolors \u003d []\n\tstrokeWidths \u003d []\n\tdashArrays \u003d []\n\tmarkerSizes \u003d []\n\n\tdef addSeries(name, seriesType, data, color, strokeWidth\u003d2, dashArray\u003d0, markerSize\u003d0):\n\t\tseries.append({\u0027name\u0027: name, \u0027type\u0027: seriesType, \u0027data\u0027: data})\n\t\tcolors.append(color)\n\t\tstrokeWidths.append(strokeWidth)\n\t\tdashArrays.append(dashArray)\n\t\tmarkerSizes.append(markerSize)\n\n\taddSeries(\u0027Value\u0027, \u0027line\u0027, mainData, \u0027#1E88E5\u0027)\n\n\tif chartType \u003d\u003d \u0027pre_control\u0027:\n\t\tzoneLine(usedUsl, \u0027USL\u0027, \u0027#D32F2F\u0027)\n\t\tzoneLine(usedLsl, \u0027LSL\u0027, \u0027#D32F2F\u0027)\n\t\tzoneLine(spc.get(\u0027greenHigh\u0027), \u0027Green zone (high)\u0027, \u0027#388E3C\u0027, dash\u003d4)\n\t\tzoneLine(spc.get(\u0027greenLow\u0027), \u0027Green zone (low)\u0027, \u0027#388E3C\u0027, dash\u003d4)\n\t\tviolationIdx \u003d sorted(set(\n\t\t\t[p[\u0027index1\u0027] for p in spc.get(\u0027pairSignals\u0027, []) if p[\u0027signal\u0027] !\u003d \u0027run\u0027] +\n\t\t\t[p[\u0027index2\u0027] for p in spc.get(\u0027pairSignals\u0027, []) if p[\u0027signal\u0027] !\u003d \u0027run\u0027]\n\t\t))\n\telse:\n\t\tuclPoints \u003d spc.get(\u0027uclPoints\u0027) or []\n\t\tlclPoints \u003d spc.get(\u0027lclPoints\u0027) or []\n\t\tuclData \u003d [{\u0027x\u0027: i, \u0027y\u0027: uclPoints[i]} for i in range(len(uclPoints)) if uclPoints[i] is not None]\n\t\tlclData \u003d [{\u0027x\u0027: i, \u0027y\u0027: lclPoints[i]} for i in range(len(lclPoints)) if lclPoints[i] is not None]\n\t\tif uclData: addSeries(\u0027UCL\u0027, \u0027line\u0027, uclData, \u0027#9E9E9E\u0027, strokeWidth\u003d1, dashArray\u003d4)\n\t\tif lclData: addSeries(\u0027LCL\u0027, \u0027line\u0027, lclData, \u0027#9E9E9E\u0027, strokeWidth\u003d1, dashArray\u003d4)\n\t\trangeValues.extend(d[\u0027y\u0027] for d in uclData)\n\t\trangeValues.extend(d[\u0027y\u0027] for d in lclData)\n\t\tzoneLine(spc.get(\u0027mean\u0027), \u0027Center Line\u0027, \u0027#616161\u0027, dash\u003d4)\n\t\tzoneLine(usedUsl, \u0027USL\u0027, \u0027#D32F2F\u0027)\n\t\tzoneLine(usedLsl, \u0027LSL\u0027, \u0027#D32F2F\u0027)\n\t\tviolationIdx \u003d sorted(set(sum(spc.get(\u0027violations\u0027, {}).values(), [])))\n\n\tif violationIdx:\n\t\taddSeries(\u0027Rule Violation\u0027, \u0027scatter\u0027, [{\u0027x\u0027: i, \u0027y\u0027: points[i]} for i in violationIdx], \u0027#E53935\u0027, markerSize\u003d6)\n\n\toptions \u003d dict(baseOptions)\n\toptions[\u0027stroke\u0027] \u003d {\u0027curve\u0027: \u0027straight\u0027, \u0027width\u0027: strokeWidths, \u0027dashArray\u0027: dashArrays}\n\toptions[\u0027markers\u0027] \u003d {\u0027size\u0027: markerSizes}\n\toptions[\u0027colors\u0027] \u003d colors\n\toptions[\u0027legend\u0027] \u003d {\u0027show\u0027: True, \u0027fontSize\u0027: \u002712px\u0027}\n\toptions[\u0027yaxis\u0027] \u003d yAxisWithRange()\n\toptions[\u0027annotations\u0027] \u003d {\u0027yaxis\u0027: yAnnotations}\n\toptions[\u0027tooltip\u0027] \u003d {\u0027shared\u0027: False}\n\n\treturn {\u0027series\u0027: series, \u0027options\u0027: options}\n",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.rawData": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tchartType \u003d value[\u0027chartType\u0027]\n\tmasterChkShtId \u003d value[\u0027masterChkShtId\u0027]\n\tchkItemPath \u003d value[\u0027chkItemPath\u0027] or None\n\tstartDate \u003d value[\u0027startDate\u0027]\n\tendDate \u003d value[\u0027endDate\u0027]\n\n\tlimitKeys \u003d (\u0027lcl\u0027, \u0027ldl\u0027, \u0027lel\u0027, \u0027lsl\u0027, \u0027tgt\u0027, \u0027ucl\u0027, \u0027udl\u0027, \u0027uel\u0027, \u0027usl\u0027)\n\tempty \u003d {\u0027values\u0027: [], \u0027sampleSizes\u0027: [], \u0027timestamps\u0027: [], \u0027chartType\u0027: chartType, \u0027setLimits\u0027: {}}\n\tif any(x is None for x in (masterChkShtId, chkItemPath, startDate, endDate, chartType)): return empty\n\n\tif chartType in (\u0027p\u0027, \u0027np\u0027, \u0027c\u0027, \u0027u\u0027):\n\t\tdata \u003d system.kanoa.quality.analysis.getAttributeChartData(masterChkShtId, chkItemPath, startDate, endDate)\n\t\trows \u003d [r for r in system.kanoa.utilities.convertDatasetToJSON(data) if r.get(\u0027defectCount\u0027) is not None]\n\t\tvalues \u003d [r[\u0027defectCount\u0027] for r in rows]\n\t\tsampleSizes \u003d [r[\u0027sampleSize\u0027] for r in rows] if chartType in (\u0027p\u0027, \u0027u\u0027) else []\n\t\ttimestamps \u003d [r[\u0027takenDate\u0027] for r in rows]\n\t\tsetLimits \u003d {k: rows[0].get(k) for k in limitKeys} if rows else {}\n\t\treturn {\u0027values\u0027: values, \u0027sampleSizes\u0027: sampleSizes, \u0027timestamps\u0027: timestamps, \u0027chartType\u0027: chartType, \u0027setLimits\u0027: setLimits}\n\n\tdata \u003d system.kanoa.quality.analysis.getContinuousChartData(masterChkShtId, chkItemPath, startDate, endDate)\n\trows \u003d [r for r in system.kanoa.utilities.convertDatasetToJSON(data) if r.get(\u0027chkItemValue\u0027) is not None]\n\tvalues \u003d [r[\u0027chkItemValue\u0027] for r in rows]\n\ttimestamps \u003d [r[\u0027takenDate\u0027] for r in rows]\n\tsetLimits \u003d {k: rows[0].get(k) for k in limitKeys} if rows else {}\n\treturn {\u0027values\u0027: values, \u0027sampleSizes\u0027: [], \u0027timestamps\u0027: timestamps, \u0027chartType\u0027: chartType, \u0027setLimits\u0027: setLimits}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\n\tsetLimits \u003d self.custom.rawData.get(\u0027setLimits\u0027) or {}\n\tif self.custom.spcSettings.get(\u0027lsl\u0027) is None: self.custom.spcSettings.lsl \u003d setLimits.get(\u0027lsl\u0027)\n\tif self.custom.spcSettings.get(\u0027usl\u0027) is None: self.custom.spcSettings.usl \u003d setLimits.get(\u0027usl\u0027)\n\t\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.secondarySeries": {
+      "binding": {
+        "config": {
+          "struct": {
+            "spc": "{view.custom.spcResult}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tspc \u003d value[\u0027spc\u0027]\n\tsecondary \u003d spc.get(\u0027secondary\u0027)\n\n\tbaseOptions \u003d {\n\t\t\u0027chart\u0027: {\u0027animations\u0027: {\u0027enabled\u0027: False}, \u0027toolbar\u0027: {\u0027show\u0027: False}, \u0027redrawOnParentResize\u0027: False, \u0027redrawOnWindowResize\u0027: False},\n\t\t\u0027dataLabels\u0027: {\u0027enabled\u0027: False},\n\t\t\u0027xaxis\u0027: {\u0027title\u0027: {\u0027text\u0027: \u0027Subgroup\u0027}, \u0027type\u0027: \u0027numeric\u0027},\n\t}\n\n\tif secondary is None:\n\t\toptions \u003d dict(baseOptions)\n\t\toptions[\u0027yaxis\u0027] \u003d {\u0027title\u0027: {\u0027text\u0027: \u0027Value\u0027}, \u0027decimalsInFloat\u0027: 1}\n\t\treturn {\u0027series\u0027: [], \u0027options\u0027: options}\n\n\tpoints \u003d secondary.get(\u0027points\u0027) or []\n\tn \u003d len(points)\n\tmainData \u003d [{\u0027x\u0027: i, \u0027y\u0027: points[i]} for i in range(n)]\n\n\tyAnnotations \u003d []\n\trangeValues \u003d []\n\tdef zoneLine(val, label, color, dash\u003d0):\n\t\tif val is None: return\n\t\trangeValues.append(val)\n\t\tyAnnotations.append({\n\t\t\t\t\u0027y\u0027: val,\n\t\t\t\t\u0027borderColor\u0027: color,\n\t\t\t\t\u0027strokeDashArray\u0027: dash,\n\t\t\t\t\u0027label\u0027: {\u0027text\u0027: label, \u0027style\u0027: {\u0027color\u0027: \u0027#fff\u0027, \u0027background\u0027: color}}\n\t\t\t})\n\n\tzoneLine(secondary.get(\u0027centerLine\u0027), \u0027Center Line\u0027, \u0027#616161\u0027, dash\u003d4)\n\tzoneLine(secondary.get(\u0027ucl\u0027), \u0027UCL\u0027, \u0027#9E9E9E\u0027)\n\tzoneLine(secondary.get(\u0027lcl\u0027), \u0027LCL\u0027, \u0027#9E9E9E\u0027)\n\n\tallValues \u003d list(rangeValues) + points\n\tyaxis \u003d {\u0027title\u0027: {\u0027text\u0027: secondary.get(\u0027label\u0027) or \u0027Value\u0027}, \u0027decimalsInFloat\u0027: 1}\n\tif allValues:\n\t\tloVal, hiVal \u003d min(allValues), max(allValues)\n\t\tpad \u003d (hiVal - loVal) * 0.05 if hiVal \u003e loVal else max(abs(hiVal), 1.0) * 0.05\n\t\tyaxis[\u0027min\u0027] \u003d loVal - pad\n\t\tyaxis[\u0027max\u0027] \u003d hiVal + pad\n\n\toptions \u003d dict(baseOptions)\n\toptions[\u0027stroke\u0027] \u003d {\u0027curve\u0027: \u0027straight\u0027, \u0027width\u0027: 2}\n\toptions[\u0027markers\u0027] \u003d {\u0027size\u0027: 0}\n\toptions[\u0027colors\u0027] \u003d [\u0027#1E88E5\u0027]\n\toptions[\u0027legend\u0027] \u003d {\u0027show\u0027: True, \u0027fontSize\u0027: \u002712px\u0027}\n\toptions[\u0027yaxis\u0027] \u003d yaxis\n\toptions[\u0027annotations\u0027] \u003d {\u0027yaxis\u0027: yAnnotations}\n\n\treturn {\u0027series\u0027: [{\u0027name\u0027: secondary.get(\u0027label\u0027), \u0027data\u0027: mainData}], \u0027options\u0027: options}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.spcResult": {
+      "binding": {
+        "config": {
+          "struct": {
+            "raw": "{view.custom.rawData}",
+            "spcSettings": "{view.custom.spcSettings}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tchartType \u003d value[\u0027raw\u0027][\u0027chartType\u0027]\n\tvalues \u003d value[\u0027raw\u0027].get(\u0027values\u0027, [])\n\tspcSettings \u003d value[\u0027spcSettings\u0027]\n\tsetLimits \u003d value[\u0027raw\u0027].get(\u0027setLimits\u0027) or {}\n\n\tif chartType is None: return {\u0027outOfControl\u0027: False, \u0027chartType\u0027: chartType, \u0027points\u0027: [], \u0027error\u0027: None, \u0027setLimits\u0027: setLimits}\n\tif len(values) \u003c 2: return {\u0027outOfControl\u0027: False, \u0027chartType\u0027: chartType, \u0027points\u0027: [], \u0027error\u0027: \u0027Not enough data\u0027, \u0027setLimits\u0027: setLimits}\n\n\tresult \u003d system.kanoa.quality.spc.spcCheck(values, chartType, spcSettings.get(\u0027ruleSet\u0027), spcSettings.get(\u0027subgroupSize\u0027), spcSettings.get(\u0027usl\u0027), spcSettings.get(\u0027lsl\u0027), value[\u0027raw\u0027].get(\u0027sampleSizes\u0027) or None)\n\tresult[\u0027setLimits\u0027] \u003d setLimits\n\treturn result",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.spcSettings": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn {\"lsl\": None, \"ruleSet\": None, \"subGroupSize\": None, \"usl\": None}",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.statsSummary": {
+      "binding": {
+        "config": {
+          "path": "view.custom.spcResult"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tspc \u003d value\n\tpoints \u003d spc.get(\u0027points\u0027) or []\n\tn \u003d len(points)\n\tif n \u003d\u003d 0: return {\u0027rows\u0027: []}\n\n\tminVal \u003d min(points)\n\tmaxVal \u003d max(points)\n\trangeVal \u003d maxVal - minVal\n\tmeanVal \u003d sum(points) / float(n)\n\tstdDev \u003d (sum((p - meanVal) ** 2 for p in points) / float(n - 1)) ** 0.5 if n \u003e 1 else None\n\n\tsetLimits \u003d spc.get(\u0027setLimits\u0027) or {}\n\tcapability \u003d spc.get(\u0027capability\u0027) or {}\n\tusl \u003d spc.get(\u0027usl\u0027)\n\tlsl \u003d spc.get(\u0027lsl\u0027)\n\n\tdef capSeverity(v):\n\t\tif v is None: return None\n\t\tif v \u003c 1.0: return \u0027error\u0027\n\t\tif v \u003c 1.33: return \u0027warn\u0027\n\t\treturn None\n\n\tdef closeEnough(a, b):\n\t\treturn a is not None and b is not None and abs(a - b) \u003c 1e-9\n\n\titems \u003d [\n\t\t(\u0027Min\u0027, minVal, \u0027error\u0027 if (lsl is not None and minVal \u003c lsl) else None),\n\t\t(\u0027Max\u0027, maxVal, \u0027error\u0027 if (usl is not None and maxVal \u003e usl) else None),\n\t\t(\u0027Range\u0027, rangeVal, None), (\u0027Mean\u0027, meanVal, None), (\u0027Std Dev\u0027, stdDev, None),\n\t\t(\u0027LSL (used)\u0027, lsl, None), (\u0027USL (used)\u0027, usl, None),\n\t\t(\u0027Calculated LCL\u0027, spc.get(\u0027lcl\u0027), None), (\u0027Calculated UCL\u0027, spc.get(\u0027ucl\u0027), None),\n\t\t(\u0027Set LDL\u0027, setLimits.get(\u0027ldl\u0027), None), (\u0027Set LEL\u0027, setLimits.get(\u0027lel\u0027), None),\n\t]\n\tif not closeEnough(setLimits.get(\u0027lsl\u0027), lsl):\n\t\titems.append((\u0027Set LSL\u0027, setLimits.get(\u0027lsl\u0027), None))\n\titems.append((\u0027Set LCL\u0027, setLimits.get(\u0027lcl\u0027), None))\n\titems.append((\u0027Set Target\u0027, setLimits.get(\u0027tgt\u0027), None))\n\titems.append((\u0027Set UCL\u0027, setLimits.get(\u0027ucl\u0027), None))\n\titems.append((\u0027Set UDL\u0027, setLimits.get(\u0027udl\u0027), None))\n\titems.append((\u0027Set UEL\u0027, setLimits.get(\u0027uel\u0027), None))\n\tif not closeEnough(setLimits.get(\u0027usl\u0027), usl):\n\t\titems.append((\u0027Set USL\u0027, setLimits.get(\u0027usl\u0027), None))\n\titems.append((\u0027Cp\u0027, capability.get(\u0027cp\u0027), capSeverity(capability.get(\u0027cp\u0027))))\n\titems.append((\u0027Cpk\u0027, capability.get(\u0027cpk\u0027), capSeverity(capability.get(\u0027cpk\u0027))))\n\titems.append((\u0027Cpu\u0027, capability.get(\u0027cpu\u0027), capSeverity(capability.get(\u0027cpu\u0027))))\n\titems.append((\u0027Cpl\u0027, capability.get(\u0027cpl\u0027), capSeverity(capability.get(\u0027cpl\u0027))))\n\titems.append((\u0027Pp\u0027, capability.get(\u0027pp\u0027), capSeverity(capability.get(\u0027pp\u0027))))\n\titems.append((\u0027Ppk\u0027, capability.get(\u0027ppk\u0027), capSeverity(capability.get(\u0027ppk\u0027))))\n\titems.append((\u0027Ppu\u0027, capability.get(\u0027ppu\u0027), capSeverity(capability.get(\u0027ppu\u0027))))\n\titems.append((\u0027Ppl\u0027, capability.get(\u0027ppl\u0027), capSeverity(capability.get(\u0027ppl\u0027))))\n\titems.append((\u0027Sigma (within)\u0027, capability.get(\u0027sigmaWithin\u0027), None))\n\titems.append((\u0027Sigma (overall)\u0027, capability.get(\u0027sigmaOverall\u0027), None))\n\treturn {\u0027rows\u0027: [{\u0027Metric\u0027: k, \u0027Value\u0027: v, \u0027Severity\u0027: s} for k, v, s in items if v is not None]}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.values": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 1367
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblChkItem"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tif (value[\u0027chkItemPath\u0027] or None) is None: return \u0027\u0027\n\treturn \"%s from %s to %s\"%(value[\u0027chkItemPath\u0027].split(\u0027\\\\\u0027)[-1], system.date.format(value[\u0027startDate\u0027], \"YY-MM-dd HH:mm\"), system.date.format(value[\u0027endDate\u0027], \"YY-MM-dd HH:mm\"))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddChartType",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right"
+              }
+            },
+            "position": {
+              "basis": "290px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "options": "{this.props.options}",
+                      "value": "{this.props.value}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn next((o.get(\u0027tooltip\u0027) for o in value[\u0027options\u0027] if o.get(\u0027value\u0027) \u003d\u003d value[\u0027value\u0027]), None)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn\t[\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027individuals\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Individual Readings (I-MR)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027One continuous numeric value per check item. No subgrouping, no sample size.\u0027\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027xbar\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Subgroup Average \u0026 Range (X-bar/R)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027Continuous numeric values, collected in subgroups of 2-10 consecutive readings. Requires a subgroup size.\u0027\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027xbar_s\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Subgroup Average \u0026 Std Dev (X-bar/S)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027Continuous numeric values, collected in subgroups of 2 or more consecutive readings. Requires a subgroup size.\u0027\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027p\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Percent Defective (p)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \"Two values per subgroup: defect/defective count, and the subgroup\u0027s sample size. Sample size can vary from subgroup to subgroup.\"\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027np\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Number Defective (np)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027One value per subgroup: defect/defective count. Sample size is fixed and set once, not entered per subgroup.\u0027\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027c\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Number of Defects (c)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027One value per subgroup: defect count. No sample size needed - assumes a constant area of opportunity.\u0027\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027u\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Defects per Unit (u)\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027Two values per subgroup: defect count, and the area of opportunity (units inspected). Can vary from subgroup to subgroup.\u0027\n\t\t \t\t},\n\t\t\t\t{\n\t\t\t\t\t\u0027value\u0027: \u0027pre_control\u0027, \n\t\t\t\t\t\u0027label\u0027: \u0027Pre-Control\u0027,\n\t\t \t\t\t\u0027tooltip\u0027: \u0027One continuous numeric value per check item, same as Individual Readings. Requires both an upper and lower spec limit.\u0027\n\t\t \t\t},\n\t]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.filters.chartType"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Chart Type..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "name": "ddRuleSet"
+            },
+            "position": {
+              "basis": "230px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.chartType"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value !\u003d \u0027pre_control\u0027\n",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.spcSettings.ruleSet"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "options": [
+                {
+                  "label": "Western Electric + Nelson",
+                  "value": "both"
+                },
+                {
+                  "label": "Western Electric only",
+                  "value": "western_electric"
+                },
+                {
+                  "label": "Nelson only",
+                  "value": "nelson"
+                }
+              ],
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "name": "lblLSL"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "LSL"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numLSL",
+              "tooltip": {
+                "text": "Lower spec limit"
+              }
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.spcSettings.lsl"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "params": {
+                "label": "LSL"
+              },
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "25px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "name": "lblUSL"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "USL"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numUSL",
+              "tooltip": {
+                "text": "Upper spec limit"
+              }
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.spcSettings.usl"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "25px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "name": "lblSubGroupSize"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.chartType"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value in (\u0027xbar\u0027, \u0027xbar_s\u0027, \u0027np\u0027)\n",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": "Sub Group Size"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numSubGroupSize",
+              "tooltip": {
+                "text": "Subgroup size (xbar / xbar_s / np)"
+              }
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.chartType"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value in (\u0027xbar\u0027, \u0027xbar_s\u0027, \u0027np\u0027)\n",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.spcSettings.subGroupSize"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "25px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.refreshBinding(\"custom.spcSettings\")\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnClearSpec",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Clear lower and upper spec"
+              }
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.spcSettings"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027lsl\u0027] is not None or value[\u0027usl\u0027] is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/clear"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "meta": {
+              "name": "lblSPCError"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.spcResult.error"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "color": "--kcRed-60"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblYMin",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Manually override the chart\u0027s y-axis minimum. Leave blank to auto-fit."
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "Y Min"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numYMin",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Manually override the chart\u0027s y-axis minimum. Leave blank to auto-fit."
+              }
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.display.yMin"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "params": {
+                "label": "LSL"
+              },
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "25px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "meta": {
+              "name": "lblYMax",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Manually override the chart\u0027s y-axis maximum. Leave blank to auto-fit."
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "text": "Y Max"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numYMax",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Manually override the chart\u0027s y-axis maximum. Leave blank to auto-fit."
+              }
+            },
+            "position": {
+              "basis": "60px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.display.yMax"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "align": "center",
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "height": "25px"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.refreshBinding(\"custom.display\")\n\t\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnClearYAxisRange",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom-left",
+                "text": "Clear Y-axis range"
+              }
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.display"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027yMin\u0027] is not None or value[\u0027yMax\u0027] is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/clear"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/flatIcon"
+              },
+              "text": ""
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "8px",
+            "padding": "4px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "tblRaw"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.rawData.values"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn system.dataset.toDataSet([\u0027Value\u0027], [[v] for v in value])\n",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "borderStyle": "none"
+                  }
+                },
+                "type": "ia.display.table"
+              }
+            ],
+            "meta": {
+              "name": "flxTable"
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "apexPrimary"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.primarySeries.options"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.primarySeries.series"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "type": "kyvislabs.display.apexchart"
+              },
+              {
+                "meta": {
+                  "name": "flxRptStats"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.instances": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.statsSummary"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\trows \u003d value.get(\u0027rows\u0027) or []\n\treturn [{\u0027value\u0027: r} for r in rows]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "alignContent": "flex-start",
+                  "alignItems": "flex-start",
+                  "elementPosition": {
+                    "basis": "auto",
+                    "grow": 0,
+                    "shrink": 0
+                  },
+                  "elementStyle": {
+                    "borderRadius": 6,
+                    "width": 90
+                  },
+                  "path": "kanoa/qds/analysis/charts/statChip",
+                  "style": {
+                    "classes": "kanoa/border",
+                    "gap": 6
+                  },
+                  "useDefaultViewHeight": false,
+                  "useDefaultViewWidth": false,
+                  "wrap": "wrap"
+                },
+                "type": "ia.display.flex-repeater"
+              }
+            ],
+            "meta": {
+              "name": "flxControlChart"
+            },
+            "position": {
+              "grow": 1,
+              "tabIndex": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "apexSecondary"
+            },
+            "propConfig": {
+              "position.tabIndex": {
+                "binding": {
+                  "config": {
+                    "path": "parent.props.tabs"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t\n\tnames \u003d [t[\u0027name\u0027] for t in value]\n\treturn names.index(\u0027secondary\u0027) if \u0027secondary\u0027 in names else -1",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.secondarySeries.options"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.secondarySeries.series"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "type": "kyvislabs.display.apexchart"
+          }
+        ],
+        "meta": {
+          "name": "tabCharts"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.currentTabIndex": {
+            "binding": {
+              "config": {
+                "expression": "1"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          },
+          "props.tabs": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.chartType"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t_SECONDARY_LABELS \u003d {\u0027Individuals\u0027: \u0027Moving Range\u0027, \u0027xbar\u0027: \u0027Range Chart\u0027, \u0027xbar_s\u0027: \u0027Std Dev Chart\u0027}\n\thasSecondary \u003d value in _SECONDARY_LABELS\n\n\ttabs \u003d \t[{\u0027name\u0027: \u0027table\u0027, \u0027text\u0027: \u0027Table\u0027}, {\u0027name\u0027: \u0027primary\u0027, \u0027text\u0027: \u0027Control Chart\u0027}\t]\n\n\tif hasSecondary: tabs.append({\u0027name\u0027: \u0027secondary\u0027, \u0027text\u0027: _SECONDARY_LABELS.get(value, \u0027Range / S / MR Chart\u0027)})\n\n\treturn tabs",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "contentStyle": {
+            "borderStyle": "none"
+          },
+          "menuType": "modern",
+          "tabSize": {
+            "width": 150
+          },
+          "tabStyle": {
+            "active": {
+              "borderStyle": "none",
+              "classes": "kanoa/font/default"
+            },
+            "inactive": {
+              "classes": "kanoa/font/default"
+            }
+          }
+        },
+        "type": "ia.container.tab"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "4px",
+        "overflow": "hidden",
+        "padding": "4px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

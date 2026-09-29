@@ -1,0 +1,194 @@
+{
+  "custom": {
+    "data": {
+      "criticalRows": []
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.criticalRows": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value.has_key('assetPath') and value['assetPath']):\n\t\treturn []\n\n\tstockRows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getPartInventoryStock({'inventoryAssetPath': value['assetPath']}))\n\tif len(stockRows) == 0:\n\t\treturn []\n\n\t# Cross-reference against the parts catalog for isCriticalSpare / manufacturer / description,\n\t# none of which are returned by getPartInventoryStock itself.\n\tallParts = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getParts({}))\n\tpartsById = {}\n\tfor part in allParts:\n\t\tpartsById[part['partId']] = part\n\n\tcriticalRows = []\n\tfor row in stockRows:\n\t\tpart = partsById.get(row['partId'])\n\t\tif part is None or not part['isCriticalSpare']:\n\t\t\tcontinue\n\t\tmaxQty = row['maxQty'] or 1\n\t\tratio = (row['quantityOnHand'] or 0) / float(maxQty)\n\t\tcriticalRows.append({\n\t\t\t'partNumber': row['partNumber'],\n\t\t\t'partDescription': part['partDescription'],\n\t\t\t'manufacturerName': part['manufacturerName'],\n\t\t\t'quantityOnHand': row['quantityOnHand'],\n\t\t\t'maxQty': row['maxQty'],\n\t\t\t'uomCode': row['uomCode'],\n\t\t\t'isBelowReorderThreshold': row['isBelowReorderThreshold'],\n\t\t\t'isBelowSafetyStock': row['isBelowSafetyStock'],\n\t\t\t'_sortKey': (0 if row['isBelowSafetyStock'] else 1 if row['isBelowReorderThreshold'] else 2, ratio)\n\t\t})\n\n\tcriticalRows = sorted(criticalRows, key=lambda r: r['_sortKey'])\n\tfor r in criticalRows:\n\t\tdel r['_sortKey']\n\n\treturn [{'value': r} for r in criticalRows]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 480
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "auto",
+        "padding": "8px",
+        "gap": "8px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "flex-start",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Critical Spares Watchlist - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.flex-repeater",
+        "meta": {
+          "domId": "flxRptCriticalSpares",
+          "name": "flxRptCriticalSpares"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "stretch",
+          "direction": "column",
+          "path": "kanoa/core/dbp/widgets/inventory/criticalSparePartCard",
+          "style": {
+            "gap": 8
+          },
+          "wrap": "nowrap"
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.criticalRows"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

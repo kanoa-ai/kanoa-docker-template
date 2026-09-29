@@ -6,9 +6,13 @@
       "createdBy": null,
       "createdDate": null,
       "enabled": null,
+      "lastUpdated": null,
+      "lastUpdatedBy": null,
       "maintenanceTypeColor": "",
       "maintenanceTypeId": null,
-      "maintenanceTypeName": ""
+      "maintenanceTypeName": "",
+      "serialId": null,
+      "serialName": null
     }
   },
   "params": {
@@ -40,7 +44,7 @@
   },
   "props": {
     "defaultSize": {
-      "height": 152,
+      "height": 182,
       "width": 350
     }
   },
@@ -261,6 +265,96 @@
         },
         "position": {
           "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lbl",
+              "name": "lbl"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Serialization"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddSerial"
+            },
+            "position": {
+              "basis": "256px"
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tserials \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.serial.getSerialNumbers({\u0027enabled\u0027: True}))\n\treturn [{\u0027value\u0027: item[\u0027serialId\u0027], \u0027label\u0027: item[\u0027serialName\u0027]} for item in serials]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.maintenanceTypeInfo.serialId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select Type..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxmaintenanceTypeColor",
+          "name": "flxSerial",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "text": "Select a serialization to use when generating workorders of this type. Can leave blank to default to maintenaceWorkOrder"
+          }
+        },
+        "position": {
+          "basis": "25px",
           "shrink": 0
         },
         "props": {

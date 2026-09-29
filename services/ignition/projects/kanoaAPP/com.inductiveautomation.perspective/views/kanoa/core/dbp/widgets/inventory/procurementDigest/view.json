@@ -1,0 +1,194 @@
+{
+  "custom": {
+    "data": {
+      "reorderRows": []
+    },
+    "filters": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "showAssetPath": true
+    }
+  },
+  "propConfig": {
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfilters = system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value['viewParams'], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif value['viewParams'].has_key('assetPath') and value['viewParams']['assetPath']: filters['assetPath'] = value['viewParams']['assetPath']\n\tif not filters.has_key('showAssetPath'): filters['showAssetPath'] = True\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.data": {
+      "persistent": true
+    },
+    "custom.data.reorderRows": {
+      "binding": {
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value.has_key('assetPath') and value['assetPath']):\n\t\treturn []\n\n\tchildAssets = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({'assetPath': value['assetPath'] + '\\\\%'}))\n\n\tallParts = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getParts({}))\n\tpartsById = {}\n\tfor part in allParts:\n\t\tpartsById[part['partId']] = part\n\n\trows = []\n\tfor asset in childAssets:\n\t\tstockRows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.inventory.getPartInventoryStock({'inventoryAssetPath': asset['assetPath']}))\n\t\tfor row in stockRows:\n\t\t\tif not row['isBelowReorderThreshold']:\n\t\t\t\tcontinue\n\t\t\tpart = partsById.get(row['partId'])\n\t\t\tshortfall = (row['reorderPointQty'] or 0) - (row['quantityOnHand'] or 0)\n\t\t\trows.append({\n\t\t\t\t'partNumber': row['partNumber'],\n\t\t\t\t'manufacturerName': part['manufacturerName'] if part else None,\n\t\t\t\t'binName': asset['assetName'],\n\t\t\t\t'quantityOnHand': row['quantityOnHand'],\n\t\t\t\t'reorderPointQty': row['reorderPointQty'],\n\t\t\t\t'reorderQty': row['reorderQty'],\n\t\t\t\t'uomCode': row['uomCode'],\n\t\t\t\t'isBelowSafetyStock': row['isBelowSafetyStock'],\n\t\t\t\t'_sortKey': (0 if row['isBelowSafetyStock'] else 1, -shortfall)\n\t\t\t})\n\n\trows = sorted(rows, key=lambda r: r['_sortKey'])\n\trows = rows[:15]\n\tfor r in rows:\n\t\tdel r['_sortKey']\n\n\treturn [{'value': r} for r in rows]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 500
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/font/default",
+        "overflow": "auto",
+        "padding": "8px",
+        "gap": "8px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxHeader",
+          "name": "flxHeader"
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "flex-start",
+          "style": {
+            "gap": "8px",
+            "overflow": "hidden",
+            "padding": "4px"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.filters.showAssetPath"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "props": {
+              "textStyle": {
+                "classes": "kanoa/font/labelLarge"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn 'Needs Reordering - %s' % (system.kanoa.utilities.formatPath(value['assetPath'], {}))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.flex-repeater",
+        "meta": {
+          "domId": "flxRptProcurement",
+          "name": "flxRptProcurement"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "stretch",
+          "direction": "column",
+          "path": "kanoa/core/dbp/widgets/inventory/procurementLineCard",
+          "style": {
+            "gap": 8
+          },
+          "wrap": "nowrap"
+        },
+        "propConfig": {
+          "props.instances": {
+            "binding": {
+              "config": {
+                "path": "view.custom.data.reorderRows"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "widgetAssetSelected",
+          "pageScope": true,
+          "script": "\n\tassetPath = payload['selection'][0]['value']['path'] if len(payload['selection']) > 0 else None\n\n\tsystem.kanoa.utilities.storeAssetPath(self, assetPath)\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

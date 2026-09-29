@@ -3,30 +3,61 @@
     "data": {
       "backlog": [],
       "kpiByAsset": [],
-      "kpiSummary": {},
+      "kpiSummary": {
+        "MTTA_Minutes": null,
+        "MTTR_Minutes": null,
+        "MeanCycleTime_Minutes": null,
+        "MeanLeadToStart_Minutes": null,
+        "MeanWait_Minutes": null,
+        "ScheduleCompliancePct": null,
+        "WorkflowChurnPct": null,
+        "cancelledCount": null,
+        "completedCount": null,
+        "openBacklogCount": null,
+        "workOrderCount": 0
+      },
       "kpiTrend": [],
+      "laborHoursByTechnician": [],
+      "laborHoursByWorkOrder": [],
+      "laborHoursSummary": {
+        "avgTimeInActiveStateHours": null,
+        "avgTimeToCompleteHours": null,
+        "procedureStepHours": null,
+        "technicianHours": null,
+        "totalLaborHours": null,
+        "workOrderCount": 0
+      },
       "mtbfByAsset": [],
-      "mtbfSummary": {},
+      "mtbfSummary": {
+        "MTBF_Days": null,
+        "MTBF_Minutes": null,
+        "assetCount": 0,
+        "failureCount": 0,
+        "intervalCount": 0
+      },
       "workflowChurn": []
     },
+    "display": {
+      "cardWidth": "160px"
+    },
     "filters": {
-      "assetId": 899,
-      "assetPath": "Kanoa Box Co",
+      "assetId": null,
+      "assetPath": null,
       "endDate": {
         "$": [
           "ts",
           192,
-          1777382007275
+          1789311563774
         ],
-        "$ts": 1777791600000
+        "$ts": 1789282800000
       },
       "startDate": {
         "$": [
           "ts",
           192,
-          1777382007275
+          1789311563774
         ],
-        "$ts": 1777186800000
+        "$ts": 1789196400000
       }
     }
   },
@@ -34,6 +65,11 @@
     "assetId": null,
     "endDate": null,
     "startDate": null
+  },
+  "propConfig": {
+    "custom.display": {
+      "persistent": true
+    }
   },
   "props": {
     "defaultSize": {
@@ -85,20 +121,21 @@
                   "assetGroupColor": null,
                   "assetGroupId": null,
                   "assetGroupName": null,
-                  "assetName": "Kanoa Box Co",
-                  "assetTypeId": 4,
-                  "assetTypeName": "enterprise",
-                  "assetTypePath": "enterprise",
-                  "displayPath": "Kanoa Box Co",
-                  "enabled": true,
-                  "iconPath": "kanoa/enterprise",
-                  "oeeEnabled": false,
+                  "assetName": null,
+                  "assetTypeId": null,
+                  "assetTypeName": null,
+                  "assetTypePath": null,
+                  "displayPath": null,
+                  "enabled": null,
+                  "iconPath": null,
+                  "mobile": null,
+                  "oeeEnabled": null,
                   "parentId": null,
-                  "path": "Kanoa Box Co",
+                  "path": null,
                   "processTypeId": null,
                   "processTypeName": null,
-                  "sortOrder": 397,
-                  "tagPath": "[Kanoa]/Kanoa Box Co",
+                  "sortOrder": null,
+                  "tagPath": null,
                   "timeZone": null
                 },
                 "value": {
@@ -177,11 +214,11 @@
             "props": {
               "params": {
                 "dates": {
-                  "selectedRange": "This Week"
+                  "selectedRange": "Today"
                 },
                 "value": {
                   "display": {
-                    "persistent": false,
+                    "persistent": true,
                     "showAutoRefresh": true,
                     "showDateSelector": true,
                     "showPeriodSelector": true
@@ -313,7 +350,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\n\tself.view.custom.data.kpiSummary \u003d {}\n\tself.view.custom.data.mtbfSummary \u003d {}\n\tself.view.custom.data.kpiByAsset \u003d []\n\tself.view.custom.data.mtbfByAsset \u003d []\n\tself.view.custom.data.kpiTrend \u003d []\n\tself.view.custom.data.backlog \u003d []\n\tself.view.custom.data.workflowChurn \u003d []\n\t\n\treturn"
+                    "script": "\t\n\n\tself.view.custom.data.kpiSummary \u003d {}\n\tself.view.custom.data.mtbfSummary \u003d {}\n\tself.view.custom.data.kpiByAsset \u003d []\n\tself.view.custom.data.mtbfByAsset \u003d []\n\tself.view.custom.data.kpiTrend \u003d []\n\tself.view.custom.data.backlog \u003d []\n\tself.view.custom.data.workflowChurn \u003d []\n\tself.view.custom.data.laborHoursSummary \u003d {}\n\tself.view.custom.data.laborHoursByTechnician \u003d []\n\tself.view.custom.data.laborHoursByWorkOrder \u003d []\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -383,60 +420,312 @@
           {
             "children": [
               {
-                "meta": {
-                  "name": "cardMTTRTitle"
-                },
-                "props": {
-                  "style": {
-                    "color": "#666",
-                    "fontSize": "14px"
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardMTTRTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "MTTR (min)"
+                    },
+                    "type": "ia.display.label"
                   },
-                  "text": "MTTR (min)"
-                },
-                "type": "ia.display.label"
-              },
-              {
+                  {
+                    "meta": {
+                      "name": "cardMTTRValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.kpiSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\treturn \"{:,}\".format(int(value.get(\u0027MTTR_Minutes\u0027) or 0))",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
                 "meta": {
-                  "name": "cardMTTRValue"
+                  "name": "cardMTTR"
+                },
+                "position": {
+                  "shrink": 0
                 },
                 "propConfig": {
-                  "props.text": {
+                  "position.basis": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.data.kpiSummary"
+                        "path": "view.custom.display.cardWidth"
                       },
                       "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\n\treturn \"{:,}\".format(int(value.get(\u0027MTTR_Minutes\u0027) or 0))",
-                          "type": "script"
-                        }
-                      ],
                       "type": "property"
                     }
                   }
                 },
                 "props": {
+                  "direction": "column",
                   "style": {
-                    "fontSize": "32px",
-                    "fontWeight": "700",
-                    "textAlign": "center"
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardMTBFTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "MTBF (days)"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardMTBFValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.mtbfSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value.get(\u0027MTBF_Days\u0027) or 0",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardMTBF"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.display.cardWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardMTTATitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "MTTA (min)"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardMTTAValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.kpiSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"{:,}\".format(int(value.get(\u0027MTTA_Minutes\u0027) or 0))",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardMTTA"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.display.cardWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardComplianceTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "Schedule Compliance"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardComplianceValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.kpiSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"%s%%\"%(value.get(\u0027ScheduleCompliancePct\u0027) or 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardCompliance"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.display.cardWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
               }
             ],
             "meta": {
-              "name": "cardMTTR"
+              "name": "kpiRow"
             },
             "props": {
-              "direction": "column",
               "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "10px",
-                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                "flex": "1",
-                "padding": "16px"
+                "gap": "5px"
               }
             },
             "type": "ia.container.flex"
@@ -444,191 +733,657 @@
           {
             "children": [
               {
-                "meta": {
-                  "name": "cardMTBFTitle"
-                },
-                "props": {
-                  "style": {
-                    "color": "#666",
-                    "fontSize": "14px"
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardTechnicianHoursTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "Technician Hours"
+                    },
+                    "type": "ia.display.label"
                   },
-                  "text": "MTBF (days)"
-                },
-                "type": "ia.display.label"
-              },
-              {
+                  {
+                    "meta": {
+                      "name": "cardTechnicianHoursValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.laborHoursSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"{:,.1f}\".format(value.get(\u0027technicianHours\u0027) or 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
                 "meta": {
-                  "name": "cardMTBFValue"
+                  "name": "cardTechnicianHours"
+                },
+                "position": {
+                  "shrink": 0
                 },
                 "propConfig": {
-                  "props.text": {
+                  "position.basis": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.data.mtbfSummary"
+                        "path": "view.custom.display.cardWidth"
                       },
                       "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\treturn value.get(\u0027MTBF_Days\u0027) or 0",
-                          "type": "script"
-                        }
-                      ],
                       "type": "property"
                     }
                   }
                 },
                 "props": {
+                  "direction": "column",
                   "style": {
-                    "fontSize": "32px",
-                    "fontWeight": "700",
-                    "textAlign": "center"
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
                   }
                 },
-                "type": "ia.display.label"
-              }
-            ],
-            "meta": {
-              "name": "cardMTBF"
-            },
-            "props": {
-              "direction": "column",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "10px",
-                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                "flex": "1",
-                "padding": "16px"
-              }
-            },
-            "type": "ia.container.flex"
-          },
-          {
-            "children": [
-              {
-                "meta": {
-                  "name": "cardMTTATitle"
-                },
-                "props": {
-                  "style": {
-                    "color": "#666",
-                    "fontSize": "14px"
-                  },
-                  "text": "MTTA (min)"
-                },
-                "type": "ia.display.label"
+                "type": "ia.container.flex"
               },
               {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardProcedureStepHoursTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "Procedure Step Hours"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardProcedureStepHoursValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.laborHoursSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"{:,.1f}\".format(value.get(\u0027procedureStepHours\u0027) or 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
                 "meta": {
-                  "name": "cardMTTAValue"
+                  "name": "cardProcedureStepHours"
+                },
+                "position": {
+                  "shrink": 0
                 },
                 "propConfig": {
-                  "props.text": {
+                  "position.basis": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.data.kpiSummary"
+                        "path": "view.custom.display.cardWidth"
                       },
                       "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\treturn \"{:,}\".format(int(value.get(\u0027MTTA_Minutes\u0027) or 0))",
-                          "type": "script"
-                        }
-                      ],
                       "type": "property"
                     }
                   }
                 },
                 "props": {
+                  "direction": "column",
                   "style": {
-                    "fontSize": "32px",
-                    "fontWeight": "700",
-                    "textAlign": "center"
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
                   }
                 },
-                "type": "ia.display.label"
-              }
-            ],
-            "meta": {
-              "name": "cardMTTA"
-            },
-            "props": {
-              "direction": "column",
-              "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "10px",
-                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                "flex": "1",
-                "padding": "16px"
-              }
-            },
-            "type": "ia.container.flex"
-          },
-          {
-            "children": [
-              {
-                "meta": {
-                  "name": "cardComplianceTitle"
-                },
-                "props": {
-                  "style": {
-                    "color": "#666",
-                    "fontSize": "14px"
-                  },
-                  "text": "Schedule Compliance"
-                },
-                "type": "ia.display.label"
+                "type": "ia.container.flex"
               },
               {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardTotalLaborHoursTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "Total Labor Hours"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardTotalLaborHoursValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.laborHoursSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"{:,.1f}\".format(value.get(\u0027totalLaborHours\u0027) or 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
                 "meta": {
-                  "name": "cardComplianceValue"
+                  "name": "cardTotalLaborHours"
+                },
+                "position": {
+                  "shrink": 0
                 },
                 "propConfig": {
-                  "props.text": {
+                  "position.basis": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.data.kpiSummary"
+                        "path": "view.custom.display.cardWidth"
                       },
                       "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\treturn \"%s%%\"%(value.get(\u0027ScheduleCompliancePct\u0027) or 0)",
-                          "type": "script"
-                        }
-                      ],
                       "type": "property"
                     }
                   }
                 },
                 "props": {
+                  "direction": "column",
                   "style": {
-                    "fontSize": "32px",
-                    "fontWeight": "700",
-                    "textAlign": "center"
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardTimeInActiveStateTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "Avg Time Active"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardTimeInActiveStateValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.laborHoursSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"{:,.1f}hrs\".format(value.get(\u0027avgTimeInActiveStateHours\u0027) or 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardTimeInActiveState"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.display.cardWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "cardTimeToCompleteTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "color": "#666",
+                        "fontSize": "14px"
+                      },
+                      "text": "Avg Time To Complete"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "cardTimeToCompleteValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.data.laborHoursSummary"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \"{:,.1f}hrs\".format(value.get(\u0027avgTimeToCompleteHours\u0027) or 0)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "fontSize": "32px",
+                        "fontWeight": "700",
+                        "textAlign": "center"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "cardTimeToComplete"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.basis": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.display.cardWidth"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "direction": "column",
+                  "style": {
+                    "backgroundColor": "#ffffff",
+                    "borderRadius": "10px",
+                    "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                    "flex": "1",
+                    "padding": "8px"
+                  }
+                },
+                "type": "ia.container.flex"
               }
             ],
             "meta": {
-              "name": "cardCompliance"
+              "name": "laborHoursRow"
             },
             "props": {
-              "direction": "column",
               "style": {
-                "backgroundColor": "#ffffff",
-                "borderRadius": "10px",
-                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
-                "flex": "1",
-                "padding": "16px"
+                "gap": "5px"
               }
             },
             "type": "ia.container.flex"
           }
         ],
         "meta": {
-          "name": "kpiRow"
+          "name": "flxCards"
         },
         "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignContent": "flex-start",
+          "alignItems": "flex-start",
+          "style": {
+            "gap": "5px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "chartLaborHoursByTechnician"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options.xaxis.categories": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.laborHoursByTechnician"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\trows \u003d [{\"userName\": row[\"userName\"], \"hours\": row[\"technicianHours\"] if row[\"technicianHours\"] is not None else 0} for row in value]\n\trows \u003d sorted(rows, key\u003dlambda x: x[\"hours\"], reverse\u003dTrue)[:10]\n\treturn [row[\"userName\"] for row in rows]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.series": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.laborHoursByTechnician"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tds \u003d value\n\trows \u003d []\n\n\tif ds:\n\t\tfor row in ds:\n\t\t\trows.append({\n\t\t\t\t\"userName\": row[\"userName\"] if row[\"userName\"] is not None else \"Unknown\",\n\t\t\t\t\"hours\": row[\"technicianHours\"] if row[\"technicianHours\"] is not None else 0\n\t\t\t})\n\n\trows \u003d sorted(rows, key\u003dlambda x: x[\"hours\"], reverse\u003dTrue)[:10]\n\n\treturn [\n\t\t{\n\t\t\t\"name\": \"Hours\",\n\t\t\t\"type\": \"bar\",\n\t\t\t\"data\": [row[\"hours\"] for row in rows]\n\t\t}\n\t]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "options": {
+                    "chart": {
+                      "fontFamily": "Roboto",
+                      "height": 350,
+                      "stacked": false,
+                      "toolbar": {
+                        "show": true
+                      },
+                      "type": "bar"
+                    },
+                    "colors": [
+                      "var(--kcPrimary)"
+                    ],
+                    "dataLabels": {
+                      "enabled": false
+                    },
+                    "plotOptions": {
+                      "bar": {
+                        "horizontal": false
+                      }
+                    },
+                    "theme": {
+                      "mode": "light"
+                    },
+                    "title": {
+                      "text": "Labor Hours by Technician"
+                    },
+                    "tooltip": {
+                      "y": {
+                        "formatter": "function (value) { return value.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + \u0027 hrs\u0027; }"
+                      }
+                    },
+                    "xaxis": {},
+                    "yaxis": [
+                      {
+                        "title": {
+                          "text": "Hours"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "type": "kyvislabs.display.apexchart"
+              }
+            ],
+            "meta": {
+              "name": "chartLaborHoursByTechnicianCard"
+            },
+            "position": {
+              "basis": "100%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "overflow": "hidden",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "laborHoursChartRow"
+        },
+        "position": {
+          "basis": "400px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "12px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "tblMWOHoursTitle"
+                },
+                "props": {
+                  "style": {
+                    "fontSize": "16px",
+                    "fontWeight": "600",
+                    "marginBottom": "8px"
+                  },
+                  "text": "Maintenance Work Order Hours"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "tblMWOHours"
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.data.laborHoursByWorkOrder"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "columns": [
+                    {
+                      "field": "workOrderEventName",
+                      "header": {
+                        "title": "Work Order"
+                      }
+                    },
+                    {
+                      "field": "title",
+                      "header": {
+                        "title": "Title"
+                      }
+                    },
+                    {
+                      "field": "assetName",
+                      "header": {
+                        "title": "Asset"
+                      }
+                    },
+                    {
+                      "field": "technicianCount",
+                      "header": {
+                        "title": "Technicians"
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0"
+                    },
+                    {
+                      "field": "technicianHours",
+                      "header": {
+                        "title": "Technician Hrs"
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0"
+                    },
+                    {
+                      "field": "procedureStepHours",
+                      "header": {
+                        "title": "Procedure Step Hrs"
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0"
+                    },
+                    {
+                      "field": "totalDurationHours",
+                      "header": {
+                        "title": "Total Duration (hrs)"
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0"
+                    },
+                    {
+                      "field": "activeDurationHours",
+                      "header": {
+                        "title": "Active Duration (hrs)"
+                      },
+                      "number": "value",
+                      "numberFormat": "0,0.0"
+                    }
+                  ],
+                  "style": {
+                    "borderStyle": "none",
+                    "height": "100%"
+                  }
+                },
+                "type": "ia.display.table"
+              }
+            ],
+            "meta": {
+              "name": "tblMWOHoursCard"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "backgroundColor": "#ffffff",
+                "borderRadius": "10px",
+                "boxShadow": "0 2px 8px rgba(0,0,0,0.08)",
+                "flex": "1",
+                "padding": "12px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "mwoHoursRow"
+        },
+        "position": {
+          "basis": "400px",
           "shrink": 0
         },
         "props": {
@@ -1107,7 +1862,8 @@
         },
         "props": {
           "style": {
-            "gap": "12px"
+            "gap": "12px",
+            "overflow": "hidden"
           }
         },
         "type": "ia.container.flex"
@@ -1334,7 +2090,8 @@
         },
         "props": {
           "style": {
-            "gap": "12px"
+            "gap": "12px",
+            "overflow": "hidden"
           }
         },
         "type": "ia.container.flex"
@@ -1358,7 +2115,7 @@
         {
           "name": "getData",
           "params": [],
-          "script": "\t\n\tself.view.custom.filters.assetId\n\tstartDate \u003d self.view.custom.filters.startDate\n\tendDate \u003d self.view.custom.filters.endDate\n\tassetId \u003d self.view.custom.filters.assetId\n\tassetPath \u003d self.view.custom.filters.assetPath or \u0027\u0027\n\t\n\tassetPath +\u003d \u0027%\u0027\n\n\tself.view.custom.data.kpiSummary \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getMaintenanceKPISummary(startDate, endDate, assetId, None, None, None),0)\n\tself.view.custom.data.mtbfSummary \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getMaintenanceMTBFSummary(startDate, endDate),0)\n\tself.view.custom.data.kpiByAsset \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceKPIByAsset(startDate, endDate))\n\tself.view.custom.data.mtbfByAsset \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceMTBFByAsset(startDate, endDate, assetId))\n\tself.view.custom.data.kpiTrend \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceKPIDailyTrend(startDate, endDate, None))\n\tself.view.custom.data.backlog \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceBacklogAging(None, assetPath, None))\n\tself.view.custom.data.workflowChurn \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceWorkflowChurn(startDate, endDate))\n\t\n\treturn"
+          "script": "\t\n\tself.view.custom.filters.assetId\n\tstartDate \u003d self.view.custom.filters.startDate\n\tendDate \u003d self.view.custom.filters.endDate\n\tassetId \u003d self.view.custom.filters.assetId\n\tassetPath \u003d self.view.custom.filters.assetPath or \u0027\u0027\n\t\n\tassetPath +\u003d \u0027%\u0027\n\n\tself.view.custom.data.kpiSummary \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getMaintenanceKPISummary({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}),0)\n\tself.view.custom.data.mtbfSummary \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getMaintenanceMTBFSummary({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}),0)\n\tself.view.custom.data.kpiByAsset \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceKPIByAsset({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}))\n\tself.view.custom.data.mtbfByAsset \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceMTBFByAsset({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}))\n\tself.view.custom.data.kpiTrend \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceKPIDailyTrend({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}))\n\tself.view.custom.data.backlog \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceBacklogAging({\u0027assetPath\u0027: assetPath}))\n\tself.view.custom.data.workflowChurn \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceWorkflowChurn({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}))\n\tself.view.custom.data.laborHoursSummary \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getMaintenanceLaborHoursSummary({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}),0)\n\tself.view.custom.data.laborHoursByTechnician \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceLaborHoursByTechnician({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}))\n\tself.view.custom.data.laborHoursByWorkOrder \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getMaintenanceLaborHoursByWorkOrder({\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027assetId\u0027: assetId}))\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,

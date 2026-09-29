@@ -1,0 +1,333 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "partNumber": null,
+      "partDescription": null,
+      "manufacturerName": null,
+      "quantityOnHand": 0,
+      "maxQty": 0,
+      "uomCode": null,
+      "isBelowReorderThreshold": 0,
+      "isBelowSafetyStock": 0
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 104,
+      "width": 340
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "row",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "classes": "kanoa/border",
+        "borderRadius": 10,
+        "boxShadow": "0 2px 8px rgba(0,36,60,0.14), 0 1px 2px rgba(0,36,60,0.08)",
+        "overflow": "hidden",
+        "padding": "10px",
+        "gap": "10px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxAvatar",
+          "name": "flxAvatar"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "width": "40px",
+            "height": "40px",
+            "borderRadius": "20px"
+          }
+        },
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t# Literal Kanoa brand tint values (design system tokens.colors.css) - not yet\n\t# confirmed as --kc* theme variables, used deliberately here for a richer look.\n\tif value['isBelowSafetyStock']:\n\t\treturn '#fbe6e3'\n\telif value['isBelowReorderThreshold']:\n\t\treturn '#fdf3d6'\n\telse:\n\t\treturn '#e6f1f8'",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.icon",
+            "meta": {
+              "domId": "icoSeverity",
+              "name": "icoSeverity"
+            },
+            "props": {
+              "style": {
+                "width": "20px",
+                "height": "20px"
+              }
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif value['isBelowSafetyStock']:\n\t\treturn 'material/priority_high'\n\telif value['isBelowReorderThreshold']:\n\t\treturn 'material/warning'\n\telse:\n\t\treturn 'material/check'",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\t# Green is reserved for states that are fine but worth a second look.\n\tif value['isBelowSafetyStock']:\n\t\treturn 'var(--kcBad)'\n\telif value['isBelowReorderThreshold']:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "domId": "flxContent",
+          "name": "flxContent"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "6px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "flxTop",
+              "name": "flxTop"
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "space-between",
+              "style": {
+                "gap": "8px"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblPartNumber",
+                  "name": "lblPartNumber"
+                },
+                "props": {
+                  "style": {
+                    "fontFamily": "Roboto",
+                    "fontWeight": 600,
+                    "fontSize": "15px",
+                    "color": "--kcGray-100"
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value.partNumber"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblQty",
+                  "name": "lblQty"
+                },
+                "props": {
+                  "style": {
+                    "borderRadius": 999,
+                    "padding": "3px 9px",
+                    "color": "--kcGray-0",
+                    "classes": "kanoa/font/labelSmall",
+                    "fontFamily": "Roboto",
+                    "fontWeight": 600
+                  }
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn '%s / %s %s' % (value['quantityOnHand'], value['maxQty'], value['uomCode'] or '')",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\t# Green is reserved for states that are fine but worth a second look.\n\tif value['isBelowSafetyStock']:\n\t\treturn 'var(--kcBad)'\n\telif value['isBelowReorderThreshold']:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "domId": "lblDescription",
+              "name": "lblDescription"
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "color": "--kcGray-60"
+              }
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn '%s - %s' % (value['partDescription'] or 'No description', value['manufacturerName'] or 'Unknown manufacturer')",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "domId": "flxTrack",
+              "name": "flxTrack"
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "--kcGray-30",
+                "borderRadius": 999,
+                "height": "10px",
+                "overflow": "hidden"
+              }
+            },
+            "children": [
+              {
+                "type": "ia.display.label",
+                "meta": {
+                  "domId": "lblFill",
+                  "name": "lblFill"
+                },
+                "props": {
+                  "style": {
+                    "height": "100%",
+                    "borderRadius": 999
+                  }
+                },
+                "propConfig": {
+                  "props.style.width": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\tmaxQty = value['maxQty'] or 0\n\tonHand = value['quantityOnHand'] or 0\n\tif maxQty <= 0:\n\t\treturn '0%'\n\tratio = min(onHand / float(maxQty), 1.0)\n\treturn '%s%%' % int(round(ratio * 100))",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.style.backgroundColor": {
+                    "binding": {
+                      "config": {
+                        "path": "view.params.value"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# Kanoa color convention: primary/blue = OK, nothing needs attention.\n\t# Green is reserved for states that are fine but worth a second look.\n\tif value['isBelowSafetyStock']:\n\t\treturn 'var(--kcBad)'\n\telif value['isBelowReorderThreshold']:\n\t\treturn 'var(--kcOK)'\n\telse:\n\t\treturn 'var(--kcGood)'",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
