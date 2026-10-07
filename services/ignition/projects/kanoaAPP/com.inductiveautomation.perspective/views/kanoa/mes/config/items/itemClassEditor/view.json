@@ -1059,6 +1059,15 @@
                       },
                       "type": "property"
                     }
+                  },
+                  "props.params.values.path": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.values.path"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
                   }
                 },
                 "props": {
@@ -1069,7 +1078,11 @@
                       "options": {
                         "expand": true,
                         "multiSelect": false,
-                        "selectable": []
+                        "selectable": [],
+                        "dragDrop": {
+                          "enabled": true,
+                          "msgHandler": "itemClassDropped"
+                        }
                       },
                       "selection": [],
                       "style": {
@@ -1543,7 +1556,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\n\tself.view.params.value.itemClassId \u003d None\n\n\treturn"
+                    "script": "\n\tself.view.params.value.itemClassId \u003d None\n\tsystem.perspective.sendMessage(\u0027clearTreeSelection\u0027, {\u0027msgHandler\u0027: \u0027itemClassEditor\u0027})\n\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -1830,7 +1843,7 @@
         {
           "name": "delete",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"delete() called\")\n\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tretVal, msg \u003d system.kanoa.item.deleteItemClass(self.view.params.value.itemClassId, userId)\n\tif retVal \u003d\u003d False:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\telse:\n\t\tself.view.params.value.itemClassId \u003d None\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: msg})\t\t\n\n\tself.view.refreshBinding(\"custom.data\")\t #Update the Tree Selector\n\tsystem.perspective.sendMessage(\"refreshItemClasses\", {})\t\n\t\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"delete() called\")\n\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tretVal, msg \u003d system.kanoa.item.deleteItemClass(self.view.params.value.itemClassId, userId)\n\tif retVal \u003d\u003d False:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: msg})\n\telse:\n\t\tself.view.params.value.itemClassId \u003d None\n\t\tsystem.perspective.sendMessage(\u0027clearTreeSelection\u0027, {\u0027msgHandler\u0027: \u0027itemClassEditor\u0027})\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: msg})\t\t\n\n\tself.view.refreshBinding(\"custom.data\")\t #Update the Tree Selector\n\tsystem.perspective.sendMessage(\"refreshItemClasses\", {})\t\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,
@@ -1846,6 +1859,20 @@
           "messageType": "updatePopupSelection",
           "pageScope": true,
           "script": "\n#\tsystem.perspective.print(\"updatePopupSelection msg rcvd with %s\"%payload)\n\n\tif len(payload[\u0027selection\u0027]) \u003d\u003d 0: return\n\t\n\tself.view.params.value.itemClassId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemClassId\u0027]\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "itemClassDropped",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\"itemClassDropped() msg rcvd with %s\"%payload)\n\tdraggedItem \u003d payload[\u0027draggedItem\u0027]\n\tdroppedItem \u003d payload[\u0027droppedItem\u0027]\n\t\n\tdef rejectDrop(message):\n\t\tsystem.perspective.sendMessage(\u0027showWarningToast\u0027, {\u0027message\u0027: message})\n\t\tself.view.refreshBinding(\u0027custom.data\u0027)\t#Undo the move the tree has already shown\n\t\n\titemClassId \u003d draggedItem.get(\u0027itemClassId\u0027)\n\tif itemClassId is None:\n\t\tself.view.refreshBinding(\u0027custom.data\u0027)\n\t\treturn\n\t\n\tif droppedItem is not None and droppedItem.get(\u0027itemClassId\u0027) is None:\t#e.g. a parent node only shown because of the search filter\n\t\trejectDrop(\u0027Cannot move an item class there\u0027)\n\t\treturn\n\t\n\tparentId \u003d droppedItem[\u0027itemClassId\u0027] if droppedItem is not None else None\n\tif draggedItem[\u0027parentId\u0027] \u003d\u003d parentId:\t#Dropped onto its current parent. Item classes have no sort order, so there is nothing to change\n\t\tself.view.refreshBinding(\u0027custom.data\u0027)\n\t\treturn\n\t\n\tdraggedPath \u003d draggedItem[\u0027path\u0027] or \u0027\u0027\n\tdroppedPath \u003d (droppedItem[\u0027path\u0027] or \u0027\u0027) if droppedItem is not None else \u0027\u0027\n\tif droppedItem is not None and droppedPath.startswith(draggedPath + \u0027\\\\\u0027):\n\t\trejectDrop(\u0027Cannot move an item class into one of its own children\u0027)\n\t\treturn\n\t\n\titemClassName \u003d (draggedItem[\u0027itemClassName\u0027] or \u0027\u0027).lower()\n\tfor sibling in system.dataset.toPyDataSet(system.kanoa.item.getItemClasses({\u0027parentId\u0027: parentId})):\n\t\tif (sibling[\u0027itemClassName\u0027] or \u0027\u0027).lower() \u003d\u003d itemClassName:\n\t\t\trejectDrop(\u0027An item class named %s already exists there\u0027%draggedItem[\u0027itemClassName\u0027])\n\t\t\treturn\n\t\n\titemClassPath \u003d system.kanoa.utilities.formatPath(draggedPath, {})\n\tparentPath \u003d system.kanoa.utilities.formatPath(droppedPath, {}) if droppedItem is not None else \u0027the top level\u0027\n\tmsg \u003d \"Are you sure you want to move %s to %s\"%(itemClassPath, parentPath)\n\tsystem.perspective.openPopup(\u0027moveItemClass\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027: msg, \u0027messageHandler\u0027: \u0027confirmMoveItemClass\u0027, \u0027inputPayload\u0027: {\u0027itemClassId\u0027: itemClassId, \u0027parentId\u0027: parentId}}, title\u003d\u0027Move Item Class?\u0027, draggable\u003dTrue)\n\t\n\treturn\n",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "confirmMoveItemClass",
+          "pageScope": true,
+          "script": "\n#\tsystem.perspective.print(\"confirmMoveItemClass() msg rcvd with %s\"%payload)\n\titemClassId \u003d payload[\u0027inputPayload\u0027][\u0027itemClassId\u0027]\n\t\n\tif payload[\u0027userInput\u0027] \u003d\u003d \u0027OK\u0027:\n\t\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.item.getItemClasses({\u0027itemClassId\u0027: itemClassId}), 0)\n\t\tif info[\u0027itemClassId\u0027] is None:\n\t\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027Item class was not moved. It no longer exists\u0027})\n\t\telse:\n\t\t\tinfo[\u0027parentId\u0027] \u003d payload[\u0027inputPayload\u0027][\u0027parentId\u0027]\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\ttry:\n\t\t\t\tretVal \u003d system.kanoa.item.updateItemClass(info, userId)\n\t\t\texcept:\n\t\t\t\tretVal \u003d None\n\t\t\t\n\t\t\tif retVal:\n\t\t\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Item class has been moved\u0027})\n\t\t\t\tsystem.perspective.sendMessage(\"refreshItemClasses\", {})\n\t\t\telse: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027Item class was not moved\u0027})\n\t\t\n\t\tself.view.params.value.itemClassId \u003d itemClassId\n\t\tself.view.refreshBinding(\u0027custom.values\u0027)\t#Its path has changed even if it was already selected\n\t\n\tself.view.refreshBinding(\u0027custom.data\u0027)\t#Update the Tree Selector (and undo the move it showed if cancelled)\n\t\n\treturn\n",
           "sessionScope": false,
           "viewScope": false
         }

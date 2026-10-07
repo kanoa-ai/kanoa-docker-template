@@ -58,7 +58,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\tparamsDict \u003d dict(value)\n\tdata \u003d system.kanoa.quality.sheet.getSheetsFilteredBy(paramsDict)\t#This will returns all chksheets that meet the filter criteria.\n\tdata \u003d system.kanoa.quality.sheet.getUniqueChecksOnly(data)#There may be duplicate entries, so we will delete duplicates\n\treturn [{\u0027value\u0027:row[\u0027chkShtId\u0027], \u0027label\u0027:row[\u0027chkShtPath\u0027]} for row in data]",
+                  "code": "\t\n\tparamsDict \u003d dict(value)\n\tdata \u003d system.kanoa.quality.sheet.getSheetsFilteredBy(paramsDict)\t#This will returns all chksheets that meet the filter criteria.\n\tdata \u003d system.kanoa.quality.sheet.getUniqueChecksOnly(data)\t#One row per check sheet, asset and item link, so keep the first row per check sheet\n\toptions \u003d []\n\tfor row in data:\n\t\tif row[\u0027chkShtId\u0027] not in [option[\u0027value\u0027] for option in options]: options.append({\u0027value\u0027:row[\u0027chkShtId\u0027], \u0027label\u0027:row[\u0027chkShtPath\u0027]})\n\treturn options",
                   "type": "script"
                 }
               ],

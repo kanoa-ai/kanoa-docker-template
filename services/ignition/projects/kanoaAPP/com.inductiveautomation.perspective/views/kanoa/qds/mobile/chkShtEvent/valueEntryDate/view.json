@@ -1,234 +1,247 @@
 {
-  "custom": {}, 
+  "custom": {},
   "params": {
     "value": {
-      "chkItemValue": "2024-05-15 00:00:00", 
-      "dataTypeName": "Image", 
-      "enabled": true, 
-      "chkItemStateId": null, 
-      "measNumber": 1, 
-      "chkItemStateName": null, 
-      "chkItemId": 1286, 
-      "chkItemStateColor": null, 
-      "meascount": 1, 
+      "chkItemId": 1286,
+      "chkItemStateColor": null,
+      "chkItemStateId": null,
+      "chkItemStateName": null,
       "chkItemTakenDate": {
-        "$ts": 1716261243877, 
         "$": [
-          "ts", 
-          192, 
+          "ts",
+          192,
           1716479012700
-        ]
-      }
+        ],
+        "$ts": 1716261243877
+      },
+      "chkItemValue": "2024-05-15 00:00:00",
+      "dataTypeName": "Image",
+      "enabled": true,
+      "measNumber": 1,
+      "meascount": 1
     }
-  }, 
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
   "props": {
     "defaultSize": {
-      "width": 252, 
-      "height": 44
+      "height": 44,
+      "width": 252
     }
-  }, 
+  },
   "root": {
-    "type": "ia.container.flex", 
-    "props": {
-      "alignItems": "center", 
-      "style": {
-        "padding": "5px", 
-        "backgroundColor": "--kcOnPrimary", 
-        "overflow": "hidden", 
-        "gap": "5px"
-      }
-    }, 
     "children": [
       {
-        "type": "ia.display.label", 
+        "meta": {
+          "domId": "lblMeasNum",
+          "name": "lblMeasNum"
+        },
+        "position": {
+          "basis": "32px"
+        },
+        "propConfig": {
+          "meta.visible": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.measCount"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003e 1",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.measNumber"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027#%s\u0027%(value or 1)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
         "props": {
           "style": {
             "textAlign": "right"
           }
-        }, 
+        },
+        "type": "ia.display.label"
+      },
+      {
         "meta": {
-          "domId": "lblMeasNum", 
-          "name": "lblMeasNum"
-        }, 
+          "domId": "dateTimeInput",
+          "name": "dateTimeInput"
+        },
         "position": {
-          "basis": "32px"
-        }, 
+          "grow": 1
+        },
         "propConfig": {
-          "meta.visible": {
+          "props.enabled": {
             "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn value > 1", 
-                  "type": "script"
-                }
-              ], 
-              "type": "property", 
-              "overlayOptOut": true, 
               "config": {
-                "path": "view.params.value.measCount"
-              }
+                "path": "view.params.value.enabled"
+              },
+              "overlayOptOut": true,
+              "type": "property"
             }
-          }, 
-          "props.text": {
+          },
+          "props.format": {
             "binding": {
+              "config": {
+                "path": "session.props.locale"
+              },
               "transforms": [
                 {
-                  "code": "\treturn '#%s'%(value or 1)", 
+                  "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD/YY HH:mm\", value)",
                   "type": "script"
                 }
-              ], 
-              "type": "property", 
-              "overlayOptOut": true, 
+              ],
+              "type": "property"
+            }
+          },
+          "props.style.backgroundColor": {
+            "binding": {
               "config": {
-                "path": "view.params.value.measNumber"
-              }
+                "path": "view.params.value.chkItemStateColor"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.value": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.chkItemValue"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn system.date.parse(value) if value else None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
             }
           }
-        }
-      }, 
-      {
-        "type": "ia.input.date-time-input", 
+        },
         "props": {
-          "dismissOnSelect": false, 
-          "format": "MM-DD-YY HH:mm", 
+          "dismissOnSelect": false,
+          "formattedValue": "05/14/24 17:00",
           "inputProps": {
             "style": {
               "fontSize": "16px"
             }
-          }, 
-          "formattedValue": "05-14-24 17:00", 
+          },
           "style": {
-            "classes": "kanoa/font/bodyLarge", 
+            "classes": "kanoa/font/bodyLarge",
             "height": "30px"
           }
-        }, 
-        "meta": {
-          "domId": "dateTimeInput", 
-          "name": "dateTimeInput"
-        }, 
-        "position": {
-          "grow": 1
-        }, 
-        "propConfig": {
-          "props.style.backgroundColor": {
-            "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn value or ''", 
-                  "type": "script"
-                }
-              ], 
-              "type": "property", 
-              "overlayOptOut": true, 
+        },
+        "type": "ia.input.date-time-input"
+      },
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
               "config": {
-                "path": "view.params.value.chkItemStateColor"
-              }
-            }
-          }, 
-          "props.value": {
-            "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn system.date.parse(value) if value else None", 
-                  "type": "script"
-                }
-              ], 
-              "type": "property", 
-              "overlayOptOut": true, 
-              "config": {
-                "path": "view.params.value.chkItemValue"
-              }
-            }
-          }, 
-          "props.enabled": {
-            "binding": {
-              "type": "property", 
-              "overlayOptOut": true, 
-              "config": {
-                "path": "view.params.value.enabled"
-              }
+                "script": "\t\n\tsystem.perspective.print(\"enter pressed\")\n\t\n\t\n\t\n\tpayload \u003d {\u0027value\u0027:self.getSibling(\"dateTimeInput\").props.value, \u0027measNum\u0027: self.view.params.value.measNumber, \u0027chkItemId\u0027: self.view.params.value.chkItemId}\n\tsystem.perspective.print(\"Sending ValuePicked message with %s from sendValue()\"%(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\t\n\treturn\t\t"
+              },
+              "scope": "G",
+              "type": "script"
             }
           }
-        }
-      }, 
-      {
-        "type": "ia.input.button", 
+        },
+        "meta": {
+          "domId": "btnSubmit",
+          "name": "btnSubmit"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "params": "{view.params.value}",
+                  "value": "{../dateTimeInput.props.value}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value[\u0027params\u0027][\u0027enabled\u0027] and value[\u0027value\u0027] is not None",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
         "props": {
           "image": {
             "icon": {
               "path": "material/keyboard_return"
             }
-          }, 
+          },
           "style": {
-            "classes": "kanoa/button/flatIcon", 
-            "width": "30px", 
-            "height": "30px"
-          }, 
+            "classes": "kanoa/button/flatIcon",
+            "height": "30px",
+            "width": "30px"
+          },
           "text": ""
-        }, 
-        "meta": {
-          "domId": "btnSubmit", 
-          "name": "btnSubmit"
-        }, 
-        "position": {
-          "shrink": 0
-        }, 
-        "events": {
-          "component": {
-            "onActionPerformed": {
-              "type": "script", 
-              "scope": "G", 
-              "config": {
-                "script": "\t\n\tsystem.perspective.print(\"enter pressed\")\n\t\n\t\n\t\n\tpayload = {'value':self.getSibling(\"dateTimeInput\").props.value, 'measNum': self.view.params.value.measNumber, 'chkItemId': self.view.params.value.chkItemId}\n\tsystem.perspective.print(\"Sending ValuePicked message with %s from sendValue()\"%(payload))\n\tsystem.perspective.sendMessage(\"ValuePicked\", payload)\n\t\t\n\treturn\t\t"
-              }
-            }
-          }
-        }, 
-        "propConfig": {
-          "position.display": {
-            "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn value['params']['enabled'] and value['value'] is not None", 
-                  "type": "script"
-                }
-              ], 
-              "type": "expr-struct", 
-              "overlayOptOut": true, 
-              "config": {
-                "struct": {
-                  "params": "{view.params.value}", 
-                  "value": "{../dateTimeInput.props.value}"
-                }, 
-                "waitOnAll": false
-              }
-            }
-          }
-        }
+        },
+        "type": "ia.input.button"
       }
-    ], 
+    ],
     "meta": {
-      "domId": "root", 
+      "domId": "root",
       "name": "root"
-    }, 
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcOnPrimary",
+        "gap": "5px",
+        "overflow": "hidden",
+        "padding": "5px"
+      }
+    },
     "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
       "messageHandlers": [
         {
-          "viewScope": false, 
-          "script": "\n\tif payload.has_key('chkItemId') and payload.has_key('measNumber'):\n\t\tif payload['chkItemId'] == self.view.params.value.chkItemId and payload['measNumber'] == self.view.params.value.measNumber:\n\t\t\tsystem.perspective.print(\"setfocus msg rcvd with %s\"%payload)\n\t\t\tself.getChild(\"dateTimeInput\").focus()\n\t\n\treturn", 
-          "messageType": "setFocus", 
-          "sessionScope": false, 
-          "pageScope": true
+          "messageType": "setFocus",
+          "pageScope": true,
+          "script": "\n\tif payload.has_key(\u0027chkItemId\u0027) and payload.has_key(\u0027measNumber\u0027):\n\t\tif payload[\u0027chkItemId\u0027] \u003d\u003d self.view.params.value.chkItemId and payload[\u0027measNumber\u0027] \u003d\u003d self.view.params.value.measNumber:\n\t\t\tsystem.perspective.print(\"setfocus msg rcvd with %s\"%payload)\n\t\t\tself.getChild(\"dateTimeInput\").focus()\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
         }
-      ], 
-      "customMethods": [], 
-      "extensionFunctions": null
-    }
-  }, 
-  "propConfig": {
-    "params.value": {
-      "paramDirection": "input", 
-      "persistent": true
-    }
+      ]
+    },
+    "type": "ia.container.flex"
   }
 }

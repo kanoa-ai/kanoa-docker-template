@@ -1,5 +1,28 @@
 {
   "custom": {
+    "assetInfo": {
+      "assetGroupColor": null,
+      "assetGroupId": null,
+      "assetGroupName": null,
+      "assetId": null,
+      "assetName": null,
+      "assetPath": null,
+      "assetTypeId": null,
+      "assetTypeName": null,
+      "assetTypePath": null,
+      "displayPath": null,
+      "enabled": null,
+      "iconPath": null,
+      "mobile": null,
+      "oeeEnabled": null,
+      "parentId": null,
+      "path": null,
+      "processTypeId": null,
+      "processTypeName": null,
+      "sortOrder": null,
+      "tagPath": null,
+      "timeZone": null
+    },
     "filter": {
       "assetId": 4,
       "assetPath": "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 1",
@@ -199,6 +222,13 @@
     }
   },
   "propConfig": {
+    "custom.assetInfo": {
+      "onChange": {
+        "enabled": null,
+        "script": "\n\t#The asset selector overrides the dashboard\u0027s asset, the same way the date selector overrides its dates\n\tassetInfo \u003d self.custom.assetInfo\n\tif not assetInfo or not assetInfo[\u0027assetPath\u0027] or assetInfo[\u0027assetPath\u0027] \u003d\u003d self.custom.filter.assetPath: return\n\t\n\tself.custom.filter.assetPath \u003d assetInfo[\u0027assetPath\u0027]\n\tself.custom.filter.assetId \u003d assetInfo[\u0027assetId\u0027]\n\t\n\treturn"
+      },
+      "persistent": true
+    },
     "custom.filter": {
       "binding": {
         "config": {
@@ -275,6 +305,67 @@
     "children": [
       {
         "children": [
+          {
+            "meta": {
+              "domId": "evAssetSelector",
+              "name": "evAssetSelector",
+              "tooltip": {
+                "enabled": true,
+                "location": "top-left",
+                "text": "Select an asset"
+              }
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.assetInfo": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.assetInfo"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn bool(value.get(\u0027showAssetSelector\u0027, True))\t#operatorLoginPanel hides it, it has its own selector",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "assetPath": null,
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "parentPathList": [],
+                  "persistent": true,
+                  "useSessionValue": false
+                }
+              },
+              "path": "kanoa/core/templates/selectors/assetSelector"
+            },
+            "type": "ia.display.view"
+          },
           {
             "meta": {
               "domId": "evDateSelector",

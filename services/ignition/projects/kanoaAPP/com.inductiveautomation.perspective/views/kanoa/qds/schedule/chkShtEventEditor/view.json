@@ -164,7 +164,11 @@
           ],
           "enabled": true
         },
-        "isGatewayAdmin": true,
+        "enterWorkOrders": {
+          "assets": [],
+          "enabled": false
+        },
+        "isGatewayAdmin": false,
         "operateAssets": {
           "assets": [
             "Kanoa Box Co"
@@ -220,10 +224,10 @@
         "data": [],
         "row": null
       },
-      "tabIndex": 0
+      "tabIndex": -1
     },
     "userAction": {
-      "canCreate": true,
+      "canCreate": false,
       "canDelete": false,
       "canRead": true,
       "canUpdate": false
@@ -1568,6 +1572,20 @@
                   "type": "property"
                 }
               },
+              "props.format": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.locale"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD/YY h:mm a\", value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
               "props.maxDate": {
                 "binding": {
                   "config": {
@@ -1588,7 +1606,6 @@
               }
             },
             "props": {
-              "format": "MM/DD/YY h:mm a",
               "formattedValue": null,
               "inputProps": {
                 "style": {
@@ -2777,7 +2794,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tdef buildColumn(colName, colHeader, width, visible, justify):\n\t\tstrictWidth \u003d True\n\t\t\n\t\tcolumn \u003d {\n\t\t\t\t\"field\": colName,\n\t\t\t\t\"visible\": visible,\n\t\t\t\t\"editable\": True,\n\t\t\t\t\"render\": \"auto\",\n\t\t\t\t\"justify\": justify,\n\t\t\t\t\"align\": \"center\",\n\t\t\t\t\"resizable\": True,\n\t\t\t\t\"sortable\": False,\n\t\t\t\t\"sort\": \"none\",\n\t\t\t\t\"viewPath\": \"\",\n\t\t\t\t\"viewParams\": {},\n\t\t\t\t\"boolean\": \"checkbox\",\n\t\t\t\t\"number\": \"value\",\n\t\t\t\t\"progressBar\": {\"max\": 100, \"min\": 0, \"bar\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"track\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"value\": {\"enabled\": True,\t\"format\": \"0,0.####\", \"justify\": \"center\", \"style\": {\"classes\": \"\"}}},\n\t\t\t\t\"toggleSwitch\": {\"color\": {\"selected\": \"\", \"unselected\": \"\"}},\n\t\t\t\t\"numberFormat\": \"0,0.####\",\n\t\t\t\t\"dateFormat\": \"MM/DD/YYYY\",\n\t\t\t\t\"width\": width,\n\t\t\t\t\"strictWidth\": strictWidth,\n\t\t\t\t\"header\": {\"title\": colHeader, justify: \"center\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t\"footer\": {\"title\": \"\", \"justify\": \"left\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t\"style\": {\"classes\": \"\"\t}\n\t\t\t  }\n\t\treturn column\n\n\ttableData \u003d value\n\tcolList \u003d []\n\tif len(tableData) \u003d\u003d 0: return colList\n\t\n\tcolList.append(buildColumn(\u0027chkItemId\u0027, \u0027\u0027, \u0027\u0027, False, \u0027left\u0027))\n\tcolList.append(buildColumn(\u0027dataTypeName\u0027, \u0027\u0027, 280, False, \u0027left\u0027))\n#\tcolList.append(buildColumn(\u0027chkItemName\u0027, \u0027Check\u0027, 280, True, \u0027left\u0027))\n#\tcolList.append(buildColumn(\u0027required\u0027, \u0027Reqd\u0027, 40, True, \u0027center\u0027))\n\tcolList.append(buildColumn(\u0027reqdIcon\u0027, \u0027Reqd\u0027, 40, True, \u0027center\u0027))\n\tcolList.append(buildColumn(\u0027displayName\u0027, \u0027Check\u0027, 280, True, \u0027left\u0027))\n\tcolList.append(buildColumn(\u0027engUnitName\u0027, \u0027Units\u0027, 100, True, \u0027center\u0027))\t\n\t\n\tmeasCount \u003d max([item[\u0027measCount\u0027] for item in tableData])\n\tfor i in range(1, measCount+1): colList.append(buildColumn(\u0027_%s\u0027%i, \u0027#%s\u0027%i, 120 if i\u003d\u003d1 else 60, True, \u0027center\u0027))\t\n\t\n\tfor item in tableData:\n\t\tif item[\u0027measCount\u0027] \u003e 1 and item[\u0027dataTypeName\u0027] in (\u0027Float\u0027, \u0027Integer\u0027):\n\t\t\tcolList.append(buildColumn(\u0027sum\u0027, \u0027Sum\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027avg\u0027, \u0027Avg\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027min\u0027, \u0027Min\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027max\u0027, \u0027Max\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027stdDev\u0027, \u0027Std Dev\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027range\u0027, \u0027Range\u0027, 60, True, \u0027center\u0027))\n\t\t\tbreak\t\n\t\t\n\tcommentsColWidth \u003d 500 if measCount \u003d\u003d 1 else 500 - (60 * measCount)\n\tif commentsColWidth \u003c 150: commentsColWidth \u003d 150\n\tcolList.append(buildColumn(\u0027comment\u0027, \u0027Comments\u0027, commentsColWidth, True, \u0027center\u0027))\n\t\n\treturn colList",
+                      "code": "\t\n\tdef buildColumn(colName, colHeader, width, visible, justify):\n\t\tstrictWidth \u003d True\n\t\t\n\t\tcolumn \u003d {\n\t\t\t\t\"field\": colName,\n\t\t\t\t\"visible\": visible,\n\t\t\t\t\"editable\": True,\n\t\t\t\t\"render\": \"auto\",\n\t\t\t\t\"justify\": justify,\n\t\t\t\t\"align\": \"center\",\n\t\t\t\t\"resizable\": True,\n\t\t\t\t\"sortable\": False,\n\t\t\t\t\"sort\": \"none\",\n\t\t\t\t\"viewPath\": \"\",\n\t\t\t\t\"viewParams\": {},\n\t\t\t\t\"boolean\": \"checkbox\",\n\t\t\t\t\"number\": \"value\",\n\t\t\t\t\"progressBar\": {\"max\": 100, \"min\": 0, \"bar\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"track\": {\"color\": \"\", \"style\": {\"classes\": \"\"}}, \"value\": {\"enabled\": True,\t\"format\": \"0,0.####\", \"justify\": \"center\", \"style\": {\"classes\": \"\"}}},\n\t\t\t\t\"toggleSwitch\": {\"color\": {\"selected\": \"\", \"unselected\": \"\"}},\n\t\t\t\t\"numberFormat\": \"0,0.####\",\n\t\t\t\t\"dateFormat\": system.kanoa.date(\"MM/DD/YYYY\", self.session.props.locale),\n\t\t\t\t\"width\": width,\n\t\t\t\t\"strictWidth\": strictWidth,\n\t\t\t\t\"header\": {\"title\": colHeader, justify: \"center\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t\"footer\": {\"title\": \"\", \"justify\": \"left\", \"align\": \"center\", \"style\": {\"classes\": \"\"}},\n\t\t\t\t\"style\": {\"classes\": \"\"\t}\n\t\t\t  }\n\t\treturn column\n\n\ttableData \u003d value\n\tcolList \u003d []\n\tif len(tableData) \u003d\u003d 0: return colList\n\t\n\tcolList.append(buildColumn(\u0027chkItemId\u0027, \u0027\u0027, \u0027\u0027, False, \u0027left\u0027))\n\tcolList.append(buildColumn(\u0027dataTypeName\u0027, \u0027\u0027, 280, False, \u0027left\u0027))\n#\tcolList.append(buildColumn(\u0027chkItemName\u0027, \u0027Check\u0027, 280, True, \u0027left\u0027))\n#\tcolList.append(buildColumn(\u0027required\u0027, \u0027Reqd\u0027, 40, True, \u0027center\u0027))\n\tcolList.append(buildColumn(\u0027reqdIcon\u0027, \u0027Reqd\u0027, 40, True, \u0027center\u0027))\n\tcolList.append(buildColumn(\u0027displayName\u0027, \u0027Check\u0027, 280, True, \u0027left\u0027))\n\tcolList.append(buildColumn(\u0027engUnitName\u0027, \u0027Units\u0027, 100, True, \u0027center\u0027))\t\n\t\n\tmeasCount \u003d max([item[\u0027measCount\u0027] for item in tableData])\n\tfor i in range(1, measCount+1): colList.append(buildColumn(\u0027_%s\u0027%i, \u0027#%s\u0027%i, 120 if i\u003d\u003d1 else 60, True, \u0027center\u0027))\t\n\t\n\tfor item in tableData:\n\t\tif item[\u0027measCount\u0027] \u003e 1 and item[\u0027dataTypeName\u0027] in (\u0027Float\u0027, \u0027Integer\u0027):\n\t\t\tcolList.append(buildColumn(\u0027sum\u0027, \u0027Sum\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027avg\u0027, \u0027Avg\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027min\u0027, \u0027Min\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027max\u0027, \u0027Max\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027stdDev\u0027, \u0027Std Dev\u0027, 60, \tTrue, \u0027center\u0027))\n\t\t\tcolList.append(buildColumn(\u0027range\u0027, \u0027Range\u0027, 60, True, \u0027center\u0027))\n\t\t\tbreak\t\n\t\t\n\tcommentsColWidth \u003d 500 if measCount \u003d\u003d 1 else 500 - (60 * measCount)\n\tif commentsColWidth \u003c 150: commentsColWidth \u003d 150\n\tcolList.append(buildColumn(\u0027comment\u0027, \u0027Comments\u0027, commentsColWidth, True, \u0027center\u0027))\n\t\n\treturn colList",
                       "type": "script"
                     }
                   ],

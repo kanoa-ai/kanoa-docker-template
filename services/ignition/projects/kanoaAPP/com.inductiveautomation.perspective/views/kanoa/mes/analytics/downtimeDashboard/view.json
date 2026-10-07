@@ -1,1877 +1,1903 @@
 {
   "custom": {
-    "noDowntimeFound": true, 
     "analysis": {
       "summary": {
-        "byStateType": {
-          "data": [], 
-          "colors": [], 
-          "labels": [], 
-          "series": []
-        }, 
-        "byStateName": {
-          "data": [], 
-          "colors": [
-            "var(--kcChart-01)", 
-            "var(--kcChart-02)", 
-            "var(--kcChart-03)", 
-            "var(--kcChart-04)", 
-            "var(--kcChart-05)", 
-            "var(--kcChart-06)", 
-            "var(--kcChart-07)", 
-            "var(--kcChart-08)", 
-            "var(--kcChart-09)"
-          ], 
-          "labels": [], 
-          "series": []
-        }, 
         "byAsset": {
-          "data": [], 
           "colors": [
-            "var(--kcChart-01)", 
-            "var(--kcChart-02)", 
-            "var(--kcChart-03)", 
-            "var(--kcChart-04)", 
-            "var(--kcChart-05)", 
-            "var(--kcChart-06)", 
-            "var(--kcChart-07)", 
-            "var(--kcChart-08)", 
+            "var(--kcChart-01)",
+            "var(--kcChart-02)",
+            "var(--kcChart-03)",
+            "var(--kcChart-04)",
+            "var(--kcChart-05)",
+            "var(--kcChart-06)",
+            "var(--kcChart-07)",
+            "var(--kcChart-08)",
             "var(--kcChart-09)"
-          ], 
-          "labels": [], 
+          ],
+          "data": [],
+          "labels": [],
+          "series": []
+        },
+        "byStateName": {
+          "colors": [
+            "var(--kcChart-01)",
+            "var(--kcChart-02)",
+            "var(--kcChart-03)",
+            "var(--kcChart-04)",
+            "var(--kcChart-05)",
+            "var(--kcChart-06)",
+            "var(--kcChart-07)",
+            "var(--kcChart-08)",
+            "var(--kcChart-09)"
+          ],
+          "data": [],
+          "labels": [],
+          "series": []
+        },
+        "byStateType": {
+          "colors": [],
+          "data": [],
+          "labels": [],
           "series": []
         }
-      }, 
+      },
       "table": []
-    }, 
-    "loading": false, 
-    "kanoa": {}, 
+    },
+    "kanoa": {},
+    "loading": false,
+    "noDowntimeFound": true,
     "summaryFilters": {}
-  }, 
+  },
   "params": {
     "value": {
+      "assetId": null,
+      "assetName": null,
       "endDate": {
-        "$ts": 1743548460000, 
         "$": [
-          "ts", 
-          192, 
+          "ts",
+          192,
           1744664061249
-        ]
-      }, 
-      "assetId": null, 
-      "assetName": null, 
+        ],
+        "$ts": 1743548460000
+      },
       "startDate": {
-        "$ts": 1743469260000, 
         "$": [
-          "ts", 
-          192, 
+          "ts",
+          192,
           1744663465644
-        ]
+        ],
+        "$ts": 1743469260000
       }
     }
-  }, 
+  },
+  "propConfig": {
+    "custom.analysis": {
+      "binding": {
+        "config": {
+          "struct": {
+            "data": "{view.custom.kanoa.data}",
+            "summaryFilters": "{view.custom.summaryFilters}"
+          },
+          "waitOnAll": true
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tself.custom.loading \u003d True\t\n\tstateEvents \u003d value[\u0027data\u0027][\u0027stateEvents\u0027]\n\tdefaultColorList \u003d [\u0027var(--kcChart-01)\u0027, \u0027var(--kcChart-02)\u0027, \u0027var(--kcChart-03)\u0027, \u0027var(--kcChart-04)\u0027, \u0027var(--kcChart-05)\u0027, \u0027var(--kcChart-06)\u0027, \u0027var(--kcChart-07)\u0027, \u0027var(--kcChart-08)\u0027, \u0027var(--kcChart-09)\u0027]\n\t\n\t# filtering\n\tif value[\u0027summaryFilters\u0027].has_key(\u0027assetList\u0027) and len(value[\u0027summaryFilters\u0027][\u0027assetList\u0027]) \u003e 0: stateEvents \u003d list(filter(lambda d: d[\u0027assetName\u0027] in value[\u0027summaryFilters\u0027][\u0027assetList\u0027], stateEvents))\n\tif value[\u0027summaryFilters\u0027].has_key(\u0027typeList\u0027) and len(value[\u0027summaryFilters\u0027][\u0027typeList\u0027]) \u003e 0: stateEvents \u003d list(filter(lambda d: d[\u0027stateTypeName\u0027] in value[\u0027summaryFilters\u0027][\u0027typeList\u0027], stateEvents))\n\tif value[\u0027summaryFilters\u0027].has_key(\u0027stateList\u0027) and len(value[\u0027summaryFilters\u0027][\u0027stateList\u0027]) \u003e 0: stateEvents \u003d list(filter(lambda d: d[\u0027stateName\u0027] in value[\u0027summaryFilters\u0027][\u0027stateList\u0027], stateEvents))\n\n\tsystem.perspective.print(\"starting summary...\")\n\n\t# summary\n\tuniqueStateNames \u003d reduce(lambda re, x: re+[x] if x not in re else re, [state[\u0027stateName\u0027] for state in stateEvents if state[\u0027stateTypeName\u0027] !\u003d \u0027Running\u0027], [])\n\tsummaryByStateNameData \u003d [{\u0027name\u0027: name, \u0027stateDurationSecs\u0027: sum(stateEvent[\u0027stateDurationSecs\u0027] for stateEvent in stateEvents if stateEvent[\u0027stateName\u0027] \u003d\u003d name)} for name in uniqueStateNames]\n\tsummaryByStateNameData \u003d sorted(summaryByStateNameData, key\u003dlambda x: x[\u0027stateDurationSecs\u0027], reverse \u003d True)\n\tstateNameColorList \u003d defaultColorList\n\tsummaryByStateName \u003d {\u0027data\u0027: summaryByStateNameData, \u0027series\u0027: [entry[\u0027stateDurationSecs\u0027] for entry in summaryByStateNameData], \u0027labels\u0027: [entry[\u0027name\u0027] for entry in summaryByStateNameData], \u0027colors\u0027: stateNameColorList}\n\n\tuniqueStateTypeNames \u003d reduce(lambda re, x: re+[x] if x not in re else re, [state[\u0027stateTypeName\u0027] for state in stateEvents], [])\n\tsummaryByStateTypeData \u003d [{\u0027name\u0027: name, \u0027stateDurationSecs\u0027: sum(stateEvent[\u0027stateDurationSecs\u0027] for stateEvent in stateEvents if stateEvent[\u0027stateTypeName\u0027] \u003d\u003d name)} for name in uniqueStateTypeNames]\n\tsummaryByStateTypeData \u003d sorted(summaryByStateTypeData, key\u003dlambda x: x[\u0027stateDurationSecs\u0027], reverse \u003d True)\n\tstateTypeColorList \u003d [system.kanoa.utilities.getFieldValue(\u0027stateTypeColor\u0027, system.kanoa.asset.getStateType({\u0027stateTypeName\u0027: entry[\u0027name\u0027]})) or None for entry in summaryByStateTypeData]\n\tsummaryByStateType \u003d {\u0027data\u0027: summaryByStateTypeData, \u0027series\u0027: [entry[\u0027stateDurationSecs\u0027] for entry in summaryByStateTypeData], \u0027labels\u0027: [entry[\u0027name\u0027] for entry in summaryByStateTypeData], \u0027colors\u0027: stateTypeColorList}\n\t\n\tuniqueAssetNames \u003d reduce(lambda re, x: re+[x] if x not in re else re, [state[\u0027assetName\u0027] for state in stateEvents], [])\n\tsummaryByAssetData \u003d [{\u0027name\u0027: name, \u0027stateDurationSecs\u0027: sum(stateEvent[\u0027stateDurationSecs\u0027] for stateEvent in stateEvents if stateEvent[\u0027assetName\u0027] \u003d\u003d name and stateEvent[\u0027stateTypeName\u0027] !\u003d \u0027Running\u0027)} for name in uniqueAssetNames]\n\tsummaryByAssetData \u003d sorted(summaryByAssetData, key\u003dlambda x: x[\u0027stateDurationSecs\u0027], reverse \u003d True)\n\tassetNameColorList \u003d defaultColorList\n\tsummaryByAsset \u003d {\u0027data\u0027: summaryByAssetData, \u0027series\u0027: [entry[\u0027stateDurationSecs\u0027] for entry in summaryByAssetData], \u0027labels\u0027: [entry[\u0027name\u0027] for entry in summaryByAssetData], \u0027colors\u0027: assetNameColorList}\n\t\n\tsummary \u003d {\u0027byStateName\u0027: summaryByStateName, \u0027byStateType\u0027: summaryByStateType, \u0027byAsset\u0027: summaryByAsset}\n\t\n\tsystem.perspective.print(\"summary complete\")\t\n\n\n\tsystem.perspective.print(\"starting state table....\")\n\t# state table\n#\tnewStateEvents \u003d []\n#\tfor stateEvent in stateEvents:\n#\t\tstateEvent \u003d dict(stateEvent)\n#\t\tsystem.perspective.print(\" id %s\"%stateEvent[\u0027stateEventId\u0027])\n##\t\tstateEvent[\u0027stateDurationMins\u0027] \u003d stateEvent[\u0027stateDurationSecs\u0027] / 60.0 \n#\t\ttypeBgColor \u003d system.kanoa.utilities.getFieldValue(\u0027stateTypeColor\u0027, system.kanoa.asset.getStateType({\u0027stateTypeName\u0027: stateEvent[\u0027stateTypeName\u0027]}))\n#\t\tstateEvent[\u0027stateTypeName\u0027] \u003d {\u0027value\u0027: stateEvent[\u0027stateTypeName\u0027], \u0027style\u0027: {\u0027backgroundColor\u0027: typeBgColor, \"color\": system.kanoa.utilities.getContrastingColor(typeBgColor), \"borderRadius\": \"5px\", \u0027margin\u0027: \u00275px\u0027}}\n#\t\tstateBgColor \u003d system.kanoa.utilities.getFieldValue(\u0027stateColor\u0027, system.kanoa.asset.getStates({\u0027stateName\u0027: stateEvent[\u0027stateName\u0027]})) or typeBgColor\n#\t\tstateEvent[\u0027stateName\u0027] \u003d {\u0027value\u0027: stateEvent[\u0027stateName\u0027], \u0027style\u0027: {\u0027backgroundColor\u0027: stateBgColor, \"color\": system.kanoa.utilities.getContrastingColor(stateBgColor), \"borderRadius\": \"5px\", \u0027margin\u0027: \u00275px\u0027}}\n#\t\tnewStateEvents.append(stateEvent)\n#\tstateEvents \u003d newStateEvents\n\t\n\tself.custom.loading \u003d False\n\tsystem.perspective.print(\"stateEvents complete\")\n\treturn {\u0027table\u0027: stateEvents, \u0027summary\u0027: summary}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.kanoa": {
+      "persistent": true
+    },
+    "custom.kanoa.data": {
+      "binding": {
+        "config": {
+          "path": "view.custom.kanoa.filter"
+        },
+        "transforms": [
+          {
+            "code": "\t\n\tself.custom.loading \u003d True\t\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027] or -1, \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027], \u0027showDowntimeOnly\u0027: True, \u0027showChanged\u0027: None, \u0027durationSecs\u0027: 0}\t\n\treturn {\u0027stateEvents\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetStateEvents(paramsDict))}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.kanoa.filter": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "type": "property"
+      }
+    },
+    "custom.loading": {
+      "persistent": true
+    },
+    "custom.noDowntimeFound": {
+      "binding": {
+        "config": {
+          "path": "view.custom.analysis.table"
+        },
+        "transforms": [
+          {
+            "code": "\treturn value is None or len(value) \u003d\u003d 0",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.summaryFilters": {
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
   "props": {
     "defaultSize": {
       "width": 1065
     }
-  }, 
+  },
   "root": {
-    "type": "ia.container.flex", 
-    "props": {
-      "style": {
-        "padding": 5, 
-        "classes": "kanoa/font/default", 
-        "gap": 5
-      }, 
-      "direction": "column"
-    }, 
     "children": [
       {
-        "type": "ia.container.flex", 
-        "props": {
-          "style": {
-            "padding": 5, 
-            "overflow": "visible"
-          }, 
-          "direction": "column"
-        }, 
         "children": [
           {
-            "type": "ia.display.label", 
+            "meta": {
+              "domId": "lblTitle",
+              "name": "lblTitle"
+            },
+            "position": {
+              "basis": "32px"
+            },
             "props": {
-              "text": "Downtime Dashboard", 
+              "text": "Downtime Dashboard",
               "textStyle": {
                 "classes": "kanoa/font/titleMedium"
               }
-            }, 
-            "meta": {
-              "domId": "lblTitle", 
-              "name": "lblTitle"
-            }, 
-            "position": {
-              "basis": "32px"
-            }
-          }, 
+            },
+            "type": "ia.display.label"
+          },
           {
-            "type": "ia.container.flex", 
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblTitle-1",
+                      "name": "lblTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "paddingTop": 5
+                      },
+                      "text": "Asset"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblValue",
+                      "name": "lblValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.value"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value[\u0027assetName\u0027] or \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxAsset",
+                  "name": "flxAsset"
+                },
+                "position": {
+                  "basis": "300px"
+                },
+                "props": {
+                  "alignItems": "flex-start",
+                  "direction": "column"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblTitle-2",
+                      "name": "lblTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "paddingTop": 5
+                      },
+                      "text": "Started"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblValue-1",
+                      "name": "lblValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.value"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\tstartDate \u003d value[\u0027startDate\u0027]\n\tdateFormat \u003d system.kanoa.date.localizeDateFormat(\"MM-dd-YY HH:mm\", self.session.props.locale)\n\treturn system.date.format(startDate, dateFormat) if startDate else \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxStart",
+                  "name": "flxStart"
+                },
+                "position": {
+                  "basis": "300px"
+                },
+                "props": {
+                  "alignItems": "flex-start",
+                  "direction": "column"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblTitle-3",
+                      "name": "lblTitle"
+                    },
+                    "props": {
+                      "style": {
+                        "paddingTop": 5
+                      },
+                      "text": "Ended"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblValue-2",
+                      "name": "lblValue"
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.params.value"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\tendDate \u003d value[\u0027endDate\u0027]\n\tdateFormat \u003d system.kanoa.date.localizeDateFormat(\"MM-dd-YY HH:mm\", self.session.props.locale)\n\treturn system.date.format(endDate, dateFormat) if endDate else \u0027\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxEnd",
+                  "name": "flxEnd"
+                },
+                "position": {
+                  "basis": "300px"
+                },
+                "props": {
+                  "alignItems": "flex-start",
+                  "direction": "column"
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "domId": "flxBatchInfo",
+              "name": "flxBatchInfo"
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
             "props": {
-              "alignItems": "center", 
+              "alignItems": "center",
               "style": {
                 "overflow": "visible"
               }
-            }, 
-            "children": [
-              {
-                "type": "ia.container.flex", 
-                "props": {
-                  "alignItems": "flex-start", 
-                  "direction": "column"
-                }, 
-                "children": [
-                  {
-                    "type": "ia.display.label", 
-                    "props": {
-                      "style": {
-                        "paddingTop": 5
-                      }, 
-                      "text": "Asset"
-                    }, 
-                    "meta": {
-                      "domId": "lblTitle-1", 
-                      "name": "lblTitle"
-                    }
-                  }, 
-                  {
-                    "type": "ia.display.label", 
-                    "meta": {
-                      "domId": "lblValue", 
-                      "name": "lblValue"
-                    }, 
-                    "propConfig": {
-                      "props.text": {
-                        "binding": {
-                          "transforms": [
-                            {
-                              "code": "\treturn value['assetName'] or ''", 
-                              "type": "script"
-                            }
-                          ], 
-                          "type": "property", 
-                          "overlayOptOut": true, 
-                          "config": {
-                            "path": "view.params.value"
-                          }
-                        }
-                      }
-                    }
-                  }
-                ], 
-                "meta": {
-                  "domId": "flxAsset", 
-                  "name": "flxAsset"
-                }, 
-                "position": {
-                  "basis": "300px"
-                }
-              }, 
-              {
-                "type": "ia.container.flex", 
-                "props": {
-                  "alignItems": "flex-start", 
-                  "direction": "column"
-                }, 
-                "children": [
-                  {
-                    "type": "ia.display.label", 
-                    "props": {
-                      "style": {
-                        "paddingTop": 5
-                      }, 
-                      "text": "Started"
-                    }, 
-                    "meta": {
-                      "domId": "lblTitle-2", 
-                      "name": "lblTitle"
-                    }
-                  }, 
-                  {
-                    "type": "ia.display.label", 
-                    "meta": {
-                      "domId": "lblValue-1", 
-                      "name": "lblValue"
-                    }, 
-                    "propConfig": {
-                      "props.text": {
-                        "binding": {
-                          "transforms": [
-                            {
-                              "code": "\tstartDate = value['startDate']\n\n\treturn system.date.format(startDate, 'MM-dd-YY HH:mm') if startDate else ''", 
-                              "type": "script"
-                            }
-                          ], 
-                          "type": "property", 
-                          "overlayOptOut": true, 
-                          "config": {
-                            "path": "view.params.value"
-                          }
-                        }
-                      }
-                    }
-                  }
-                ], 
-                "meta": {
-                  "domId": "flxStart", 
-                  "name": "flxStart"
-                }, 
-                "position": {
-                  "basis": "300px"
-                }
-              }, 
-              {
-                "type": "ia.container.flex", 
-                "props": {
-                  "alignItems": "flex-start", 
-                  "direction": "column"
-                }, 
-                "children": [
-                  {
-                    "type": "ia.display.label", 
-                    "props": {
-                      "style": {
-                        "paddingTop": 5
-                      }, 
-                      "text": "Ended"
-                    }, 
-                    "meta": {
-                      "domId": "lblTitle-3", 
-                      "name": "lblTitle"
-                    }
-                  }, 
-                  {
-                    "type": "ia.display.label", 
-                    "meta": {
-                      "domId": "lblValue-2", 
-                      "name": "lblValue"
-                    }, 
-                    "propConfig": {
-                      "props.text": {
-                        "binding": {
-                          "transforms": [
-                            {
-                              "code": "\tendDate = value['endDate']\n\n\treturn system.date.format(endDate, 'MM-dd-YY HH:mm') if endDate else ''", 
-                              "type": "script"
-                            }
-                          ], 
-                          "type": "property", 
-                          "overlayOptOut": true, 
-                          "config": {
-                            "path": "view.params.value"
-                          }
-                        }
-                      }
-                    }
-                  }
-                ], 
-                "meta": {
-                  "domId": "flxEnd", 
-                  "name": "flxEnd"
-                }, 
-                "position": {
-                  "basis": "300px"
-                }
-              }
-            ], 
-            "meta": {
-              "domId": "flxBatchInfo", 
-              "name": "flxBatchInfo"
-            }, 
-            "position": {
-              "shrink": 0, 
-              "basis": "40px"
-            }
-          }, 
+            },
+            "type": "ia.container.flex"
+          },
           {
-            "type": "ia.display.view", 
-            "props": {
-              "params": {
-                "values": {
-                  "showBar": true, 
-                  "type": "INFO", 
-                  "textColor": null, 
-                  "text": "Loading Data"
-                }
-              }, 
-              "path": "kanoa/core/templates/displays/progressBar", 
-              "useDefaultViewHeight": true
-            }, 
             "meta": {
-              "domId": "evLoadingBar", 
+              "domId": "evLoadingBar",
               "name": "evLoadingBar"
-            }, 
+            },
             "propConfig": {
               "position.display": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.loading"
-                  }
+                  },
+                  "type": "property"
                 }
               }
-            }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "showBar": true,
+                  "text": "Loading Data",
+                  "textColor": null,
+                  "type": "INFO"
+                }
+              },
+              "path": "kanoa/core/templates/displays/progressBar",
+              "useDefaultViewHeight": true
+            },
+            "type": "ia.display.view"
           }
-        ], 
+        ],
         "meta": {
-          "domId": "flxHeader", 
+          "domId": "flxHeader",
           "name": "flxHeader"
-        }, 
+        },
         "position": {
           "shrink": 0
-        }
-      }, 
-      {
-        "type": "ia.container.flex", 
+        },
         "props": {
+          "direction": "column",
           "style": {
-            "padding": 5, 
-            "classes": "kanoa/container", 
-            "gap": 5
+            "overflow": "visible",
+            "padding": 5
           }
-        }, 
+        },
+        "type": "ia.container.flex"
+      },
+      {
         "children": [
           {
-            "type": "ia.input.button", 
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\tself.view.custom.summaryFilters \u003d {}"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "Button",
+              "name": "Button"
+            },
+            "position": {
+              "basis": "120px"
+            },
             "props": {
               "image": {
                 "icon": {
                   "path": "material/clear"
                 }
-              }, 
+              },
+              "primary": false,
               "style": {
                 "classes": "kanoa/button"
-              }, 
-              "text": "Reset Filters", 
-              "primary": false
-            }, 
-            "meta": {
-              "domId": "Button", 
-              "name": "Button"
-            }, 
-            "position": {
-              "basis": "120px"
-            }, 
-            "events": {
-              "dom": {
-                "onClick": {
-                  "type": "script", 
-                  "scope": "G", 
-                  "config": {
-                    "script": "\tself.view.custom.summaryFilters = {}"
-                  }
-                }
-              }
-            }
-          }, 
+              },
+              "text": "Reset Filters"
+            },
+            "type": "ia.input.button"
+          },
           {
-            "type": "ia.container.flex", 
-            "props": {
-              "style": {
-                "gap": 5
-              }
-            }, 
             "children": [
               {
-                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "Label",
+                  "name": "Label"
+                },
                 "props": {
-                  "text": "State Type:", 
+                  "text": "State Type:",
                   "textStyle": {
                     "classes": "kanoa/font/labelMedium"
                   }
-                }, 
-                "meta": {
-                  "domId": "Label", 
-                  "name": "Label"
-                }
-              }, 
+                },
+                "type": "ia.display.label"
+              },
               {
-                "type": "ia.display.label", 
                 "meta": {
-                  "domId": "Label_0", 
+                  "domId": "Label_0",
                   "name": "Label_0"
-                }, 
+                },
                 "position": {
-                  "grow": 1, 
+                  "grow": 1,
                   "shrink": 0
-                }, 
+                },
                 "propConfig": {
                   "props.text": {
                     "binding": {
-                      "transforms": [
-                        {
-                          "code": "\tif value.has_key('typeList'): return value['typeList']\n\treturn None", 
-                          "type": "script"
-                        }
-                      ], 
-                      "type": "property", 
                       "config": {
                         "path": "view.custom.summaryFilters"
-                      }
+                      },
+                      "transforms": [
+                        {
+                          "code": "\tif value.has_key(\u0027typeList\u0027): return value[\u0027typeList\u0027]\n\treturn None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
                     }
                   }
-                }
+                },
+                "type": "ia.display.label"
               }
-            ], 
+            ],
             "meta": {
-              "domId": "flxStateTypeFilter", 
+              "domId": "flxStateTypeFilter",
               "name": "flxStateTypeFilter"
-            }, 
+            },
             "position": {
-              "grow": 1, 
+              "grow": 1,
               "shrink": 0
-            }, 
+            },
             "propConfig": {
               "position.display": {
                 "binding": {
-                  "transforms": [
-                    {
-                      "code": "\treturn value.has_key('typeList')", 
-                      "type": "script"
-                    }
-                  ], 
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.summaryFilters"
-                  }
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value.has_key(\u0027typeList\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
                 }
               }
-            }
-          }, 
-          {
-            "type": "ia.container.flex", 
+            },
             "props": {
               "style": {
                 "gap": 5
               }
-            }, 
+            },
+            "type": "ia.container.flex"
+          },
+          {
             "children": [
               {
-                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "Label-1",
+                  "name": "Label"
+                },
                 "props": {
-                  "text": "Asset: ", 
+                  "text": "Asset: ",
                   "textStyle": {
                     "classes": "kanoa/font/labelMedium"
                   }
-                }, 
-                "meta": {
-                  "domId": "Label-1", 
-                  "name": "Label"
-                }
-              }, 
+                },
+                "type": "ia.display.label"
+              },
               {
-                "type": "ia.display.label", 
                 "meta": {
-                  "domId": "Label_0-1", 
+                  "domId": "Label_0-1",
                   "name": "Label_0"
-                }, 
+                },
                 "position": {
-                  "grow": 1, 
+                  "grow": 1,
                   "shrink": 0
-                }, 
+                },
                 "propConfig": {
                   "props.text": {
                     "binding": {
-                      "transforms": [
-                        {
-                          "code": "\tif value.has_key('assetList'): return value['assetList']\n\treturn None", 
-                          "type": "script"
-                        }
-                      ], 
-                      "type": "property", 
                       "config": {
                         "path": "view.custom.summaryFilters"
-                      }
+                      },
+                      "transforms": [
+                        {
+                          "code": "\tif value.has_key(\u0027assetList\u0027): return value[\u0027assetList\u0027]\n\treturn None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
                     }
                   }
-                }
+                },
+                "type": "ia.display.label"
               }
-            ], 
+            ],
             "meta": {
-              "domId": "flxAssetFilter", 
+              "domId": "flxAssetFilter",
               "name": "flxAssetFilter"
-            }, 
+            },
             "position": {
-              "grow": 1, 
+              "grow": 1,
               "shrink": 0
-            }, 
+            },
             "propConfig": {
               "position.display": {
                 "binding": {
-                  "transforms": [
-                    {
-                      "code": "\treturn value.has_key('assetList')", 
-                      "type": "script"
-                    }
-                  ], 
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.summaryFilters"
-                  }
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value.has_key(\u0027assetList\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
                 }
               }
-            }
-          }, 
-          {
-            "type": "ia.container.flex", 
+            },
             "props": {
               "style": {
                 "gap": 5
               }
-            }, 
+            },
+            "type": "ia.container.flex"
+          },
+          {
             "children": [
               {
-                "type": "ia.display.label", 
+                "meta": {
+                  "domId": "Label-2",
+                  "name": "Label"
+                },
                 "props": {
-                  "text": "State: ", 
+                  "text": "State: ",
                   "textStyle": {
                     "classes": "kanoa/font/labelMedium"
                   }
-                }, 
-                "meta": {
-                  "domId": "Label-2", 
-                  "name": "Label"
-                }
-              }, 
+                },
+                "type": "ia.display.label"
+              },
               {
-                "type": "ia.display.label", 
                 "meta": {
-                  "domId": "Label_0-2", 
+                  "domId": "Label_0-2",
                   "name": "Label_0"
-                }, 
+                },
                 "position": {
-                  "grow": 1, 
+                  "grow": 1,
                   "shrink": 0
-                }, 
+                },
                 "propConfig": {
                   "props.text": {
                     "binding": {
-                      "transforms": [
-                        {
-                          "code": "\tif value.has_key('stateList'): return value['stateList']\n\treturn None", 
-                          "type": "script"
-                        }
-                      ], 
-                      "type": "property", 
                       "config": {
                         "path": "view.custom.summaryFilters"
-                      }
+                      },
+                      "transforms": [
+                        {
+                          "code": "\tif value.has_key(\u0027stateList\u0027): return value[\u0027stateList\u0027]\n\treturn None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
                     }
                   }
-                }
+                },
+                "type": "ia.display.label"
               }
-            ], 
+            ],
             "meta": {
-              "domId": "flxReasonFilter", 
+              "domId": "flxReasonFilter",
               "name": "flxReasonFilter"
-            }, 
+            },
             "position": {
-              "grow": 1, 
+              "grow": 1,
               "shrink": 0
-            }, 
+            },
             "propConfig": {
               "position.display": {
                 "binding": {
-                  "transforms": [
-                    {
-                      "code": "\treturn value.has_key('stateList')", 
-                      "type": "script"
-                    }
-                  ], 
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.summaryFilters"
-                  }
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn value.has_key(\u0027stateList\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
                 }
               }
-            }
+            },
+            "props": {
+              "style": {
+                "gap": 5
+              }
+            },
+            "type": "ia.container.flex"
           }
-        ], 
+        ],
         "meta": {
-          "domId": "fxlFilters", 
+          "domId": "fxlFilters",
           "name": "fxlFilters"
-        }, 
+        },
         "position": {
-          "shrink": 0, 
-          "display": false, 
-          "basis": "40px"
-        }
-      }, 
-      {
-        "type": "ia.container.flex", 
+          "basis": "40px",
+          "display": false,
+          "shrink": 0
+        },
         "props": {
           "style": {
-            "overflow": "visible", 
-            "gap": 5
+            "classes": "kanoa/container",
+            "gap": 5,
+            "padding": 5
           }
-        }, 
+        },
+        "type": "ia.container.flex"
+      },
+      {
         "children": [
           {
-            "type": "kyvislabs.display.apexchart", 
-            "props": {
-              "type": "donut", 
-              "options": {
-                "legend": {
-                  "show": true, 
-                  "position": "bottom"
-                }, 
-                "tooltip": {
-                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) { \n\n    const formatNumber = (number) => {\n        return number.toLocaleString();\n    };\n\n    return ( \n        \"<div style='padding: 5px'>\" +\"<b>\"+ w.config.labels[seriesIndex]+\" </b>\"\n+formatNumber(series[seriesIndex]/60)+\n        \" min. </div>\"\n    );\n}\n", 
-                  "enabled": true
-                }, 
-                "title": {
-                  "text": "State Type Summary"
-                }, 
-                "responsive": [
-                  {
-                    "breakpoint": 480, 
-                    "options": {
-                      "legend": {
-                        "position": "bottom"
-                      }
-                    }
-                  }
-                ], 
-                "theme": {}, 
-                "chart": {
-                  "type": "donut", 
-                  "width": 380, 
-                  "events": {
-                    "dataPointSelection": true, 
-                    "beforeResetZoom": false, 
-                    "markerClick": false, 
-                    "mouseMove": false, 
-                    "beforeMount": false, 
-                    "dataPointMouseLeave": false, 
-                    "scrolled": false, 
-                    "click": false, 
-                    "dataPointMouseEnter": false, 
-                    "mounted": false, 
-                    "mouseLeave": false, 
-                    "zoomed": false, 
-                    "animationEnd": false, 
-                    "brushScrolled": false, 
-                    "legendClick": false, 
-                    "selection": false, 
-                    "beforeZoom": false, 
-                    "updated": false
-                  }
-                }
-              }, 
-              "style": {
-                "classes": "kanoa/container"
-              }
-            }, 
-            "meta": {
-              "domId": "apexStateType", 
-              "name": "apexStateType"
-            }, 
-            "position": {
-              "grow": 1, 
-              "basis": "200px"
-            }, 
             "events": {
               "component": {
                 "dataPointSelectionHandler": {
-                  "type": "script", 
-                  "scope": "G", 
                   "config": {
-                    "script": "\tself.view.custom.summaryFilters.typeList = [self.view.custom.analysis.summary.byStateType.data[event['dataPointIndex']]['name']]"
-                  }
+                    "script": "\tself.view.custom.summaryFilters.typeList \u003d [self.view.custom.analysis.summary.byStateType.data[event[\u0027dataPointIndex\u0027]][\u0027name\u0027]]"
+                  },
+                  "scope": "G",
+                  "type": "script"
                 }
               }
-            }, 
+            },
+            "meta": {
+              "domId": "apexStateType",
+              "name": "apexStateType"
+            },
+            "position": {
+              "basis": "200px",
+              "grow": 1
+            },
             "propConfig": {
-              "props.series": {
-                "binding": {
-                  "type": "property", 
-                  "config": {
-                    "path": "view.custom.analysis.summary.byStateType.series"
-                  }
-                }
-              }, 
-              "props.options.theme.mode": {
-                "binding": {
-                  "transforms": [
-                    {
-                      "code": "\tif 'dark' in value: return 'dark'\n\telse: return 'light'", 
-                      "type": "script"
-                    }
-                  ], 
-                  "type": "property", 
-                  "config": {
-                    "path": "session.props.theme"
-                  }
-                }
-              }, 
               "props.options.colors": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.analysis.summary.byStateType.colors"
-                  }
+                  },
+                  "type": "property"
                 }
-              }, 
+              },
               "props.options.labels": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.analysis.summary.byStateType.labels"
-                  }
+                  },
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.analysis.summary.byStateType.series"
+                  },
+                  "type": "property"
                 }
               }
-            }
-          }, 
-          {
-            "type": "kyvislabs.display.apexchart", 
+            },
             "props": {
-              "type": "donut", 
               "options": {
+                "chart": {
+                  "events": {
+                    "animationEnd": false,
+                    "beforeMount": false,
+                    "beforeResetZoom": false,
+                    "beforeZoom": false,
+                    "brushScrolled": false,
+                    "click": false,
+                    "dataPointMouseEnter": false,
+                    "dataPointMouseLeave": false,
+                    "dataPointSelection": true,
+                    "legendClick": false,
+                    "markerClick": false,
+                    "mounted": false,
+                    "mouseLeave": false,
+                    "mouseMove": false,
+                    "scrolled": false,
+                    "selection": false,
+                    "updated": false,
+                    "zoomed": false
+                  },
+                  "type": "donut",
+                  "width": 380
+                },
                 "legend": {
-                  "show": true, 
-                  "position": "bottom"
-                }, 
-                "tooltip": {
-                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) { \n\n    const formatNumber = (number) => {\n        return number.toLocaleString();\n    };\n\n    return ( \n        \"<div style='padding: 5px'>\" +\"<b>\"+ w.config.labels[seriesIndex]+\" </b>\"\n+formatNumber(series[seriesIndex]/60)+\n        \" min. </div>\"\n    );\n}\n", 
-                  "enabled": true
-                }, 
-                "title": {
-                  "text": "Downtime by Asset"
-                }, 
+                  "position": "bottom",
+                  "show": true
+                },
                 "responsive": [
                   {
-                    "breakpoint": 480, 
+                    "breakpoint": 480,
                     "options": {
                       "legend": {
                         "position": "bottom"
                       }
                     }
                   }
-                ], 
-                "theme": {}, 
-                "chart": {
-                  "type": "donut", 
-                  "width": 380, 
-                  "events": {
-                    "dataPointSelection": true, 
-                    "beforeResetZoom": false, 
-                    "markerClick": false, 
-                    "mouseMove": false, 
-                    "beforeMount": false, 
-                    "dataPointMouseLeave": false, 
-                    "scrolled": false, 
-                    "click": false, 
-                    "dataPointMouseEnter": false, 
-                    "mounted": false, 
-                    "mouseLeave": false, 
-                    "zoomed": false, 
-                    "animationEnd": false, 
-                    "brushScrolled": false, 
-                    "legendClick": false, 
-                    "selection": {
-                      "enabled": true, 
-                      "xaxis": {
-                        "max": "None", 
-                        "min": "None"
-                      }
-                    }, 
-                    "beforeZoom": false, 
-                    "updated": false
-                  }
+                ],
+                "theme": {},
+                "title": {
+                  "text": "State Type Summary"
+                },
+                "tooltip": {
+                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) { \n\n    const formatNumber \u003d (number) \u003d\u003e {\n        return number.toLocaleString();\n    };\n\n    return ( \n        \"\u003cdiv style\u003d\u0027padding: 5px\u0027\u003e\" +\"\u003cb\u003e\"+ w.config.labels[seriesIndex]+\" \u003c/b\u003e\"\n+formatNumber(series[seriesIndex]/60)+\n        \" min. \u003c/div\u003e\"\n    );\n}\n",
+                  "enabled": true
                 }
-              }, 
+              },
               "style": {
                 "classes": "kanoa/container"
-              }
-            }, 
-            "meta": {
-              "domId": "apexDTByAsset", 
-              "name": "apexDTByAsset"
-            }, 
-            "position": {
-              "grow": 1, 
-              "basis": "200px"
-            }, 
+              },
+              "type": "donut"
+            },
+            "type": "kyvislabs.display.apexchart"
+          },
+          {
             "events": {
               "component": {
                 "dataPointSelectionHandler": {
-                  "type": "script", 
-                  "scope": "G", 
                   "config": {
-                    "script": "\tself.view.custom.summaryFilters.assetList = [self.view.custom.analysis.summary.byAsset.data[event['dataPointIndex']]['name']]"
-                  }
+                    "script": "\tself.view.custom.summaryFilters.assetList \u003d [self.view.custom.analysis.summary.byAsset.data[event[\u0027dataPointIndex\u0027]][\u0027name\u0027]]"
+                  },
+                  "scope": "G",
+                  "type": "script"
                 }
               }
-            }, 
+            },
+            "meta": {
+              "domId": "apexDTByAsset",
+              "name": "apexDTByAsset"
+            },
+            "position": {
+              "basis": "200px",
+              "grow": 1
+            },
             "propConfig": {
-              "props.series": {
-                "binding": {
-                  "type": "property", 
-                  "config": {
-                    "path": "view.custom.analysis.summary.byAsset.series"
-                  }
-                }
-              }, 
-              "props.options.theme.mode": {
-                "binding": {
-                  "transforms": [
-                    {
-                      "code": "\tif 'dark' in value: return 'dark'\n\telse: return 'light'", 
-                      "type": "script"
-                    }
-                  ], 
-                  "type": "property", 
-                  "config": {
-                    "path": "session.props.theme"
-                  }
-                }
-              }, 
               "props.options.colors": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.analysis.summary.byAsset.colors"
-                  }
+                  },
+                  "type": "property"
                 }
-              }, 
+              },
               "props.options.labels": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.analysis.summary.byAsset.labels"
-                  }
+                  },
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.analysis.summary.byAsset.series"
+                  },
+                  "type": "property"
                 }
               }
-            }
-          }, 
-          {
-            "type": "kyvislabs.display.apexchart", 
+            },
             "props": {
-              "type": "donut", 
               "options": {
+                "chart": {
+                  "events": {
+                    "animationEnd": false,
+                    "beforeMount": false,
+                    "beforeResetZoom": false,
+                    "beforeZoom": false,
+                    "brushScrolled": false,
+                    "click": false,
+                    "dataPointMouseEnter": false,
+                    "dataPointMouseLeave": false,
+                    "dataPointSelection": true,
+                    "legendClick": false,
+                    "markerClick": false,
+                    "mounted": false,
+                    "mouseLeave": false,
+                    "mouseMove": false,
+                    "scrolled": false,
+                    "selection": {
+                      "enabled": true,
+                      "xaxis": {
+                        "max": "None",
+                        "min": "None"
+                      }
+                    },
+                    "updated": false,
+                    "zoomed": false
+                  },
+                  "type": "donut",
+                  "width": 380
+                },
                 "legend": {
-                  "show": true, 
-                  "position": "bottom"
-                }, 
-                "tooltip": {
-                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) { \n\n    const formatNumber = (number) => {\n        return number.toLocaleString();\n    };\n\n    return ( \n        \"<div style='padding: 5px'>\" +\"<b>\"+ w.config.labels[seriesIndex]+\" </b>\"\n+formatNumber(series[seriesIndex]/60)+\n        \" min. </div>\"\n    );\n}\n", 
-                  "enabled": true
-                }, 
-                "title": {
-                  "text": "Downtime by Reason"
-                }, 
+                  "position": "bottom",
+                  "show": true
+                },
                 "responsive": [
                   {
-                    "breakpoint": 480, 
+                    "breakpoint": 480,
                     "options": {
                       "legend": {
                         "position": "bottom"
                       }
                     }
                   }
-                ], 
-                "theme": {}, 
-                "chart": {
-                  "type": "donut", 
-                  "width": 380, 
-                  "events": {
-                    "dataPointSelection": true, 
-                    "beforeResetZoom": false, 
-                    "markerClick": false, 
-                    "mouseMove": false, 
-                    "beforeMount": false, 
-                    "dataPointMouseLeave": false, 
-                    "scrolled": false, 
-                    "click": false, 
-                    "dataPointMouseEnter": false, 
-                    "mounted": false, 
-                    "mouseLeave": false, 
-                    "zoomed": false, 
-                    "animationEnd": false, 
-                    "brushScrolled": false, 
-                    "legendClick": false, 
-                    "selection": false, 
-                    "beforeZoom": false, 
-                    "updated": false
-                  }
+                ],
+                "theme": {},
+                "title": {
+                  "text": "Downtime by Asset"
+                },
+                "tooltip": {
+                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) { \n\n    const formatNumber \u003d (number) \u003d\u003e {\n        return number.toLocaleString();\n    };\n\n    return ( \n        \"\u003cdiv style\u003d\u0027padding: 5px\u0027\u003e\" +\"\u003cb\u003e\"+ w.config.labels[seriesIndex]+\" \u003c/b\u003e\"\n+formatNumber(series[seriesIndex]/60)+\n        \" min. \u003c/div\u003e\"\n    );\n}\n",
+                  "enabled": true
                 }
-              }, 
+              },
               "style": {
                 "classes": "kanoa/container"
-              }
-            }, 
-            "meta": {
-              "domId": "apexDTByReason", 
-              "name": "apexDTByReason"
-            }, 
-            "position": {
-              "grow": 1, 
-              "basis": "200px"
-            }, 
+              },
+              "type": "donut"
+            },
+            "type": "kyvislabs.display.apexchart"
+          },
+          {
             "events": {
               "component": {
                 "dataPointSelectionHandler": {
-                  "type": "script", 
-                  "scope": "G", 
                   "config": {
-                    "script": "\tself.view.custom.summaryFilters.stateList = [self.view.custom.analysis.summary.byStateName.data[event['dataPointIndex']]['name']]"
-                  }
+                    "script": "\tself.view.custom.summaryFilters.stateList \u003d [self.view.custom.analysis.summary.byStateName.data[event[\u0027dataPointIndex\u0027]][\u0027name\u0027]]"
+                  },
+                  "scope": "G",
+                  "type": "script"
                 }
               }
-            }, 
+            },
+            "meta": {
+              "domId": "apexDTByReason",
+              "name": "apexDTByReason"
+            },
+            "position": {
+              "basis": "200px",
+              "grow": 1
+            },
             "propConfig": {
-              "props.series": {
-                "binding": {
-                  "type": "property", 
-                  "config": {
-                    "path": "view.custom.analysis.summary.byStateName.series"
-                  }
-                }
-              }, 
-              "props.options.theme.mode": {
-                "binding": {
-                  "transforms": [
-                    {
-                      "code": "\tif 'dark' in value: return 'dark'\n\telse: return 'light'", 
-                      "type": "script"
-                    }
-                  ], 
-                  "type": "property", 
-                  "config": {
-                    "path": "session.props.theme"
-                  }
-                }
-              }, 
               "props.options.colors": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.analysis.summary.byStateName.colors"
-                  }
+                  },
+                  "type": "property"
                 }
-              }, 
+              },
               "props.options.labels": {
                 "binding": {
-                  "type": "property", 
                   "config": {
                     "path": "view.custom.analysis.summary.byStateName.labels"
-                  }
+                  },
+                  "type": "property"
+                }
+              },
+              "props.options.theme.mode": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.theme"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tif \u0027dark\u0027 in value: return \u0027dark\u0027\n\telse: return \u0027light\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.series": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.analysis.summary.byStateName.series"
+                  },
+                  "type": "property"
                 }
               }
-            }
+            },
+            "props": {
+              "options": {
+                "chart": {
+                  "events": {
+                    "animationEnd": false,
+                    "beforeMount": false,
+                    "beforeResetZoom": false,
+                    "beforeZoom": false,
+                    "brushScrolled": false,
+                    "click": false,
+                    "dataPointMouseEnter": false,
+                    "dataPointMouseLeave": false,
+                    "dataPointSelection": true,
+                    "legendClick": false,
+                    "markerClick": false,
+                    "mounted": false,
+                    "mouseLeave": false,
+                    "mouseMove": false,
+                    "scrolled": false,
+                    "selection": false,
+                    "updated": false,
+                    "zoomed": false
+                  },
+                  "type": "donut",
+                  "width": 380
+                },
+                "legend": {
+                  "position": "bottom",
+                  "show": true
+                },
+                "responsive": [
+                  {
+                    "breakpoint": 480,
+                    "options": {
+                      "legend": {
+                        "position": "bottom"
+                      }
+                    }
+                  }
+                ],
+                "theme": {},
+                "title": {
+                  "text": "Downtime by Reason"
+                },
+                "tooltip": {
+                  "custom": "function({ series, seriesIndex, dataPointIndex, w }) { \n\n    const formatNumber \u003d (number) \u003d\u003e {\n        return number.toLocaleString();\n    };\n\n    return ( \n        \"\u003cdiv style\u003d\u0027padding: 5px\u0027\u003e\" +\"\u003cb\u003e\"+ w.config.labels[seriesIndex]+\" \u003c/b\u003e\"\n+formatNumber(series[seriesIndex]/60)+\n        \" min. \u003c/div\u003e\"\n    );\n}\n",
+                  "enabled": true
+                }
+              },
+              "style": {
+                "classes": "kanoa/container"
+              },
+              "type": "donut"
+            },
+            "type": "kyvislabs.display.apexchart"
           }
-        ], 
+        ],
         "meta": {
-          "domId": "flxGraphs", 
+          "domId": "flxGraphs",
           "name": "flxGraphs"
-        }, 
+        },
         "position": {
-          "grow": 1, 
-          "basis": "200px"
-        }, 
+          "basis": "200px",
+          "grow": 1
+        },
         "propConfig": {
           "position.display": {
             "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn not value['noDowntimeFound'] and not value['loading']", 
-                  "type": "script"
-                }
-              ], 
-              "type": "expr-struct", 
               "config": {
                 "struct": {
-                  "noDowntimeFound": "{view.custom.noDowntimeFound}", 
-                  "loading": "{view.custom.loading}"
-                }, 
+                  "loading": "{view.custom.loading}",
+                  "noDowntimeFound": "{view.custom.noDowntimeFound}"
+                },
                 "waitOnAll": true
-              }
+              },
+              "transforms": [
+                {
+                  "code": "\treturn not value[\u0027noDowntimeFound\u0027] and not value[\u0027loading\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
             }
           }
-        }
-      }, 
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "visible"
+          }
+        },
+        "type": "ia.container.flex"
+      },
       {
-        "type": "ia.container.flex", 
         "children": [
           {
-            "type": "ia.display.table", 
-            "props": {
-              "columns": [
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
+            "meta": {
+              "domId": "tblStateEvents",
+              "name": "tblStateEvents"
+            },
+            "position": {
+              "basis": "400px",
+              "grow": 1
+            },
+            "propConfig": {
+              "props.columns[0].dateFormat": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.locale"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD/YY HH:mm\", value)",
+                      "type": "script"
                     }
-                  }, 
-                  "dateFormat": "MM/DD/YY HH:mm", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "auto", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "startDate", 
-                  "width": 60, 
-                  "header": {
-                    "align": "center", 
-                    "title": "Started", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }
-                }, 
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "dateFormat": "MM/DD/YY HH:mm", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "auto", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "endDate", 
-                  "width": 60, 
-                  "header": {
-                    "align": "center", 
-                    "title": "Ended", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }
-                }, 
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.0", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "stateDurationMinutes", 
-                  "width": 40, 
-                  "header": {
-                    "align": "center", 
-                    "title": "Duration (mins)", 
-                    "justify": "center", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": "", 
-                    "paddingRight": 5
-                  }
-                }, 
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "stateTypeName", 
-                  "width": 60, 
-                  "header": {
-                    "align": "center", 
-                    "title": "Type", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }
-                }, 
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "center", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "stateName", 
-                  "width": 60, 
-                  "header": {
-                    "align": "center", 
-                    "title": "State", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }
-                }, 
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "auto", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "assetName", 
-                  "width": 60, 
-                  "header": {
-                    "align": "center", 
-                    "title": "Asset", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }
-                }, 
-                {
-                  "footer": {
-                    "align": "center", 
-                    "title": "", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "dateFormat": "MM/DD/YYYY", 
-                  "align": "center", 
-                  "number": "value", 
-                  "numberFormat": "0,0.##", 
-                  "justify": "auto", 
-                  "progressBar": {
-                    "max": 100, 
-                    "bar": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "min": 0, 
-                    "track": {
-                      "color": "", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }, 
-                    "value": {
-                      "format": "0,0.##", 
-                      "enabled": true, 
-                      "justify": "center", 
-                      "style": {
-                        "classes": ""
-                      }
-                    }
-                  }, 
-                  "toggleSwitch": {
-                    "color": {
-                      "unselected": "", 
-                      "selected": ""
-                    }
-                  }, 
-                  "viewParams": {}, 
-                  "render": "auto", 
-                  "visible": true, 
-                  "nullFormat": {
-                    "nullFormatValue": "", 
-                    "includeNullStrings": false, 
-                    "strict": false
-                  }, 
-                  "resizable": true, 
-                  "editable": false, 
-                  "sort": "none", 
-                  "sortable": true, 
-                  "viewPath": "", 
-                  "filter": {
-                    "date": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "visible": "on-hover", 
-                    "string": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "enabled": false, 
-                    "number": {
-                      "condition": "", 
-                      "value": ""
-                    }, 
-                    "boolean": {
-                      "condition": ""
-                    }
-                  }, 
-                  "boolean": "checkbox", 
-                  "strictWidth": false, 
-                  "field": "note", 
-                  "width": 120, 
-                  "header": {
-                    "align": "center", 
-                    "title": "Comments", 
-                    "justify": "left", 
-                    "style": {
-                      "classes": ""
-                    }
-                  }, 
-                  "style": {
-                    "classes": ""
-                  }
+                  ],
+                  "type": "property"
                 }
-              ], 
-              "footerStyle": {
-                "classes": "kanoa/font/default"
-              }, 
+              },
+              "props.columns[1].dateFormat": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.locale"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD/YY HH:mm\", value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.analysis.table"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
               "bodyStyle": {
                 "classes": "kanoa/font/default"
-              }, 
-              "headerGroupStyle": {
-                "classes": "kanoa/font/default"
-              }, 
-              "rows": {
-                "striped": {
-                  "enabled": false
-                }, 
-                "height": "40px"
-              }, 
-              "headerStyle": {
-                "classes": "kanoa/font/default"
-              }, 
+              },
               "cells": {
                 "style": {
                   "padding": "5px"
                 }
-              }, 
-              "style": {
-                "classes": "kanoa/font/default"
-              }, 
+              },
+              "columns": [
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "editable": false,
+                  "field": "startDate",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Started"
+                  },
+                  "justify": "auto",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "date",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 60
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "editable": false,
+                  "field": "endDate",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Ended"
+                  },
+                  "justify": "auto",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "date",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 60
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "stateDurationMinutes",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Duration (mins)"
+                  },
+                  "justify": "center",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.0",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": "",
+                    "paddingRight": 5
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 40
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "stateTypeName",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Type"
+                  },
+                  "justify": "center",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 60
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "stateName",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "State"
+                  },
+                  "justify": "center",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 60
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "assetName",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Asset"
+                  },
+                  "justify": "auto",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 60
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "note",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Comments"
+                  },
+                  "justify": "auto",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 120
+                }
+              ],
               "footerGroupStyle": {
                 "classes": "kanoa/font/default"
-              }
-            }, 
-            "meta": {
-              "domId": "tblStateEvents", 
-              "name": "tblStateEvents"
-            }, 
-            "position": {
-              "grow": 1, 
-              "basis": "400px"
-            }, 
-            "propConfig": {
-              "props.data": {
-                "binding": {
-                  "type": "property", 
-                  "config": {
-                    "path": "view.custom.analysis.table"
-                  }
+              },
+              "footerStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "headerGroupStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "headerStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "rows": {
+                "height": "40px",
+                "striped": {
+                  "enabled": false
                 }
+              },
+              "style": {
+                "classes": "kanoa/font/default"
               }
-            }
+            },
+            "type": "ia.display.table"
           }
-        ], 
+        ],
         "meta": {
-          "domId": "flxTables", 
+          "domId": "flxTables",
           "name": "flxTables"
-        }, 
+        },
         "position": {
-          "grow": 1, 
-          "basis": "200px"
-        }, 
+          "basis": "200px",
+          "grow": 1
+        },
         "propConfig": {
           "position.display": {
             "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn not value['noDowntimeFound'] and not value['loading']", 
-                  "type": "script"
-                }
-              ], 
-              "type": "expr-struct", 
               "config": {
                 "struct": {
-                  "noDowntimeFound": "{view.custom.noDowntimeFound}", 
-                  "loading": "{view.custom.loading}"
-                }, 
+                  "loading": "{view.custom.loading}",
+                  "noDowntimeFound": "{view.custom.noDowntimeFound}"
+                },
                 "waitOnAll": true
-              }
+              },
+              "transforms": [
+                {
+                  "code": "\treturn not value[\u0027noDowntimeFound\u0027] and not value[\u0027loading\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
             }
           }
-        }
-      }, 
+        },
+        "type": "ia.container.flex"
+      },
       {
-        "type": "ia.container.flex", 
-        "props": {
-          "style": {
-            "padding": 5
-          }, 
-          "direction": "column"
-        }, 
         "children": [
           {
-            "type": "ia.display.label", 
-            "props": {
-              "text": "No Downtime recorded for the selected asset and time period", 
-              "textStyle": {
-                "color": "--kcBad", 
-                "classes": "kanoa/font/titleMedium"
-              }
-            }, 
             "meta": {
-              "domId": "lblMsg", 
+              "domId": "lblMsg",
               "name": "lblMsg"
-            }, 
+            },
             "position": {
               "basis": "32px"
-            }
+            },
+            "props": {
+              "text": "No Downtime recorded for the selected asset and time period",
+              "textStyle": {
+                "classes": "kanoa/font/titleMedium",
+                "color": "--kcBad"
+              }
+            },
+            "type": "ia.display.label"
           }
-        ], 
+        ],
         "meta": {
-          "domId": "flxNoDowntimeMsg", 
+          "domId": "flxNoDowntimeMsg",
           "name": "flxNoDowntimeMsg"
-        }, 
+        },
         "position": {
           "shrink": 0
-        }, 
+        },
         "propConfig": {
           "position.display": {
             "binding": {
-              "transforms": [
-                {
-                  "code": "\treturn value['noDowntimeFound'] and not value['loading']", 
-                  "type": "script"
-                }
-              ], 
-              "type": "expr-struct", 
               "config": {
                 "struct": {
-                  "noDowntimeFound": "{view.custom.noDowntimeFound}", 
-                  "loading": "{view.custom.loading}"
-                }, 
+                  "loading": "{view.custom.loading}",
+                  "noDowntimeFound": "{view.custom.noDowntimeFound}"
+                },
                 "waitOnAll": true
-              }
+              },
+              "transforms": [
+                {
+                  "code": "\treturn value[\u0027noDowntimeFound\u0027] and not value[\u0027loading\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
             }
           }
-        }
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "padding": 5
+          }
+        },
+        "type": "ia.container.flex"
       }
-    ], 
+    ],
     "meta": {
-      "domId": "root", 
+      "domId": "root",
       "name": "root"
-    }, 
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "padding": 5
+      }
+    },
     "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
       "messageHandlers": [
         {
-          "viewScope": false, 
-          "script": "\n\tsystem.perspective.print(\"updateDowntimeDashboardViewParams() msg rcvd with %s\"%payload)\n\t\n\tself.view.params.value = payload\n\t\n\treturn", 
-          "messageType": "updateDowntimeDashboardViewParams", 
-          "sessionScope": false, 
-          "pageScope": true
+          "messageType": "updateDowntimeDashboardViewParams",
+          "pageScope": true,
+          "script": "\n\tsystem.perspective.print(\"updateDowntimeDashboardViewParams() msg rcvd with %s\"%payload)\n\t\n\tself.view.params.value \u003d payload\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
         }
-      ], 
-      "customMethods": [], 
-      "extensionFunctions": null
-    }
-  }, 
-  "propConfig": {
-    "custom.kanoa.data": {
-      "binding": {
-        "transforms": [
-          {
-            "code": "\t\n\tself.custom.loading = True\t\n\tparamsDict = {'assetId': value['assetId'] or -1, 'startDate': value['startDate'], 'endDate': value['endDate'], 'showDowntimeOnly': True, 'showChanged': None, 'durationSecs': 0}\t\n\treturn {'stateEvents': system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetStateEvents(paramsDict))}", 
-            "type": "script"
-          }
-        ], 
-        "type": "property", 
-        "config": {
-          "path": "view.custom.kanoa.filter"
-        }
-      }
-    }, 
-    "custom.analysis": {
-      "binding": {
-        "transforms": [
-          {
-            "code": "\t\n\tself.custom.loading = True\t\n\tstateEvents = value['data']['stateEvents']\n\tdefaultColorList = ['var(--kcChart-01)', 'var(--kcChart-02)', 'var(--kcChart-03)', 'var(--kcChart-04)', 'var(--kcChart-05)', 'var(--kcChart-06)', 'var(--kcChart-07)', 'var(--kcChart-08)', 'var(--kcChart-09)']\n\t\n\t# filtering\n\tif value['summaryFilters'].has_key('assetList') and len(value['summaryFilters']['assetList']) > 0: stateEvents = list(filter(lambda d: d['assetName'] in value['summaryFilters']['assetList'], stateEvents))\n\tif value['summaryFilters'].has_key('typeList') and len(value['summaryFilters']['typeList']) > 0: stateEvents = list(filter(lambda d: d['stateTypeName'] in value['summaryFilters']['typeList'], stateEvents))\n\tif value['summaryFilters'].has_key('stateList') and len(value['summaryFilters']['stateList']) > 0: stateEvents = list(filter(lambda d: d['stateName'] in value['summaryFilters']['stateList'], stateEvents))\n\n\tsystem.perspective.print(\"starting summary...\")\n\n\t# summary\n\tuniqueStateNames = reduce(lambda re, x: re+[x] if x not in re else re, [state['stateName'] for state in stateEvents if state['stateTypeName'] != 'Running'], [])\n\tsummaryByStateNameData = [{'name': name, 'stateDurationSecs': sum(stateEvent['stateDurationSecs'] for stateEvent in stateEvents if stateEvent['stateName'] == name)} for name in uniqueStateNames]\n\tsummaryByStateNameData = sorted(summaryByStateNameData, key=lambda x: x['stateDurationSecs'], reverse = True)\n\tstateNameColorList = defaultColorList\n\tsummaryByStateName = {'data': summaryByStateNameData, 'series': [entry['stateDurationSecs'] for entry in summaryByStateNameData], 'labels': [entry['name'] for entry in summaryByStateNameData], 'colors': stateNameColorList}\n\n\tuniqueStateTypeNames = reduce(lambda re, x: re+[x] if x not in re else re, [state['stateTypeName'] for state in stateEvents], [])\n\tsummaryByStateTypeData = [{'name': name, 'stateDurationSecs': sum(stateEvent['stateDurationSecs'] for stateEvent in stateEvents if stateEvent['stateTypeName'] == name)} for name in uniqueStateTypeNames]\n\tsummaryByStateTypeData = sorted(summaryByStateTypeData, key=lambda x: x['stateDurationSecs'], reverse = True)\n\tstateTypeColorList = [system.kanoa.utilities.getFieldValue('stateTypeColor', system.kanoa.asset.getStateType({'stateTypeName': entry['name']})) or None for entry in summaryByStateTypeData]\n\tsummaryByStateType = {'data': summaryByStateTypeData, 'series': [entry['stateDurationSecs'] for entry in summaryByStateTypeData], 'labels': [entry['name'] for entry in summaryByStateTypeData], 'colors': stateTypeColorList}\n\t\n\tuniqueAssetNames = reduce(lambda re, x: re+[x] if x not in re else re, [state['assetName'] for state in stateEvents], [])\n\tsummaryByAssetData = [{'name': name, 'stateDurationSecs': sum(stateEvent['stateDurationSecs'] for stateEvent in stateEvents if stateEvent['assetName'] == name and stateEvent['stateTypeName'] != 'Running')} for name in uniqueAssetNames]\n\tsummaryByAssetData = sorted(summaryByAssetData, key=lambda x: x['stateDurationSecs'], reverse = True)\n\tassetNameColorList = defaultColorList\n\tsummaryByAsset = {'data': summaryByAssetData, 'series': [entry['stateDurationSecs'] for entry in summaryByAssetData], 'labels': [entry['name'] for entry in summaryByAssetData], 'colors': assetNameColorList}\n\t\n\tsummary = {'byStateName': summaryByStateName, 'byStateType': summaryByStateType, 'byAsset': summaryByAsset}\n\t\n\tsystem.perspective.print(\"summary complete\")\t\n\n\n\tsystem.perspective.print(\"starting state table....\")\n\t# state table\n#\tnewStateEvents = []\n#\tfor stateEvent in stateEvents:\n#\t\tstateEvent = dict(stateEvent)\n#\t\tsystem.perspective.print(\" id %s\"%stateEvent['stateEventId'])\n##\t\tstateEvent['stateDurationMins'] = stateEvent['stateDurationSecs'] / 60.0 \n#\t\ttypeBgColor = system.kanoa.utilities.getFieldValue('stateTypeColor', system.kanoa.asset.getStateType({'stateTypeName': stateEvent['stateTypeName']}))\n#\t\tstateEvent['stateTypeName'] = {'value': stateEvent['stateTypeName'], 'style': {'backgroundColor': typeBgColor, \"color\": system.kanoa.utilities.getContrastingColor(typeBgColor), \"borderRadius\": \"5px\", 'margin': '5px'}}\n#\t\tstateBgColor = system.kanoa.utilities.getFieldValue('stateColor', system.kanoa.asset.getStates({'stateName': stateEvent['stateName']})) or typeBgColor\n#\t\tstateEvent['stateName'] = {'value': stateEvent['stateName'], 'style': {'backgroundColor': stateBgColor, \"color\": system.kanoa.utilities.getContrastingColor(stateBgColor), \"borderRadius\": \"5px\", 'margin': '5px'}}\n#\t\tnewStateEvents.append(stateEvent)\n#\tstateEvents = newStateEvents\n\t\n\tself.custom.loading = False\n\tsystem.perspective.print(\"stateEvents complete\")\n\treturn {'table': stateEvents, 'summary': summary}", 
-            "type": "script"
-          }
-        ], 
-        "type": "expr-struct", 
-        "config": {
-          "struct": {
-            "data": "{view.custom.kanoa.data}", 
-            "summaryFilters": "{view.custom.summaryFilters}"
-          }, 
-          "waitOnAll": true
-        }
-      }, 
-      "persistent": true
-    }, 
-    "custom.loading": {
-      "persistent": true
-    }, 
-    "custom.kanoa.filter": {
-      "binding": {
-        "type": "property", 
-        "config": {
-          "path": "view.params.value"
-        }
-      }
-    }, 
-    "custom.summaryFilters": {
-      "persistent": true
-    }, 
-    "params.value": {
-      "paramDirection": "input", 
-      "persistent": true
-    }, 
-    "custom.noDowntimeFound": {
-      "binding": {
-        "transforms": [
-          {
-            "code": "\treturn value is None or len(value) == 0", 
-            "type": "script"
-          }
-        ], 
-        "type": "property", 
-        "config": {
-          "path": "view.custom.analysis.table"
-        }
-      }, 
-      "persistent": true
-    }, 
-    "custom.kanoa": {
-      "persistent": true
-    }
+      ]
+    },
+    "type": "ia.container.flex"
   }
 }

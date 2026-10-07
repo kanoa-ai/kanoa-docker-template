@@ -256,6 +256,10 @@
         ],
         "type": "expr-struct"
       },
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\t#Select the node at params.values.path (if given) so the parent view can drive the selection, e.g. after adding a new record\n\tpath \u003d self.params.values[\u0027path\u0027] if self.params.values.has_key(\u0027path\u0027) else None\n\tif not path or currentValue is None: return\n\t\n\tpathIndices \u003d []\n\tnode \u003d None\n\ttreeItems \u003d system.util.jsonDecode(system.util.jsonEncode(self.custom.items))\t#Plain dicts/lists; currentValue.value is wrapped\n\tfor section in path.split(\u0027\\\\\u0027):\n\t\tmatches \u003d [i for i, item in enumerate(treeItems) if item[\u0027label\u0027] \u003d\u003d section]\n\t\tif len(matches) !\u003d 1: return\n\t\tpathIndices.append(str(matches[0]))\n\t\tnode \u003d treeItems[matches[0]]\n\t\ttreeItems \u003d node[\u0027items\u0027]\n\t\n\tselectionPath \u003d \u0027/\u0027.join(pathIndices)\n\tif list(self.custom.selectionPath or []) \u003d\u003d [selectionPath]: return\t#Already selected\n\t\n\tself.custom.selectionPath \u003d [selectionPath]\n\tself.custom.selection \u003d [{\u0027itemPath\u0027: selectionPath, \u0027value\u0027: node[\u0027data\u0027]}]\n\t\n\treturn"
+      },
       "persistent": true
     },
     "custom.script": {
@@ -801,7 +805,7 @@
         {
           "messageType": "clearTreeSelection",
           "pageScope": true,
-          "script": "\n#\tsystem.perspective.print(\"clearTreeSelection() msg rcvd by treeSelector with %s\"%payload)\n\t#If the data has changed, then let\u0027s clear the current selection\n\tself.getChild(\"Tree\").props.selection \u003d []\n\tself.view.custom.selection \u003d []\n\t\n\treturn",
+          "script": "\n#\tsystem.perspective.print(\"clearTreeSelection() msg rcvd by treeSelector with %s\"%payload)\n\tif payload.has_key(\u0027msgHandler\u0027) and payload[\u0027msgHandler\u0027] !\u003d self.view.params.values.msgHandler: return\t#Meant for a different tree on this page\n\t\n\t#If the data has changed, then let\u0027s clear the current selection\n\tself.getChild(\"Tree\").props.selection \u003d []\n\tself.view.custom.selection \u003d []\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

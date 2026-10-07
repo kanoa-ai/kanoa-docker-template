@@ -2,14 +2,14 @@
   "custom": {},
   "params": {
     "value": {
+      "notes": null,
       "partNumber": null,
-      "transactionTypeCode": null,
-      "transactionTypeName": null,
       "quantity": 0,
       "quantitySign": 1,
-      "uomCode": null,
       "transactionDate": null,
-      "notes": null
+      "transactionTypeCode": null,
+      "transactionTypeName": null,
+      "uomCode": null
     }
   },
   "propConfig": {
@@ -25,25 +25,55 @@
     }
   },
   "root": {
-    "type": "ia.container.flex",
-    "meta": {
-      "domId": "root",
-      "name": "root"
-    },
-    "props": {
-      "alignItems": "center",
-      "style": {
-        "backgroundColor": "--kcSurface",
-        "classes": "kanoa/border kanoa/font/default",
-        "borderRadius": 10,
-        "boxShadow": "0 2px 6px rgba(0,36,60,0.12), 0 1px 2px rgba(0,36,60,0.08)",
-        "gap": "10px",
-        "padding": "8px 12px"
-      }
-    },
     "children": [
       {
-        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "domId": "icoActivity",
+              "name": "icoActivity"
+            },
+            "propConfig": {
+              "props.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.transactionTypeCode"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tupTypes \u003d (\u0027RECEIPT\u0027, \u0027RETURN\u0027, \u0027TRANSFER_IN\u0027)\n\tdownTypes \u003d (\u0027ISSUE\u0027, \u0027TRANSFER_OUT\u0027)\n\tif value in upTypes:\n\t\treturn \u0027#3d8b40\u0027  # literal Kanoa success green - var(--kcGood) renders blue in the live theme\n\telif value in downTypes:\n\t\treturn \u0027var(--kcBad)\u0027\n\telse:\n\t\treturn \u0027var(--kcGray-100)\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.transactionTypeCode"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t# RECEIPT, RETURN, TRANSFER_IN -\u003e up; ISSUE, TRANSFER_OUT -\u003e down; everything else -\u003e sync\n\tupTypes \u003d (\u0027RECEIPT\u0027, \u0027RETURN\u0027, \u0027TRANSFER_IN\u0027)\n\tdownTypes \u003d (\u0027ISSUE\u0027, \u0027TRANSFER_OUT\u0027)\n\tif value in upTypes:\n\t\treturn \u0027material/arrow_upward\u0027\n\telif value in downTypes:\n\t\treturn \u0027material/arrow_downward\u0027\n\telse:\n\t\treturn \u0027material/sync_alt\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "height": "18px",
+                "width": "18px"
+              }
+            },
+            "type": "ia.display.icon"
+          }
+        ],
         "meta": {
           "domId": "flxAvatar",
           "name": "flxAvatar"
@@ -51,15 +81,6 @@
         "position": {
           "basis": "34px",
           "shrink": 0
-        },
-        "props": {
-          "alignItems": "center",
-          "justify": "center",
-          "style": {
-            "width": "34px",
-            "height": "34px",
-            "borderRadius": "17px"
-          }
         },
         "propConfig": {
           "props.style.backgroundColor": {
@@ -70,7 +91,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\t# Literal Kanoa brand tint values (design system tokens.colors.css)\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn '#e6f3d5'\n\telif value in downTypes:\n\t\treturn '#fbe6e3'\n\telse:\n\t\treturn '--kcGray-10'",
+                  "code": "\n\t# Literal Kanoa brand tint values (design system tokens.colors.css)\n\tupTypes \u003d (\u0027RECEIPT\u0027, \u0027RETURN\u0027, \u0027TRANSFER_IN\u0027)\n\tdownTypes \u003d (\u0027ISSUE\u0027, \u0027TRANSFER_OUT\u0027)\n\tif value in upTypes:\n\t\treturn \u0027#e6f3d5\u0027\n\telif value in downTypes:\n\t\treturn \u0027#fbe6e3\u0027\n\telse:\n\t\treturn \u0027--kcGray-10\u0027",
                   "type": "script"
                 }
               ],
@@ -78,56 +99,82 @@
             }
           }
         },
+        "props": {
+          "alignItems": "center",
+          "justify": "center",
+          "style": {
+            "borderRadius": "17px",
+            "height": "34px",
+            "width": "34px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
         "children": [
           {
-            "type": "ia.display.icon",
             "meta": {
-              "domId": "icoActivity",
-              "name": "icoActivity"
+              "domId": "lblPartQty",
+              "name": "lblPartQty"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027partNumber\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
             },
             "props": {
               "style": {
-                "width": "18px",
-                "height": "18px"
+                "color": "--kcGray-100",
+                "fontFamily": "Roboto",
+                "fontSize": "14px",
+                "fontWeight": 600
               }
             },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "lblSubline",
+              "name": "lblSubline"
+            },
             "propConfig": {
-              "props.path": {
+              "props.text": {
                 "binding": {
                   "config": {
-                    "path": "view.params.value.transactionTypeCode"
+                    "path": "view.params.value"
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n\t# RECEIPT, RETURN, TRANSFER_IN -> up; ISSUE, TRANSFER_OUT -> down; everything else -> sync\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn 'material/arrow_upward'\n\telif value in downTypes:\n\t\treturn 'material/arrow_downward'\n\telse:\n\t\treturn 'material/sync_alt'",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              },
-              "props.color": {
-                "binding": {
-                  "config": {
-                    "path": "view.params.value.transactionTypeCode"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn '#3d8b40'  # literal Kanoa success green - var(--kcGood) renders blue in the live theme\n\telif value in downTypes:\n\t\treturn 'var(--kcBad)'\n\telse:\n\t\treturn 'var(--kcGray-100)'",
+                      "code": "\n\tdateFormat \u003d system.kanoa.date.localizeDateFormat(\u0027MMM d, h:mm a\u0027, self.session.props.locale)\n\tdateStr \u003d system.date.format(value[\u0027transactionDate\u0027], dateFormat) if value[\u0027transactionDate\u0027] else \u0027\u0027\n\treturn \u0027%s - %s\u0027 % (value[\u0027transactionTypeName\u0027] or value[\u0027transactionTypeCode\u0027], dateStr)",
                       "type": "script"
                     }
                   ],
                   "type": "property"
                 }
               }
-            }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "color": "--kcGray-60"
+              }
+            },
+            "type": "ia.display.label"
           }
-        ]
-      },
-      {
-        "type": "ia.container.flex",
+        ],
         "meta": {
           "domId": "flxText",
           "name": "flxText"
@@ -141,103 +188,14 @@
             "gap": "0px"
           }
         },
-        "children": [
-          {
-            "type": "ia.display.label",
-            "meta": {
-              "domId": "lblPartQty",
-              "name": "lblPartQty"
-            },
-            "props": {
-              "style": {
-                "fontFamily": "Roboto",
-                "fontWeight": 600,
-                "fontSize": "14px",
-                "color": "--kcGray-100"
-              }
-            },
-            "propConfig": {
-              "props.text": {
-                "binding": {
-                  "config": {
-                    "path": "view.params.value"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\n\treturn value['partNumber']",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              }
-            }
-          },
-          {
-            "type": "ia.display.label",
-            "meta": {
-              "domId": "lblSubline",
-              "name": "lblSubline"
-            },
-            "props": {
-              "style": {
-                "classes": "kanoa/font/labelSmall",
-                "color": "--kcGray-60"
-              }
-            },
-            "propConfig": {
-              "props.text": {
-                "binding": {
-                  "config": {
-                    "path": "view.params.value"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\n\tdateStr = system.date.format(value['transactionDate'], 'MMM d, h:mm a') if value['transactionDate'] else ''\n\treturn '%s - %s' % (value['transactionTypeName'] or value['transactionTypeCode'], dateStr)",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              }
-            }
-          }
-        ]
+        "type": "ia.container.flex"
       },
       {
-        "type": "ia.display.label",
         "meta": {
           "domId": "lblQty",
           "name": "lblQty"
         },
-        "props": {
-          "style": {
-            "borderRadius": 999,
-            "padding": "4px 10px",
-            "color": "--kcGray-0",
-            "fontFamily": "Roboto",
-            "fontWeight": 700,
-            "fontSize": "13px"
-          }
-        },
         "propConfig": {
-          "props.text": {
-            "binding": {
-              "config": {
-                "path": "view.params.value"
-              },
-              "overlayOptOut": true,
-              "transforms": [
-                {
-                  "code": "\n\tsign = '+' if value['quantitySign'] >= 0 else ''\n\tsignedQty = value['quantitySign'] * (value['quantity'] or 0)\n\treturn '%s%s %s' % (sign, signedQty, value['uomCode'] or '')",
-                  "type": "script"
-                }
-              ],
-              "type": "property"
-            }
-          },
           "props.style.backgroundColor": {
             "binding": {
               "config": {
@@ -246,15 +204,57 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tupTypes = ('RECEIPT', 'RETURN', 'TRANSFER_IN')\n\tdownTypes = ('ISSUE', 'TRANSFER_OUT')\n\tif value in upTypes:\n\t\treturn '#3d8b40'  # literal Kanoa success green - var(--kcGood) renders blue in the live theme\n\telif value in downTypes:\n\t\treturn 'var(--kcBad)'\n\telse:\n\t\treturn 'var(--kcGray-100)'",
+                  "code": "\n\tupTypes \u003d (\u0027RECEIPT\u0027, \u0027RETURN\u0027, \u0027TRANSFER_IN\u0027)\n\tdownTypes \u003d (\u0027ISSUE\u0027, \u0027TRANSFER_OUT\u0027)\n\tif value in upTypes:\n\t\treturn \u0027#3d8b40\u0027  # literal Kanoa success green - var(--kcGood) renders blue in the live theme\n\telif value in downTypes:\n\t\treturn \u0027var(--kcBad)\u0027\n\telse:\n\t\treturn \u0027var(--kcGray-100)\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tsign \u003d \u0027+\u0027 if value[\u0027quantitySign\u0027] \u003e\u003d 0 else \u0027\u0027\n\tsignedQty \u003d value[\u0027quantitySign\u0027] * (value[\u0027quantity\u0027] or 0)\n\treturn \u0027%s%s %s\u0027 % (sign, signedQty, value[\u0027uomCode\u0027] or \u0027\u0027)",
                   "type": "script"
                 }
               ],
               "type": "property"
             }
           }
-        }
+        },
+        "props": {
+          "style": {
+            "borderRadius": 999,
+            "color": "--kcGray-0",
+            "fontFamily": "Roboto",
+            "fontSize": "13px",
+            "fontWeight": 700,
+            "padding": "4px 10px"
+          }
+        },
+        "type": "ia.display.label"
       }
-    ]
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "backgroundColor": "--kcSurface",
+        "borderRadius": 10,
+        "boxShadow": "0 2px 6px rgba(0,36,60,0.12), 0 1px 2px rgba(0,36,60,0.08)",
+        "classes": "kanoa/border kanoa/font/default",
+        "gap": "10px",
+        "padding": "8px 12px"
+      }
+    },
+    "type": "ia.container.flex"
   }
 }

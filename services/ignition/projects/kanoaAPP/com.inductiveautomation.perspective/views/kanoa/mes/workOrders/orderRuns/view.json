@@ -19,7 +19,7 @@
     "custom.filters": {
       "onChange": {
         "enabled": null,
-        "script": "\t\n\tself.custom.table.data \u003d []\n\t\n\treturn"
+        "script": "\t\n\tself.custom.table.data = []\n\t\n\treturn"
       },
       "persistent": true
     },
@@ -45,7 +45,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027modeId\u0027, system.kanoa.asset.getModes({\u0027modeName\u0027: \u0027Production\u0027}))",
+            "code": "\treturn system.kanoa.utilities.getFieldValue('modeId', system.kanoa.asset.getModes({'modeName': 'Production'}))",
             "type": "script"
           }
         ],
@@ -72,7 +72,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tfilters \u003d value\n\tif filters[\u0027workOrderId\u0027] is None: return []\n\tif filters[\u0027modeId\u0027] is None: return []\n\tself.custom.table.gettingData \u003d True\t\n\t\n\tif filters[\u0027byShift\u0027]: data \u003d system.kanoa.event.getAssetProductionEventsByShift(filters)\n\telse: data \u003d system.kanoa.event.getAssetProductionEvents(filters)\n\t\n\tself.custom.table.gettingData \u003d False\t\n\t\n\treturn \tsystem.kanoa.utilities.convertDatasetToJSON(system.dataset.toPyDataSet(system.dataset.sort(data, \u0027startDate\u0027, False)))",
+            "code": "\n\tfilters = value\n\tif filters['workOrderId'] is None: return []\n\tif filters['modeId'] is None: return []\n\tself.custom.table.gettingData = True\t\n\t\n\tif filters['byShift']: data = system.kanoa.event.getAssetProductionEventsByShift(filters)\n\telse: data = system.kanoa.event.getAssetProductionEvents(filters)\n\t\n\tself.custom.table.gettingData = False\t\n\t\n\treturn \tsystem.kanoa.utilities.convertDatasetToJSON(system.dataset.toPyDataSet(system.dataset.sort(data, 'startDate', False)))",
             "type": "script"
           }
         ],
@@ -82,7 +82,7 @@
     "custom.table.selection.row": {
       "onChange": {
         "enabled": null,
-        "script": "\t\n\tself.getChild(\"root\").updateDetailViewer()\t#if producitonView popup is open, we\u0027ll update it\n\t\n\treturn"
+        "script": "\t\n\tself.getChild(\"root\").updateDetailViewer()\t#if producitonView popup is open, we'll update it\n\t\n\treturn"
       }
     },
     "params.values": {
@@ -218,7 +218,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn value[\u0027workOrderId\u0027] is not None",
+                          "code": "\treturn value['workOrderId'] is not None",
                           "type": "script"
                         }
                       ],
@@ -247,7 +247,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tself.view.custom.table.data \u003d system.dataset.clearDataset(self.view.custom.table.data)\n\treturn"
+                        "script": "\t\n\tself.view.custom.table.data = system.dataset.clearDataset(self.view.custom.table.data)\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -277,7 +277,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn value.rowCount \u003e 0",
+                          "code": "\treturn value.rowCount > 0",
                           "type": "script"
                         }
                       ],
@@ -303,7 +303,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tself.view.custom.table.selection.col \u003d None\n\tself.view.custom.table.selection.row \u003d None"
+                        "script": "\t\n\tself.view.custom.table.selection.col = None\n\tself.view.custom.table.selection.row = None"
                       },
                       "scope": "G",
                       "type": "script"
@@ -391,7 +391,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn len(value) \u003e 0 and value[0][\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027",
+                          "code": "\treturn len(value) > 0 and value[0]['modeName'] == 'Production'",
                           "type": "script"
                         }
                       ],
@@ -418,7 +418,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tfileName \u003d \u0027Run Review\u0027\n\tdataset \u003d system.kanoa.utilities.convertDictListToDataset(self.view.custom.table.data)\n\tsystem.kanoa.utilities.exportToExcel(fileName, dataset)\n\t\n\treturn"
+                        "script": "\t\n\tfileName = 'Run Review'\n\tdataset = system.kanoa.utilities.convertDictListToDataset(self.view.custom.table.data)\n\tsystem.kanoa.utilities.exportToExcel(fileName, dataset)\n\t\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -448,7 +448,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn value.rowCount \u003e 0",
+                          "code": "\treturn value.rowCount > 0",
                           "type": "script"
                         }
                       ],
@@ -506,7 +506,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn len(value) \u003e 0 and value[0][\u0027workOrderName\u0027] is not None",
+                          "code": "\treturn len(value) > 0 and value[0]['workOrderName'] is not None",
                           "type": "script"
                         }
                       ],
@@ -556,7 +556,7 @@
                   "component": {
                     "onRowDoubleClick": {
                       "config": {
-                        "script": "\t\n#\tsystem.perspective.print(\u0027event is \u0027+ str(event))\n#\tif event.value.modeName \u003d\u003d \u0027Production\u0027: self.view.getChild(\"root\").openDetailViewer()\n\treturn\t"
+                        "script": "\t\n#\tsystem.perspective.print('event is '+ str(event))\n#\tif event.value.modeName == 'Production': self.view.getChild(\"root\").openDetailViewer()\n\treturn\t"
                       },
                       "scope": "G",
                       "type": "script"
@@ -578,7 +578,21 @@
                       },
                       "transforms": [
                         {
-                          "code": "\treturn len(value) \u003e 0",
+                          "code": "\treturn len(value) > 0",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
+                  "props.columns[17].dateFormat": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.locale"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD HH:mm\", value)",
                           "type": "script"
                         }
                       ],
@@ -588,16 +602,30 @@
                   "props.columns[17].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027From\u0027)"
+                        "expression": "translate('From')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
                     }
                   },
+                  "props.columns[18].dateFormat": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.locale"
+                      },
+                      "transforms": [
+                        {
+                          "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD HH:mm\", value)",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  },
                   "props.columns[18].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027To\u0027)"
+                        "expression": "translate('To')"
                       },
                       "type": "expr"
                     }
@@ -605,7 +633,7 @@
                   "props.columns[19].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Total Mins\u0027)"
+                        "expression": "translate('Total Mins')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -614,7 +642,7 @@
                   "props.columns[20].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Running Mins\u0027)"
+                        "expression": "translate('Running Mins')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -623,7 +651,7 @@
                   "props.columns[21].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Down Mins\u0027)"
+                        "expression": "translate('Down Mins')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -632,7 +660,7 @@
                   "props.columns[22].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Planned Down Mins\u0027)"
+                        "expression": "translate('Planned Down Mins')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -641,7 +669,7 @@
                   "props.columns[23].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Infeed Rate\u0027)"
+                        "expression": "translate('Infeed Rate')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -650,7 +678,7 @@
                   "props.columns[24].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Target Rate\u0027)"
+                        "expression": "translate('Target Rate')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -659,7 +687,7 @@
                   "props.columns[2].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Asset\u0027)"
+                        "expression": "translate('Asset')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -668,7 +696,7 @@
                   "props.columns[3].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Shift\u0027)"
+                        "expression": "translate('Shift')"
                       },
                       "type": "expr"
                     }
@@ -685,7 +713,7 @@
                   "props.columns[4].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Work Order\u0027)"
+                        "expression": "translate('Work Order')"
                       },
                       "type": "expr"
                     }
@@ -693,7 +721,7 @@
                   "props.columns[5].header.title": {
                     "binding": {
                       "config": {
-                        "expression": "translate(\u0027Item\u0027)"
+                        "expression": "translate('Item')"
                       },
                       "overlayOptOut": true,
                       "type": "expr"
@@ -707,7 +735,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\tdef buildCountDisplay(countType, countValue, rawCountValue, units):\n\t\tif not countValue: return {\"value\": None, \"style\":\u0027\u0027}\n\t\tvalue \u003d \u0027{:,} {}\u0027.format(round(countValue or 0,1), (units or \u0027\u0027))\n\t\tstyle \u003d {}\n\t\tif not rawCountValue: \n\t\t\tstyle[\u0027fontStyle\u0027] \u003d \u0027italic\u0027\n\t\t\tstyle[\u0027fontWeight\u0027] \u003d \u0027bold\u0027\n\t\tif countValue \u003c 0: style[\u0027color\u0027] \u003d \u0027--kcOrange-60\u0027\n\t\telif countType \u003d\u003d \u0027waste\u0027: style[\u0027color\u0027] \u003d \u0027--kcRed-60\u0027\n\t\t\n\t\treturn {\"value\": value, \"style\":style}\t\t\t\n\t\n\tdef buildOEEValues(assetPath, oee, a, p, q):\t\t\n\t\t\toeeColors \u003d system.kanoa.event.getOEEColors({\u0027assetPath\u0027:assetPath}, oee, a, p, q)\n\t\t\tbadColor \u003d \u0027#cc312e\u0027\n\t\t\tgetFontColor \u003d lambda bg: badColor if bg \u003d\u003d badColor else \u0027\u0027\n\t\t\t\n\t\t\treturn {\n\t\t\t\t\u0027oee\u0027: {\u0027value\u0027: oee, \u0027color\u0027: oeeColors[\u0027oee\u0027], \u0027fontColor\u0027: getFontColor(oeeColors[\u0027oee\u0027])},\n\t\t\t\t\u0027availability\u0027: {\u0027value\u0027: a, \u0027color\u0027: oeeColors[\u0027availability\u0027], \u0027fontColor\u0027: getFontColor(oeeColors[\u0027availability\u0027])},\n\t\t\t\t\u0027performance\u0027: {\u0027value\u0027: p, \u0027color\u0027: oeeColors[\u0027performance\u0027], \u0027fontColor\u0027: getFontColor(oeeColors[\u0027performance\u0027])},\n\t\t\t\t\u0027quality\u0027: {\u0027value\u0027: q, \u0027color\u0027: oeeColors[\u0027quality\u0027], \u0027fontColor\u0027: getFontColor(oeeColors[\u0027quality\u0027])}\n\t\t\t}\t\n\t\n\tdata \u003d []\n\tfor row in value:\n\t\trow \u003d dict(row)\n\t\trow[\"itemName\"] \u003d {\"value\": row[\"itemName\"], \"style\":{\u0027backgroundColor\u0027: row[\"itemColor\"], \u0027color\u0027: system.kanoa.utilities.getContrastingColor(row[\"itemColor\"]), \u0027borderRadius\u0027: \u00275px\u0027, \u0027padding\u0027: \u00274px\u0027} if row[\"itemColor\"] is not None else {}}\n\t\trow[\"infeedCount\"] \u003d buildCountDisplay(\"infeed\", row[\"infeedCount\"], row[\"rawInfeedCount\"], row[\"infeedUnits\"])\n\t\trow[\"outfeedCount\"] \u003d buildCountDisplay(\"outfeed\", row[\"outfeedCount\"], row[\"rawOutfeedCount\"], row[\"outfeedUnits\"])\n\t\trow[\"wasteCount\"] \u003d buildCountDisplay(\"waste\", row[\"wasteCount\"], row[\"rawWasteCount\"], row[\"wasteUnits\"])\n\t\trow[\"actualMins\"] \u003d (row[\"durationSecs\"] or 0.0) / 60.0\n\t\trow[\"runMins\"] \u003d (row[\"runtimeSecs\"] or 0.0) / 60.0\n\t\trow[\"dtMins\"] \u003d (row[\"unplannedDowntimeSecs\"] or 0.0) / 60.0\n\t\trow[\"pdtMins\"] \u003d (row[\"plannedDowntimeSecs\"] or 0.0) / 60.0\n\t\trow[\"startDate\"] \u003d row[\"runStart\"] if row.has_key(\u0027runStart\u0027) else row[\u0027startDate\u0027]\n\t\trow[\"endDate\"] \u003d row[\"runEnd\"] if row.has_key(\u0027runEnd\u0027) else row[\u0027endDate\u0027]\n\t\trow[\"infeedRate\"] \u003d \u0027\u0027\tif row[\"modeName\"] !\u003d \u0027Production\u0027 else \u0027%s %s per min\u0027%(round((row[\"infeedRateSecs\"] or 0.0) * 60.0,1), row[\"infeedUnits\"] or \u0027\u0027)\n\t\trow[\"targetRate\"] \u003d \u0027\u0027\tif row[\"modeName\"] !\u003d \u0027Production\u0027 else \u0027%s %s per min\u0027%(round((row[\"targetCount\"] or 0.0) / row[\"actualMins\"],1) if row[\"actualMins\"] \u003e 0 else 0, row[\"infeedUnits\"] or \u0027\u0027)\n\n\t\tif row[\u0027processTypeName\u0027] \u003d\u003d \u0027batch\u0027:\n\t\t\trow[\"standardRate\"] \u003d \u0027{:,.0f} min\u0027.format(row[\"standardRate\"]) if row[\"standardRate\"] else \u0027\u0027\n\t\t\trow[\u0027performance\u0027] \u003d min((row[\u0027performance\u0027] or 0.0), 1)\t\t\t\n\t\telse:\n\t\t\tdiv \u003d 1.0 if row[\u0027period\u0027] \u003d\u003d \u0027Minute\u0027 else 60.0\n\t\t\trow[\"standardRate\"] \u003d \u0027{:,.0f} {} per min\u0027.format(round(row[\"standardRate\"] / div,1), row[\"infeedUnits\"] or \u0027\u0027) if row[\"standardRate\"] else \u0027\u0027\n\t\t\n\t\toee \u003d (row[\u0027availability\u0027] or 0.0) * (row[\u0027performance\u0027] or 0.0) * (row[\u0027quality\u0027] or 0.0)\n\t\t\n\t\trow[\u0027status\u0027] \u003d None if row[\"modeName\"] !\u003d \u0027Production\u0027 else buildOEEValues(row[\u0027assetPath\u0027], oee, row[\u0027availability\u0027], row[\u0027performance\u0027], row[\u0027quality\u0027])\n\t\trow[\"modeName\"] \u003d {\"value\": row[\"modeName\"], \"style\":{\u0027backgroundColor\u0027: row[\"modeColor\"], \u0027borderRadius\u0027: \u00275px\u0027, \u0027padding\u0027: \u00274px\u0027, \u0027color\u0027: system.kanoa.utilities.getContrastingColor(row[\"modeColor\"])} if row[\"modeColor\"] is not None else {}}\n\t\tdata.append(row)\n\n\tsystem.perspective.sendMessage(\"closeToast\", {})\t\n\n\treturn data",
+                          "code": "\t\n\tdef buildCountDisplay(countType, countValue, rawCountValue, units):\n\t\tif not countValue: return {\"value\": None, \"style\":''}\n\t\tvalue = '{:,} {}'.format(round(countValue or 0,1), (units or ''))\n\t\tstyle = {}\n\t\tif not rawCountValue: \n\t\t\tstyle['fontStyle'] = 'italic'\n\t\t\tstyle['fontWeight'] = 'bold'\n\t\tif countValue < 0: style['color'] = '--kcOrange-60'\n\t\telif countType == 'waste': style['color'] = '--kcRed-60'\n\t\t\n\t\treturn {\"value\": value, \"style\":style}\t\t\t\n\t\n\tdef buildOEEValues(assetPath, oee, a, p, q):\t\t\n\t\t\toeeColors = system.kanoa.event.getOEEColors({'assetPath':assetPath}, oee, a, p, q)\n\t\t\tbadColor = '#cc312e'\n\t\t\tgetFontColor = lambda bg: badColor if bg == badColor else ''\n\t\t\t\n\t\t\treturn {\n\t\t\t\t'oee': {'value': oee, 'color': oeeColors['oee'], 'fontColor': getFontColor(oeeColors['oee'])},\n\t\t\t\t'availability': {'value': a, 'color': oeeColors['availability'], 'fontColor': getFontColor(oeeColors['availability'])},\n\t\t\t\t'performance': {'value': p, 'color': oeeColors['performance'], 'fontColor': getFontColor(oeeColors['performance'])},\n\t\t\t\t'quality': {'value': q, 'color': oeeColors['quality'], 'fontColor': getFontColor(oeeColors['quality'])}\n\t\t\t}\t\n\t\n\tdata = []\n\tfor row in value:\n\t\trow = dict(row)\n\t\trow[\"itemName\"] = {\"value\": row[\"itemName\"], \"style\":{'backgroundColor': row[\"itemColor\"], 'color': system.kanoa.utilities.getContrastingColor(row[\"itemColor\"]), 'borderRadius': '5px', 'padding': '4px'} if row[\"itemColor\"] is not None else {}}\n\t\trow[\"infeedCount\"] = buildCountDisplay(\"infeed\", row[\"infeedCount\"], row[\"rawInfeedCount\"], row[\"infeedUnits\"])\n\t\trow[\"outfeedCount\"] = buildCountDisplay(\"outfeed\", row[\"outfeedCount\"], row[\"rawOutfeedCount\"], row[\"outfeedUnits\"])\n\t\trow[\"wasteCount\"] = buildCountDisplay(\"waste\", row[\"wasteCount\"], row[\"rawWasteCount\"], row[\"wasteUnits\"])\n\t\trow[\"actualMins\"] = (row[\"durationSecs\"] or 0.0) / 60.0\n\t\trow[\"runMins\"] = (row[\"runtimeSecs\"] or 0.0) / 60.0\n\t\trow[\"dtMins\"] = (row[\"unplannedDowntimeSecs\"] or 0.0) / 60.0\n\t\trow[\"pdtMins\"] = (row[\"plannedDowntimeSecs\"] or 0.0) / 60.0\n\t\trow[\"startDate\"] = row[\"runStart\"] if row.has_key('runStart') else row['startDate']\n\t\trow[\"endDate\"] = row[\"runEnd\"] if row.has_key('runEnd') else row['endDate']\n\t\trow[\"infeedRate\"] = ''\tif row[\"modeName\"] != 'Production' else '%s %s per min'%(round((row[\"infeedRateSecs\"] or 0.0) * 60.0,1), row[\"infeedUnits\"] or '')\n\t\trow[\"targetRate\"] = ''\tif row[\"modeName\"] != 'Production' else '%s %s per min'%(round((row[\"targetCount\"] or 0.0) / row[\"actualMins\"],1) if row[\"actualMins\"] > 0 else 0, row[\"infeedUnits\"] or '')\n\n\t\tif row['processTypeName'] == 'batch':\n\t\t\trow[\"standardRate\"] = '{:,.0f} min'.format(row[\"standardRate\"]) if row[\"standardRate\"] else ''\n\t\t\trow['performance'] = min((row['performance'] or 0.0), 1)\t\t\t\n\t\telse:\n\t\t\tdiv = 1.0 if row['period'] == 'Minute' else 60.0\n\t\t\trow[\"standardRate\"] = '{:,.0f} {} per min'.format(round(row[\"standardRate\"] / div,1), row[\"infeedUnits\"] or '') if row[\"standardRate\"] else ''\n\t\t\n\t\toee = (row['availability'] or 0.0) * (row['performance'] or 0.0) * (row['quality'] or 0.0)\n\t\t\n\t\trow['status'] = None if row[\"modeName\"] != 'Production' else buildOEEValues(row['assetPath'], oee, row['availability'], row['performance'], row['quality'])\n\t\trow[\"modeName\"] = {\"value\": row[\"modeName\"], \"style\":{'backgroundColor': row[\"modeColor\"], 'borderRadius': '5px', 'padding': '4px', 'color': system.kanoa.utilities.getContrastingColor(row[\"modeColor\"])} if row[\"modeColor\"] is not None else {}}\n\t\tdata.append(row)\n\n\tsystem.perspective.sendMessage(\"closeToast\", {})\t\n\n\treturn data",
                           "type": "script"
                         }
                       ],
@@ -727,7 +755,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\n\tdef buildTimeCol(timeValue, timeUnits):\n\t\tif (timeValue or 0) \u003d\u003d 0: return \u0027\u0027\n\t\treturn \u0027{:,} {}\u0027.format(round(timeValue,1), timeUnits)\n\n\tdef buildCount(countValue, countUnits, isRate):\n\t\tif (countValue or 0) \u003d\u003d 0: return \u0027\u0027\n\t\tcountUnits \u003d list(set(countUnits))\n\t\tcountUnit \u003d \u0027Mixed Units\u0027 if len(countUnits) \u003e 1 else countUnits[0]\n\t\treturn \u0027{:,} {} {}\u0027.format(round(countValue,1), countUnit, \u0027per min\u0027 if isRate else \u0027\u0027)\n\n\tdef buildFootCol(title, span, justify, fontWeight):\n\t\treturn {\"title\": title, \"span\": span, \"justify\": justify, \"align\": \"center\", \"style\": {\"classes\": \"\", \u0027padding\u0027:\u00270px\u0027, \u0027backgroundColor\u0027: bgColor, \u0027color\u0027: foreColor, \u0027fontWeight\u0027: fontWeight}}\n\t\n\tif len(value[\u0027filterData\u0027]) \u003e 0:\n\t\tdata \u003d value[\u0027filterData\u0027]\n\telse:\n\t\tdata \u003d (value[\u0027data\u0027])\n\n\tif len(data) \u003d\u003d 0: return []\n\t\n\tinfeedCount \u003d 0.0\n\toutfeedCount \u003d 0.0\n\twasteCount \u003d 0.0\n\tinfeedUnits \u003d []\n\toutfeedUnits \u003d []\n\twasteUnits \u003d []\n\tactualMins \u003d 0.0\n\trtMins \u003d 0.0\n\tdtMins \u003d 0.0\n\tpdtMins \u003d 0.0\n\t\n\tbgColor \u003d \u0027--kcGray-10\u0027\n\tforeColor \u003d system.kanoa.utilities.getContrastingColor(bgColor)\n\t\n\tfor row in data:\n\t\tif row[\u0027modeName\u0027][\u0027value\u0027] !\u003d \u0027Production\u0027: continue\n\t\t\n\t\tif row[\u0027rawInfeedCount\u0027]: \n\t\t\tinfeedCount +\u003d row[\u0027rawInfeedCount\u0027] or 0.0\n\t\t\tif row[\u0027infeedUnits\u0027]: infeedUnits.append(row[\u0027infeedUnits\u0027])\n\t\t\n\t\tif row[\u0027rawOutfeedCount\u0027]: \n\t\t\toutfeedCount +\u003d row[\u0027rawOutfeedCount\u0027] or 0.0\n\t\t\tif row[\u0027outfeedUnits\u0027]: outfeedUnits.append(row[\u0027outfeedUnits\u0027])\n\n\t\tif row[\u0027rawWasteCount\u0027]: \n\t\t\twasteCount +\u003d row[\u0027rawWasteCount\u0027] or 0.0\n\t\t\tif row[\u0027wasteUnits\u0027]: wasteUnits.append(row[\u0027wasteUnits\u0027])\n\t\t\t\n\t\tactualMins +\u003d row[\u0027actualMins\u0027] or 0.0\n\t\trtMins +\u003d row[\u0027runMins\u0027] or 0.0\n\t\tdtMins \u003d row[\u0027dtMins\u0027] or 0.0\n\t\tpdtMins \u003d row[\u0027pdtMins\u0027] or 0.0\n\t\n\tinfeedRate \u003d infeedCount / rtMins if rtMins \u003e 0 else 0\n\n\tfooters \u003d []\n\tfooters.append(buildFootCol(\u0027Total\u0027, 4, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildCount(infeedCount, infeedUnits, False), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildCount(outfeedCount, outfeedUnits, False), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildCount(wasteCount, wasteUnits, False), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(\u0027\u0027, 2, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildTimeCol(actualMins, \u0027\u0027), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildTimeCol(rtMins, \u0027\u0027), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildTimeCol(dtMins, \u0027\u0027), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildTimeCol(pdtMins, \u0027\u0027), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(buildCount(infeedRate, infeedUnits, True), 1, \u0027right\u0027, \u0027bold\u0027))\n\tfooters.append(buildFootCol(\u0027\u0027, 2, \u0027right\u0027, \u0027bold\u0027))\n\t\n\treturn [footers]",
+                          "code": "\n\tdef buildTimeCol(timeValue, timeUnits):\n\t\tif (timeValue or 0) == 0: return ''\n\t\treturn '{:,} {}'.format(round(timeValue,1), timeUnits)\n\n\tdef buildCount(countValue, countUnits, isRate):\n\t\tif (countValue or 0) == 0: return ''\n\t\tcountUnits = list(set(countUnits))\n\t\tcountUnit = 'Mixed Units' if len(countUnits) > 1 else countUnits[0]\n\t\treturn '{:,} {} {}'.format(round(countValue,1), countUnit, 'per min' if isRate else '')\n\n\tdef buildFootCol(title, span, justify, fontWeight):\n\t\treturn {\"title\": title, \"span\": span, \"justify\": justify, \"align\": \"center\", \"style\": {\"classes\": \"\", 'padding':'0px', 'backgroundColor': bgColor, 'color': foreColor, 'fontWeight': fontWeight}}\n\t\n\tif len(value['filterData']) > 0:\n\t\tdata = value['filterData']\n\telse:\n\t\tdata = (value['data'])\n\n\tif len(data) == 0: return []\n\t\n\tinfeedCount = 0.0\n\toutfeedCount = 0.0\n\twasteCount = 0.0\n\tinfeedUnits = []\n\toutfeedUnits = []\n\twasteUnits = []\n\tactualMins = 0.0\n\trtMins = 0.0\n\tdtMins = 0.0\n\tpdtMins = 0.0\n\t\n\tbgColor = '--kcGray-10'\n\tforeColor = system.kanoa.utilities.getContrastingColor(bgColor)\n\t\n\tfor row in data:\n\t\tif row['modeName']['value'] != 'Production': continue\n\t\t\n\t\tif row['rawInfeedCount']: \n\t\t\tinfeedCount += row['rawInfeedCount'] or 0.0\n\t\t\tif row['infeedUnits']: infeedUnits.append(row['infeedUnits'])\n\t\t\n\t\tif row['rawOutfeedCount']: \n\t\t\toutfeedCount += row['rawOutfeedCount'] or 0.0\n\t\t\tif row['outfeedUnits']: outfeedUnits.append(row['outfeedUnits'])\n\n\t\tif row['rawWasteCount']: \n\t\t\twasteCount += row['rawWasteCount'] or 0.0\n\t\t\tif row['wasteUnits']: wasteUnits.append(row['wasteUnits'])\n\t\t\t\n\t\tactualMins += row['actualMins'] or 0.0\n\t\trtMins += row['runMins'] or 0.0\n\t\tdtMins = row['dtMins'] or 0.0\n\t\tpdtMins = row['pdtMins'] or 0.0\n\t\n\tinfeedRate = infeedCount / rtMins if rtMins > 0 else 0\n\n\tfooters = []\n\tfooters.append(buildFootCol('Total', 4, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildCount(infeedCount, infeedUnits, False), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildCount(outfeedCount, outfeedUnits, False), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildCount(wasteCount, wasteUnits, False), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol('', 2, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildTimeCol(actualMins, ''), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildTimeCol(rtMins, ''), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildTimeCol(dtMins, ''), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildTimeCol(pdtMins, ''), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol(buildCount(infeedRate, infeedUnits, True), 1, 'right', 'bold'))\n\tfooters.append(buildFootCol('', 2, 'right', 'bold'))\n\t\n\treturn [footers]",
                           "type": "script"
                         }
                       ],
@@ -741,7 +769,7 @@
                       },
                       "transforms": [
                         {
-                          "code": "#\treturn len(value or []) \u003e self.props.pager.initialOption\n\treturn True",
+                          "code": "#\treturn len(value or []) > self.props.pager.initialOption\n\treturn True",
                           "type": "script"
                         }
                       ],
@@ -1976,7 +2004,6 @@
                     {
                       "align": "center",
                       "boolean": "checkbox",
-                      "dateFormat": "MM/DD HH:mm",
                       "editable": false,
                       "field": "startDate",
                       "footer": {
@@ -2021,7 +2048,7 @@
                           }
                         }
                       },
-                      "render": "auto",
+                      "render": "date",
                       "resizable": true,
                       "sort": "none",
                       "sortable": true,
@@ -2043,7 +2070,6 @@
                     {
                       "align": "center",
                       "boolean": "checkbox",
-                      "dateFormat": "MM/DD HH:mm",
                       "editable": false,
                       "field": "endDate",
                       "footer": {
@@ -2088,7 +2114,7 @@
                           }
                         }
                       },
-                      "render": "auto",
+                      "render": "date",
                       "resizable": true,
                       "sort": "none",
                       "sortable": true,
@@ -2110,7 +2136,6 @@
                     {
                       "align": "center",
                       "boolean": "checkbox",
-                      "dateFormat": "hh:mma",
                       "editable": false,
                       "field": "actualMins",
                       "footer": {
@@ -2172,7 +2197,8 @@
                       "viewParams": {},
                       "viewPath": "",
                       "visible": true,
-                      "width": 70
+                      "width": 70,
+                      "dateFormat": "hh:mma"
                     },
                     {
                       "align": "center",
@@ -3034,12 +3060,12 @@
         {
           "name": "openDetailViewer",
           "params": [],
-          "script": "\n\trow \u003d self.view.custom.table.selection.row\n\tdata \u003d self.view.custom.table.data\n\n\tstartDate \u003d data[row][\u0027startDate\u0027] if self.view.custom.filters.byShift else data[row][\u0027runStart\u0027]\n\tendDate \u003d data[row][\u0027endDate\u0027] if self.view.custom.filters.byShift else data[row][\u0027runEnd\u0027]\n\t\n\tparams \u003d {\u0027value\u0027:{\u0027assetId\u0027: data.getValueAt(row, \u0027assetId\u0027), \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}}\n\tsystem.perspective.openPopup(\u0027detailViewer\u0027, \u0027kanoa/mes/asset/runReview/runViewer\u0027, params, title\u003d\u0027Production Details\u0027, draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue)\n\t\n\treturn"
+          "script": "\n\trow = self.view.custom.table.selection.row\n\tdata = self.view.custom.table.data\n\n\tstartDate = data[row]['startDate'] if self.view.custom.filters.byShift else data[row]['runStart']\n\tendDate = data[row]['endDate'] if self.view.custom.filters.byShift else data[row]['runEnd']\n\t\n\tparams = {'value':{'assetId': data.getValueAt(row, 'assetId'), 'startDate': startDate, 'endDate': endDate}}\n\tsystem.perspective.openPopup('detailViewer', 'kanoa/mes/asset/runReview/runViewer', params, title='Production Details', draggable=True, resizable=True, showCloseIcon=True)\n\t\n\treturn"
         },
         {
           "name": "openProductionReport",
           "params": [],
-          "script": "\trow \u003d self.view.custom.table.selection.row\n\tdata \u003d self.view.custom.table.data\n\tworkOrderSelected \u003d data.getValueAt(row, \u0027workOrderName\u0027)\n\tworkOrderId \u003d data.getValueAt(row, \u0027workOrderId\u0027)\n\tif workOrderSelected is None: return\n\t\n\tassetId \u003d data.getValueAt(row, \u0027assetId\u0027)\n\treportPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetAttrValue\u0027, system.kanoa.asset.getAssetAttributes({\u0027assetId\u0027: assetId, \u0027assetAttrName\u0027: \u0027_productionReportViewPath\u0027})) or \"kanoa/mes/analytics/productionReport\"\n\t\n\tparams\u003d {\u0027value\u0027: {\u0027workOrderName\u0027: workOrderSelected, \u0027workOrderId\u0027: workOrderId}}\n\n\tsystem.perspective.openPopup(\u0027productionReport\u0027, reportPath, params, title\u003d\u0027Production Report\u0027, draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue)\n\t"
+          "script": "\trow = self.view.custom.table.selection.row\n\tdata = self.view.custom.table.data\n\tworkOrderSelected = data.getValueAt(row, 'workOrderName')\n\tworkOrderId = data.getValueAt(row, 'workOrderId')\n\tif workOrderSelected is None: return\n\t\n\tassetId = data.getValueAt(row, 'assetId')\n\treportPath = system.kanoa.utilities.getFieldValue('assetAttrValue', system.kanoa.asset.getAssetAttributes({'assetId': assetId, 'assetAttrName': '_productionReportViewPath'})) or \"kanoa/mes/analytics/productionReport\"\n\t\n\tparams= {'value': {'workOrderName': workOrderSelected, 'workOrderId': workOrderId}}\n\n\tsystem.perspective.openPopup('productionReport', reportPath, params, title='Production Report', draggable=True, resizable=True, showCloseIcon=True)\n\t"
         }
       ],
       "extensionFunctions": null,
