@@ -534,7 +534,7 @@
       "customMethods": [
         {
           "params": [], 
-          "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tperfEventInfo = dict(self.view.custom.perfEventInfo)\n\tif perfEventInfo['note'] == '': perfEventInfo['note'] = None\n\tperfEventInfo['value'] = perfEventInfo['lossTimeMins']\n\t\n\tif perfEventInfo['performanceEventId']: performanceEventId, msg = system.kanoa.event.updatePerformanceEvent(perfEventInfo, userId)\n\telse: performanceEventId, msg = system.kanoa.event.addPerformanceEvent(perfEventInfo, userId)\n\t\t\n\tif msg: system.perspective.sendMessage('showFailerToast', {'message': \"%s\"%msg})\n\telse: system.perspective.sendMessage('showSuccessfulToast', {'message': \"Reason saved\"})\n\t\n\tsystem.perspective.sendMessage(\"perfEventsUpdated\")\n\t\t\t\n\treturn", 
+          "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tperfEventInfo = dict(self.view.custom.perfEventInfo)\n\tif perfEventInfo['note'] == '': perfEventInfo['note'] = None\n\tperfEventInfo['value'] = perfEventInfo['lossTimeMins']\n\t\n\tif perfEventInfo['performanceEventId']: performanceEventId, msg = system.kanoa.event.updatePerformanceEvent(perfEventInfo, userId)\n\telse: performanceEventId, msg = system.kanoa.event.addPerformanceEvent(perfEventInfo, userId)\n\t\t\n\tif msg: system.kanoa.toast.show({'type': 'error', 'message': \"%s\"%msg})\n\telse: system.kanoa.toast.show({'type': 'success', 'message': \"Reason saved\"})\n\t\n\tsystem.perspective.sendMessage(\"perfEventsUpdated\")\n\t\t\t\n\treturn", 
           "name": "save"
         }
       ], 

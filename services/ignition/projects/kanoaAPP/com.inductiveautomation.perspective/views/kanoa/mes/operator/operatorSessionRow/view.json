@@ -423,7 +423,7 @@
           "component": {
             "onActionPerformed": {
               "config": {
-                "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\toperatorAssetSessionId \u003d self.view.params.value.operatorAssetSessionId\n\n\tretVal, msg \u003d system.kanoa.operators.deleteOperatorSession(operatorAssetSessionId, userId)\n\tif msg: \n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, \u0027Failed to remove operator session. %s\u0027%msg)\n\t\tsystem.perspective.print(\"Delete failed: %s\" % str(msg))\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, \u0027Operator session removed\u0027)\n\t\t\n\tsystem.perspective.sendMessage(\u0027operatorLoginUpdated\u0027)\n\t\t\n\treturn"
+                "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\toperatorAssetSessionId \u003d self.view.params.value.operatorAssetSessionId\n\n\tretVal, msg \u003d system.kanoa.operators.deleteOperatorSession(operatorAssetSessionId, userId)\n\tif msg: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to remove operator session. %s\u0027%msg})\n\t\tsystem.perspective.print(\"Delete failed: %s\" % str(msg))\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Operator session removed\u0027})\n\t\t\n\tsystem.perspective.sendMessage(\u0027operatorLoginUpdated\u0027)\n\t\t\n\treturn"
               },
               "scope": "G",
               "type": "script"
@@ -472,7 +472,7 @@
           "component": {
             "onActionPerformed": {
               "config": {
-                "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tsessionInfo \u003d {\n\t\t\u0027userId\u0027: self.view.params.value.userId,\n\t\t\u0027assetId\u0027: self.view.params.value.assetId,\n\t\t\u0027tStamp\u0027: system.date.now()\n\t}\n\t\n\toperatorAssetSessionId, msg \u003d system.kanoa.operators.operatorLogout(sessionInfo, userId)\n\tif msg: \n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, \u0027Operator Logout failed %s\u0027%msg)\n\t\tsystem.perspective.print(\"Logout failed: %s\" % str(msg))\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, \u0027Operator Logged out\u0027)\n\t\t\n\tsystem.perspective.sendMessage(\u0027operatorLoginUpdated\u0027)\n\t\t\n\treturn"
+                "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tsessionInfo \u003d {\n\t\t\u0027userId\u0027: self.view.params.value.userId,\n\t\t\u0027assetId\u0027: self.view.params.value.assetId,\n\t\t\u0027tStamp\u0027: system.date.now()\n\t}\n\t\n\toperatorAssetSessionId, msg \u003d system.kanoa.operators.operatorLogout(sessionInfo, userId)\n\tif msg: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Operator Logout failed %s\u0027%msg})\n\t\tsystem.perspective.print(\"Logout failed: %s\" % str(msg))\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Operator Logged out\u0027})\n\t\t\n\tsystem.perspective.sendMessage(\u0027operatorLoginUpdated\u0027)\n\t\t\n\treturn"
               },
               "scope": "G",
               "type": "script"

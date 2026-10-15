@@ -609,6 +609,24 @@
             "type": "ia.container.flex"
           },
           {
+            "events": {
+              "dom": {
+                "onBlur": {
+                  "config": {
+                    "script": "\tsystem.perspective.sendMessage(\u0027pauseKeyCapture\u0027, {\u0027paused\u0027: False}, scope\u003d\u0027page\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                },
+                "onFocus": {
+                  "config": {
+                    "script": "\t#Pause the check sheet\u0027s keyboard capture so keys typed or scanned here aren\u0027t submitted twice\n\tsystem.perspective.sendMessage(\u0027pauseKeyCapture\u0027, {\u0027paused\u0027: True}, scope\u003d\u0027page\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
             "meta": {
               "domId": "txtArea",
               "name": "txtArea",
@@ -632,7 +650,7 @@
               "props.text": {
                 "onChange": {
                   "enabled": null,
-                  "script": "\n\tsystem.perspective.print(\u0027paste txt changed to %s\u0027%currentValue.value)\n\n\tif currentValue.value !\u003d \u0027\u0027:\n\t\tpayload \u003d {\u0027value\u0027: currentValue.value}\n\t\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with %s\"%(payload))\t\n\t\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope\u003d\u0027page\u0027)\n\t\tself.props.text \u003d \u0027\u0027\n\t\tself.parent.getChild(\"flxAction\").getChild(\"btnShowPaste\").focus()\n\n\treturn"
+                  "script": "\n\tsystem.perspective.print(\u0027paste txt changed to %s\u0027%currentValue.value)\n\n\t#A scanner\u0027s keys can arrive over several updates, so wait for its Enter (newline) before sending the value\n\tif currentValue.value and (\u0027\\n\u0027 in currentValue.value or \u0027\\r\u0027 in currentValue.value):\n\t\tpayload \u003d {\u0027value\u0027: currentValue.value.strip()}\n\t\tsystem.perspective.print(\"Sending \u0027ValuePicked\u0027 message with %s\"%(payload))\t\n\t\tsystem.perspective.sendMessage(\"ValuePicked\", payload, scope\u003d\u0027page\u0027)\n\t\tself.props.text \u003d \u0027\u0027\n\t\tself.parent.getChild(\"flxAction\").getChild(\"btnShowPaste\").focus()\n\n\treturn"
                 }
               }
             },

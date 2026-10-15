@@ -3963,12 +3963,12 @@
         {
           "name": "checkERP",
           "params": [],
-          "script": "\t\n\tsystem.perspective.print(\"checkERP() called\")\n\tself.custom.gettingData = True\n\tself.clearData()\n\tnumFound = kanoaScripts.custom.ops.erp.getProductionOrders({})\n\tself.view.refreshBinding(\"custom.table.data\")\n\tself.custom.gettingData = False\n\tsystem.perspective.sendMessage('showSuccessfulToast', {'message': str(numFound) + ' new or updated Production Orders found'})\n\treturn"
+          "script": "\t\n\tsystem.perspective.print(\"checkERP() called\")\n\tself.custom.gettingData = True\n\tself.clearData()\n\tnumFound = kanoaScripts.custom.ops.erp.getProductionOrders({})\n\tself.view.refreshBinding(\"custom.table.data\")\n\tself.custom.gettingData = False\n\tsystem.kanoa.toast.show({'type': 'success', 'message': str(numFound) + ' new or updated Production Orders found'})\n\treturn"
         },
         {
           "name": "deleteEntry",
           "params": [],
-          "script": "\n\tfor item in self.view.custom.table.selection.data:\n\t\tretVal, msg = system.kanoa.order.deleteProductionOrder(item['workOrderId'], self.view.custom.security.userId)\n\t\tif retVal: system.perspective.sendMessage('showSuccessfulToast', {'message': 'Order has been deleted.'})\n\t\telse: \n\t\t\tsystem.perspective.sendMessage('showWarningToast', {'message': 'This order has been used in production and cannot be deleted. %s'%msg})\n\t\t\timport time\n\t\t\ttime.sleep(0.5)\n\n\tself.getWOData()\n\t\n\treturn"
+          "script": "\n\tfor item in self.view.custom.table.selection.data:\n\t\tretVal, msg = system.kanoa.order.deleteProductionOrder(item['workOrderId'], self.view.custom.security.userId)\n\t\tif retVal: system.kanoa.toast.show({'type': 'success', 'message': 'Order has been deleted.'})\n\t\telse: \n\t\t\tsystem.kanoa.toast.show({'type': 'warning', 'message': 'This order has been used in production and cannot be deleted. %s'%msg})\n\t\t\timport time\n\t\t\ttime.sleep(0.5)\n\n\tself.getWOData()\n\t\n\treturn"
         },
         {
           "name": "getWOData",

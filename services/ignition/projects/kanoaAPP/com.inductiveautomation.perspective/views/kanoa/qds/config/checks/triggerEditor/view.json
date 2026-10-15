@@ -20,9 +20,17 @@
       "shiftName": null,
       "shiftNameId": null,
       "triggerTypeId": null,
-      "triggerTypeName": null
+      "triggerTypeName": null,
+      "rruleStr": null,
+      "rruleStartDate": null
     },
-    "triggerTypeName": null
+    "triggerTypeName": null,
+    "recurring": {
+      "assetPath": null,
+      "generateAheadDays": null,
+      "rruleStr": null,
+      "startDate": null
+    }
   },
   "params": {
     "values": {
@@ -61,7 +69,11 @@
         ],
         "type": "property"
       },
-      "persistent": true
+      "persistent": true,
+      "onChange": {
+        "enabled": null,
+        "script": "\tif currentValue is None or currentValue.value !\u003d \u0027Recurring\u0027:\n\t\treturn\n\t\n\tinfo \u003d self.custom.info\n\tif not info.rruleStr:\n\t\t#A new Recurring trigger starts as daily from the next whole hour, so it has a valid rule before the user edits it\n\t\tnextHour \u003d system.date.addHours(system.date.setTime(system.date.now(), system.date.getHour24(system.date.now()), 0, 0), 1)\n\t\tself.custom.info.rruleStr \u003d \u0027FREQ\u003dDAILY;INTERVAL\u003d1\u0027\n\t\tself.custom.info.rruleStartDate \u003d nextHour\n\t\n\tself.custom.recurring \u003d {\u0027rruleStr\u0027: self.custom.info.rruleStr, \u0027startDate\u0027: self.custom.info.rruleStartDate, \u0027generateAheadDays\u0027: None, \u0027assetPath\u0027: None}\n\treturn"
+      }
     },
     "params.values": {
       "paramDirection": "input",
@@ -74,11 +86,14 @@
     "params.values.chkShtTriggerId": {
       "paramDirection": "input",
       "persistent": true
+    },
+    "custom.recurring": {
+      "persistent": true
     }
   },
   "props": {
     "defaultSize": {
-      "height": 134,
+      "height": 380,
       "width": 1046
     }
   },
@@ -594,6 +609,136 @@
       {
         "children": [
           {
+            "meta": {
+              "name": "emvRecurring"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.values": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.recurring"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "messageType": "updateTriggerSchedule",
+                "showGenerateAhead": false
+              },
+              "path": "kanoa/cmms/config/recurringOptions"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "lblRuleSummary"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.rruleStr"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#convertRecurringRuleToText needs an Ops license; fall back to the raw rule without one\n\tif not value:\n\t\treturn \u0027\u0027\n\ttext \u003d system.kanoa.schedule.convertRecurringRuleToText(value)\n\treturn text if text and \u0027License Expired\u0027 not in text else value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "fontWeight": "bold",
+                "paddingLeft": "5px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblNextDates"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "locale": "{session.props.locale}",
+                      "rule": "{view.custom.info.rruleStr}",
+                      "start": "{view.custom.info.rruleStartDate}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tif not value[\u0027rule\u0027]:\n\t\treturn \u0027\u0027\n\tcheck \u003d system.kanoa.schedule.validateRrule(value[\u0027rule\u0027])\n\tif not check[\u0027valid\u0027]:\n\t\treturn \u0027Invalid rule: %s\u0027 % check[\u0027error\u0027]\n\tdates \u003d system.kanoa.schedule.rruleToDates(value[\u0027rule\u0027], value[\u0027start\u0027], system.date.now(), 5)\n\tif not dates:\n\t\treturn \u0027No upcoming occurrences\u0027\n\tpattern \u003d system.kanoa.date.localizeDateFormat(\u0027EEE MMM d, yyyy h:mm a\u0027, value[\u0027locale\u0027])\n\treturn \u0027Next: \u0027 + \u0027, \u0027.join([system.date.format(d, pattern) for d in dates])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "paddingLeft": "5px"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxRecurring"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.triggerTypeName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Recurring\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
             "children": [
               {
                 "meta": {
@@ -668,7 +813,24 @@
                 "height": "24px"
               }
             },
-            "type": "ia.container.flex"
+            "type": "ia.container.flex",
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value !\u003d \u0027Recurring\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
           },
           {
             "children": [
@@ -958,7 +1120,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tif self.view.getChild(\"root\").saveData():\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, {\u0027message\u0027: \u0027Triggers updated\u0027})\n\telse: system.perspective.sendMessage(\u0027showFailerToast\u0027, {\u0027message\u0027: \u0027Triggers were not updated\u0027})\n\t\t\n\tsystem.perspective.sendMessage(\"triggerUpdate\", payload\u003d{})\t\t\n\treturn"
+                    "script": "\t\n\tif self.view.getChild(\"root\").saveData():\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Triggers updated\u0027})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Triggers were not updated\u0027})\n\t\t\n\tsystem.perspective.sendMessage(\"triggerUpdate\", payload\u003d{})\t\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -990,7 +1152,7 @@
                   },
                   "transforms": [
                     {
-                      "code": "\t\n\tif value[\u0027info\u0027][\u0027triggerTypeId\u0027] is None: return False\n\t\n\ttriggerTypeName \u003d value[\u0027triggerTypeName\u0027]\n\tif triggerTypeName \u003d\u003d \u0027Mode Change\u0027: return True \t\t#don\u0027t need anything else\n\telif triggerTypeName \u003d\u003d \u0027Product Change\u0027:\treturn True\n\tif triggerTypeName \u003d\u003d \u0027Shift Change\u0027: return True\n\tif triggerTypeName \u003d\u003d \u0027Timed Interval\u0027: (self.view.custom.info.intervalMins or 0) \u003e 0\n\telif \u0027Count\u0027 in triggerTypeName: return (self.view.custom.info.productionCount or 0) \u003e 0\n\t\n\treturn True",
+                      "code": "\t\n\tif value[\u0027info\u0027][\u0027triggerTypeId\u0027] is None: return False\n\t\n\ttriggerTypeName \u003d value[\u0027triggerTypeName\u0027]\n\tif triggerTypeName \u003d\u003d \u0027Mode Change\u0027: return True \t\t#don\u0027t need anything else\n\telif triggerTypeName \u003d\u003d \u0027Product Change\u0027:\treturn True\n\tif triggerTypeName \u003d\u003d \u0027Shift Change\u0027: return True\n\tif triggerTypeName \u003d\u003d \u0027Timed Interval\u0027: return (self.view.custom.info.intervalMins or 0) \u003e 0\n\tif triggerTypeName \u003d\u003d \u0027Recurring\u0027: return bool(value[\u0027info\u0027][\u0027rruleStr\u0027]) and system.kanoa.schedule.validateRrule(value[\u0027info\u0027][\u0027rruleStr\u0027])[\u0027valid\u0027]\n\telif \u0027Count\u0027 in triggerTypeName: return (self.view.custom.info.productionCount or 0) \u003e 0\n\t\n\treturn True",
                       "type": "script"
                     }
                   ],
@@ -1124,11 +1286,19 @@
         {
           "name": "saveData",
           "params": [],
-          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\ttriggerInfo \u003d dict(self.view.custom.info)\n\tchkShtTriggerId \u003d self.view.custom.info.chkShtTriggerId\n\t\n\tif chkShtTriggerId is None: \n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\t\tself.view.params.values.chkShtTriggerId \u003d chkShtTriggerId\n\t\tretVal \u003d 1 if (chkShtTriggerId or None) is not None else 0\n\t\ttriggerTypeName \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeName\u0027, system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtTriggerId\u0027: chkShtTriggerId}))\n\t\tchange \u003d \"Trigger %s added\"%triggerTypeName\n\telse: \n\t\tretVal \u003d system.kanoa.quality.config.updateChkShtTrigger(triggerInfo, userId)\n\t\tchange \u003d \"Trigger %s modified\"%triggerInfo[\u0027triggerTypeName\u0027]\n\t\tself.view.refreshBinding(\"custom.info\")\n\n\tif system.kanoa.utilities.getFieldValue(\u0027chkShtVersionStateName\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: self.view.custom.info.chkShtId})) !\u003d \u0027Draft\u0027: \n\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: self.view.custom.info.chkShtId, \u0027change\u0027: change}, userId)\n\t\t\n\tsystem.perspective.sendMessage(\u0027changeLogUpdated\u0027, {})\n\t\n\treturn retVal"
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\ttriggerInfo \u003d dict(self.view.custom.info)\n\tchkShtTriggerId \u003d self.view.custom.info.chkShtTriggerId\n\t\n\tif chkShtTriggerId is None: \n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\t\tself.view.params.values.chkShtTriggerId \u003d chkShtTriggerId\n\t\tretVal \u003d 1 if (chkShtTriggerId or None) is not None else 0\n\t\ttriggerTypeName \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeName\u0027, system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtTriggerId\u0027: chkShtTriggerId}))\n\t\tchange \u003d \"Trigger %s added\"%triggerTypeName\n\telse: \n\t\tretVal \u003d system.kanoa.quality.config.updateChkShtTrigger(triggerInfo, userId)\n\t\tchange \u003d \"Trigger %s modified\"%triggerInfo[\u0027triggerTypeName\u0027]\n\t\tself.view.refreshBinding(\"custom.info\")\n\t\n\tif self.view.custom.triggerTypeName \u003d\u003d \u0027Recurring\u0027 and triggerInfo.get(\u0027rruleStr\u0027):\n\t\truleText \u003d system.kanoa.schedule.convertRecurringRuleToText(triggerInfo[\u0027rruleStr\u0027])\n\t\tchange +\u003d \": %s\" % (ruleText if ruleText and \u0027License Expired\u0027 not in ruleText else triggerInfo[\u0027rruleStr\u0027])\n\n\tif system.kanoa.utilities.getFieldValue(\u0027chkShtVersionStateName\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: self.view.custom.info.chkShtId})) !\u003d \u0027Draft\u0027: \n\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: self.view.custom.info.chkShtId, \u0027change\u0027: change}, userId)\n\t\t\n\tsystem.perspective.sendMessage(\u0027changeLogUpdated\u0027, {})\n\t\n\treturn retVal"
         }
       ],
       "extensionFunctions": null,
-      "messageHandlers": []
+      "messageHandlers": [
+        {
+          "messageType": "updateTriggerSchedule",
+          "pageScope": true,
+          "script": "\t#Sent by the embedded kanoa/cmms/config/recurringOptions view whenever the rule or its start changes\n\tvalues \u003d payload.get(\u0027values\u0027, {})\n\tself.view.custom.info.rruleStr \u003d values.get(\u0027rruleStr\u0027)\n\tself.view.custom.info.rruleStartDate \u003d values.get(\u0027startDate\u0027)\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
     },
     "type": "ia.container.flex"
   }

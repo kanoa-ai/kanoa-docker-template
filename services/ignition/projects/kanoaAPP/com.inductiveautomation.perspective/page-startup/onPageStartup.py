@@ -21,7 +21,8 @@ def onPageStartup(page):
 		navigation = page.session.custom.kanoa[pageId].navigation
 		initialPage = navigation.history[navigation.currentIndex]
 		params = system.util.jsonDecode(initialPage['params'])
-		if initialPage['path'] == '/': system.perspective.navigate(page=initialPage['path'], params=params)
-		else: system.perspective.navigate(view=initialPage['path'], params=params)
+		# history 'type' is the navigate kwarg it was opened with ('page' or 'view')
+		navType = initialPage['type'] or ('page' if initialPage['path'] == '/' else 'view')
+		system.perspective.navigate(**{navType: initialPage['path'], 'params': params})
 	
 	return

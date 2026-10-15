@@ -191,7 +191,7 @@
           "props.value": {
             "onChange": {
               "enabled": null, 
-              "script": "\tif currentValue.value is None:\n\t\tsystem.perspective.sendMessage('showFailerToast', \"Cannot have empty value for multi selection\")\n\t\tself.props.value = [previousValue.value[0]]\n#\tpass"
+              "script": "\tif currentValue.value is None:\n\t\tsystem.kanoa.toast.show({'type': 'error', 'message': \"Cannot have empty value for multi selection\"})\n\t\tself.props.value = [previousValue.value[0]]\n#\tpass"
             }, 
             "binding": {
               "type": "property", 
@@ -279,7 +279,7 @@
     "custom.values.configValue": {
       "onChange": {
         "enabled": null, 
-        "script": "\timport java.lang\n\t\t\n\tif origin in ('Script', 'BindingWriteback') and currentValue.value is not None and previousValue.value is not None:\n\t\t\n\t\tconfigValue = self.custom.values.configValue\n\t\tif configValue is not None:\n\t\t\tconfigValueStr = str(configValue)\n\t\t\t\n\t\t\tif '[' in configValueStr and ']' in configValueStr:\n\t\t\t\tconfigValue = system.util.jsonEncode(configValue)\n\t\t\tretVal, msg = system.kanoa.security.updateConfigField(self.custom.values.configId, 'configValue', configValue, system.kanoa.security.getIDPUserId(self.session.props.auth.user))\n\t\t\tif retVal: system.perspective.sendMessage('showSuccessfulToast', \"Configuration updated\")\n\t\t\telse: system.perspective.sendMessage('showFailerToast', \"Couldn't update configuration: %s\"%msg)\n\t\t\tsystem.perspective.sendMessage('updateConfig', {})\n\t\n\treturn"
+        "script": "\timport java.lang\n\t\t\n\tif origin in ('Script', 'BindingWriteback') and currentValue.value is not None and previousValue.value is not None:\n\t\t\n\t\tconfigValue = self.custom.values.configValue\n\t\tif configValue is not None:\n\t\t\tconfigValueStr = str(configValue)\n\t\t\t\n\t\t\tif '[' in configValueStr and ']' in configValueStr:\n\t\t\t\tconfigValue = system.util.jsonEncode(configValue)\n\t\t\tretVal, msg = system.kanoa.security.updateConfigField(self.custom.values.configId, 'configValue', configValue, system.kanoa.security.getIDPUserId(self.session.props.auth.user))\n\t\t\tif retVal: system.kanoa.toast.show({'type': 'success', 'message': \"Configuration updated\"})\n\t\t\telse: system.kanoa.toast.show({'type': 'error', 'message': \"Couldn't update configuration: %s\"%msg})\n\t\t\tsystem.perspective.sendMessage('updateConfig', {})\n\t\n\treturn"
       }, 
       "persistent": true
     }, 

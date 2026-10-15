@@ -1404,7 +1404,7 @@
                   "type": "script", 
                   "scope": "G", 
                   "config": {
-                    "script": "\n\titemId = self.view.custom.itemTable.selection.data[0].itemId\n\titemClassId = None\n\tif self.view.custom.userAction.canUpdate: self.view.getChild(\"root\").openEditor(itemId, itemClassId)\n\telse: system.perspective.sendMessage('showFailerToast', 'No permissions to update configure this item.')\n\t\n\treturn"
+                    "script": "\n\titemId = self.view.custom.itemTable.selection.data[0].itemId\n\titemClassId = None\n\tif self.view.custom.userAction.canUpdate: self.view.getChild(\"root\").openEditor(itemId, itemClassId)\n\telse: system.kanoa.toast.show({'type': 'error', 'message': 'No permissions to update configure this item.'})\n\t\n\treturn"
                   }
                 }
               }
@@ -1554,7 +1554,7 @@
         }, 
         {
           "params": [], 
-          "script": "\t\n\tfor row in self.view.custom.itemUnits.selection.data:\n\t\tretVal, msg = system.kanoa.item.deleteItemUnit(row['itemUnitId'], self.view.custom.security.userId)\n\t\tif msg: system.perspective.sendMessage('showWarningToast', {'message': 'This item unit cannot be deleted. %s'%msg})\n\t\telse: system.perspective.sendMessage('showSuccessfulToast', {'message': 'This item unit has been deleted.'})\n\t\t\t\n\tself.view.refreshBinding(\"custom.itemUnits.data\")\n\t\n\treturn", 
+          "script": "\t\n\tfor row in self.view.custom.itemUnits.selection.data:\n\t\tretVal, msg = system.kanoa.item.deleteItemUnit(row['itemUnitId'], self.view.custom.security.userId)\n\t\tif msg: system.kanoa.toast.show({'type': 'warning', 'message': 'This item unit cannot be deleted. %s'%msg})\n\t\telse: system.kanoa.toast.show({'type': 'success', 'message': 'This item unit has been deleted.'})\n\t\t\t\n\tself.view.refreshBinding(\"custom.itemUnits.data\")\n\t\n\treturn", 
           "name": "deleteItemUnits"
         }
       ], 

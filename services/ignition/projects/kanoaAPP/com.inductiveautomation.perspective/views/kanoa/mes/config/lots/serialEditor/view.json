@@ -729,7 +729,7 @@
         {
           "name": "save",
           "params": [],
-          "script": "\n\tserialInfo \u003d dict(self.view.custom.serialInfo)\n\tuserId \u003d self.session.custom.kanoa.security.userId\n\n\tif self.view.custom.serialInfo.serialId:\t\n\t\tretVal, msg \u003d system.kanoa.serial.updateSerialNumber(serialInfo, userId)\n\telse: \n\t\tserialId, msg \u003d system.kanoa.serial.addSerialNumber(serialInfo, userId)\n\t\n\tif msg is None: \n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, \u0027Serialization saved\u0027)\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\telse: system.perspective.sendMessage(\u0027showFailerToast\u0027, \"Couldn\u0027t save this serialization. \\n%s\"%msg)\n\t\t\n\tsystem.perspective.sendMessage(\u0027updateSeriaizations\u0027, {})\n\t\n\treturn"
+          "script": "\n\tserialInfo \u003d dict(self.view.custom.serialInfo)\n\tuserId \u003d self.session.custom.kanoa.security.userId\n\n\tif self.view.custom.serialInfo.serialId:\t\n\t\tretVal, msg \u003d system.kanoa.serial.updateSerialNumber(serialInfo, userId)\n\telse: \n\t\tserialId, msg \u003d system.kanoa.serial.addSerialNumber(serialInfo, userId)\n\t\n\tif msg is None: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Serialization saved\u0027})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save this serialization. \\n%s\"%msg})\n\t\t\n\tsystem.perspective.sendMessage(\u0027updateSeriaizations\u0027, {})\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,

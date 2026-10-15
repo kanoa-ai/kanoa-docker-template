@@ -399,7 +399,7 @@
       "customMethods": [
         {
           "params": [], 
-          "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tlotOperationAttributeInfo = self.view.custom.lotOperationAttributeInfo\n\t\n\tif lotOperationAttributeInfo['lotOperationAttributeId']:\t\n\t\tretVal, msg = system.kanoa.lot.updateLotOperationAttribute(lotOperationAttributeInfo, userId)\n\telse: \n\t\tlotOperationAttributeId, msg = system.kanoa.lot.addLotOperationAttribute(lotOperationAttributeInfo, userId)\n\t\n\tif msg:\tsystem.perspective.sendMessage('showWarningToast', {'message': 'Lot operation attribute was not saved. %s'%msg})\t\t\t\n\telse: system.perspective.sendMessage('showSuccessfulToast', {'message': 'Lot operation attribute has been saved'})\n\t\n\tsystem.perspective.sendMessage('lotOperationAttributeUpdated', {})\n\t\n\treturn True if msg is None else False", 
+          "script": "\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tlotOperationAttributeInfo = self.view.custom.lotOperationAttributeInfo\n\t\n\tif lotOperationAttributeInfo['lotOperationAttributeId']:\t\n\t\tretVal, msg = system.kanoa.lot.updateLotOperationAttribute(lotOperationAttributeInfo, userId)\n\telse: \n\t\tlotOperationAttributeId, msg = system.kanoa.lot.addLotOperationAttribute(lotOperationAttributeInfo, userId)\n\t\n\tif msg:\tsystem.kanoa.toast.show({'type': 'warning', 'message': 'Lot operation attribute was not saved. %s'%msg})\t\t\t\n\telse: system.kanoa.toast.show({'type': 'success', 'message': 'Lot operation attribute has been saved'})\n\t\n\tsystem.perspective.sendMessage('lotOperationAttributeUpdated', {})\n\t\n\treturn True if msg is None else False", 
           "name": "save"
         }
       ], 
