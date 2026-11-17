@@ -219,7 +219,18 @@
               },
               "text": "Go"
             },
-            "type": "ia.input.button"
+            "type": "ia.input.button",
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "!isNull({view.custom.filters.measureId})"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              }
+            }
           },
           {
             "events": {
@@ -371,7 +382,7 @@
                 "display": "flex",
                 "flex": "1",
                 "flexDirection": "column",
-                "gap": "4px",
+                "gap": "10px",
                 "padding": "16px"
               }
             },
@@ -390,7 +401,10 @@
                   },
                   "text": "Total Samples"
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "meta": {
@@ -420,7 +434,10 @@
                     "textAlign": "center"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "meta": {
@@ -450,7 +467,10 @@
                     "textAlign": "center"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               }
             ],
             "meta": {
@@ -465,7 +485,7 @@
                 "display": "flex",
                 "flex": "1",
                 "flexDirection": "column",
-                "gap": "4px",
+                "gap": "10px",
                 "padding": "16px"
               }
             },
@@ -484,7 +504,10 @@
                   },
                   "text": "Avg Std Dev (within sample)"
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "meta": {
@@ -514,7 +537,10 @@
                     "textAlign": "center"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "meta": {
@@ -529,7 +555,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn \u0027Between-event σ: {:.4f}\u0027.format(value.get(\u0027stdDevOfMeans\u0027) or 0)",
+                          "code": "\treturn u\u0027Between-event σ: {:.4f}\u0027.format(value.get(\u0027stdDevOfMeans\u0027) or 0)",
                           "type": "script"
                         }
                       ],
@@ -544,7 +570,10 @@
                     "textAlign": "center"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               }
             ],
             "meta": {
@@ -559,7 +588,7 @@
                 "display": "flex",
                 "flex": "1",
                 "flexDirection": "column",
-                "gap": "4px",
+                "gap": "10px",
                 "padding": "16px"
               }
             },
@@ -578,7 +607,10 @@
                   },
                   "text": "Avg Duration (secs)"
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "meta": {
@@ -608,7 +640,10 @@
                     "textAlign": "center"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "meta": {
@@ -623,7 +658,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\tfirst \u003d value.get(\u0027firstEvent\u0027)\n\tlast  \u003d value.get(\u0027lastEvent\u0027)\n\tif not first or not last: return \u0027\u0027\n\treturn system.date.format(first, \u0027MM/dd HH:mm\u0027) + \u0027 → \u0027 + system.date.format(last, \u0027MM/dd HH:mm\u0027)",
+                          "code": "\t#In the device\u0027s time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MM/dd HH:mm\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdef fmtDate(date):\n\t\tif date is None: return \u0027\u0027\n\t\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(long(date))\n\t\treturn fmt.format(date)\n\tfirst \u003d value.get(\u0027firstEvent\u0027)\n\tlast  \u003d value.get(\u0027lastEvent\u0027)\n\tif not first or not last: return \u0027\u0027\n\treturn fmtDate(first) + u\u0027 → \u0027 + fmtDate(last)",
                           "type": "script"
                         }
                       ],
@@ -638,7 +673,10 @@
                     "textAlign": "center"
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "position": {
+                  "shrink": 0
+                }
               }
             ],
             "meta": {
@@ -653,7 +691,7 @@
                 "display": "flex",
                 "flex": "1",
                 "flexDirection": "column",
-                "gap": "4px",
+                "gap": "10px",
                 "padding": "16px"
               }
             },
@@ -693,7 +731,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn [system.date.format(row[\u0027tStamp\u0027], \u0027MM/dd HH:mm\u0027) for row in value]",
+                          "code": "\t#In the device\u0027s time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MM/dd HH:mm\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdef fmtDate(date):\n\t\tif date is None: return \u0027\u0027\n\t\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(long(date))\n\t\treturn fmt.format(date)\n\treturn [fmtDate(row[\u0027tStamp\u0027]) for row in value]",
                           "type": "script"
                         }
                       ],
@@ -776,7 +814,7 @@
                     ]
                   }
                 },
-                "type": "kyvislabs.display.apexchart"
+                "type": "kanoa.ops.apexchart"
               }
             ],
             "meta": {
@@ -889,7 +927,7 @@
                     ]
                   }
                 },
-                "type": "kyvislabs.display.apexchart"
+                "type": "kanoa.ops.apexchart"
               }
             ],
             "meta": {
@@ -1012,7 +1050,7 @@
                     ]
                   }
                 },
-                "type": "kyvislabs.display.apexchart"
+                "type": "kanoa.ops.apexchart"
               }
             ],
             "meta": {
@@ -1052,7 +1090,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\n\tds \u003d value\n\tif not ds: return [{\u0027name\u0027: \u0027Sample Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: []}]\n\t\n\tdata \u003d []\n\tfor row in ds:\n\t\tstatus \u003d row.get(\u0027sampleCountStatus\u0027) or \u0027Normal\u0027\n\t\tif status \u003d\u003d \u0027High\u0027:   color \u003d \u0027var(--kcOrange-60)\u0027\n\t\telif status \u003d\u003d \u0027Low\u0027:  color \u003d \u0027var(--kcOrange-40)\u0027\n\t\telse:                  color \u003d \u0027var(--kcPrimary)\u0027\n\t\t\n\t\tdata.append({\n\t\t\t\u0027x\u0027: system.date.format(row[\u0027tStamp\u0027], \"MM/dd HH:mm\"),\n\t\t\t\u0027y\u0027: row[\u0027sampleCount\u0027],\n\t\t\t\u0027fillColor\u0027: color\n\t\t})\n\t\n\treturn [{\u0027name\u0027: \u0027Sample Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: data}]",
+                          "code": "\t#In the device\u0027s time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MM/dd HH:mm\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdef fmtDate(date):\n\t\tif date is None: return \u0027\u0027\n\t\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(long(date))\n\t\treturn fmt.format(date)\n\tds \u003d value\n\tif not ds: return [{\u0027name\u0027: \u0027Sample Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: []}]\n\t\n\tdata \u003d []\n\tfor row in ds:\n\t\tstatus \u003d row.get(\u0027sampleCountStatus\u0027) or \u0027Normal\u0027\n\t\tif status \u003d\u003d \u0027High\u0027:   color \u003d \u0027var(--kcOrange-60)\u0027\n\t\telif status \u003d\u003d \u0027Low\u0027:  color \u003d \u0027var(--kcOrange-40)\u0027\n\t\telse:                  color \u003d \u0027var(--kcPrimary)\u0027\n\t\t\n\t\tdata.append({\n\t\t\t\u0027x\u0027: fmtDate(row[\u0027tStamp\u0027]),\n\t\t\t\u0027y\u0027: row[\u0027sampleCount\u0027],\n\t\t\t\u0027fillColor\u0027: color\n\t\t})\n\t\n\treturn [{\u0027name\u0027: \u0027Sample Count\u0027, \u0027type\u0027: \u0027bar\u0027, \u0027data\u0027: data}]",
                           "type": "script"
                         }
                       ],
@@ -1109,7 +1147,7 @@
                     ]
                   }
                 },
-                "type": "kyvislabs.display.apexchart"
+                "type": "kanoa.ops.apexchart"
               }
             ],
             "meta": {
@@ -1222,6 +1260,11 @@
                   "style": {
                     "borderStyle": "none",
                     "height": "100%"
+                  },
+                  "emptyMessage": {
+                    "noData": {
+                      "text": "No outliers (z-score over 2) in this range"
+                    }
                   }
                 },
                 "type": "ia.display.table"
@@ -1307,6 +1350,11 @@
                   "style": {
                     "borderStyle": "none",
                     "height": "100%"
+                  },
+                  "emptyMessage": {
+                    "noData": {
+                      "text": "No gaps over 2 minutes between readings in this range"
+                    }
                   }
                 },
                 "type": "ia.display.table"
@@ -1367,7 +1415,7 @@
         {
           "name": "getData",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"Get Data called\")\n\tparamsDict \u003d {\n\t\t\u0027measureId\u0027:   self.view.custom.filters.measureId,\n\t\t\u0027tStampStart\u0027: self.view.custom.filters.startDate,\n\t\t\u0027tStampEnd\u0027:   self.view.custom.filters.endDate\n\t}\n\n\tself.view.custom.data.summary           \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.measures.getMeasureSummary(paramsDict), 0)\n\tself.view.custom.data.hourlyTrends      \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureHourlyTrends(paramsDict))\n\tself.view.custom.data.outliers          \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureOutliers(paramsDict))\n\tself.view.custom.data.valueDistribution \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureValueDistribution(paramsDict))\n\tself.view.custom.data.rollingAverage    \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureRollingAverage(paramsDict))\n\tself.view.custom.data.sampleConsistency \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureSampleCountConsistency(paramsDict))\n\tself.view.custom.data.gapAnalysis       \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureGapAnalysis(paramsDict))\n\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"Get Data called\")\n\tparamsDict \u003d {\n\t\t\u0027measureId\u0027:   self.view.custom.filters.measureId,\n\t\t\u0027tStampStart\u0027: self.view.custom.filters.startDate,\n\t\t\u0027tStampEnd\u0027:   self.view.custom.filters.endDate\n\t}\n\n\tself.view.custom.data.summary           \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.measures.getMeasureSummary(paramsDict), 0)\n\t#Hours of the day in the device\u0027s time zone\n\tself.view.custom.data.hourlyTrends      \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureHourlyTrends(dict(paramsDict, timeZone\u003dself.session.props.device.timezone.id)))\n\tself.view.custom.data.outliers          \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureOutliers(paramsDict))\n\tself.view.custom.data.valueDistribution \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureValueDistribution(paramsDict))\n\tself.view.custom.data.rollingAverage    \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureRollingAverage(dict(paramsDict, maxRows\u003d500)))\n\tself.view.custom.data.sampleConsistency \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureSampleCountConsistency(paramsDict))\n\tself.view.custom.data.gapAnalysis       \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.measures.getMeasureGapAnalysis(dict(paramsDict, largeGapsOnly\u003dTrue, maxRows\u003d200)))\n\n\t#Go found nothing: say so, since the cards and charts are just empty (getMeasureSummary has no row, so totalEvents is None)\n\tsummary \u003d self.view.custom.data.summary\n\tif not (summary and summary[\u0027totalEvents\u0027]):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027No measure events for this measure and date range\u0027})\n\n\treturn"
         }
       ],
       "extensionFunctions": null,

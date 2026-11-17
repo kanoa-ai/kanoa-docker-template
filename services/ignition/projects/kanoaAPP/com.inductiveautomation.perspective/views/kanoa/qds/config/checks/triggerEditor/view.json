@@ -1,5 +1,6 @@
 {
   "custom": {
+    "assetReqd": true,
     "info": {
       "changedBy": null,
       "changedDate": null,
@@ -22,15 +23,21 @@
       "triggerTypeId": null,
       "triggerTypeName": null,
       "rruleStr": null,
-      "rruleStartDate": null
+      "rruleStartDate": null,
+      "counterName": null,
+      "fromModeId": null,
+      "fromModeName": null,
+      "minStateMins": null,
+      "stateIds": [],
+      "stateNames": null
     },
-    "triggerTypeName": null,
     "recurring": {
       "assetPath": null,
       "generateAheadDays": null,
       "rruleStr": null,
       "startDate": null
-    }
+    },
+    "triggerTypeName": null
   },
   "params": {
     "values": {
@@ -39,6 +46,22 @@
     }
   },
   "propConfig": {
+    "custom.assetReqd": {
+      "binding": {
+        "config": {
+          "path": "view.params.values.chkShtId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t#Whether the sheet requires an asset: a Recurring trigger\u0027s Shift and Mode are matched against its asset\u0027s\n\treturn bool(system.kanoa.utilities.getFieldValue(\u0027assetReqd\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: value or -1})))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
     "custom.info": {
       "binding": {
         "config": {
@@ -47,12 +70,15 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtTriggerId\u0027:value[\u0027chkShtTriggerId\u0027] or -1}), 0)\n\tinfo[\u0027chkShtId\u0027] \u003d value.chkShtId\n\t\n\tif not info[\u0027chkShtTriggerId\u0027]: info[\u0027enabled\u0027] \u003d True\n\t\n\treturn info",
+            "code": "\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtTriggerId\u0027:value[\u0027chkShtTriggerId\u0027] or -1}), 0)\n\tinfo[\u0027chkShtId\u0027] \u003d value.chkShtId\n\t\n\tif not info[\u0027chkShtTriggerId\u0027]: info[\u0027enabled\u0027] \u003d True\n\t#getChkShtTriggers returns the State Change states as \u00271,2\u0027; the states dropdown needs a list\n\tinfo[\u0027stateIds\u0027] \u003d [int(stateId) for stateId in (info[\u0027stateIds\u0027] or \u0027\u0027).split(\u0027,\u0027) if stateId.strip()]\n\t\n\treturn info",
             "type": "script"
           }
         ],
         "type": "property"
       },
+      "persistent": true
+    },
+    "custom.recurring": {
       "persistent": true
     },
     "custom.triggerTypeName": {
@@ -86,15 +112,12 @@
     "params.values.chkShtTriggerId": {
       "paramDirection": "input",
       "persistent": true
-    },
-    "custom.recurring": {
-      "persistent": true
     }
   },
   "props": {
     "defaultSize": {
       "height": 380,
-      "width": 1046
+      "width": 760
     }
   },
   "root": {
@@ -118,7 +141,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n \tif value[\u0027chkShtId\u0027] and value[\u0027chkShtTriggerId\u0027] is None: triggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtId\u0027: value[\u0027chkShtId\u0027]}), \u0027triggerTypeName\u0027, \u0027triggerTypeId\u0027)\n\telse: triggers \u003d []\n\t\t\n\tchkShtTriggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getTriggerTypes({\u0027enabled\u0027:True}), \u0027triggerTypeName\u0027, \u0027triggerTypeId\u0027)\n\treturn [{\u0027value\u0027: triggerTypeId, \u0027label\u0027: triggerTypeName} for triggerTypeName, triggerTypeId in chkShtTriggers.items() if triggerTypeName not in triggers and \u0027Count\u0027 not in triggerTypeName]\n\t",
+                      "code": "\n \tif value[\u0027chkShtId\u0027] and value[\u0027chkShtTriggerId\u0027] is None: triggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtId\u0027: value[\u0027chkShtId\u0027]}), \u0027triggerTypeName\u0027, \u0027triggerTypeId\u0027)\n\telse: triggers \u003d []\n\t\t\n\tchkShtTriggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getTriggerTypes({\u0027enabled\u0027:True}), \u0027triggerTypeName\u0027, \u0027triggerTypeId\u0027)\n\treturn [{\u0027value\u0027: triggerTypeId, \u0027label\u0027: triggerTypeName} for triggerTypeName, triggerTypeId in chkShtTriggers.items() if triggerTypeName not in triggers]\n\t",
                       "type": "script"
                     }
                   ],
@@ -244,6 +267,55 @@
               }
             },
             "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "txtCounterName",
+              "name": "txtCounterName",
+              "tooltip": {
+                "enabled": true,
+                "text": "Name of the asset\u0027s general counter to count"
+              }
+            },
+            "position": {
+              "basis": "160px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027General Count\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.counterName"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "placeholder": "Counter name",
+              "style": {
+                "classes": "kanoa/font/default kanoa/border",
+                "paddingLeft": "5px"
+              }
+            },
+            "type": "ia.input.text-field"
           },
           {
             "children": [
@@ -411,6 +483,25 @@
               "shrink": 0
             },
             "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "assetReqd": "{view.custom.assetReqd}",
+                      "triggerTypeName": "{view.custom.triggerTypeName}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#A Recurring trigger\u0027s Shift and Mode only apply to a sheet that requires an asset (they\u0027re matched against its shift and mode)\n\treturn not (value[\u0027triggerTypeName\u0027] \u003d\u003d \u0027Recurring\u0027 and not value[\u0027assetReqd\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
               "props.options": {
                 "binding": {
                   "config": {
@@ -541,6 +632,246 @@
           },
           {
             "meta": {
+              "domId": "ddStates",
+              "name": "ddStates",
+              "tooltip": {
+                "enabled": true,
+                "text": "A check is created when the asset is in one of these states"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027State Change\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getStates({\u0027enabled\u0027: True}))\n\treturn sorted([{\u0027value\u0027: row[\u0027stateId\u0027], \u0027label\u0027: row[\u0027stateName\u0027]} for row in data], key\u003dlambda option: (option[\u0027label\u0027] or \u0027\u0027).lower())",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.stateIds"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Select States..."
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "250px"
+              },
+              "multiSelect": true,
+              "search": {
+                "enabled": true
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "domId": "lblName",
+                  "name": "lblName"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "text": "For at least"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "domId": "numValue",
+                  "name": "numValue",
+                  "tooltip": {
+                    "enabled": true,
+                    "text": "Minutes the asset must be in the state before a check is created"
+                  }
+                },
+                "position": {
+                  "basis": "50px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.info.minStateMins"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "center",
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "domId": "lblUnits",
+                  "name": "lblUnits"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "text": "mins"
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "domId": "flxMinState",
+              "name": "flxMinState"
+            },
+            "position": {
+              "basis": "150px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027State Change\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "height": "24px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "domId": "ddFromModes",
+              "name": "ddFromModes",
+              "tooltip": {
+                "enabled": true,
+                "text": "Only when the asset changes from this mode"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.triggerTypeName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value \u003d\u003d \u0027Mode Change\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.values"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tdata \u003d system.kanoa.asset.getModes({\u0027enabled\u0027:True})\n\treturn [{\u0027value\u0027: None, \u0027label\u0027:\u0027From Any Mode\u0027}] +  [{\u0027value\u0027:row[\u0027modeId\u0027], \u0027label\u0027:row[\u0027modeName\u0027]} for row in data if row[\u0027modeName\u0027] not in (\u0027Unknown\u0027, \u0027Production Delay\u0027)]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.fromModeId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "From Any Mode"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default",
+                "minWidth": "200px"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
               "domId": "ddModes",
               "name": "ddModes"
             },
@@ -548,6 +879,25 @@
               "shrink": 0
             },
             "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "assetReqd": "{view.custom.assetReqd}",
+                      "triggerTypeName": "{view.custom.triggerTypeName}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#A Recurring trigger\u0027s Shift and Mode only apply to a sheet that requires an asset (they\u0027re matched against its shift and mode)\n\treturn not (value[\u0027triggerTypeName\u0027] \u003d\u003d \u0027Recurring\u0027 and not value[\u0027assetReqd\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
               "props.options": {
                 "binding": {
                   "config": {
@@ -602,137 +952,8 @@
           "style": {
             "gap": "5px",
             "overflow": "hidden"
-          }
-        },
-        "type": "ia.container.flex"
-      },
-      {
-        "children": [
-          {
-            "meta": {
-              "name": "emvRecurring"
-            },
-            "position": {
-              "shrink": 0
-            },
-            "propConfig": {
-              "props.params.values": {
-                "binding": {
-                  "config": {
-                    "path": "view.custom.recurring"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "params": {
-                "messageType": "updateTriggerSchedule",
-                "showGenerateAhead": false
-              },
-              "path": "kanoa/cmms/config/recurringOptions"
-            },
-            "type": "ia.display.view"
           },
-          {
-            "meta": {
-              "name": "lblRuleSummary"
-            },
-            "position": {
-              "shrink": 0
-            },
-            "propConfig": {
-              "props.text": {
-                "binding": {
-                  "config": {
-                    "path": "view.custom.info.rruleStr"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\t#convertRecurringRuleToText needs an Ops license; fall back to the raw rule without one\n\tif not value:\n\t\treturn \u0027\u0027\n\ttext \u003d system.kanoa.schedule.convertRecurringRuleToText(value)\n\treturn text if text and \u0027License Expired\u0027 not in text else value",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "style": {
-                "fontWeight": "bold",
-                "paddingLeft": "5px"
-              }
-            },
-            "type": "ia.display.label"
-          },
-          {
-            "meta": {
-              "name": "lblNextDates"
-            },
-            "position": {
-              "shrink": 0
-            },
-            "propConfig": {
-              "props.text": {
-                "binding": {
-                  "config": {
-                    "struct": {
-                      "locale": "{session.props.locale}",
-                      "rule": "{view.custom.info.rruleStr}",
-                      "start": "{view.custom.info.rruleStartDate}"
-                    },
-                    "waitOnAll": true
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\tif not value[\u0027rule\u0027]:\n\t\treturn \u0027\u0027\n\tcheck \u003d system.kanoa.schedule.validateRrule(value[\u0027rule\u0027])\n\tif not check[\u0027valid\u0027]:\n\t\treturn \u0027Invalid rule: %s\u0027 % check[\u0027error\u0027]\n\tdates \u003d system.kanoa.schedule.rruleToDates(value[\u0027rule\u0027], value[\u0027start\u0027], system.date.now(), 5)\n\tif not dates:\n\t\treturn \u0027No upcoming occurrences\u0027\n\tpattern \u003d system.kanoa.date.localizeDateFormat(\u0027EEE MMM d, yyyy h:mm a\u0027, value[\u0027locale\u0027])\n\treturn \u0027Next: \u0027 + \u0027, \u0027.join([system.date.format(d, pattern) for d in dates])",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "expr-struct"
-                }
-              }
-            },
-            "props": {
-              "style": {
-                "paddingLeft": "5px"
-              }
-            },
-            "type": "ia.display.label"
-          }
-        ],
-        "meta": {
-          "name": "flxRecurring"
-        },
-        "position": {
-          "shrink": 0
-        },
-        "propConfig": {
-          "position.display": {
-            "binding": {
-              "config": {
-                "path": "view.custom.triggerTypeName"
-              },
-              "overlayOptOut": true,
-              "transforms": [
-                {
-                  "code": "\treturn value \u003d\u003d \u0027Recurring\u0027",
-                  "type": "script"
-                }
-              ],
-              "type": "property"
-            }
-          }
-        },
-        "props": {
-          "direction": "column",
-          "style": {
-            "gap": "5px",
-            "overflow": "hidden"
-          }
+          "wrap": "wrap"
         },
         "type": "ia.container.flex"
       },
@@ -1101,7 +1322,6 @@
         },
         "position": {
           "basis": "30px",
-          "grow": 1,
           "shrink": 0
         },
         "props": {
@@ -1116,11 +1336,169 @@
       {
         "children": [
           {
+            "meta": {
+              "name": "emvRecurring"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.values": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.recurring"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "messageType": "updateTriggerSchedule",
+                "showGenerateAhead": false
+              },
+              "path": "kanoa/cmms/config/recurringOptions"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "lblConditions"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.assetReqd"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/bodySmall",
+                "paddingLeft": "5px",
+                "whiteSpace": "normal"
+              },
+              "text": "Shift and Mode are conditions: an occurrence is only scheduled while the asset is in that shift and mode. If it isn\u0027t by the time the check is due, that occurrence is skipped."
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblRuleSummary"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.rruleStr"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#convertRecurringRuleToText needs an Ops license; fall back to the raw rule without one\n\tif not value:\n\t\treturn \u0027\u0027\n\ttext \u003d system.kanoa.schedule.convertRecurringRuleToText(value)\n\treturn text if text and \u0027License Expired\u0027 not in text else value",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "fontWeight": "bold",
+                "paddingLeft": "5px"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblNextDates"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "locale": "{session.props.locale}",
+                      "rule": "{view.custom.info.rruleStr}",
+                      "start": "{view.custom.info.rruleStartDate}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\tif not value[\u0027rule\u0027]:\n\t\treturn \u0027\u0027\n\tcheck \u003d system.kanoa.schedule.validateRrule(value[\u0027rule\u0027])\n\tif not check[\u0027valid\u0027]:\n\t\treturn system.util.translate(\u0027Invalid rule\u0027, self.session.props.locale) + \u0027: %s\u0027 % check[\u0027error\u0027]\n\t#Expanded in the device\u0027s zone, as the Start Date reads; the scheduler expands in each asset\u0027s site zone (the same where they match)\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tdates \u003d system.kanoa.schedule.rruleToDates(value[\u0027rule\u0027], value[\u0027start\u0027], system.date.now(), 5, deviceZone)\n\tif not dates:\n\t\treturn \u0027No upcoming occurrences\u0027\n\t#In the device\u0027s time zone, as the Start Date field shows it: this runs on the gateway, which would format in its own (868m4x3xw)\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027EEE MMM d, yyyy h:mm a\u0027, value[\u0027locale\u0027]))\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\treturn \u0027Next: \u0027 + \u0027, \u0027.join([fmt.format(d) for d in dates])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "paddingLeft": "5px"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxRecurring"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.triggerTypeName"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Recurring\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
             "events": {
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tif self.view.getChild(\"root\").saveData():\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Triggers updated\u0027})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Triggers were not updated\u0027})\n\t\t\n\tsystem.perspective.sendMessage(\"triggerUpdate\", payload\u003d{})\t\t\n\treturn"
+                    "script": "\t\n\t# Saved: close the editor, which shows the trigger was saved; a failure leaves it open to correct\n\tif self.view.getChild(\"root\").saveData():\n\t\tsystem.perspective.sendMessage(\"triggerUpdate\", payload\u003d{})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save the trigger\", \u0027autoClose\u0027: 0})\n\t\tsystem.perspective.sendMessage(\"triggerUpdate\", payload\u003d{})\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -1152,7 +1530,7 @@
                   },
                   "transforms": [
                     {
-                      "code": "\t\n\tif value[\u0027info\u0027][\u0027triggerTypeId\u0027] is None: return False\n\t\n\ttriggerTypeName \u003d value[\u0027triggerTypeName\u0027]\n\tif triggerTypeName \u003d\u003d \u0027Mode Change\u0027: return True \t\t#don\u0027t need anything else\n\telif triggerTypeName \u003d\u003d \u0027Product Change\u0027:\treturn True\n\tif triggerTypeName \u003d\u003d \u0027Shift Change\u0027: return True\n\tif triggerTypeName \u003d\u003d \u0027Timed Interval\u0027: return (self.view.custom.info.intervalMins or 0) \u003e 0\n\tif triggerTypeName \u003d\u003d \u0027Recurring\u0027: return bool(value[\u0027info\u0027][\u0027rruleStr\u0027]) and system.kanoa.schedule.validateRrule(value[\u0027info\u0027][\u0027rruleStr\u0027])[\u0027valid\u0027]\n\telif \u0027Count\u0027 in triggerTypeName: return (self.view.custom.info.productionCount or 0) \u003e 0\n\t\n\treturn True",
+                      "code": "\t\n\tif value[\u0027info\u0027][\u0027triggerTypeId\u0027] is None: return False\n\t\n\ttriggerTypeName \u003d value[\u0027triggerTypeName\u0027]\n\tif triggerTypeName \u003d\u003d \u0027Mode Change\u0027: return True \t\t#don\u0027t need anything else\n\telif triggerTypeName \u003d\u003d \u0027Product Change\u0027:\treturn True\n\tif triggerTypeName \u003d\u003d \u0027Shift Change\u0027: return True\n\tif triggerTypeName \u003d\u003d \u0027Timed Interval\u0027: return (self.view.custom.info.intervalMins or 0) \u003e 0\n\tif triggerTypeName \u003d\u003d \u0027Recurring\u0027: return bool(value[\u0027info\u0027][\u0027rruleStr\u0027]) and system.kanoa.schedule.validateRrule(value[\u0027info\u0027][\u0027rruleStr\u0027])[\u0027valid\u0027]\n\tif triggerTypeName \u003d\u003d \u0027State Change\u0027: return len(value[\u0027info\u0027][\u0027stateIds\u0027] or []) \u003e 0\n\tif triggerTypeName \u003d\u003d \u0027General Count\u0027: return (value[\u0027info\u0027][\u0027productionCount\u0027] or 0) \u003e 0 and bool((value[\u0027info\u0027][\u0027counterName\u0027] or \u0027\u0027).strip())\n\telif \u0027Count\u0027 in triggerTypeName: return (self.view.custom.info.productionCount or 0) \u003e 0\n\t\n\treturn True",
                       "type": "script"
                     }
                   ],
@@ -1224,7 +1602,8 @@
           "style": {
             "gap": "5px",
             "overflow": "hidden",
-            "padding": "5px"
+            "padding": "5px",
+            "marginTop": "auto"
           }
         },
         "type": "ia.container.flex"
@@ -1277,7 +1656,7 @@
         "backgroundColor": "--kcSurface",
         "classes": "kanoa/font/default",
         "gap": "5px",
-        "overflow": "hidden",
+        "overflow": "auto",
         "padding": "5px"
       }
     },

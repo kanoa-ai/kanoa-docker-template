@@ -1,0 +1,195 @@
+{
+  "custom": {
+    "canConfigure": false,
+    "tabIndex": 0,
+    "toolingAssetId": null
+  },
+  "params": {
+    "value": {
+      "assetId": null,
+      "assetPath": null,
+      "tagPath": null
+    }
+  },
+  "propConfig": {
+    "custom.canConfigure": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetPath": "{view.params.value.assetPath}",
+            "security": "{session.custom.kanoa.security}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "type": "expr-struct",
+        "transforms": [
+          {
+            "code": "\n\t# Configuring the tool is for users who can configure this asset, like the mount panel's Open tool\n\tsecurity = value['security']\n\tuserCRUD = security['userCRUD'] if security else {}\n\tassetPath = value['assetPath'] or ''\n\tif not userCRUD: return False\n\tif userCRUD.get('isGatewayAdmin'): return True\n\tentry = userCRUD.get('configureAssets', {}) or {}\n\tif not entry.get('enabled'): return False\n\tassets = entry.get('assets') or []\n\treturn not assets or any(assetPath == a or assetPath.startswith(a + '\\\\') for a in assets)",
+            "type": "script"
+          }
+        ]
+      }
+    },
+    "custom.tabIndex": {
+      "persistent": true
+    },
+    "custom.toolingAssetId": {
+      "binding": {
+        "config": {
+          "expression": "tag({view.params.value.tagPath} + \"/Tooling/Primary/toolingAssetId\")"
+        },
+        "overlayOptOut": true,
+        "type": "expr"
+      }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 760,
+      "width": 1100
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "tabTooling"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.currentTabIndex": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.custom.tabIndex"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.tabs": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "canConfigure": "{view.custom.canConfigure}",
+                  "toolingAssetId": "{view.custom.toolingAssetId}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "type": "expr-struct",
+              "transforms": [
+                {
+                  "code": "\n\ttabs = ['Mount / Unmount']\n\tif value['canConfigure']: tabs.append('Tool Config' if value['toolingAssetId'] else 'Tools')\n\treturn tabs",
+                  "type": "script"
+                }
+              ]
+            }
+          }
+        },
+        "props": {
+          "menuType": "modern",
+          "tabSize": {
+            "width": 160
+          },
+          "tabs": [
+            "Mount / Unmount"
+          ]
+        },
+        "type": "ia.container.tab",
+        "children": [
+          {
+            "meta": {
+              "name": "evMount"
+            },
+            "position": {
+              "tabIndex": 0
+            },
+            "propConfig": {
+              "props.params.value.assetId": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "assetId": null
+                }
+              },
+              "path": "kanoa/mes/asset/operation/tooling/mountPanel"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "evToolConfig"
+            },
+            "position": {
+              "tabIndex": 1
+            },
+            "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.toolingAssetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property",
+                  "transforms": [
+                    {
+                      "code": "\n\t# The installed tool's editor, or the tools list when nothing is installed\n\treturn 'kanoa/mes/config/tooling/toolEditor' if value else 'kanoa/mes/config/tooling/tools'",
+                      "type": "script"
+                    }
+                  ]
+                }
+              },
+              "props.params.value.toolingAssetId": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.toolingAssetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "value": {
+                  "toolingAssetId": null
+                }
+              },
+              "path": "kanoa/mes/config/tooling/toolEditor"
+            },
+            "type": "ia.display.view"
+          }
+        ]
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/popup",
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

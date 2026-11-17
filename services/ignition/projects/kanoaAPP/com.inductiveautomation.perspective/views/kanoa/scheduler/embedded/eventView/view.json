@@ -252,8 +252,15 @@
       "uuid": "",
       "wo": null,
       "workOrderId": null,
-      "workOrderName": null
-    }
+      "workOrderName": null,
+      "toolPicks": []
+    },
+    "tooling": {
+      "note": "",
+      "rows": [],
+      "usesTooling": false
+    },
+    "toolingConfirmed": false
   },
   "params": {
     "values": {
@@ -466,7 +473,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tscheduleBlockInfo \u003d dict(value)\n\t\n\tscheduleBlockInfo[\u0027notes\u0027] \u003d scheduleBlockInfo[\u0027notes\u0027] or \u0027\u0027\n\tscheduleBlockInfo[\u0027scheduleBlockName\u0027] \u003d scheduleBlockInfo[\u0027scheduleBlockName\u0027] or \u0027\u0027\n\tscheduleBlockInfo[\u0027itemPath\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027itemPath\u0027, system.kanoa.item.getItems({\u0027itemId\u0027: value[\u0027itemId\u0027]})) if value[\u0027itemId\u0027] else None\n\t\n\tself.custom.originalValues \u003d scheduleBlockInfo\n\treturn scheduleBlockInfo",
+            "code": "\t\n\tscheduleBlockInfo \u003d dict(value)\n\t\n\tscheduleBlockInfo[\u0027notes\u0027] \u003d scheduleBlockInfo[\u0027notes\u0027] or \u0027\u0027\n\tscheduleBlockInfo[\u0027scheduleBlockName\u0027] \u003d scheduleBlockInfo[\u0027scheduleBlockName\u0027] or \u0027\u0027\n\tscheduleBlockInfo[\u0027toolPicks\u0027] \u003d []\t#The Tooling section\u0027s picks, saved with the event\n\tscheduleBlockInfo[\u0027itemPath\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027itemPath\u0027, system.kanoa.item.getItems({\u0027itemId\u0027: value[\u0027itemId\u0027]})) if value[\u0027itemId\u0027] else None\n\t\n\tself.custom.originalValues \u003d scheduleBlockInfo\n\treturn scheduleBlockInfo",
             "type": "script"
           }
         ],
@@ -501,11 +508,43 @@
     "params.values.startDate": {
       "paramDirection": "input",
       "persistent": true
+    },
+    "custom.tooling": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetId": "{view.custom.values.assetId}",
+            "itemId": "{view.custom.values.itemId}",
+            "workOrderId": "{view.custom.values.workOrderId}",
+            "scheduleBlockId": "{view.custom.values.scheduleBlockId}",
+            "rruleStr": "{view.custom.values.rruleStr}",
+            "startDate": "{view.custom.values.startDate}",
+            "endDate": "{view.custom.values.endDate}",
+            "origAssetId": "{view.custom.originalValues.assetId}",
+            "origItemId": "{view.custom.originalValues.itemId}",
+            "origWorkOrderId": "{view.custom.originalValues.workOrderId}",
+            "duplicate": "{view.params.duplicate}",
+            "canUpdate": "{view.custom.userAction.canUpdate}",
+            "modeName": "{view.custom.values.modeName}",
+            "canCreate": "{view.custom.userAction.canCreate}",
+            "toolPicks": "{view.custom.values.toolPicks}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t#The Tooling section: shown only for a Production event on an asset that uses tooling. A row per required tooling of the\n\t#item on the machine: a required tool is shown, a required tooling type can take the planner\u0027s pick (custom.values.toolPicks,\n\t#saved with the event; none \u003d the scheduler picks a free tool). A saved event shows its reserved tools and their conflicts.\n\tasset \u003d value[\u0027assetId\u0027]\n\thidden \u003d {\u0027usesTooling\u0027: False, \u0027rows\u0027: [], \u0027note\u0027: \u0027\u0027, \u0027warnings\u0027: \u0027\u0027, \u0027warningColor\u0027: \u0027\u0027}\n\tif asset is None or value[\u0027modeName\u0027] !\u003d \u0027Production\u0027: return hidden\n\tif not system.kanoa.utilities.getFieldValue(\u0027usesTooling\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: asset})): return hidden\n\tif value[\u0027itemId\u0027] is None: return {\u0027usesTooling\u0027: True, \u0027rows\u0027: [], \u0027note\u0027: \u0027Pick an item to see its required tooling.\u0027, \u0027warnings\u0027: \u0027\u0027, \u0027warningColor\u0027: \u0027\u0027}\n\ttoJSON \u003d system.kanoa.utilities.convertDatasetToJSON\n\tblockId \u003d value[\u0027scheduleBlockId\u0027]\n\t#Saved as it is: its reservations are for this asset and item\n\tsaved \u003d blockId is not None and not value[\u0027duplicate\u0027] and value[\u0027assetId\u0027] \u003d\u003d value[\u0027origAssetId\u0027] and value[\u0027itemId\u0027] \u003d\u003d value[\u0027origItemId\u0027] \\\n\t\tand value[\u0027workOrderId\u0027] \u003d\u003d value[\u0027origWorkOrderId\u0027]\n\tcanEdit \u003d bool(value[\u0027canUpdate\u0027] if blockId is not None else value[\u0027canCreate\u0027])\n\tpicks \u003d dict((p[\u0027itemAssetToolingId\u0027], p[\u0027toolingAssetId\u0027]) for p in (value[\u0027toolPicks\u0027] or []))\n\treqs \u003d [r for r in toJSON(system.kanoa.tooling.getRequiredTooling({\u0027itemId\u0027: value[\u0027itemId\u0027], \u0027assetId\u0027: asset, \u0027enabled\u0027: True})) if r[\u0027required\u0027]]\n\treservations \u003d []\n\tconflicts \u003d []\n\tif saved:\n\t\treservations \u003d [r for r in toJSON(system.kanoa.tooling.getReservations({\u0027scheduleBlockId\u0027: blockId})) if r[\u0027status\u0027] !\u003d \u0027released\u0027]\n\t\tnow \u003d system.date.now()\n\t\tif value[\u0027rruleStr\u0027]: start, end \u003d now, system.date.addDays(now, 28)\n\t\telse: start, end \u003d system.date.addDays(value[\u0027startDate\u0027], -1), system.date.addDays(value[\u0027endDate\u0027], 1)\n\t\tconflicts \u003d [c for c in toJSON(system.kanoa.tooling.getToolingConflicts({\u0027scheduleBlockId\u0027: blockId, \u0027startDate\u0027: start, \u0027endDate\u0027: end}))\n\t\t\t\t\t if c[\u0027severity\u0027] in (\u0027hard\u0027, \u0027soft\u0027)]\n\tdef row(requirement, requirementId, options, toolId, editable\u003dFalse, hint\u003d\u0027\u0027, rowConflicts\u003d[], placeholder\u003d\u0027Any free tool\u0027):\n\t\trowConflicts \u003d sorted(rowConflicts, key\u003dlambda c: 0 if c[\u0027severity\u0027] \u003d\u003d \u0027hard\u0027 else 1)\n\t\tmessages \u003d []\n\t\tfor c in rowConflicts:\n\t\t\tif c[\u0027message\u0027] not in messages: messages.append(c[\u0027message\u0027])\n\t\tmessage \u003d messages[0] if messages else \u0027\u0027\n\t\tif len(messages) \u003e 1: message +\u003d \u0027 (+%d more)\u0027 % (len(messages) - 1)\n\t\treturn {\u0027requirement\u0027: requirement, \u0027itemAssetToolingId\u0027: requirementId, \u0027options\u0027: options, \u0027toolingAssetId\u0027: toolId, \u0027editable\u0027: editable,\n\t\t\t\t\u0027hint\u0027: hint, \u0027placeholder\u0027: placeholder, \u0027message\u0027: message, \u0027messages\u0027: \u0027\\n\u0027.join(messages),\n\t\t\t\t\u0027severity\u0027: rowConflicts[0][\u0027severity\u0027] if rowConflicts else \u0027\u0027}\n\ttoolsByType \u003d {}\n\tdef tools(typeId):\n\t\tif typeId not in toolsByType:\n\t\t\ttoolsByType[typeId] \u003d [{\u0027value\u0027: t[\u0027toolingAssetId\u0027], \u0027label\u0027: t[\u0027assetName\u0027]}\n\t\t\t\t\t\t\t\t\tfor t in toJSON(system.kanoa.tooling.getTools({\u0027assetTypeId\u0027: typeId, \u0027mountableOn\u0027: asset, \u0027enabled\u0027: True}))]\n\t\treturn toolsByType[typeId]\n\tunfilled \u003d [c for c in conflicts if c[\u0027toolingAssetId\u0027] is None]\n\trows \u003d []\n\tfor req in reqs:\n\t\treserved \u003d [r for r in reservations if r[\u0027itemAssetToolingId\u0027] \u003d\u003d req[\u0027itemAssetToolingId\u0027]]\n\t\treservedId \u003d reserved[0][\u0027toolingAssetId\u0027] if reserved else None\n\t\tif req[\u0027toolingAssetId\u0027]:\n\t\t\trows.append(row(req[\u0027toolingTypeName\u0027] or \u0027Tool\u0027, req[\u0027itemAssetToolingId\u0027], [{\u0027value\u0027: req[\u0027toolingAssetId\u0027], \u0027label\u0027: req[\u0027toolingName\u0027]}],\n\t\t\t\t\t\t\treq[\u0027toolingAssetId\u0027], hint\u003d\"The item needs this %s here. Change it in the item\u0027s required tooling.\" % (req[\u0027toolingTypeName\u0027] or \u0027tool\u0027),\n\t\t\t\t\t\t\trowConflicts\u003d[c for c in conflicts if c[\u0027toolingAssetId\u0027] \u003d\u003d req[\u0027toolingAssetId\u0027]]))\n\t\t\tcontinue\n\t\toptions \u003d list(tools(req[\u0027toolingAssetTypeId\u0027]))\n\t\tif reserved and reservedId not in [o[\u0027value\u0027] for o in options]: options \u003d [{\u0027value\u0027: reservedId, \u0027label\u0027: reserved[0][\u0027toolingName\u0027]}] + options\n\t\ttoolId \u003d picks[req[\u0027itemAssetToolingId\u0027]] if req[\u0027itemAssetToolingId\u0027] in picks else reservedId\n\t\tmine \u003d [c for c in conflicts if c[\u0027toolingAssetId\u0027] \u003d\u003d reservedId] if reserved else unfilled\n\t\tif toolId !\u003d reservedId: mine \u003d []\t#A new pick: checked when the event is saved\n\t\thint \u003d \u0027The item needs a %s here: pick one, or leave it blank and the scheduler picks a free one.\u0027 % req[\u0027toolingTypeName\u0027]\n\t\tif value[\u0027rruleStr\u0027]: hint +\u003d \u0027 A tool picked here is used for every occurrence.\u0027\n\t\trows.append(row(req[\u0027toolingTypeName\u0027], req[\u0027itemAssetToolingId\u0027], options, toolId, editable\u003dcanEdit, hint\u003dhint, rowConflicts\u003dmine))\n\t#Reserved by hand (a script), not from a requirement\n\tfor r in reservations:\n\t\tif r[\u0027itemAssetToolingId\u0027] is None:\n\t\t\trows.append(row(\u0027Added by hand\u0027, None, [{\u0027value\u0027: r[\u0027toolingAssetId\u0027], \u0027label\u0027: r[\u0027toolingName\u0027]}], r[\u0027toolingAssetId\u0027], hint\u003d\u0027Reserved by a script, not by the required tooling\u0027,\n\t\t\t\t\t\t\trowConflicts\u003d[c for c in conflicts if c[\u0027toolingAssetId\u0027] \u003d\u003d r[\u0027toolingAssetId\u0027]]))\n\tnote \u003d \u0027\u0027 if rows else \u0027No required tooling is set up for this item on this machine.\u0027\n\twarnings \u003d []\n\tfor r in rows:\n\t\tfor m in r[\u0027messages\u0027].split(\u0027\\n\u0027) if r[\u0027messages\u0027] else []:\n\t\t\tif m not in warnings: warnings.append(m)\n\thard \u003d any(r[\u0027severity\u0027] \u003d\u003d \u0027hard\u0027 for r in rows)\n\treturn {\u0027usesTooling\u0027: True, \u0027rows\u0027: rows, \u0027note\u0027: note, \u0027warnings\u0027: \u0027\\n\u0027.join(warnings), \u0027warningColor\u0027: \u0027var(--kcRed)\u0027 if hard else \u0027var(--kcOrange)\u0027}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
     }
   },
   "props": {
     "defaultSize": {
-      "height": 434,
+      "height": 500,
       "width": 651
     }
   },
@@ -1086,15 +1125,21 @@
                       "position.display": {
                         "binding": {
                           "config": {
-                            "path": "view.custom.values.rruleStr"
+                            "struct": {
+                              "rruleStr": "{view.custom.values.rruleStr}",
+                              "workOrderId": "{view.custom.values.workOrderId}",
+                              "options": "{./dropdown.props.options}"
+                            },
+                            "waitOnAll": true
                           },
+                          "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn value is None",
+                              "code": "\t#Hidden for a recurring event, and when the asset has no work orders to pick (unless the event already has one)\n\tif value[\u0027rruleStr\u0027] is not None: return False\n\treturn value[\u0027workOrderId\u0027] is not None or len(value[\u0027options\u0027] or []) \u003e 0",
                               "type": "script"
                             }
                           ],
-                          "type": "property"
+                          "type": "expr-struct"
                         }
                       }
                     },
@@ -1109,15 +1154,14 @@
                     "children": [
                       {
                         "meta": {
-                          "domId": "lblItems",
-                          "name": "lblItems",
+                          "domId": "lblItem",
+                          "name": "lblItem",
                           "tooltip": {
                             "location": "bottom-right",
                             "tail": false
                           }
                         },
                         "position": {
-                          "basis": "40px",
                           "shrink": 0
                         },
                         "props": {
@@ -1125,9 +1169,21 @@
                             "classes": "kanoa/font/default",
                             "textAlign": "right"
                           },
-                          "text": "Items"
+                          "text": "Item"
                         },
-                        "type": "ia.display.label"
+                        "type": "ia.display.label",
+                        "propConfig": {
+                          "position.basis": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "/root.custom.labelColumnWidth"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        }
                       },
                       {
                         "meta": {
@@ -1179,7 +1235,9 @@
                                 "multiSelect": false,
                                 "showBreadcrumb": true,
                                 "showClear": true,
-                                "showSelectedPath": false
+                                "showSelectedPath": false,
+                                "selectableKey": "itemId",
+                                "selectableMessage": "Select an item, not an item class."
                               },
                               "selection": [],
                               "style": {
@@ -1226,6 +1284,227 @@
                         "overflow": "hidden"
                       },
                       "wrap": "wrap"
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "name": "lblTooling"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "position.basis": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "/root.custom.labelColumnWidth"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "alignVertical": "center",
+                          "style": {
+                            "classes": "kanoa/font/default",
+                            "textAlign": "right",
+                            "height": "32px"
+                          },
+                          "text": "Tooling"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "rptTooling"
+                            },
+                            "position": {
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "position.basis": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.tooling.rows"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\treturn \u0027%dpx\u0027 % (32 * len(value))",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              },
+                              "position.display": {
+                                "binding": {
+                                  "config": {
+                                    "expression": "len({view.custom.tooling.rows}) \u003e 0"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "expr"
+                                }
+                              },
+                              "props.instances": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.tooling.rows"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "direction": "column",
+                              "elementPosition": {
+                                "basis": "32px",
+                                "grow": 0,
+                                "shrink": 0
+                              },
+                              "path": "kanoa/scheduler/embedded/eventToolingRow",
+                              "useDefaultViewWidth": false
+                            },
+                            "type": "ia.display.flex-repeater"
+                          },
+                          {
+                            "meta": {
+                              "name": "lblToolingNote",
+                              "tooltip": {
+                                "enabled": true,
+                                "location": "center-right",
+                                "tail": true,
+                                "text": "An item\u0027s required tooling on a machine is set in Configuration \u003e Ops \u003e Materials, on the Required Tooling tab."
+                              }
+                            },
+                            "position": {
+                              "shrink": 0,
+                              "basis": "auto",
+                              "grow": 0
+                            },
+                            "propConfig": {
+                              "position.display": {
+                                "binding": {
+                                  "config": {
+                                    "expression": "len({view.custom.tooling.note}) \u003e 0"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "expr"
+                                }
+                              },
+                              "props.text": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.tooling.note"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "style": {
+                                "classes": "kanoa/font/bodySmall",
+                                "color": "--kcOnSurfaceVariant",
+                                "height": "32px",
+                                "alignSelf": "flex-start"
+                              },
+                              "alignVertical": "center"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "name": "lblToolingWarnings"
+                            },
+                            "position": {
+                              "shrink": 0,
+                              "basis": "auto",
+                              "grow": 0
+                            },
+                            "propConfig": {
+                              "position.display": {
+                                "binding": {
+                                  "config": {
+                                    "expression": "len({view.custom.tooling.warnings}) \u003e 0"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "expr"
+                                }
+                              },
+                              "props.text": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.tooling.warnings"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              },
+                              "props.style.color": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.tooling.warningColor"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "style": {
+                                "classes": "kanoa/font/bodySmall",
+                                "whiteSpace": "pre-line",
+                                "overflowWrap": "anywhere",
+                                "paddingBottom": "4px",
+                                "alignSelf": "flex-start"
+                              }
+                            },
+                            "type": "ia.display.label"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxToolingBody"
+                        },
+                        "position": {
+                          "grow": 1
+                        },
+                        "props": {
+                          "direction": "column"
+                        },
+                        "type": "ia.container.flex"
+                      }
+                    ],
+                    "meta": {
+                      "name": "flxTooling"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.tooling.usesTooling"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "gap": "5px"
+                      },
+                      "alignItems": "flex-start"
                     },
                     "type": "ia.container.flex"
                   },
@@ -2398,7 +2677,7 @@
                       "component": {
                         "onRowDoubleClick": {
                           "config": {
-                            "script": "\tif self.view.custom.userAction.canUpdate:\n\t\tself.view.getChild(\"root\").openEditor()\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update downtime events.\u0027})\n\t\t\n\treturn"
+                            "script": "\tif self.view.custom.userAction.canUpdate:\n\t\tself.view.getChild(\"root\").openEditor()\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027schedulerToast\u0027, payload\u003d{\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update downtime events.\u0027}, scope\u003d\u0027page\u0027)\n\t\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -3017,12 +3296,20 @@
         {
           "name": "save",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"save() called\")\n\tscheduleBlockInfo \u003d dict(self.view.custom.values)\n\trecurrenceChangeType \u003d self.view.custom.recurrence.changeType\n\tif scheduleBlockInfo[\u0027workOrderId\u0027]: scheduleBlockInfo[\u0027rruleStr\u0027] \u003d None\t#Can\u0027t repeat a workorder run\n\t\n\teventInfo \u003d {\u0027scheduleBlockInfo\u0027: scheduleBlockInfo, \u0027changeType\u0027: recurrenceChangeType, \u0027start\u0027: self.view.custom.dates.start, \u0027end\u0027: self.view.custom.dates.end}\n\t\t\n\tif scheduleBlockInfo[\u0027scheduleBlockId\u0027] is None: system.perspective.sendMessage(\"createEvent\", eventInfo) #add event\n\telse: system.perspective.sendMessage(\"adjustEvent\", eventInfo) #Update existing event\n\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"save() called\")\n\tscheduleBlockInfo \u003d dict(self.view.custom.values)\n\trecurrenceChangeType \u003d self.view.custom.recurrence.changeType\n\tif scheduleBlockInfo[\u0027workOrderId\u0027]: scheduleBlockInfo[\u0027rruleStr\u0027] \u003d None\t#Can\u0027t repeat a workorder run\n\tif scheduleBlockInfo[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027 and not scheduleBlockInfo[\u0027workOrderId\u0027] and scheduleBlockInfo[\u0027itemId\u0027] is None and scheduleBlockInfo[\u0027itemPath\u0027]:\t#an item class picked from the breadcrumb\n\t\tsystem.perspective.sendMessage(\u0027schedulerToast\u0027, payload\u003d{\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Select an item, not an item class.\u0027}, scope\u003d\u0027page\u0027)\n\t\treturn\n\t\n\t#Tool conflicts of the event as it will be saved (its tool picks included): confirm the soft ones, and the hard ones in \u0027warn\u0027 mode;\n\t#\u0027block\u0027 mode refuses a hard one. toolingConfirmed is set by the confirm popup\u0027s OK (eventToolingConfirm).\n\tif self.view.custom.tooling.usesTooling and not self.view.custom.toolingConfirmed:\n\t\thard, soft \u003d self.toolingConflicts(scheduleBlockInfo, recurrenceChangeType)\n\t\tblockMode \u003d system.kanoa.utilities.getFieldValue(\u0027configValue\u0027, system.kanoa.config.getConfig({\u0027configName\u0027: \u0027toolingConflictMode\u0027})) \u003d\u003d \u0027block\u0027\n\t\tif hard and blockMode:\n\t\t\tsystem.perspective.sendMessage(\u0027schedulerToast\u0027, payload\u003d{\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Tool conflicts: %s\u0027 % \u0027; \u0027.join(hard)}, scope\u003d\u0027page\u0027)\n\t\t\treturn\n\t\tif hard or soft:\n\t\t\tmessages \u003d hard + soft\n\t\t\tshown \u003d messages[:5] + ([\u0027and %d more\u0027 % (len(messages) - 5)] if len(messages) \u003e 5 else [])\n\t\t\ttext \u003d \u0027This operation has tool warnings: %s. Schedule it anyway?\u0027 % \u0027; \u0027.join(shown)\n\t\t\tsystem.perspective.openPopup(\u0027toolingConfirmPopup\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027: text, \u0027messageHandler\u0027: \u0027eventToolingConfirm\u0027},\n\t\t\t\ttitle\u003d\u0027Tool Warnings\u0027, modal\u003dTrue, draggable\u003dTrue)\n\t\t\treturn\n\tself.view.custom.toolingConfirmed \u003d False\n\t\n\t#toolingConfirmed: the tool warnings were checked (and confirmed) here, so the scheduler doesn\u0027t ask again\n\teventInfo \u003d {\u0027scheduleBlockInfo\u0027: scheduleBlockInfo, \u0027changeType\u0027: recurrenceChangeType, \u0027start\u0027: self.view.custom.dates.start, \u0027end\u0027: self.view.custom.dates.end,\n\t\t\u0027toolingConfirmed\u0027: True}\n\t\t\n\tif scheduleBlockInfo[\u0027scheduleBlockId\u0027] is None: system.perspective.sendMessage(\"createEvent\", eventInfo) #add event\n\telse: system.perspective.sendMessage(\"adjustEvent\", eventInfo) #Update existing event\n\t\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
         },
         {
           "name": "deleteExceptions",
           "params": [],
           "script": "\n\tsystem.perspective.print(\u0027deleteExceptions()called\u0027)\n\t\n\tuserId \u003d self.view.custom.security.userId\n\t\n\tfor exception in self.view.custom.exceptions.selection.data:\n\t\tsystem.kanoa.schedule.deleteScheduleBlockException(exception[\u0027scheduleBlockExceptionId\u0027], userId)\n\t\t\n\tself.view.refreshBinding(\"custom.exceptions.data\")\n\tsystem.perspective.sendMessage(\"exceptionsUpdated\")\n\t\t\n\treturn"
+        },
+        {
+          "name": "toolingConflicts",
+          "params": [
+            "scheduleBlockInfo",
+            "changeType"
+          ],
+          "script": "\t\u0027\u0027\u0027The hard and soft tool conflict messages of the event about to be saved, as getToolingConflicts sees its candidate.\u0027\u0027\u0027\n\tinfo \u003d scheduleBlockInfo\n\ttimezone \u003d system.kanoa.utilities.getFieldValue(\u0027timeZone\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: info[\u0027assetId\u0027]}))\n\t#The editor\u0027s dates are the asset\u0027s wall time; the database\u0027s are less the asset\u0027s offset, as the scheduler saves them\n\tstart \u003d system.date.parse(self.view.custom.dates.start)\n\tend \u003d system.date.parse(self.view.custom.dates.end)\n\tstartDate \u003d system.date.addMinutes(start, -system.kanoa.date.getTimeZoneOffsetMins(timezone, start))\n\tendDate \u003d system.date.addMinutes(end, -system.kanoa.date.getTimeZoneOffsetMins(timezone, end))\n\trrule \u003d None if changeType \u003d\u003d \u0027This event\u0027 or info[\u0027workOrderId\u0027] else info[\u0027rruleStr\u0027]\n\tcandidate \u003d {\u0027scheduleBlockId\u0027: None if getattr(self.view.params, \u0027duplicate\u0027, None) else info[\u0027scheduleBlockId\u0027], \u0027assetId\u0027: info[\u0027assetId\u0027], \u0027itemId\u0027: info[\u0027itemId\u0027],\n\t\t\u0027workOrderId\u0027: info[\u0027workOrderId\u0027], \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027scheduledQty\u0027: info[\u0027scheduledQty\u0027], \u0027rruleStr\u0027: rrule,\n\t\t\u0027toolPicks\u0027: info.get(\u0027toolPicks\u0027)}\n\thard, soft \u003d [], []\n\tfor c in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getToolingConflicts({\u0027candidate\u0027: candidate})):\n\t\tmessages \u003d hard if c[\u0027severity\u0027] \u003d\u003d \u0027hard\u0027 else soft if c[\u0027severity\u0027] \u003d\u003d \u0027soft\u0027 else None\n\t\tif messages is not None and c[\u0027message\u0027] not in messages: messages.append(c[\u0027message\u0027])\n\treturn hard, soft"
         }
       ],
       "extensionFunctions": null,
@@ -3051,9 +3338,23 @@
         {
           "messageType": "itemSelected",
           "pageScope": true,
-          "script": "\t\n\tsystem.perspective.print(\"itemSelected() msg rcvd with %s\"%payload)\n\t\n\tif len(payload[\u0027selection\u0027]) \u003e 0:\n\t\tv \u003d payload[\u0027selection\u0027][0][\u0027value\u0027]\n\t\tself.view.custom.values.itemId \u003d v[\u0027itemId\u0027]\n\t\tself.view.custom.values.itemName \u003d v[\u0027itemName\u0027]\n\t\tself.view.custom.values.itemPath \u003d v[\u0027path\u0027]\n\telse:\n\t\tself.view.custom.values.itemId \u003d None\n\t\tself.view.custom.values.itemName \u003d None\n\t\tself.view.custom.values.itemPath \u003d None\n\n\treturn",
+          "script": "\t\n\tsystem.perspective.print(\"itemSelected() msg rcvd with %s\"%payload)\n\t\n\tif len(payload[\u0027selection\u0027]) \u003e 0:\n\t\tv \u003d payload[\u0027selection\u0027][0][\u0027value\u0027]\n\t\tif (\u0027itemId\u0027 not in v) or v[\u0027itemId\u0027] is None:\t#an item class picked from the breadcrumb: no item, but the breadcrumb stays on the class; Save says to pick an item\n\t\t\tself.view.custom.values.itemId \u003d None\n\t\t\tself.view.custom.values.itemName \u003d None\n\t\t\tself.view.custom.values.itemPath \u003d v[\u0027path\u0027] if \u0027path\u0027 in v else None\n\t\t\treturn\n\t\tself.view.custom.values.itemId \u003d v[\u0027itemId\u0027]\n\t\tself.view.custom.values.itemName \u003d v[\u0027itemName\u0027]\n\t\tself.view.custom.values.itemPath \u003d v[\u0027path\u0027]\n\telse:\n\t\tself.view.custom.values.itemId \u003d None\n\t\tself.view.custom.values.itemName \u003d None\n\t\tself.view.custom.values.itemPath \u003d None\n\n\treturn",
           "sessionScope": false,
           "viewScope": false
+        },
+        {
+          "messageType": "eventToolPicked",
+          "pageScope": true,
+          "sessionScope": false,
+          "viewScope": false,
+          "script": "\t#A tool picked (or cleared) in the Tooling section: kept with the event and saved with it\n\tpicks \u003d [dict(p) for p in (self.view.custom.values.toolPicks or []) if p[\u0027itemAssetToolingId\u0027] !\u003d payload[\u0027itemAssetToolingId\u0027]]\n\tpicks.append({\u0027itemAssetToolingId\u0027: payload[\u0027itemAssetToolingId\u0027], \u0027toolingAssetId\u0027: payload[\u0027toolingAssetId\u0027]})\n\tself.view.custom.values.toolPicks \u003d picks\n"
+        },
+        {
+          "messageType": "eventToolingConfirm",
+          "pageScope": true,
+          "sessionScope": false,
+          "viewScope": false,
+          "script": "\t#The tool warnings confirm popup: OK saves the event anyway\n\tif payload[\u0027userInput\u0027] !\u003d \u0027OK\u0027: return\n\tself.view.custom.toolingConfirmed \u003d True\n\tself.save()\n"
         }
       ]
     },

@@ -1,5 +1,25 @@
 {
-  "custom": {},
+  "custom": {
+    "savedIds": []
+  },
+  "events": {
+    "system": {
+      "onShutdown": {
+        "config": {
+          "script": "\ttry: system.perspective.sendMessage(\u0027failedCommentsOpen\u0027, {\u0027open\u0027: False}, scope\u003d\u0027page\u0027)\n\texcept: pass\t#the session may already have ended (e.g. the browser tab closed)"
+        },
+        "scope": "G",
+        "type": "script"
+      },
+      "onStartup": {
+        "config": {
+          "script": "\t#The check sheet editor captures every key for its check entry (a barcode scanner listener); it ignores them while this is open\n\tsystem.perspective.sendMessage(\u0027failedCommentsOpen\u0027, {\u0027open\u0027: True}, scope\u003d\u0027page\u0027)"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
   "params": {
     "values": {
       "chkItemEventIdList": []
@@ -51,7 +71,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n\tkeys \u003d [\u0027chkItemEventId\u0027, \u0027chkItemName\u0027, \u0027comment\u0027]\n\treturn [{\u0027values\u0027: {k: v.get(k, None) for k in keys}} for v in value]",
+                      "code": "\n\tkeys \u003d [\u0027chkItemEventId\u0027, \u0027chkItemName\u0027, \u0027comment\u0027]\n\t#The first row\u0027s comment box takes the focus, so the comment can be typed straight away\n\treturn [{\u0027values\u0027: {k: v.get(k, None) for k in keys}, \u0027focus\u0027: i \u003d\u003d 0} for i, v in enumerate(value)]",
                       "type": "script"
                     }
                   ],
@@ -163,7 +183,7 @@
         {
           "messageType": "failedCheckCommentUpdated",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"failedCheckCommentUpdated() msg rcvd with %s\"%payload)\n\n\tlst \u003d self.view.params.values.chkItemEventIdList\n\tvalue \u003d payload[\u0027chkItemEventId\u0027]\n\n\tif value in lst: lst.remove(value)\n\t\n\treturn",
+          "script": "\n\tsystem.perspective.print(\"failedCheckCommentUpdated() msg rcvd with %s\"%payload)\n\n\tlst \u003d self.view.params.values.chkItemEventIdList\n\tvalue \u003d payload[\u0027chkItemEventId\u0027]\n\n\tif value in lst: lst.remove(value)\n\t#Saving the last comment closes the popup: every check listed here has had its comment saved\n\tsaved \u003d list(self.view.custom.savedIds or []) + [value]\n\tself.view.custom.savedIds \u003d saved\n\tif all(i in saved for i in (self.view.params.values.chkItemEventIdList or [])): system.perspective.closePopup(\u0027enterFailedCheckComment\u0027)\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

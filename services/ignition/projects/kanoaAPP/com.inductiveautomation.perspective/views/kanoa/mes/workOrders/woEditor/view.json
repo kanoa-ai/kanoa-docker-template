@@ -1,5 +1,30 @@
 {
   "custom": {
+    "assetSelectorDisabled": "Select an item first",
+    "assets": {
+      "$": [
+        "ds",
+        192,
+        1794457187133
+      ],
+      "$columns": [
+        {
+          "data": [],
+          "name": "assetId",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "assetPath",
+          "type": "String"
+        },
+        {
+          "data": [],
+          "name": "canRun",
+          "type": "String"
+        }
+      ]
+    },
     "info": {
       "actualQty": null,
       "assetId": null,
@@ -25,28 +50,74 @@
       "itemUnitId": null,
       "itemUnitName": null,
       "modeColor": null,
-      "modeId": null,
+      "modeId": 2,
       "modeName": null,
       "modeTypeName": null,
       "note": "",
       "parentId": null,
       "reqdQty": null,
       "schedQty": null,
+      "startDate": null,
       "statusColor": null,
       "workOrderId": null,
       "workOrderName": "",
       "workOrderSourceId": null,
       "workOrderSourceImagePath": null,
       "workOrderSourceName": null,
-      "workOrderStatusId": null,
+      "workOrderStatusId": 4,
       "workOrderStatusName": null,
       "workOrderTitle": ""
-    }
+    },
+    "toastId": null
   },
   "params": {
     "workOrders": []
   },
   "propConfig": {
+    "custom.assetSelectorDisabled": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetId": "{view.custom.info.assetId}",
+            "assets": "{view.custom.assets}",
+            "itemId": "{view.custom.info.itemId}",
+            "workOrders": "{view.params.workOrders}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value.itemId is None and len(value.workOrders) \u003c\u003d 1: return \u0027Select an item first\u0027\n\t# Stays enabled while the order has an asset, so it can still be cleared\n\tif value.assetId is None and (value.assets is None or value.assets.rowCount \u003d\u003d 0): return \u0027No asset can run this item\u0027\n\treturn None",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.assets": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetId": "{view.custom.info.assetId}",
+            "assetPath": "{view.custom.info.assetPath}",
+            "itemId": "{view.custom.info.itemId}",
+            "workOrders": "{view.params.workOrders}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# Assets with an enabled asset-item link for the item (bulk edit, no item picked: for every selected order\u0027s item).\n\t# An asset already on the order that can\u0027t run the item (e.g. set from the ERP) is kept (canRun False), so a save doesn\u0027t drop it.\n\titemIds \u003d set()\n\tif value.itemId is not None:\n\t\titemIds.add(value.itemId)\n\telif len(value.workOrders) \u003e 1:\n\t\torders \u003d system.kanoa.order.getProductionOrders({\u0027workOrderIdList\u0027: list(value.workOrders)})\n\t\titemIds \u003d set(row[\u0027itemId\u0027] for row in (orders or []))\n\n\tassets \u003d None\n\tfor itemId in itemIds:\n\t\tlinks \u003d {}\n\t\tif itemId is not None:\n\t\t\tfor row in system.kanoa.item.getAssetItems({\u0027itemId\u0027: itemId, \u0027includeTooling\u0027: True}) or []:\n\t\t\t\tif row[\u0027assetRateEnabled\u0027]:\n\t\t\t\t\tlinks[row[\u0027assetId\u0027]] \u003d row[\u0027assetPath\u0027]\n\t\tassets \u003d links if assets is None else dict((k, p) for k, p in assets.items() if k in links)\n\tassets \u003d assets or {}\n\n\trows \u003d [[k, p, True] for k, p in assets.items() if p]\n\tif value.assetId is not None and value.assetId not in assets and value.assetPath:\n\t\trows.append([value.assetId, value.assetPath, False])\n\trows.sort(key\u003dlambda r: r[1].lower())\n\treturn system.dataset.toDataSet([\u0027assetId\u0027, \u0027assetPath\u0027, \u0027canRun\u0027], rows)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
     "custom.info": {
       "binding": {
         "config": {
@@ -55,7 +126,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\t#We\u0027ll only populate the fields if the user is editing a single work order, otherwise we\u0027ll set all fields to null\n\t#And only update those fields that have a value.\n\n\tworkOrderId \u003d value[0] if len(value) \u003d\u003d 1 else -1\n\twoInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.order.getProductionOrders({\u0027workOrderId\u0027:workOrderId}), 0)\n\tif woInfo[\u0027note\u0027] is None: woInfo[\u0027note\u0027] \u003d \u0027\u0027\n\t\n\treturn woInfo",
+            "code": "\n\t#We\u0027ll only populate the fields if the user is editing a single work order, otherwise we\u0027ll set all fields to null\n\t#And only update those fields that have a value.\n\n\tworkOrderId \u003d value[0] if len(value) \u003d\u003d 1 else -1\n\twoInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.order.getProductionOrders({\u0027workOrderId\u0027:workOrderId}), 0)\n\tif woInfo[\u0027note\u0027] is None: woInfo[\u0027note\u0027] \u003d \u0027\u0027\n\t#A new order starts Released (a bulk edit leaves each order\u0027s status as it is)\n\tif len(value) \u003d\u003d 0 and woInfo[\u0027workOrderStatusId\u0027] is None:\n\t\twoInfo[\u0027workOrderStatusId\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027workOrderStatusId\u0027, system.kanoa.order.getProductionOrderStates({\u0027workOrderStatusName\u0027: \u0027Released\u0027, \u0027enabled\u0027: True}))\n\n\t#A new order defaults to the Production mode (an existing order keeps its mode)\n\tif len(value) \u003d\u003d 0 and woInfo[\u0027modeId\u0027] is None:\n\t\tmodes \u003d system.kanoa.asset.getModes({\u0027modeName\u0027: \u0027Production\u0027, \u0027modeTypeName\u0027: \u0027Production\u0027, \u0027enabled\u0027: True})\n\t\tif modes is not None and modes.rowCount \u003e 0: woInfo[\u0027modeId\u0027] \u003d modes.getValueAt(0, \u0027modeId\u0027)\n\t\n\treturn woInfo",
             "type": "script"
           }
         ],
@@ -70,7 +141,7 @@
   },
   "props": {
     "defaultSize": {
-      "height": 470,
+      "height": 505,
       "width": 497
     }
   },
@@ -92,7 +163,10 @@
                 "classes": "kanoa/font/default",
                 "textAlign": "right"
               },
-              "text": "Order #"
+              "text": "Order #",
+              "textStyle": {
+                "classes": "kanoa/required"
+              }
             },
             "type": "ia.display.label"
           },
@@ -274,7 +348,10 @@
                 "textOverflow": "ellipsis",
                 "whiteSpace": "pre"
               },
-              "text": "Item"
+              "text": "Item",
+              "textStyle": {
+                "classes": "kanoa/required"
+              }
             },
             "type": "ia.display.label"
           },
@@ -378,6 +455,176 @@
         "children": [
           {
             "meta": {
+              "domId": "lblAsset",
+              "name": "lblAsset"
+            },
+            "position": {
+              "basis": "65px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Asset"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "evAssetSelector",
+              "name": "evAssetSelector",
+              "tooltip": {
+                "location": "bottom-left"
+              }
+            },
+            "position": {
+              "basis": "200px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "!isNull({view.custom.assetSelectorDisabled})"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.assetSelectorDisabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.assets"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.values.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.assetPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.style": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.assetSelectorDisabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn {} if value is None else {\u0027opacity\u0027: 0.5, \u0027pointerEvents\u0027: \u0027none\u0027}",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "woAssetSelected",
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "selection": [],
+                  "style": {
+                    "iconColor": "",
+                    "iconPath": null,
+                    "tooltip": "Assets with an enabled rate for this item"
+                  },
+                  "treePath": "assetPath"
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "domId": "icoAssetCannotRun",
+              "name": "icoAssetCannotRun",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-left",
+                "text": "This asset has no enabled rate for the item, so it can\u0027t run it. It was kept (e.g. set from the ERP) so saving doesn\u0027t drop it; pick another asset or add an asset-item link."
+              }
+            },
+            "position": {
+              "basis": "24px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "assetId": "{view.custom.info.assetId}",
+                      "assets": "{view.custom.assets}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tif value.assetId is None or value.assets is None: return False\n\treturn any(row[\u0027assetId\u0027] \u003d\u003d value.assetId and not row[\u0027canRun\u0027] for row in system.dataset.toPyDataSet(value.assets))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "color": "var(--kcOrange)",
+              "path": "material/warning"
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "domId": "flxAsset",
+          "name": "flxAsset"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
               "domId": "label",
               "name": "label"
             },
@@ -390,7 +637,10 @@
                 "classes": "kanoa/font/default",
                 "textAlign": "right"
               },
-              "text": "Mode"
+              "text": "Mode",
+              "textStyle": {
+                "classes": "kanoa/required"
+              }
             },
             "type": "ia.display.label"
           },
@@ -421,7 +671,7 @@
                 },
                 "onChange": {
                   "enabled": null,
-                  "script": "\t\n\tif len(self.props.options) \u003d\u003d 1: self.props.value \u003d self.props.options[0].value"
+                  "script": "\t\n\t# Only fills an empty mode, so an existing order keeps its mode\n\tif self.props.value is None and len(self.props.options) \u003d\u003d 1: self.props.value \u003d self.props.options[0].value"
                 }
               },
               "props.value": {
@@ -588,6 +838,78 @@
         "children": [
           {
             "meta": {
+              "domId": "lblStart",
+              "name": "lblStart"
+            },
+            "position": {
+              "basis": "65px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Start Date"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "dtStartDate",
+              "name": "dtStartDate"
+            },
+            "position": {
+              "basis": "200px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "formattedValue": null,
+              "inputProps": {
+                "style": {
+                  "fontSize": "12px"
+                }
+              },
+              "modalStyle": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.date-time-input"
+          }
+        ],
+        "meta": {
+          "domId": "flxCntStart",
+          "name": "flxCntStart"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
               "domId": "lblDue",
               "name": "lblDue"
             },
@@ -672,7 +994,10 @@
                 "classes": "kanoa/font/default",
                 "textAlign": "right"
               },
-              "text": "Status"
+              "text": "Status",
+              "textStyle": {
+                "classes": "kanoa/required"
+              }
             },
             "type": "ia.display.label"
           },
@@ -973,7 +1298,14 @@
         {
           "name": "saveData",
           "params": [],
-          "script": "\n\tinfo \u003d dict(self.view.custom.info)\n\tsystem.perspective.print(\"saveData() called with %s\"%info)\n\n\tif info[\u0027note\u0027] \u003d\u003d \u0027\u0027: info[\u0027note\u0027] \u003d None\n\tif info[\u0027workOrderTitle\u0027] \u003d\u003d \u0027\u0027: info[\u0027workOrderTitle\u0027] \u003d None\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\ttry:\t#units dropdown allows custom options to be created. If it is not an int, then user has just created this unit\n\t\tint(info[\u0027itemUnitId\u0027])\n\texcept:\n\t\tinfo[\u0027itemUnitId\u0027] \u003d system.kanoa.item.addItemUnit(info[\u0027itemUnitId\u0027], userId)\n\t\n\tif len(self.view.params.workOrders) \u003d\u003d 0:\t#Ths is a new WorkOrder\n\t\tif system.kanoa.utilities.getFieldValue(\u0027workOrderId\u0027, system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: info[\u0027workOrderName\u0027]})) is not None:\n\t\t\tsystem.perspective.print(\"A work order of this name already exists\")\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027An order with this name already exists\u0027})\n\t\t\treturn\n\t\n\t\tworkOrderId \u003d system.kanoa.order.addProductionOrder(info, userId)\t\n\t\tsystem.perspective.print(\"addProductionOrder() returned %s\"%workOrderId)\n\t\tself.view.params.workOrders.append(workOrderId)\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order created\u0027})\n\telif len(self.view.params.workOrders) \u003d\u003d 1:\t#We are editing a single workOrder\n\t\tretVal \u003d system.kanoa.order.updateProductionOrder(info, userId)\n\t\tsystem.perspective.print(\"updateProductionOrder() returned %s\"%retVal)\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order updated\u0027})\n\telse:\t#This is a bulk workOrder update\n\t\tfor k,v in info.items():\n\t\t\tif k in (\u0027dueDate\u0027, \u0027itemId\u0027, \u0027modeId\u0027, \u0027reqdQty\u0027, \u0027itemUnitId\u0027, \u0027workOrderStatusId\u0027, \u0027note\u0027):\n\t\t\t\tfor workOrderId in self.view.params.workOrders:\n\t\t\t\t\tif (v or None) is not None:\n\t\t\t\t\t\tretVal \u003d system.kanoa.order.updateProductionOrderField(workOrderId, k, v, userId)\n\t\t\t\t\t\tsystem.perspective.print(\"updateProductionOrderField() returned %s\"%retVal)\n\t\t\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order updated\u0027})\n\n\timport time\n\ttime.sleep(1)\t#give a chance for the user to see the success popup\n\n\tsystem.perspective.sendMessage(\u0027workOrderUpdate\u0027, {\u0027dueDate\u0027: info[\u0027dueDate\u0027]})\n\treturn\t"
+          "script": "\n\tinfo \u003d dict(self.view.custom.info)\n\tsystem.perspective.print(\"saveData() called with %s\"%info)\n\n\tif info[\u0027note\u0027] \u003d\u003d \u0027\u0027: info[\u0027note\u0027] \u003d None\n\tif info[\u0027workOrderTitle\u0027] \u003d\u003d \u0027\u0027: info[\u0027workOrderTitle\u0027] \u003d None\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\ttry:\t#units dropdown allows custom options to be created. If it is not an int, then user has just created this unit\n\t\tint(info[\u0027itemUnitId\u0027])\n\texcept:\n\t\tif (info[\u0027itemUnitId\u0027] or None) is None: info[\u0027itemUnitId\u0027] \u003d None\t#No units given (e.g. a bulk edit leaving them as they are)\n\t\telse:\n\t\t\t#addItemUnit returns (itemUnitId, msg)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(info[\u0027itemUnitId\u0027], userId)\n\t\t\tif itemUnitId is None:\n\t\t\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Couldn\\\u0027t add unit \"%s\": %s\u0027 % (info[\u0027itemUnitId\u0027], msg)})\n\t\t\t\treturn\n\t\t\tinfo[\u0027itemUnitId\u0027] \u003d itemUnitId\n\t\n\tif len(self.view.params.workOrders) \u003d\u003d 0:\t#Ths is a new WorkOrder\n\t\tif system.kanoa.utilities.getFieldValue(\u0027workOrderId\u0027, system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: info[\u0027workOrderName\u0027]})) is not None:\n\t\t\tsystem.perspective.print(\"A work order of this name already exists\")\n\t\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027An order with this name already exists\u0027})\n\t\t\treturn\n\t\n\t\tworkOrderId \u003d system.kanoa.order.addProductionOrder(info, userId)\t\n\t\tsystem.perspective.print(\"addProductionOrder() returned %s\"%workOrderId)\n\t\tself.view.params.workOrders.append(workOrderId)\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order created\u0027})\n\telif len(self.view.params.workOrders) \u003d\u003d 1:\t#We are editing a single workOrder\n\t\tretVal \u003d system.kanoa.order.updateProductionOrder(info, userId)\n\t\tsystem.perspective.print(\"updateProductionOrder() returned %s\"%retVal)\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order updated\u0027})\n\telse:\t#This is a bulk workOrder update\n\t\tupdated \u003d set()\t#One toast for the bulk save, not one per field per order (868mvvzbz)\n\t\tfor k,v in info.items():\n\t\t\tif k in (\u0027dueDate\u0027, \u0027startDate\u0027, \u0027itemId\u0027, \u0027modeId\u0027, \u0027reqdQty\u0027, \u0027itemUnitId\u0027, \u0027workOrderStatusId\u0027, \u0027note\u0027, \u0027assetId\u0027):\n\t\t\t\tfor workOrderId in self.view.params.workOrders:\n\t\t\t\t\tif (v or None) is not None:\n\t\t\t\t\t\tretVal \u003d system.kanoa.order.updateProductionOrderField(workOrderId, k, v, userId)\n\t\t\t\t\t\tsystem.perspective.print(\"updateProductionOrderField() returned %s\"%retVal)\n\t\t\t\t\t\tupdated.add(workOrderId)\n\t\tif updated: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Updated %s orders\u0027%len(updated)})\n\n\timport time\n\ttime.sleep(1)\t#give a chance for the user to see the success popup\n\n\tsystem.perspective.sendMessage(\u0027workOrderUpdate\u0027, {\u0027dueDate\u0027: info[\u0027dueDate\u0027]})\n\treturn\t"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
         }
       ],
       "extensionFunctions": null,
@@ -981,7 +1313,14 @@
         {
           "messageType": "woItemSelected",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"woItemSelected msg rcvd with %s\"%payload)\n\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tself.view.custom.info.itemId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemId\u0027]\n\t\tself.view.custom.info.itemName \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemName\u0027]\n\t\tself.view.custom.info.itemPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]\n\t\tself.view.custom.info.itemColor \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemColor\u0027]\n\telse:\n\t\tself.view.custom.info.itemId \u003d None\n\t\tself.view.custom.info.itemPath \u003d None\n\t\tself.view.custom.info.itemName \u003d None\n\t\tself.view.custom.info.itemColor \u003d None\n\t\n\treturn",
+          "script": "\n\tsystem.perspective.print(\"woItemSelected msg rcvd with %s\"%payload)\n\n\t# The selector also sends this when the view loads the order\u0027s item, so the asset is only re-checked on a change.\n\tpreviousItemId \u003d self.view.custom.info.itemId\n\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tself.view.custom.info.itemId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemId\u0027]\n\t\tself.view.custom.info.itemName \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemName\u0027]\n\t\tself.view.custom.info.itemPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]\n\t\tself.view.custom.info.itemColor \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027itemColor\u0027]\n\telse:\n\t\tself.view.custom.info.itemId \u003d None\n\t\tself.view.custom.info.itemPath \u003d None\n\t\tself.view.custom.info.itemName \u003d None\n\t\tself.view.custom.info.itemColor \u003d None\n\t\n\tassetId \u003d self.view.custom.info.assetId\n\titemId \u003d self.view.custom.info.itemId\n\tif assetId is not None and itemId !\u003d previousItemId:\n\t\tlinks \u003d [] if itemId is None else system.kanoa.item.getAssetItems({\u0027itemId\u0027: itemId, \u0027assetId\u0027: assetId, \u0027includeTooling\u0027: True}) or []\n\t\tif not any(row[\u0027assetRateEnabled\u0027] for row in links):\n\t\t\tself.view.custom.info.assetId \u003d None\n\t\t\tself.view.custom.info.assetPath \u003d None\n\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "woAssetSelected",
+          "pageScope": true,
+          "script": "\n\t# The selector also sends this when the view loads the order\u0027s asset. A site/area node has no assetId, so it\u0027s ignored.\n\tselection \u003d payload[\u0027selection\u0027]\n\tif len(selection) \u003e 0:\n\t\tasset \u003d selection[0][\u0027value\u0027]\n\t\tif asset.get(\u0027assetId\u0027) is None: return\n\t\tself.view.custom.info.assetId \u003d asset[\u0027assetId\u0027]\n\t\tself.view.custom.info.assetPath \u003d asset[\u0027assetPath\u0027]\n\telse:\n\t\tself.view.custom.info.assetId \u003d None\n\t\tself.view.custom.info.assetPath \u003d None\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

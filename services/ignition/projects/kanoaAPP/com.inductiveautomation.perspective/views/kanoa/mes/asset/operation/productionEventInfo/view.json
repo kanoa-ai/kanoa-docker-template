@@ -48,7 +48,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n\tdurationSecs \u003d system.kanoa.utilities.secondsToText(value[\u0027durationSecs\u0027] or 0, {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True})\n\titem \u003d value[\u0027itemName\u0027] + \u0027 - \u0027 + value[\u0027itemDescription\u0027] if value[\u0027itemDescription\u0027] else value[\u0027itemName\u0027]\n\treturn \u0027{:,} {} of {} produced in {}\u0027.format(round(value[\u0027outfeedCount\u0027],1), value[\u0027outfeedUnits\u0027] or \u0027\u0027, item, durationSecs)",
+                      "code": "\t# In the session\u0027s language: the sentence comes from templates ({count} {units} of {item}...), as a label with numbers in it\n\t# doesn\u0027t match a translation term\n\tlocale \u003d self.session.props.locale\n\ttr \u003d lambda s: system.util.translate(s, locale)\n\tcount \u003d system.kanoa.utilities.formatNumber(\u0027#,##0.#\u0027, value[\u0027outfeedCount\u0027] or 0)\n\titem \u003d value[\u0027itemName\u0027] + \u0027 - \u0027 + value[\u0027itemDescription\u0027] if value[\u0027itemDescription\u0027] else value[\u0027itemName\u0027]\n\ttext \u003d tr(\u0027{count} {units} of {item}\u0027).replace(\u0027{count}\u0027, count).replace(\u0027{units}\u0027, value[\u0027outfeedUnits\u0027] or \u0027\u0027).replace(\u0027{item}\u0027, item or \u0027\u0027)\n\t#Units made as a co-product of another item, on a family tool, took no time of this item\u0027s own (868mu5ca9)\n\ttry:\n\t\tcoProduct \u003d value[\u0027coProductCount\u0027] or 0\n\texcept:\n\t\tcoProduct \u003d 0\n\tif coProduct and coProduct \u003e\u003d (value[\u0027outfeedCount\u0027] or 0): return tr(\u0027{text}, as a co-product\u0027).replace(\u0027{text}\u0027, text)\n\tif coProduct: text \u003d tr(\u0027{text} ({count} as a co-product)\u0027).replace(\u0027{text}\u0027, text).replace(\u0027{count}\u0027, system.kanoa.utilities.formatNumber(\u0027#,##0.#\u0027, coProduct))\n\treturn tr(\u0027{text} produced in {time}\u0027).replace(\u0027{text}\u0027, text).replace(\u0027{time}\u0027, system.kanoa.utilities.secondsToText(value[\u0027durationSecs\u0027] or 0, {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True}))",
                       "type": "script"
                     }
                   ],
@@ -87,7 +87,7 @@
       "alignContent": "flex-start",
       "style": {
         "borderStyle": "none",
-        "classes": "kanoa/containerVariant kanoa/font/bodyMedium",
+        "classes": "kanoa/containerVariant kanoa/font/default",
         "overflow": "hidden"
       },
       "wrap": "wrap"

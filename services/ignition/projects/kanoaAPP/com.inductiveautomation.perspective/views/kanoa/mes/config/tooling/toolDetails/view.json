@@ -1,0 +1,1684 @@
+{
+  "custom": {
+    "changesMade": false,
+    "info": {},
+    "origInfo": {},
+    "toolingAssetId": null,
+    "userAction": {
+      "canCreate": false,
+      "canRead": true,
+      "canUpdate": false
+    },
+    "typeDescription": ""
+  },
+  "params": {
+    "value": {
+      "toolingAssetId": null
+    }
+  },
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.security"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.toolingAssetId": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn value.get(\u0027toolingAssetId\u0027) if value else None",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.info": {
+      "binding": {
+        "config": {
+          "path": "view.custom.toolingAssetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tfields \u003d [\u0027toolingAssetId\u0027, \u0027assetName\u0027, \u0027parentId\u0027, \u0027assetTypeId\u0027, \u0027enabled\u0027, \u0027hasPositions\u0027, \u0027holdsInserts\u0027, \u0027scalesOutput\u0027, \u0027lifeUnit\u0027, \u0027lifetimeLimit\u0027, \u0027pmInterval\u0027, \u0027refurbInterval\u0027, \u0027refurbLimit\u0027, \u0027warnPct\u0027, \u0027calibrationIntervalDays\u0027, \u0027calibrationDue\u0027, \u0027setupMinutes\u0027, \u0027teardownMinutes\u0027]\n\tinfo \u003d dict((k, None) for k in fields)\n\tinfo.update({\u0027assetName\u0027: \u0027\u0027, \u0027enabled\u0027: True, \u0027hasPositions\u0027: False, \u0027holdsInserts\u0027: False, \u0027scalesOutput\u0027: False})\n\tif value is not None:\n\t\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027toolingAssetId\u0027: value}) or [])\n\t\tif rows:\n\t\t\tfor k in fields: info[k] \u003d rows[0].get(k)\n\t\t\tinfo[\u0027toolingAssetId\u0027] \u003d value\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\n\tif origin \u003d\u003d \u0027Binding\u0027 and self.custom.info: self.custom.origInfo \u003d dict(self.custom.info)\n\treturn"
+      },
+      "persistent": true
+    },
+    "custom.changesMade": {
+      "binding": {
+        "config": {
+          "struct": {
+            "info": "{view.custom.info}",
+            "orig": "{view.custom.origInfo}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# Name and type are required\n\tif not value[\u0027info\u0027] or not (value[\u0027info\u0027][\u0027assetName\u0027] or \u0027\u0027).strip() or value[\u0027info\u0027][\u0027assetTypeId\u0027] is None: return False\n\treturn dict(value[\u0027info\u0027]) !\u003d dict(value[\u0027orig\u0027] or {})",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "security": "{view.custom.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecurity \u003d value[\u0027security\u0027]\n\tuserCRUD \u003d security[\u0027userCRUD\u0027] if security else {}\n\tcanEdit \u003d bool(userCRUD) and (userCRUD.get(\u0027isGatewayAdmin\u0027) or userCRUD.get(\u0027configureAssets\u0027, {}).get(\u0027enabled\u0027))\n\treturn {\u0027canCreate\u0027: canEdit, \u0027canUpdate\u0027: canEdit, \u0027canRead\u0027: True}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.typeDescription": {
+      "binding": {
+        "config": {
+          "path": "view.custom.info.assetTypeId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# The tooling type\u0027s description, under the Tooling type\n\tif value is None: return \u0027\u0027\n\ttypes \u003d system.kanoa.tooling.getToolTypes({\u0027assetTypeId\u0027: value})\n\treturn (types.getValueAt(0, \u0027description\u0027) or \u0027\u0027) if hasattr(types, \u0027getRowCount\u0027) and types.getRowCount() else \u0027\u0027",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 520,
+      "width": 950
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "auto",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "flxForm"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "flxLeft"
+            },
+            "position": {
+              "basis": "50%",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "flxName"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxNameLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Required. The tool\u0027s name. It has to be unique within the tool\u0027s site."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Name",
+                      "textStyle": {
+                        "classes": "kanoa/required"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "txtName"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.assetName",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "deferUpdates": false
+                    },
+                    "type": "ia.input.text-field"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxLocation"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxLocationLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Where the tool is kept in the asset tree, such as a tool crib. Its site is where the name has to be unique."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Location"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "evLocation"
+                    },
+                    "position": {
+                      "basis": "0px",
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.params.value.assetPath": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.parentId"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property",
+                          "transforms": [
+                            {
+                              "code": "\n\tif value is None: return None\n\treturn system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))",
+                              "type": "script"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "value": {
+                          "followValue": true,
+                          "msgHandler": "toolLocationSelected",
+                          "options": {
+                            "dragDrop": false,
+                            "expand": false,
+                            "multiSelect": false,
+                            "showBreadcrumb": true,
+                            "showClear": true,
+                            "showSelectedPath": false
+                          },
+                          "parentPathList": [],
+                          "persistent": false,
+                          "useSessionValue": false
+                        }
+                      },
+                      "path": "kanoa/core/templates/selectors/assetSelector",
+                      "style": {
+                        "minWidth": "120px"
+                      }
+                    },
+                    "type": "ia.display.view"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxType"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxTypeLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Required. The kind of tool: Mold, Die, Gauge and so on. A new tool starts with its type\u0027s defaults for the settings below."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Tooling type",
+                      "textStyle": {
+                        "classes": "kanoa/required"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "ddType"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.assetTypeId",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.options": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.assetTypeId"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\ttypes \u003d system.kanoa.tooling.getToolTypes({\u0027enabled\u0027: True})\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(types) if hasattr(types, \u0027getRowCount\u0027) else []\n\toptions \u003d [{\u0027value\u0027: r[\u0027assetTypeId\u0027], \u0027label\u0027: r[\u0027assetTypeName\u0027]} for r in rows]\n\t# A tool made before tooling types keeps its type selectable until it\u0027s changed\n\tif value is not None and value not in [o[\u0027value\u0027] for o in options]:\n\t\tcurrent \u003d system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027: value})\n\t\tif hasattr(current, \u0027getRowCount\u0027) and current.getRowCount():\n\t\t\toptions.append({\u0027value\u0027: value, \u0027label\u0027: \u0027%s (not a tooling type)\u0027 % current.getValueAt(0, \u0027assetTypeName\u0027)})\n\treturn options",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "placeholder": {
+                        "text": "Select..."
+                      },
+                      "showClearIcon": true
+                    },
+                    "type": "ia.input.dropdown",
+                    "events": {
+                      "component": {
+                        "onActionPerformed": {
+                          "config": {
+                            "script": "\n\t# A new tool starts with what its type does; an existing tool\u0027s settings stay as they are\n\tif self.view.custom.info.toolingAssetId is not None or self.props.value is None: return\n\ttypes \u003d system.kanoa.tooling.getToolTypes({\u0027assetTypeId\u0027: self.props.value})\n\tif not hasattr(types, \u0027getRowCount\u0027) or types.getRowCount() \u003d\u003d 0: return\n\tfor k in (\u0027hasPositions\u0027, \u0027holdsInserts\u0027, \u0027scalesOutput\u0027, \u0027lifeUnit\u0027, \u0027calibrationIntervalDays\u0027):\n\t\tself.view.custom.info[k] \u003d types.getValueAt(0, k)\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxTypeDescription"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "len({view.custom.typeDescription}) \u003e 0"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "lblTypeDescriptionGap"
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "lblTypeDescription"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.typeDescription"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "fontSize": "12px",
+                        "whiteSpace": "normal"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxEnabled"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxEnabledLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Clear this to take the tool out of service. A disabled tool can\u0027t be mounted."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Enabled"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "chkEnabled"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.enabled",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "Can be mounted"
+                    },
+                    "type": "ia.input.checkbox"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxHasPositions"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxHasPositionsLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "The tool has positions, such as cavities, stations or nests, that make parts. Set them up on the Positions tab."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Has positions"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "chkHasPositions"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.hasPositions",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        },
+                        "onChange": {
+                          "enabled": null,
+                          "script": "\n\t# Scales output works from the positions\n\tif origin \u003d\u003d \u0027Browser\u0027 and not currentValue.value:\n\t\tself.view.custom.info.scalesOutput \u003d False"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "Cavities, outs, pockets..."
+                    },
+                    "type": "ia.input.checkbox"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxHoldsInserts"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxHoldsInsertsLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "The tool has pockets that hold other tools, like a mold base that holds inserts."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Holds inserts"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "chkHoldsInserts"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.holdsInserts",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "A mold base or frame"
+                    },
+                    "type": "ia.input.checkbox"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxScalesOutput"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxScalesOutputLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "The machine counts this tool\u0027s cycles, not parts, so each cycle is multiplied by the parts per cycle from its positions. Shown when the tool has positions."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Scales output"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "chkScalesOutput"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.selected": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.scalesOutput",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "Its positions set the parts per cycle"
+                    },
+                    "type": "ia.input.checkbox"
+                  }
+                ],
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "{view.custom.info.hasPositions}"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "flxSetup"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxSetupLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Typical minutes to mount the tool and set it up on a machine."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Setup minutes"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numSetup"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.setupMinutes",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxTeardown"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxTeardownLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Typical minutes to unmount the tool and put it away."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Teardown minutes"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numTeardown"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.teardownMinutes",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "lblRequiredHint"
+                },
+                "position": {
+                  "basis": "40px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontSize": "12px",
+                    "paddingLeft": "5px"
+                  },
+                  "text": "Required fields are marked",
+                  "textStyle": {
+                    "classes": "kanoa/required"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxRight"
+            },
+            "position": {
+              "basis": "50%",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "flxLifeUnit"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxLifeUnitLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "The unit the limits below are counted in: cycles, run minutes (time the machine is Running with the tool mounted) or calendar days."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Life measured in"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "ddLifeUnit"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.lifeUnit",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        },
+                        "onChange": {
+                          "enabled": null,
+                          "script": "\n\t# The limits are in the life unit; with none they don\u0027t count\n\tif origin \u003d\u003d \u0027Browser\u0027 and not currentValue.value:\n\t\tfor k in (\u0027lifetimeLimit\u0027, \u0027pmInterval\u0027, \u0027refurbInterval\u0027):\n\t\t\tself.view.custom.info[k] \u003d None"
+                        }
+                      },
+                      "props.options": {
+                        "binding": {
+                          "config": {
+                            "expression": "now(0)"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\treturn [{\u0027value\u0027: \u0027cycles\u0027, \u0027label\u0027: \u0027Cycles\u0027}, {\u0027value\u0027: \u0027runMinutes\u0027, \u0027label\u0027: \u0027Run minutes\u0027}, {\u0027value\u0027: \u0027calendarDays\u0027, \u0027label\u0027: \u0027Calendar days\u0027}]",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr"
+                        }
+                      }
+                    },
+                    "props": {
+                      "placeholder": {
+                        "text": "No limits"
+                      },
+                      "showClearIcon": true
+                    },
+                    "type": "ia.input.dropdown"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxLifetime"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxLifetimeLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Total life before the tool is worn out, in the life unit. Shown when Life measured in is set. Leave it empty for no limit."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Lifetime limit"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numLifetime"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.lifetimeLimit",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0,0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ],
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "coalesce({view.custom.info.lifeUnit}, \"\") !\u003d \"\""
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "flxPm"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxPmLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Life between preventive maintenance, in the life unit. The count starts over when a PM is logged. Shown when Life measured in is set. Leave it empty for no limit."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "PM interval"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numPm"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.pmInterval",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0,0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ],
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "coalesce({view.custom.info.lifeUnit}, \"\") !\u003d \"\""
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "flxRefurbInterval"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxRefurbIntervalLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Life between refurbishments, in the life unit. The count starts over when a refurbishment is logged. Shown when Life measured in is set. Leave it empty for no limit."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Refurbish every"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numRefurbInterval"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.refurbInterval",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0,0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ],
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "coalesce({view.custom.info.lifeUnit}, \"\") !\u003d \"\""
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "flxRefurbLimit"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxRefurbLimitLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "How many refurbishments the tool can have before it\u0027s worn out. It counts the refurbishments logged, so it doesn\u0027t need a life unit. Leave it empty for no limit."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Max refurbishments"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numRefurbLimit"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.refurbLimit",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxWarn"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxWarnLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "How far through a limit, in percent, the tool shows as Due. Past 100% it shows as Over limit. Shown when a life unit, Max refurbishments or Calibrate every is set."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Warn at %"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numWarn"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.warnPct",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0.#",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ],
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "coalesce({view.custom.info.lifeUnit}, \"\") !\u003d \"\" || !isNull({view.custom.info.refurbLimit}) || !isNull({view.custom.info.calibrationIntervalDays})"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "flxCalInterval"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxCalIntervalLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Days between calibrations. Logging a calibration moves the due date on by this many days. Leave it empty if the tool isn\u0027t calibrated."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Calibrate every (days)"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "numCalInterval"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.calibrationIntervalDays",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        },
+                        "onChange": {
+                          "enabled": null,
+                          "script": "\n\t# A due date needs an interval: logging a calibration moves it on by the interval\n\tif origin \u003d\u003d \u0027Browser\u0027 and currentValue.value is None:\n\t\tself.view.custom.info.calibrationDue \u003d None"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "0",
+                      "spinner": {
+                        "enabled": false
+                      }
+                    },
+                    "type": "ia.input.numeric-entry-field"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxCalDue"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxCalDueLbl",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "When the next calibration is due. Logging a calibration updates it. Shown when Calibrate every is set."
+                      }
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Calibration due"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "dtCalDue"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.info.calibrationDue",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.format": {
+                        "binding": {
+                          "config": {
+                            "path": "session.props.locale"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.date.localizeDateFormat(\"YYYY-MM-DD HH:mm\", value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "YYYY-MM-DD HH:mm"
+                    },
+                    "type": "ia.input.date-time-input"
+                  }
+                ],
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "!isNull({view.custom.info.calibrationIntervalDays})"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                }
+              },
+              {
+                "meta": {
+                  "name": "lblLimitsHint"
+                },
+                "position": {
+                  "basis": "40px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontSize": "12px",
+                    "paddingLeft": "5px"
+                  },
+                  "text": "Limits are in the life unit; leave one empty for no limit. Due at the warn %, Over limit past the limit."
+                },
+                "type": "ia.display.label"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tinfo \u003d dict(self.view.custom.info)\n\t# Settings that need another one are dropped without it\n\tif not info.get(\u0027hasPositions\u0027):\n\t\tinfo[\u0027scalesOutput\u0027] \u003d False\n\tif not info.get(\u0027lifeUnit\u0027):\n\t\tinfo[\u0027lifeUnit\u0027] \u003d None\n\t\tfor k in (\u0027lifetimeLimit\u0027, \u0027pmInterval\u0027, \u0027refurbInterval\u0027):\n\t\t\tinfo[k] \u003d None\n\tif info.get(\u0027calibrationIntervalDays\u0027) is None:\n\t\tinfo[\u0027calibrationDue\u0027] \u003d None\n\tuserId \u003d self.view.custom.security.userId\n\tif info[\u0027toolingAssetId\u0027] is None:\n\t\ttoolingAssetId, msg \u003d system.kanoa.tooling.addTool(info, userId)\n\telse:\n\t\ttoolingAssetId, msg \u003d info[\u0027toolingAssetId\u0027], system.kanoa.tooling.updateTool(info, userId)[1]\n\tif msg:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\t\treturn\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Tool saved\u0027})\n\tsystem.perspective.sendMessage(\u0027toolUpdated\u0027, {\u0027toolingAssetId\u0027: toolingAssetId})\n\tself.view.refreshBinding(\u0027custom.info\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnSave"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "changes": "{view.custom.changesMade}",
+                      "action": "{view.custom.userAction}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027changes\u0027] and value[\u0027action\u0027][\u0027canUpdate\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/save"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          }
+        ]
+      }
+    ],
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "toolLocationSelected",
+          "pageScope": true,
+          "script": "\n\t# The location picked (or cleared) in the Location selector\n\tpath \u003d payload[\u0027assetPath\u0027]\n\tparentId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: path})) if path else None\n\tif self.view.custom.info.parentId !\u003d parentId:\n\t\tself.view.custom.info.parentId \u003d parentId",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

@@ -48,16 +48,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.custom.asset.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.custom.asset.tagPath}, indexOf({view.custom.asset.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value.OEE",
+            "code": "\n\t#The asset\u0027s OEE/info tag: its kanoaMES OEE tags (which the module keeps for every OEE asset; the [Kanoa] Line UDT\n\t#isn\u0027t always there) in one document that changes whenever any of them does. Flattened to the names the Line UDT\u0027s\n\t#OEE folder had; dates are in milliseconds, as that binding gave them. None without an asset\n\tif value is None: return None\n\tdef folder(name):\n\t\ttry: return value[name]\n\t\texcept: return None\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\tstatus, run \u003d folder(\u0027Status\u0027), folder(\u0027Current Run\u0027)\n\tinfo \u003d {}\n\tfor name in [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027modeSourceName\u0027, \u0027userName\u0027, \u0027iconPath\u0027, \u0027workOrderId\u0027,\n\t\t\t\u0027workOrderName\u0027, \u0027workOrderTitle\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027,\n\t\t\t\u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027packageCount\u0027, \u0027woRemainingMinutes\u0027, \u0027shiftId\u0027, \u0027shiftNameId\u0027, \u0027shiftName\u0027, \u0027shiftStart\u0027,\n\t\t\t\u0027shiftEnd\u0027, \u0027scheduleBlockId\u0027, \u0027scheduleStart\u0027, \u0027scheduleEnd\u0027, \u0027stateName\u0027, \u0027stateStart\u0027, \u0027stateTypeName\u0027, \u0027stateColor\u0027,\n\t\t\t\u0027stateTypeColor\u0027, \u0027stateIconPath\u0027, \u0027assetId\u0027]:\n\t\tinfo[name] \u003d field(status, name)\n\tfor name in [\u0027startDate\u0027, \u0027durationSecs\u0027, \u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027targetCount\u0027,\n\t\t\t\u0027standardRate\u0027, \u0027period\u0027, \u0027infeedRateSecs\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027,\n\t\t\t\u0027wasteCount\u0027]:\n\t\tinfo[name] \u003d field(run, name)\n\t#As the module works it out for the Line tags: the run\u0027s outfeed per minute, in production only\n\tduration, outfeed \u003d info[\u0027durationSecs\u0027], info[\u0027outfeedCount\u0027]\n\tinfo[\u0027outfeedRatePerMinute\u0027] \u003d outfeed / (duration / 60.0) if info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and duration and outfeed is not None else None\n\tinfo[\u0027endDate\u0027] \u003d None\n\treturn info",
             "type": "script"
           }
         ],
@@ -85,7 +82,7 @@
         },
         "transforms": [
           {
-            "code": "\tif self.custom.filters.ignoreDateRange: \n\t\treturn {}\n\tstartDate \u003d value[\u0027dateRange\u0027][\u0027startDate\u0027]\n\tendDate \u003d value[\u0027dateRange\u0027][\u0027endDate\u0027]\n\tprodModeId \u003d system.kanoa.utilities.getFieldValue(\u0027modeId\u0027, system.kanoa.asset.getModes({\u0027modeName\u0027: \u0027Production\u0027}))\n\tpeSummary \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027modeId\u0027: prodModeId, \u0027strictDates\u0027: True}))\n\t\n\toeeData \u003d {\u0027a\u0027: 0, \u0027p\u0027: 0, \u0027q\u0027: 0, \u0027oee\u0027: 0}\n\ttotalRuntime \u003d sum(val[\u0027runtimeSecs\u0027] for val in peSummary)\n\t\n\tfor pe in peSummary:\n\t\toeeData[\u0027a\u0027] +\u003d (pe[\u0027availability\u0027]) * (pe[\u0027runtimeSecs\u0027] / totalRuntime) if pe[\u0027availability\u0027] \u003e 0 else 0\n\t\toeeData[\u0027p\u0027] +\u003d (pe[\u0027performance\u0027]) * (pe[\u0027runtimeSecs\u0027] / totalRuntime) if pe[\u0027performance\u0027] \u003e 0 else 0\n\t\toeeData[\u0027q\u0027] +\u003d (pe[\u0027quality\u0027]) * (pe[\u0027runtimeSecs\u0027] / totalRuntime) if pe[\u0027quality\u0027] \u003e 0 else 0\n\toeeData[\u0027oee\u0027] \u003d oeeData[\u0027a\u0027] * oeeData[\u0027p\u0027] * oeeData[\u0027q\u0027]\n\t\n\treturn oeeData",
+            "code": "\n\t#The date range\u0027s OEE as system.kanoa.event.getOEESummary works it out (as the Asset Shift OEE widget shows it)\n\tif value[\u0027ignoreDateRange\u0027] or not value[\u0027assetId\u0027] or not value.get(\u0027dateRange\u0027):\n\t\treturn {}\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getOEESummary({\u0027assetId\u0027: value[\u0027assetId\u0027],\n\t\t\t\t\u0027startDate\u0027: value[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027dateRange\u0027][\u0027endDate\u0027]}))\n\tif not rows:\n\t\treturn {\u0027a\u0027: 0.0, \u0027p\u0027: 0.0, \u0027q\u0027: 0.0, \u0027oee\u0027: 0.0}\n\ta, p, q \u003d [rows[0][name] or 0.0 for name in (\u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027)]\n\treturn {\u0027a\u0027: a, \u0027p\u0027: p, \u0027q\u0027: q, \u0027oee\u0027: a * p * q}",
             "type": "script"
           }
         ],
@@ -105,7 +102,7 @@
         },
         "transforms": [
           {
-            "code": "\n\toeeBy \u003d value[\u0027filters\u0027][\u0027oeeBy\u0027].lower()\n\tliveDataMode \u003d value[\u0027filters\u0027][\u0027ignoreDateRange\u0027]\n\n\tif value[\u0027tagInfo\u0027] is not None:\n\t\ta \u003d (value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0) if liveDataMode else (value[\u0027dateRangeOEE\u0027][\u0027a\u0027] or 0.0)\n\t\tp \u003d (value[\u0027tagInfo\u0027][\u0027performance\u0027] or 0.0) if liveDataMode else (value[\u0027dateRangeOEE\u0027][\u0027p\u0027] or 0.0)\n\t\tq \u003d (value[\u0027tagInfo\u0027][\u0027quality\u0027] or 0.0) if liveDataMode else (value[\u0027dateRangeOEE\u0027][\u0027q\u0027] or 0.0)\n\telse:\n\t\ta, p, q \u003d 0.0, 0.0, 0.0\n\tdisplayValue \u003d 0\n\n\tif oeeBy \u003d\u003d \u0027availability\u0027 or oeeBy \u003d\u003d \u0027a\u0027:\n\t\tdisplayValue \u003d a * 100\n\telif oeeBy \u003d\u003d \u0027performance\u0027 or oeeBy \u003d\u003d \u0027p\u0027:\n\t\tdisplayValue \u003d p * 100\n\telif oeeBy \u003d\u003d \u0027quality\u0027 or oeeBy \u003d\u003d \u0027q\u0027:\n\t\tdisplayValue \u003d q * 100\n\telse:\n\t\tdisplayValue \u003d (a * p * q) * 100 if liveDataMode else value[\u0027dateRangeOEE\u0027][\u0027oee\u0027] * 100\n\n\tmsg \u003d \"oeeDial: asset {} with value {}\".format(value[\u0027filters\u0027][\u0027assetPath\u0027], displayValue)\n\tsystem.perspective.print(msg)\n\n\treturn max(0.0, min(100.0, displayValue))",
+            "code": "\n\toeeBy \u003d (value[\u0027filters\u0027][\u0027oeeBy\u0027] or \u0027oee\u0027).lower()\n\tliveDataMode \u003d value[\u0027filters\u0027][\u0027ignoreDateRange\u0027]\n\n\t#Live: the asset\u0027s OEE tags. A date range: its OEE (custom.dateRangeOEE)\n\tif liveDataMode:\n\t\tinfo \u003d value[\u0027tagInfo\u0027]\n\t\ta, p, q \u003d [(info[name] or 0.0) if info is not None else 0.0 for name in (\u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027)]\n\telse:\n\t\trangeOEE \u003d value[\u0027dateRangeOEE\u0027] or {}\n\t\ta, p, q \u003d [rangeOEE.get(name) or 0.0 for name in (\u0027a\u0027, \u0027p\u0027, \u0027q\u0027)]\n\n\tif oeeBy \u003d\u003d \u0027availability\u0027 or oeeBy \u003d\u003d \u0027a\u0027:\n\t\tdisplayValue \u003d a * 100\n\telif oeeBy \u003d\u003d \u0027performance\u0027 or oeeBy \u003d\u003d \u0027p\u0027:\n\t\tdisplayValue \u003d p * 100\n\telif oeeBy \u003d\u003d \u0027quality\u0027 or oeeBy \u003d\u003d \u0027q\u0027:\n\t\tdisplayValue \u003d q * 100\n\telse:\n\t\tdisplayValue \u003d a * p * q * 100\n\n\treturn max(0.0, min(100.0, displayValue))",
             "type": "script"
           }
         ],
@@ -124,7 +121,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tif not filters.has_key(\u0027ignoreDateRange\u0027):\n\t\tfilters[\u0027ignoreDateRange\u0027] \u003d True\n\t\t\n\tif value[\u0027viewParams\u0027].has_key(\u0027assetPath\u0027) and value[\u0027viewParams\u0027][\u0027assetPath\u0027] is not None:\n\t\tfilters[\u0027assetPath\u0027] \u003d value[\u0027viewParams\u0027][\u0027assetPath\u0027]\n\t\t\n\t#system.perspective.print(\u0027returning oeeDial filters {}\u0027.format(filters))\n\treturn filters",
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\t#Live values unless the dashboard has a date selector (or the widget\u0027s ignoreDateRange param says otherwise)\n\tif not filters.has_key(\u0027ignoreDateRange\u0027):\n\t\tfilters[\u0027ignoreDateRange\u0027] \u003d not filters.get(\u0027dateRange\u0027)\n\t\t\n\tif value[\u0027viewParams\u0027].has_key(\u0027assetPath\u0027) and value[\u0027viewParams\u0027][\u0027assetPath\u0027] is not None:\n\t\tfilters[\u0027assetPath\u0027] \u003d value[\u0027viewParams\u0027][\u0027assetPath\u0027]\n\t\t\n\t#system.perspective.print(\u0027returning oeeDial filters {}\u0027.format(filters))\n\treturn filters",
             "type": "script"
           }
         ],
@@ -249,7 +246,7 @@
                   },
                   "value": {
                     "fontWeight": "bold",
-                    "formatter": "function(val) { return parseInt(val); }",
+                    "formatter": "function(val) { return Math.round(val); }",
                     "offsetY": -10
                   }
                 },
@@ -293,7 +290,7 @@
           },
           "type": "radialBar"
         },
-        "type": "kyvislabs.display.apexchart"
+        "type": "kanoa.ops.apexchart"
       }
     ],
     "meta": {

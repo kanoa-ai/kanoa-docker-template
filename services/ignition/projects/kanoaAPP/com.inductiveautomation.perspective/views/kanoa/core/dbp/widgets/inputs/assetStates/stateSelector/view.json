@@ -647,16 +647,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.custom.asset.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.custom.asset.assetInfo.tagPath}, indexOf({view.custom.asset.assetInfo.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value.OEE",
+            "code": "\n\t#The asset\u0027s OEE/info tag: its kanoaMES OEE tags (which the module keeps for every OEE asset; the [Kanoa] Line UDT\n\t#isn\u0027t always there) in one document that changes whenever any of them does. Flattened to the names the Line UDT\u0027s\n\t#OEE folder had; dates are in milliseconds, as that binding gave them. None without an asset\n\tif value is None: return None\n\tdef folder(name):\n\t\ttry: return value[name]\n\t\texcept: return None\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\tstatus, run \u003d folder(\u0027Status\u0027), folder(\u0027Current Run\u0027)\n\tinfo \u003d {}\n\tfor name in [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027modeSourceName\u0027, \u0027userName\u0027, \u0027iconPath\u0027, \u0027workOrderId\u0027,\n\t\t\t\u0027workOrderName\u0027, \u0027workOrderTitle\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027,\n\t\t\t\u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027packageCount\u0027, \u0027woRemainingMinutes\u0027, \u0027shiftId\u0027, \u0027shiftNameId\u0027, \u0027shiftName\u0027, \u0027shiftStart\u0027,\n\t\t\t\u0027shiftEnd\u0027, \u0027scheduleBlockId\u0027, \u0027scheduleStart\u0027, \u0027scheduleEnd\u0027, \u0027stateName\u0027, \u0027stateStart\u0027, \u0027stateTypeName\u0027, \u0027stateColor\u0027,\n\t\t\t\u0027stateTypeColor\u0027, \u0027stateIconPath\u0027, \u0027assetId\u0027]:\n\t\tinfo[name] \u003d field(status, name)\n\tfor name in [\u0027startDate\u0027, \u0027durationSecs\u0027, \u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027targetCount\u0027,\n\t\t\t\u0027standardRate\u0027, \u0027period\u0027, \u0027infeedRateSecs\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027,\n\t\t\t\u0027wasteCount\u0027]:\n\t\tinfo[name] \u003d field(run, name)\n\t#As the module works it out for the Line tags: the run\u0027s outfeed per minute, in production only\n\tduration, outfeed \u003d info[\u0027durationSecs\u0027], info[\u0027outfeedCount\u0027]\n\tinfo[\u0027outfeedRatePerMinute\u0027] \u003d outfeed / (duration / 60.0) if info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and duration and outfeed is not None else None\n\tinfo[\u0027endDate\u0027] \u003d None\n\treturn info",
             "type": "script"
           }
         ],

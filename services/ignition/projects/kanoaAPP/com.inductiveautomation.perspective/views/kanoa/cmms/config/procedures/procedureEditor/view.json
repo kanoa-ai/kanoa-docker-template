@@ -137,7 +137,7 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
     "steps": {},
     "tabs": {},
@@ -308,150 +308,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tassetInfo \u003d self.view.custom.assets.selectedAssetInfo\n\t\n\tfileName \u003d  \u0027Asset Info\u0027 if assetInfo[\u0027assetPath\u0027] is None else \u0027Asset Info - {}\u0027.format(assetInfo[\u0027assetPath\u0027].replace(\u0027\\\\\u0027, \u0027 ~ \u0027))\n\tdata \u003d self.view.getChild(\"root\").exportAsset(assetInfo[\u0027assetId\u0027])\n\n\tdateFormat \u003d system.kanoa.date.localizeDateFormat(\u0027yyyy-MM-dd HH:mm:ss\u0027, self.session.props.locale)\n\ttimeNow \u003d system.date.format(system.date.now(), dateFormat)\n\tfileName \u003d \u0027{} ({}).json\u0027.format(fileName, timeNow)\n\t\n\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027assetInfo\u0027,\t\u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\tsystem.perspective.download(fileName, document)\n\t\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Assets exported\u0027})\n\t\n\treturn"
-                  },
-                  "scope": "G",
-                  "type": "script"
-                }
-              }
-            },
-            "meta": {
-              "domId": "btnExportAssets",
-              "name": "btnExport",
-              "tooltip": {
-                "delay": 0,
-                "enabled": true,
-                "location": "center-right",
-                "text": "Export assets"
-              }
-            },
-            "position": {
-              "display": false,
-              "shrink": 0
-            },
-            "propConfig": {
-              "position.display": {
-                "binding": {
-                  "config": {
-                    "struct": {
-                      "action": "{view.custom.userAction}",
-                      "selectedAsset": "{view.custom.assets.selectedAssetInfo}"
-                    },
-                    "waitOnAll": false
-                  },
-                  "enabled": false,
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\tif value[\u0027selectedAsset\u0027][\u0027assetId\u0027] is None: return False\n\treturn value[\u0027action\u0027][\u0027canCreate\u0027]",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "expr-struct"
-                }
-              }
-            },
-            "props": {
-              "image": {
-                "icon": {
-                  "color": "--kcBlue-30",
-                  "path": "material/publish"
-                }
-              },
-              "style": {
-                "classes": "kanoa/button/flatIcon",
-                "height": "25px",
-                "width": "25px"
-              },
-              "text": ""
-            },
-            "type": "ia.input.button"
-          },
-          {
-            "meta": {
-              "domId": "evImportButton",
-              "name": "evImportButton",
-              "tooltip": {
-                "delay": 0,
-                "enabled": true,
-                "location": "center-right",
-                "text": "Import assets"
-              }
-            },
-            "position": {
-              "display": false,
-              "shrink": 0
-            },
-            "propConfig": {
-              "position.display": {
-                "binding": {
-                  "config": {
-                    "path": "view.custom.userAction"
-                  },
-                  "enabled": false,
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\t\n\treturn value[\u0027canCreate\u0027]",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              },
-              "props.params.data": {
-                "onChange": {
-                  "enabled": null,
-                  "script": "\t\n\tdata \u003d self.props.params.data or None\n\t\n\tif data is None: return\n\tself.custom.data \u003d data\n\tself.props.params.data \u003d None\n\t\n\tself.showImportOptions(data)\n\t\n\treturn\n\t"
-                }
-              }
-            },
-            "props": {
-              "params": {
-                "clear": false,
-                "data": null,
-                "options": {
-                  "exportType": "assetInfo",
-                  "importerName": "Import Asset Info",
-                  "supportedFileTypes": [
-                    "json"
-                  ]
-                }
-              },
-              "path": "kanoa/core/templates/file/importButton"
-            },
-            "scripts": {
-              "customMethods": [
-                {
-                  "name": "saveImport",
-                  "params": ["mode", "exportInfo", "assetId", "newAssetName", "overwrite"],
-                  "script": "\t\n\tuserId \u003d self.view.custom.security.userId\n\tif userId is None:\n\t\tsystem.perspective.print(\u0027No userId\u0027)\n\t\treturn\n\t\n\tif mode \u003d\u003d \u0027import\u0027:\n\t\tif exportInfo \u003d\u003d \u0027No exportInfo\u0027 or exportInfo is None:\n\t\t\tsystem.perspective.print(\u0027No exportInfo\u0027)\n\t\t\treturn\n\t\t\n\t\texportInfo \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n\t\tif \u0027assets\u0027 not in exportInfo:\n\t\t\tsystem.perspective.print(\u0027No assets\u0027)\n\t\t\treturn\n\t\t\n\t\tmessage \u003d kanoaApp.custom.ops.asset.copyOrImportAsset(int(userId), exportInfo\u003dexportInfo, overwrite\u003doverwrite)\n\telse:\n\t\tmessage \u003d kanoaApp.custom.ops.asset.copyOrImportAsset(int(userId), assetId\u003dassetId, newAssetName\u003dnewAssetName, overwrite\u003doverwrite)\n\t\n\tsystem.perspective.print(\"copyOrImportAsset returned %s\"%message)\n\t\t\t\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027 if message[\u0027passed\u0027] else \u0027error\u0027, \u0027message\u0027: message[\u0027message\u0027]})\n\t\n\treturn\n\t\n"
-                },
-                {
-                  "name": "showImportOptions",
-                  "params": ["data"],
-                  "script": "\t\n\tif data == 'No Data' or data is None: return\n\t\n\texportInfo = system.util.jsonDecode(system.util.jsonEncode(data))\n\tassetPath = exportInfo['mainPath'].replace('\\\\\\\\', '\\\\')\n\tpayload = {'assetPath': assetPath}\n\tsystem.perspective.openPopup('AssetImportEditor', 'kanoa/mes/config/assets/assetImportEditor', params=payload, draggable=True, resizable=True, viewportBound=True)\n\t\n\treturn"
-                }
-              ],
-              "extensionFunctions": null,
-              "messageHandlers": [
-                {
-                  "messageType": "assetImportUpdate",
-                  "pageScope": true,
-                  "script": "\t\n\tsystem.perspective.print('assetImportUpdate message rcvd with %s'%payload)\n\t\n\tmode = payload['mode']\n\tassetId = payload['assetId']\n\toverwrite = payload['overwrite']\n\tnewAssetName = payload['newPath'].split('\\\\')[-1]\n\t\n\tif payload['oldPath'] != payload['newPath']:\n\t\tsystem.perspective.print('Updating assetPath')\n\t\tnewParts = []\n\t\toldParts = []\n\t\t\n\t\tnewSplit = payload['newPath'].split('\\\\')\n\t\toldSplit = payload['oldPath'].split('\\\\')\n\t\t\n\t\tpathSplitter = '**|**'\n\t\tpathBackSlash = '\\\\\\\\'\n\t\t\n\t\teData = str(system.util.jsonEncode(self.custom.data))\n\t\teData = eData.replace(pathBackSlash, pathSplitter)\n\t\t\n\t\tfor i in range(len(oldSplit)):\n\t\t\tnewParts.append(newSplit[i]) \n\t\t\toldParts.append(oldSplit[i])\n\t\t\t\n\t\t\tnewName = newParts[-1]\n\t\t\toldName = oldParts[-1]\n\t\t\t\n\t\t\tnewPath = pathSplitter.join(newParts[:-1] + [newName])\n\t\t\toldPath = pathSplitter.join(newParts[:-1] + [oldName])\n\t\t\t\n\t\t\tsystem.perspective.print(\"Replacing %s with %s\"%(oldPath, newPath))\n\t\t\teData = eData.replace('\"assetPath\":\"%s'%oldPath, '\"assetPath\":\"%s'%newPath)\t\t\t\n\t\t\t\n\t\t\tif oldName != newName:\n\t\t\t\tsystem.perspective.print(\"Replacing %s with %s\"%(oldName, newName))\n\t\t\t\teData = eData.replace('\"assetName\":\"%s\"'%oldName, '\"assetName\":\"%s\"'%newName)\n\t\n\t\teData = eData.replace(pathSplitter, pathBackSlash)\n\t\t\n\t\tdata = system.util.jsonDecode(eData)\n\telse:\n\t\tdata = self.custom.data\n\t\n\tself.saveImport(mode, data, assetId, newAssetName, overwrite)\n\t\n\treturn\n\t",
-                  "sessionScope": false,
-                  "viewScope": false
-                }
-              ]
-            },
-            "type": "ia.display.view"
-          },
-          {
-            "events": {
-              "component": {
-                "onActionPerformed": {
-                  "config": {
-                    "script": "\n\tprocedureInfo \u003d dict(self.view.custom.procedureInfo)\n\tprocedureId \u003d procedureInfo[\u0027procedureId\u0027]\n\tprocedureCategoryId \u003d procedureInfo[\u0027procedureCategoryId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif procedureId is not None: \t#If procedure name has changed, we need to check that it doesn\u0027t already exist\n\t\tcurrentProcedureId \u003d system.kanoa.utilities.getFieldValue(\u0027procedureId\u0027, system.kanoa.cmms.getProcedures({\u0027procedureName\u0027: procedureInfo[\u0027procedureName\u0027], \u0027procedureCategoryId\u0027 :procedureInfo[\u0027procedureCategoryId\u0027]}))\n\t\tsystem.perspective.print(\u0027currentProcedureId %s\u0027%currentProcedureId)\n\t\tif currentProcedureId is not None and currentProcedureId !\u003d procedureId:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027This procedure already exists for this category\u0027})\n\t\t\treturn\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Updating procedure Id %i \u0027%procedureId})\t\t\t\n\t\tretVal, msg \u003d system.kanoa.cmms.updateProcedure(procedureInfo, userId)\n\t\tsystem.perspective.print(\u0027updateProcedure() returned %s %s\u0027%(retVal, msg))\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Adding procedure\u0027})\t\n\t\tprocedureId, msg \u003d system.kanoa.cmms.addProcedure(procedureInfo, userId)\n\t\tsystem.perspective.print(\u0027addProcedure() returned %s %s\u0027%(procedureId, msg))\n\n\tsystem.perspective.sendMessage(\"updateProcedures\", {})\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save procedure. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027procedure has been saved.\u0027})\n\t\n\tself.view.params.values.procedureId \u003d procedureId\n\t\n\treturn"
+                    "script": "\n\tprocedureInfo \u003d dict(self.view.custom.procedureInfo)\n\tprocedureId \u003d procedureInfo[\u0027procedureId\u0027]\n\tprocedureCategoryId \u003d procedureInfo[\u0027procedureCategoryId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif procedureId is not None: \t#If procedure name has changed, we need to check that it doesn\u0027t already exist\n\t\tcurrentProcedureId \u003d system.kanoa.utilities.getFieldValue(\u0027procedureId\u0027, system.kanoa.cmms.getProcedures({\u0027procedureName\u0027: procedureInfo[\u0027procedureName\u0027], \u0027procedureCategoryId\u0027 :procedureInfo[\u0027procedureCategoryId\u0027]}))\n\t\tsystem.perspective.print(\u0027currentProcedureId %s\u0027%currentProcedureId)\n\t\tif currentProcedureId is not None and currentProcedureId !\u003d procedureId:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027This procedure already exists for this category\u0027})\n\t\t\treturn\n\t\t\n\t\tretVal, msg \u003d system.kanoa.cmms.updateProcedure(procedureInfo, userId)\n\t\tsystem.perspective.print(\u0027updateProcedure() returned %s %s\u0027%(retVal, msg))\n\telse:\n\t\tprocedureId, msg \u003d system.kanoa.cmms.addProcedure(procedureInfo, userId)\n\t\tsystem.perspective.print(\u0027addProcedure() returned %s %s\u0027%(procedureId, msg))\n\n\tsystem.perspective.sendMessage(\"updateProcedures\", {})\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save procedure. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027procedure has been saved.\u0027})\n\t\n\tself.view.params.values.procedureId \u003d procedureId\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -1634,27 +1491,6 @@
                         },
                         "position": {
                           "shrink": 0
-                        },
-                        "propConfig": {
-                          "position.display": {
-                            "binding": {
-                              "config": {
-                                "struct": {
-                                  "chkShtInfo": "{view.custom.info.chkShtInfo}",
-                                  "editMode": "{view.custom.editMode}"
-                                },
-                                "waitOnAll": true
-                              },
-                              "overlayOptOut": true,
-                              "transforms": [
-                                {
-                                  "code": "\treturn value.editMode and value.chkShtInfo[\u0027chkShtId\u0027] is not None",
-                                  "type": "script"
-                                }
-                              ],
-                              "type": "expr-struct"
-                            }
-                          }
                         },
                         "props": {
                           "alignItems": "center",

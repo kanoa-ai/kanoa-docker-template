@@ -153,7 +153,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tlevel \u003d self.view.params.value.level + 1\n\texpand \u003d self.view.params.value.expand\n\tinfo \u003d []\n\n\tvalue \u003d sorted(value, key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tif len(dict(item[childAssets])) \u003d\u003d 1: assets.append(item[childAssets])\n\t\t\telse: children.append(item[childAssets])\n\t\t\t\t\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item[\u0027assetInfo\u0027][\u0027assetName\u0027], \u0027assetInfo\u0027: item[\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\t\n\treturn info",
+                  "code": "\n\tlevel \u003d self.view.params.value.level + 1\n\texpand \u003d self.view.params.value.expand\n\tinfo \u003d []\n\n\tvalue \u003d sorted(value, key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tchild \u003d item[childAssets]\n\t\t\tif len(dict(child)) \u003d\u003d 1: assets.append(child)\n\t\t\telse:\n\t\t\t\tchildren.append(child)\n\t\t\t\t#A line with cells is a tile among its area\u0027s lines too; its cells get a section of their own below it (868mvwg9e)\n\t\t\t\tif child[\u0027assetInfo\u0027] and child[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: assets.append({\u0027assetInfo\u0027: child[\u0027assetInfo\u0027]})\n\t\t\t\t\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item[\u0027assetInfo\u0027][\u0027assetName\u0027], \u0027assetInfo\u0027: item[\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\t\n\treturn info",
                   "type": "script"
                 }
               ],
@@ -188,8 +188,8 @@
             "padding": 0
           },
           "style": {
-            "backgroundColor": "--kcSurface",
-            "gap": "3px"
+            "backgroundColor": "transparent",
+            "gap": "16px"
           },
           "useDefaultViewHeight": false,
           "useDefaultViewWidth": false
@@ -208,12 +208,12 @@
           "position.display": {
             "binding": {
               "config": {
-                "path": "view.custom.display.showInfoLevel"
+                "path": "view.custom.display"
               },
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\treturn value \u003d\u003d \u0027detail\u0027",
+                  "code": "\n\t#Only while the level is expanded (868mvwg9e): collapsing hid the child groups but left the Detail cards showing\n\tif value is None or not value.has_key(\u0027showInfoLevel\u0027): return False\n\texpanded \u003d value[\u0027expand\u0027] if value.has_key(\u0027expand\u0027) else True\n\treturn bool(expanded) and value[\u0027showInfoLevel\u0027] \u003d\u003d \u0027detail\u0027",
                   "type": "script"
                 }
               ],
@@ -232,7 +232,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tif value[\u0027showInfoLevel\u0027] !\u003d \u0027detail\u0027: return []\n\n\tinfo \u003d []\t\n\tassets \u003d sorted(value[\u0027params\u0027][\u0027assets\u0027], key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in assets:\n\t\tif not item[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: continue\n\t\tinfo.append({\u0027value\u0027: {\u0027assetInfo\u0027: item[\u0027assetInfo\u0027]}})\n\t\t\n\tfor item in value[\u0027params\u0027][\u0027childAssets\u0027]:\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tif not item[childAssets][\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: continue\n\t\t\tinfo.append({\u0027value\u0027: {\u0027assetInfo\u0027: item[childAssets][\u0027assetInfo\u0027]}})\t\t\n\t\n\treturn info",
+                  "code": "\n\tif value[\u0027showInfoLevel\u0027] !\u003d \u0027detail\u0027: return []\n\n\tinfo \u003d []\t\n\t#The card names its asset from this group down (868mvwg9e)\n\tgroupPath \u003d value[\u0027params\u0027][\u0027assetInfo\u0027][\u0027assetPath\u0027]\n\tassets \u003d sorted(value[\u0027params\u0027][\u0027assets\u0027], key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in assets:\n\t\tif not item[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: continue\n\t\tinfo.append({\u0027value\u0027: {\u0027assetInfo\u0027: item[\u0027assetInfo\u0027], \u0027groupPath\u0027: groupPath}})\n\t\t\n\tfor item in value[\u0027params\u0027][\u0027childAssets\u0027]:\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tif not item[childAssets][\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: continue\n\t\t\tinfo.append({\u0027value\u0027: {\u0027assetInfo\u0027: item[childAssets][\u0027assetInfo\u0027], \u0027groupPath\u0027: groupPath}})\t\t\n\t\n\treturn info",
                   "type": "script"
                 }
               ],
@@ -263,8 +263,10 @@
             "shrink": 0
           },
           "style": {
-            "gap": "3px",
-            "padding": "5px"
+            "gap": "8px",
+            "padding": "8px",
+            "backgroundColor": "color-mix(in srgb, var(--kcSurfaceVariant) 45%, var(--kcSurface))",
+            "borderRadius": "var(--borderRadius)"
           },
           "useDefaultViewHeight": false,
           "useDefaultViewWidth": false
@@ -283,12 +285,12 @@
           "position.display": {
             "binding": {
               "config": {
-                "path": "view.custom.display.showInfoLevel"
+                "path": "view.custom.display"
               },
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\treturn value \u003d\u003d \u0027summary\u0027",
+                  "code": "\n\t#Only while the level is expanded (868mvwg9e): collapsing hid the child groups but left the Summary showing\n\tif value is None or not value.has_key(\u0027showInfoLevel\u0027): return False\n\texpanded \u003d value[\u0027expand\u0027] if value.has_key(\u0027expand\u0027) else True\n\treturn bool(expanded) and value[\u0027showInfoLevel\u0027] \u003d\u003d \u0027summary\u0027",
                   "type": "script"
                 }
               ],
@@ -337,27 +339,12 @@
       "domId": "root",
       "name": "root"
     },
-    "propConfig": {
-      "props.style.classes": {
-        "binding": {
-          "config": {
-            "path": "view.params.value.level"
-          },
-          "overlayOptOut": true,
-          "transforms": [
-            {
-              "code": "\treturn \u0027kanoa/border\u0027 if value \u003c 3 else \u0027\u0027",
-              "type": "script"
-            }
-          ],
-          "type": "property"
-        }
-      }
-    },
     "props": {
       "direction": "column",
       "style": {
-        "backgroundColor": "--kcSurface"
+        "backgroundColor": "transparent",
+        "borderRadius": "var(--borderRadius)",
+        "padding": "6px 8px 8px 8px"
       }
     },
     "scripts": {
@@ -374,12 +361,44 @@
         {
           "messageType": "showAssetInfo",
           "pageScope": true,
-          "script": "\n\tif payload[\u0027assetPath\u0027] in self.view.params.value.assetInfo.assetPath: self.view.custom.display.showInfoLevel \u003d payload[\u0027showInfoLevel\u0027]\n\t\n\treturn\n",
+          "script": "\n\t#Only the level whose tab was clicked (868mvwg9e): a substring match also switched every hidden level below it, each loading its own Summary\n\tif payload[\u0027assetPath\u0027] \u003d\u003d self.view.params.value.assetInfo.assetPath: self.view.custom.display.showInfoLevel \u003d payload[\u0027showInfoLevel\u0027]\n\t\n\treturn\n",
           "sessionScope": false,
           "viewScope": false
         }
       ]
     },
-    "type": "ia.container.flex"
+    "type": "ia.container.flex",
+    "propConfig": {
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.childAssets"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t#Each section of tiles is a tinted panel, set apart by the space between them; groups of groups stay plain (868mvwg9e)\n\treturn \u0027transparent\u0027 if len(value or []) else \u0027color-mix(in srgb, var(--kcSurfaceVariant) 45%, var(--kcSurface))\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.gap": {
+        "binding": {
+          "config": {
+            "path": "view.params.value"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t#A group with lines and groups under it (868mvwg9e): its tinted lines panel and the sections below are spaced like sibling sections\n\treturn \u002716px\u0027 if len(value.get(\u0027childAssets\u0027) or []) and len(value.get(\u0027assets\u0027) or []) else \u00270px\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    }
   }
 }

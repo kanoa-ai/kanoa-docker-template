@@ -695,7 +695,8 @@
                     "multiSelect": false,
                     "showBreadcrumb": false,
                     "showClear": true,
-                    "showSelectedPath": false
+                    "showSelectedPath": false,
+                    "translate": true
                   },
                   "path": null,
                   "selection": [],
@@ -723,16 +724,20 @@
               "props.text": {
                 "binding": {
                   "config": {
-                    "path": "view.custom.dashboardInfo.dashboard"
+                    "struct": {
+                      "dashboard": "{view.custom.dashboardInfo.dashboard}",
+                      "locale": "{session.props.locale}"
+                    },
+                    "waitOnAll": true
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\tif value is None: return \u0027\u0027\n\treturn system.kanoa.utilities.formatPath(value[\u0027path\u0027], {})",
+                      "code": "\tdashboard \u003d value[\u0027dashboard\u0027]\n\tif dashboard is None: return \u0027\u0027\n\t#The folder and name in the session\u0027s language\n\treturn system.kanoa.utilities.formatPath(dashboard[\u0027path\u0027], {\u0027locale\u0027: value[\u0027locale\u0027]})",
                       "type": "script"
                     }
                   ],
-                  "type": "property"
+                  "type": "expr-struct"
                 }
               }
             },
@@ -948,7 +953,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn \u0027Displaying %s breakpoint\u0027%value",
+                          "code": "\treturn system.util.translate(\u0027Displaying %s breakpoint\u0027, self.session.props.locale)%value",
                           "type": "script"
                         }
                       ],

@@ -1,0 +1,295 @@
+{
+  "custom": {
+    "languages": []
+  },
+  "params": {},
+  "propConfig": {
+    "custom.languages": {
+      "binding": {
+        "config": {
+          "expression": "1"
+        },
+        "transforms": [
+          {
+            "code": "\tds = system.kanoa.utilities.getLanguages()\n\treturn [{'value': ds.getValueAt(r, 'value'), 'locale': ds.getValueAt(r, 'locale'),\n\t\t\t'name': ds.getValueAt(r, 'name'), 'englishName': ds.getValueAt(r, 'englishName')}\n\t\t\tfor r in range(ds.getRowCount())]",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 240
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblHeader",
+              "name": "lblHeader"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/titleMedium"
+              },
+              "text": "Theme"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "dropdown",
+              "name": "dropdown"
+            },
+            "position": {
+              "basis": "36px"
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "session.props.theme"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t# A user's choice closes the menu (the popup from the header, or the options dock). The radio group sends its\n\t# value from the browser as the menu opens, so only a real change counts\n\tprev = previousValue.value if previousValue is not None else None\n\tcur = currentValue.value if currentValue is not None else None\n\tif origin == 'Browser' and prev is not None and cur is not None and cur != prev:\n\t\tsystem.perspective.closePopup('kanoaOptionsMenu')\n\t\tsystem.perspective.closeDock('options')"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "options": [
+                {
+                  "label": "kanoa blue",
+                  "value": "kanoa-light"
+                },
+                {
+                  "label": "dark",
+                  "value": "kanoa-dark"
+                },
+                {
+                  "label": "forest",
+                  "value": "kanoa-light-forest"
+                },
+                {
+                  "label": "firetruck",
+                  "value": "kanoa-light-firetruck"
+                },
+                {
+                  "label": "orange",
+                  "value": "kanoa-light-orange"
+                },
+                {
+                  "label": "grape",
+                  "value": "kanoa-light-grape"
+                }
+              ],
+              "style": {
+                "background-color": "--kcSurface",
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "domId": "flxThemes",
+          "name": "flxThemes"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblHeader"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/titleMedium"
+              },
+              "text": "Languages"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "RadioGroup"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.radios": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "languages": "{view.custom.languages}",
+                          "locale": "{session.props.locale}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "transforms": [
+                        {
+                          "code": "\tlocale = value['locale'] or ''\n\tradios = []\n\tfor lang in value['languages'] or []:\n\t\tname, english = lang['name'], lang['englishName']\n\t\ttext = name if name == english else u'{} ({})'.format(name, english)\n\t\tradios.append({'text': text, 'value': lang['value'], 'selected': lang['value'] == locale})\n\treturn radios",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "session.props.locale"
+                      },
+                      "type": "property"
+                    },
+                    "onChange": {
+                      "enabled": null,
+                      "script": "\t# The value only reads session.props.locale; a user's choice sets it here. Bidirectional, the radio group's value as the\n\t# menu opened (none, before the language list had loaded) cleared the session's locale, and on Ignition 8.3 a session\n\t# property change breaks any Numeric Entry Field on screen (its locale listener isn't bound: \"Cannot read properties of\n\t# undefined (reading 'locale')\"). Only a real change in the browser counts, and it closes the menu (the popup from the\n\t# header, or the options dock)\n\tprev = previousValue.value if previousValue is not None else None\n\tcur = currentValue.value if currentValue is not None else None\n\tif origin == 'Browser' and cur and cur != prev:\n\t\tif self.session.props.locale != cur: self.session.props.locale = cur\n\t\tsystem.perspective.closePopup('kanoaOptionsMenu')\n\t\tsystem.perspective.closeDock('options')"
+                    }
+                  }
+                },
+                "props": {
+                  "align": "start",
+                  "layout": "column",
+                  "radioStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "radios": [],
+                  "selectedIcon": {
+                    "color": {
+                      "enabled": "var(--kcPrimary)"
+                    },
+                    "path": "material/check",
+                    "style": {
+                      "width": "1em"
+                    }
+                  },
+                  "unselectedIcon": {
+                    "color": {
+                      "enabled": "transparent"
+                    },
+                    "path": "material/check",
+                    "style": {
+                      "width": "1em"
+                    }
+                  }
+                },
+                "type": "ia.input.radio-group"
+              }
+            ],
+            "meta": {
+              "name": "flxRadios"
+            },
+            "position": {
+              "basis": "0px",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "overflowY": "auto"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "meta": {
+              "name": "lblMoreLanguages"
+            },
+            "position": {
+              "display": false,
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "fallbackDelay": 2.5,
+                    "mode": "direct",
+                    "tagPath": "[kanoaMES]installationInfo/ignitionVersion"
+                  },
+                  "transforms": [
+                    {
+                      "expression": "startsWith(toStr({value}), \"8.1\")",
+                      "type": "expression"
+                    }
+                  ],
+                  "type": "tag"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "fontSize": "0.85em",
+                "opacity": 0.75,
+                "whiteSpace": "normal"
+              },
+              "text": "More languages can be added from the Kanoa settings page on the gateway."
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxLanguage"
+        },
+        "position": {
+          "basis": "0px",
+          "grow": 1
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": 5
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": 15,
+        "padding": 10,
+        "backgroundColor": "var(--kcSurface)"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

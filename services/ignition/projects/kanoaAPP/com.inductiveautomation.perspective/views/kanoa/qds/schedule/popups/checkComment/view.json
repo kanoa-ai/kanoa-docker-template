@@ -1,0 +1,208 @@
+{
+  "custom": {},
+  "events": {
+    "system": {
+      "onShutdown": {
+        "config": {
+          "script": "\ttry: system.perspective.sendMessage(\u0027pauseKeyCapture\u0027, {\u0027paused\u0027: False}, scope\u003d\u0027page\u0027)\n\texcept: pass\t#the session may already have ended (e.g. the browser tab closed)"
+        },
+        "scope": "G",
+        "type": "script"
+      },
+      "onStartup": {
+        "config": {
+          "script": "\t#The check sheet editor captures every key for its check entry; pause it while the comment is typed here\n\tsystem.perspective.sendMessage(\u0027pauseKeyCapture\u0027, {\u0027paused\u0027: True}, scope\u003d\u0027page\u0027)\n\tself.rootContainer.getChild(\u0027txtComment\u0027).focus()"
+        },
+        "scope": "G",
+        "type": "script"
+      }
+    }
+  },
+  "params": {
+    "value": {
+      "chkItemName": "",
+      "comment": ""
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 140,
+      "width": 400
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "lblCheck"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.chkItemName"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontWeight": "bold"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "events": {
+          "dom": {
+            "onKeyUp": {
+              "config": {
+                "script": "\tif event.key \u003d\u003d \u0027Enter\u0027: self.view.rootContainer.save()\n\telif event.key \u003d\u003d \u0027Escape\u0027: system.perspective.closePopup(\u0027\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "txtComment"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.comment"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "deferUpdates": false,
+          "placeholder": "Type a comment, then press Enter",
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.text-field"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.rootContainer.save()"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnSave"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/check"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled",
+                "height": "30px"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tsystem.perspective.closePopup(\u0027\u0027)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnCancel"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/close"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined",
+                "height": "30px"
+              },
+              "text": "Cancel"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "flex-end",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "8px",
+        "padding": "8px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "save",
+          "params": [],
+          "script": "\t#ValuePicked saves the comment of the selected check item (the editor\u0027s comment column is selected while this is open)\n\tsystem.perspective.sendMessage(\u0027ValuePicked\u0027, {\u0027value\u0027: self.getChild(\u0027txtComment\u0027).props.text or None}, scope\u003d\u0027page\u0027)\n\tsystem.perspective.closePopup(\u0027\u0027)"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

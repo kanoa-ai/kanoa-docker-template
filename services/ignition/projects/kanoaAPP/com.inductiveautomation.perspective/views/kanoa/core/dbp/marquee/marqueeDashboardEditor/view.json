@@ -31,7 +31,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tmarqueeDashboardId \u003d value[\u0027marqueeDashboardId\u0027]\n\tif marqueeDashboardId is None: marqueeDashboardId \u003d -1\n\n\tmarqueeDashboardInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getMarqueeDashboards({\u0027marqueeDashboardId\u0027: marqueeDashboardId}), 0)\n\t\n\tif value[\u0027marqueeDashboardId\u0027] is None:\n\t\tmarqueeDashboardInfo[\u0027duration\u0027] \u003d 30\n\t\tmarqueeDashboardInfo[\u0027sortOrder\u0027] \u003d 0\n\t\tmarqueeDashboardInfo[\u0027enabled\u0027] \u003d True\n\t\t\n\treturn marqueeDashboardInfo",
+            "code": "\n\tmarqueeDashboardId \u003d value[\u0027marqueeDashboardId\u0027]\n\tif marqueeDashboardId is None: marqueeDashboardId \u003d -1\n\n\tmarqueeDashboardInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getMarqueeDashboards({\u0027marqueeDashboardId\u0027: marqueeDashboardId}), 0)\n\t\n\tif value[\u0027marqueeDashboardId\u0027] is None:\n\t\tmarqueeDashboardInfo[\u0027duration\u0027] \u003d 30\n\t\t#Next after the marquee\u0027s last dashboard (1 for the first), so they play in the order they\u0027re added (868mvru91)\n\t\trows \u003d system.kanoa.dashboard.getMarqueeDashboards({\u0027marqueeId\u0027: value[\u0027marqueeId\u0027]})\n\t\tsortOrders \u003d [rows.getValueAt(r, \u0027sortOrder\u0027) for r in range(rows.getRowCount())]\n\t\tmarqueeDashboardInfo[\u0027sortOrder\u0027] \u003d max(sortOrders or [0]) + 1\n\t\tmarqueeDashboardInfo[\u0027enabled\u0027] \u003d True\n\t\t\n\treturn marqueeDashboardInfo",
             "type": "script"
           }
         ],

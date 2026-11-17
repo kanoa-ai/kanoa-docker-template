@@ -1,0 +1,432 @@
+{
+  "custom": {
+    "asset": {},
+    "filters": {},
+    "kpi": {},
+    "rangeOEE": null
+  },
+  "params": {
+    "value": {
+      "assetPath": null,
+      "decimals": 1,
+      "higherIsBetter": true,
+      "label": null,
+      "oeeValue": "OEE",
+      "showAssetName": true,
+      "target": null,
+      "valueFontSize": null,
+      "warningPct": 10
+    }
+  },
+  "propConfig": {
+    "custom.asset": {
+      "persistent": true
+    },
+    "custom.asset.oee": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.custom.asset.tagPath}, indexOf({view.custom.asset.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#The asset\u0027s OEE/info tag: its kanoaMES OEE tags (which the module keeps for every OEE asset; the [Kanoa] Line UDT\n\t#isn\u0027t always there) in one document that changes whenever any of them does. Flattened to the names the Line UDT\u0027s\n\t#OEE folder had; dates are in milliseconds, as that binding gave them. None without an asset\n\tif value is None: return None\n\tdef folder(name):\n\t\ttry: return value[name]\n\t\texcept: return None\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\tstatus, run \u003d folder(\u0027Status\u0027), folder(\u0027Current Run\u0027)\n\tinfo \u003d {}\n\tfor name in [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027modeSourceName\u0027, \u0027userName\u0027, \u0027iconPath\u0027, \u0027workOrderId\u0027,\n\t\t\t\u0027workOrderName\u0027, \u0027workOrderTitle\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027,\n\t\t\t\u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027packageCount\u0027, \u0027woRemainingMinutes\u0027, \u0027shiftId\u0027, \u0027shiftNameId\u0027, \u0027shiftName\u0027, \u0027shiftStart\u0027,\n\t\t\t\u0027shiftEnd\u0027, \u0027scheduleBlockId\u0027, \u0027scheduleStart\u0027, \u0027scheduleEnd\u0027, \u0027stateName\u0027, \u0027stateStart\u0027, \u0027stateTypeName\u0027, \u0027stateColor\u0027,\n\t\t\t\u0027stateTypeColor\u0027, \u0027stateIconPath\u0027, \u0027assetId\u0027]:\n\t\tinfo[name] \u003d field(status, name)\n\tfor name in [\u0027startDate\u0027, \u0027durationSecs\u0027, \u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027targetCount\u0027,\n\t\t\t\u0027standardRate\u0027, \u0027period\u0027, \u0027infeedRateSecs\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027,\n\t\t\t\u0027wasteCount\u0027]:\n\t\tinfo[name] \u003d field(run, name)\n\t#As the module works it out for the Line tags: the run\u0027s outfeed per minute, in production only\n\tduration, outfeed \u003d info[\u0027durationSecs\u0027], info[\u0027outfeedCount\u0027]\n\tinfo[\u0027outfeedRatePerMinute\u0027] \u003d outfeed / (duration / 60.0) if info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and duration and outfeed is not None else None\n\tinfo[\u0027endDate\u0027] \u003d None\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "tag"
+      }
+    },
+    "custom.asset.tagPath": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetId": "{view.custom.filters.assetId}",
+            "assetPath": "{view.custom.filters.assetPath}"
+          },
+          "waitOnAll": true
+        },
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027assetId\u0027]: return system.kanoa.asset.getAssetTagPath({\u0027assetId\u0027: value[\u0027assetId\u0027]})\n\tif value[\u0027assetPath\u0027]: return system.kanoa.asset.getAssetTagPath({\u0027assetPath\u0027: value[\u0027assetPath\u0027]})\n\treturn None",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.filters": {
+      "binding": {
+        "config": {
+          "struct": {
+            "viewParams": "{view.params.value}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tviewParams \u003d value[\u0027viewParams\u0027]\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, viewParams, self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tfilters \u003d dict(filters) if filters else {}\n\n\t#An explicit assetPath param wins over the dashboard asset selector; getWidgetFilters keeps the selector\u0027s assetId, so drop it\n\tif viewParams.has_key(\u0027assetPath\u0027) and viewParams[\u0027assetPath\u0027]: filters[\u0027assetId\u0027] \u003d None\n\t#Off a dashboard page getWidgetFilters returns {}; fall back to the params alone\n\tfor k, v in viewParams.items():\n\t\tif not filters.has_key(k): filters[k] \u003d v\n\treturn filters",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.kpi": {
+      "binding": {
+        "config": {
+          "struct": {
+            "filters": "{view.custom.filters}",
+            "oee": "{view.custom.asset.oee}",
+            "rangeOEE": "{view.custom.rangeOEE}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tPERCENT \u003d [\u0027OEE\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027]\n\tLABELS \u003d {\u0027OEE\u0027: \u0027OEE\u0027, \u0027availability\u0027: \u0027Availability\u0027, \u0027performance\u0027: \u0027Performance\u0027, \u0027quality\u0027: \u0027Quality\u0027, \u0027outfeedCount\u0027: \u0027Outfeed Count\u0027, \u0027infeedCount\u0027: \u0027Infeed Count\u0027, \u0027wasteCount\u0027: \u0027Waste Count\u0027, \u0027packageCount\u0027: \u0027Package Count\u0027, \u0027targetCount\u0027: \u0027Target Count\u0027, \u0027outfeedRatePerMinute\u0027: \u0027Outfeed Rate / Min\u0027, \u0027infeedRateSecs\u0027: \u0027Infeed Rate (s)\u0027, \u0027standardRate\u0027: \u0027Standard Rate\u0027, \u0027runtimeSecs\u0027: \u0027Runtime\u0027, \u0027durationSecs\u0027: \u0027Duration\u0027, \u0027plannedDowntimeSecs\u0027: \u0027Planned Downtime\u0027, \u0027unplannedDowntimeSecs\u0027: \u0027Unplanned Downtime\u0027, \u0027woActualQty\u0027: \u0027WO Actual Qty\u0027, \u0027reqdQty\u0027: \u0027WO Required Qty\u0027, \u0027woRemainingMinutes\u0027: \u0027WO Remaining (min)\u0027, \u0027stateName\u0027: \u0027State\u0027, \u0027modeName\u0027: \u0027Mode\u0027, \u0027itemName\u0027: \u0027Item\u0027, \u0027workOrderName\u0027: \u0027Work Order\u0027, \u0027shiftName\u0027: \u0027Shift\u0027}\n\tUNIT_MEMBERS \u003d {\u0027outfeedCount\u0027: \u0027outfeedUnits\u0027, \u0027infeedCount\u0027: \u0027infeedUnits\u0027, \u0027wasteCount\u0027: \u0027wasteUnits\u0027, \u0027woActualQty\u0027: \u0027outfeedUnits\u0027, \u0027reqdQty\u0027: \u0027outfeedUnits\u0027, \u0027targetCount\u0027: \u0027outfeedUnits\u0027}\n\n\t#Over a date range, the range\u0027s figures; the rest (mode, state, item, work order...) is live\n\tRANGE \u003d [\u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027outfeedCount\u0027, \u0027infeedCount\u0027, \u0027wasteCount\u0027, \u0027targetCount\u0027, \u0027runtimeSecs\u0027,\n\t\t\t \u0027durationSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027infeedRateSecs\u0027, \u0027standardRate\u0027, \u0027packageCount\u0027]\n\tdef member(name):\n\t\tif rangeOEE is not None and name in RANGE:\n\t\t\ttry: return rangeOEE[name]\n\t\t\texcept: return None\n\t\ttry: return oee[name]\n\t\texcept: return None\n\n\tdef toNumber(v):\n\t\t#Configurator text fields save numbers as strings; blank means not set\n\t\tif v is None or isinstance(v, bool): return None\n\t\ttry: return float(str(v).strip())\n\t\texcept: return None\n\n\tdef fmtNumber(v, decimals):\n\t\treturn (\u0027{:,.%df}\u0027 % decimals).format(v)\n\n\tdef fmtDuration(secs):\n\t\tsecs \u003d int(round(abs(secs)))\n\t\th, m, s \u003d secs // 3600, (secs % 3600) // 60, secs % 60\n\t\tif h: return \u0027%dh %02dm\u0027 % (h, m)\n\t\tif m: return \u0027%dm %02ds\u0027 % (m, s)\n\t\treturn \u0027%ds\u0027 % s\n\n\tfilters, oee \u003d value[\u0027filters\u0027] or {}, value[\u0027oee\u0027]\n\trangeOEE \u003d value.get(\u0027rangeOEE\u0027)\n\tkey \u003d filters.get(\u0027oeeValue\u0027) or \u0027OEE\u0027\n\tdecimals \u003d toNumber(filters.get(\u0027decimals\u0027))\n\tdecimals \u003d 1 if decimals is None else max(0, min(int(decimals), 4))\n\thigherIsBetter \u003d filters.get(\u0027higherIsBetter\u0027) is not False\n\twarningPct \u003d toNumber(filters.get(\u0027warningPct\u0027))\n\twarningPct \u003d 10.0 if warningPct is None else abs(warningPct)\n\ttarget \u003d toNumber(filters.get(\u0027target\u0027))\n\tisPercent \u003d key in PERCENT\n\tisDuration \u003d key.endswith(\u0027Secs\u0027) and key !\u003d \u0027infeedRateSecs\u0027\n\n\tkpi \u003d {\u0027label\u0027: filters.get(\u0027label\u0027) or LABELS.get(key, key), \u0027value\u0027: None, \u0027text\u0027: \u0027--\u0027, \u0027unit\u0027: \u0027\u0027, \u0027color\u0027: \u0027var(--kcOnSurface)\u0027, \u0027status\u0027: \u0027none\u0027, \u0027targetText\u0027: \u0027\u0027, \u0027deltaText\u0027: \u0027\u0027, \u0027tooltip\u0027: \u0027\u0027}\n\tkpi[\u0027assetName\u0027] \u003d (filters.get(\u0027assetPath\u0027) or \u0027\u0027).split(\u0027\\\\\u0027)[-1]\n\n\tif oee is None and rangeOEE is None:\n\t\tkpi[\u0027tooltip\u0027] \u003d \u0027No OEE data for this asset\u0027\n\t\tkpi[\u0027color\u0027] \u003d \u0027var(--kcOnSurfaceVariant)\u0027\n\t\treturn kpi\n\n\tif key \u003d\u003d \u0027OEE\u0027:\n\t\ta, p, q \u003d toNumber(member(\u0027availability\u0027)), toNumber(member(\u0027performance\u0027)), toNumber(member(\u0027quality\u0027))\n\t\traw \u003d a * p * q if None not in (a, p, q) else None\n\telse:\n\t\traw \u003d member(key)\n\n\tnumber \u003d toNumber(raw)\n\tif number is None:\n\t\t#Text members (state, mode, item...) display as-is and are never color-coded\n\t\tkpi[\u0027text\u0027] \u003d \u0027--\u0027 if raw is None or str(raw) \u003d\u003d \u0027\u0027 else str(raw)\n\t\treturn kpi\n\n\tif isPercent: number \u003d number * 100.0\n\tkpi[\u0027value\u0027] \u003d number\n\tif isPercent: kpi[\u0027unit\u0027] \u003d \u0027%\u0027\n\telif key in UNIT_MEMBERS: kpi[\u0027unit\u0027] \u003d member(UNIT_MEMBERS[key]) or \u0027\u0027\n\telif key \u003d\u003d \u0027woRemainingMinutes\u0027: kpi[\u0027unit\u0027] \u003d \u0027min\u0027\n\tkpi[\u0027text\u0027] \u003d fmtDuration(number) if isDuration else fmtNumber(number, decimals)\n\n\tif target is None: return kpi\n\n\tfmt \u003d lambda v: (fmtDuration(v) if isDuration else fmtNumber(v, decimals) + (\u0027%\u0027 if isPercent else \u0027\u0027))\n\tkpi[\u0027targetText\u0027] \u003d \u0027Target \u0027 + fmt(target)\n\tdelta \u003d number - target\n\tkpi[\u0027deltaText\u0027] \u003d (\u0027+\u0027 if delta \u003e\u003d 0 else \u0027-\u0027) + fmt(abs(delta))\n\n\tshortfall \u003d -delta if higherIsBetter else delta\n\tif shortfall \u003c\u003d 0: kpi[\u0027status\u0027], kpi[\u0027color\u0027] \u003d \u0027good\u0027, \u0027var(--kcGood)\u0027\n\telif shortfall \u003c\u003d abs(target) * warningPct / 100.0: kpi[\u0027status\u0027], kpi[\u0027color\u0027] \u003d \u0027warning\u0027, \u0027var(--kcOK)\u0027\n\telse: kpi[\u0027status\u0027], kpi[\u0027color\u0027] \u003d \u0027bad\u0027, \u0027var(--kcBad)\u0027\n\tkpi[\u0027tooltip\u0027] \u003d \u0027%s %s target (%s)\u0027 % (kpi[\u0027label\u0027], {\u0027good\u0027: \u0027meets\u0027, \u0027warning\u0027: \u0027is near\u0027, \u0027bad\u0027: \u0027is below\u0027 if higherIsBetter else \u0027is above\u0027}[kpi[\u0027status\u0027]], kpi[\u0027targetText\u0027])\n\treturn kpi",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.rangeOEE": {
+      "binding": {
+        "type": "property",
+        "config": {
+          "path": "view.custom.filters"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "type": "script",
+            "code": "\n\t#With a dashboard date selector: the range\u0027s OEE, counts and times as system.kanoa.event.getOEESummary works them out.\n\t#None without one (the KPI shows the asset\u0027s live OEE tags)\n\tfilters \u003d value or {}\n\tdateRange \u003d filters.get(\u0027dateRange\u0027)\n\tif not dateRange or not filters.get(\u0027assetId\u0027) or filters.get(\u0027ignoreDateRange\u0027):\n\t\treturn None\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getOEESummary({\u0027assetId\u0027: filters[\u0027assetId\u0027],\n\t\t\t\t\u0027startDate\u0027: dateRange[\u0027startDate\u0027], \u0027endDate\u0027: dateRange[\u0027endDate\u0027]}))\n\treturn rows[0] if rows else {}"
+          }
+        ]
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 180,
+      "width": 240
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "label"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.kpi.label"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "color": "var(--kcOnSurfaceVariant)",
+            "fontSize": "16px",
+            "fontWeight": "500",
+            "overflow": "hidden",
+            "textAlign": "center",
+            "textOverflow": "ellipsis",
+            "whiteSpace": "nowrap"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "value"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.tooltip"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.color"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.style.fontSize": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filters.valueFontSize"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value if value else \u002748px\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.text"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "fontWeight": "bold",
+                "lineHeight": "1.1",
+                "overflow": "hidden",
+                "textAlign": "center",
+                "textOverflow": "ellipsis",
+                "transition": "color 0.3s",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "unit"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "expression": "len({view.custom.kpi.unit}) \u003e 0"
+                  },
+                  "type": "expr"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.unit"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "color": "var(--kcOnSurfaceVariant)",
+                "fontSize": "18px",
+                "marginBottom": "6px",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "valueRow"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "flex-end",
+          "justify": "center",
+          "style": {
+            "gap": "6px",
+            "maxWidth": "100%"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "target"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.targetText"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "color": "var(--kcOnSurfaceVariant)",
+                "fontSize": "13px",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "delta"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.color"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.kpi.deltaText"
+                  },
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "fontSize": "13px",
+                "fontWeight": "bold",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "targetRow"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "len({view.custom.kpi.targetText}) \u003e 0"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "8px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "assetName"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.filters.showAssetName} !\u003d False \u0026\u0026 len({view.custom.kpi.assetName}) \u003e 0"
+              },
+              "type": "expr"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.kpi.assetName"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "color": "var(--kcOnSurfaceVariant)",
+            "fontSize": "12px",
+            "overflow": "hidden",
+            "textAlign": "center",
+            "textOverflow": "ellipsis",
+            "whiteSpace": "nowrap"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "center",
+      "style": {
+        "gap": "4px",
+        "minWidth": "0",
+        "overflow": "hidden",
+        "padding": "8px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "dateSelectorUpdate",
+          "pageScope": true,
+          "script": "\n\tself.view.refreshBinding(\"custom.filters\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

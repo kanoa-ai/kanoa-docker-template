@@ -135,8 +135,8 @@
               {
                 "children": [],
                 "enabled": true,
-                "icon": "material/vpn_key",
-                "label": "Reliability KPIs",
+                "icon": "material/trending_down",
+                "label": "Loss Analysis",
                 "target": {
                   "path": "kanoa/mes/analytics/reliability/reliabilityKPIs",
                   "type": "view"
@@ -378,30 +378,10 @@
           {
             "children": [],
             "enabled": true,
-            "icon": "material/comment",
-            "label": "Logs",
-            "target": {
-              "path": "kanoa/core/logs/logs",
-              "type": "view"
-            }
-          },
-          {
-            "children": [],
-            "enabled": true,
             "icon": "material/track_changes",
             "label": "Project Changes",
             "target": {
               "path": "kanoa/core/devOps/changeTable",
-              "type": "view"
-            }
-          },
-          {
-            "children": [],
-            "enabled": true,
-            "icon": "material/search",
-            "label": "Search Keyword",
-            "target": {
-              "path": "kanoa/core/devOps/scanKeyword",
               "type": "view"
             }
           }
@@ -554,16 +534,6 @@
               {
                 "children": [],
                 "enabled": true,
-                "icon": "material/bug_report",
-                "label": "Debug",
-                "target": {
-                  "path": "kanoa/core/config/debuggers/tagDebuggers",
-                  "type": "view"
-                }
-              },
-              {
-                "children": [],
-                "enabled": true,
                 "icon": "material/comment",
                 "label": "Loggers",
                 "target": {
@@ -588,16 +558,6 @@
                 "label": "Settings",
                 "target": {
                   "path": "kanoa/core/config/application/appConfig",
-                  "type": "view"
-                }
-              },
-              {
-                "children": [],
-                "enabled": true,
-                "icon": "material/watch_later",
-                "label": "Timers",
-                "target": {
-                  "path": "kanoa/core/config/timers/tagTimers",
                   "type": "view"
                 }
               }
@@ -841,16 +801,6 @@
         "target": {
           "path": "",
           "type": null
-        }
-      },
-      {
-        "children": [],
-        "enabled": true,
-        "icon": "material/comment",
-        "label": "Logs",
-        "target": {
-          "path": "kanoa/core/logs/logs",
-          "type": "view"
         }
       },
       {
@@ -1619,7 +1569,7 @@
             "navPath",
             "navParams"
           ],
-          "script": "\t\n\tsystem.perspective.print(\"navigating to \" + str(navPath) + \" with \" + str(navParams))\n\tself.custom.currentViewPath \u003d navPath\n\tself.view.custom.search \u003d \u0027\u0027\n\tnewTab \u003d True if navType \u003d\u003d \u0027url\u0027 else False\n\tsystem.perspective.navigate(**{navType: navPath, \u0027params\u0027: navParams or {}, \u0027newTab\u0027:newTab})\n\t#This has a problem with None being passed in for params when it thinks it should a dictionary.\n"
+          "script": "\t\n\tsystem.perspective.print(\"navigating to \" + str(navPath) + \" with \" + str(navParams))\n\tself.custom.currentViewPath \u003d navPath\n\tself.view.custom.search \u003d \u0027\u0027\n\tnewTab \u003d True if navType \u003d\u003d \u0027url\u0027 else False\n\t#Popups belong to the screen they were opened on: close the last one opened (868mvvygc). An empty id closes only the\n\t#most recent popup, so one opened from another popup stays. A link in a new tab leaves this page as it is\n\tif not newTab: system.perspective.closePopup(\u0027\u0027)\n\tsystem.perspective.navigate(**{navType: navPath, \u0027params\u0027: navParams or {}, \u0027newTab\u0027:newTab})\n\t#This has a problem with None being passed in for params when it thinks it should a dictionary.\n"
         },
         {
           "name": "buildNavigationHierarchy",
@@ -1641,7 +1591,7 @@
         {
           "messageType": "updateNavigation",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"updateNavigation() msg rcvd with \" + str(payload))\n\t# - implement your handler here\n\t# - any navigation action will call this, ex: menu tree, home button, any links\n\t# - this function adds new history items\n\t# - if this function is called when currentIndex is not pointing to the end of history,\n\t# delete every entry after the currentIndex, then add the new history item\n\t# - afterwards, navigate to the newly added history item/view\n\n\tif payload[\u0027type\u0027]\t!\u003d \u0027url\u0027:\t#urls will be opened in a new tab so we don\u0027t need to store history\n\t\t\t\n\t\tpageId \u003d self.page.props.pageId\n\t\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\t\t#For debug in designer\n\t\t\t\n\t\ttabNavigation \u003d self.session.custom.kanoa[pageId].navigation\n\t\thistory \u003d tabNavigation[\"history\"]\n\t\tcurrentIndex \u003d tabNavigation[\"currentIndex\"]\n\t\t\n\t\tif currentIndex \u003c len(history) - 1: self.session.custom.kanoa[pageId].navigation[\"history\"] \u003d history[:currentIndex + 1]\n\t\t\t\n\t\tif history[currentIndex][\"path\"] !\u003d payload[\"path\"]:\n\t\t\tnewHistoryItem \u003d {\n\t\t\t\t\"path\": payload[\"path\"],\n\t\t\t\t\"name\": payload[\u0027name\u0027],\n\t\t\t\t\"type\": payload[\u0027type\u0027],\n\t\t\t\t\"params\": system.util.jsonEncode(payload[\u0027params\u0027])\n\t\t\t}\n\t\t\tself.session.custom.kanoa[pageId].navigation[\"history\"].append(newHistoryItem)\n\t\t\tif len(self.session.custom.kanoa[pageId].navigation[\"history\"]) \u003e 30: self.session.custom.kanoa[pageId].navigation[\"history\"] \u003d self.session.custom.kanoa[pageId].navigation[\"history\"][1:]\n\t\t\telse: self.session.custom.kanoa[pageId].navigation[\"currentIndex\"] +\u003d 1\n\t\telse: return\n\t\t\t\t\t\n\tself.navigateTo(payload[\u0027type\u0027], payload[\u0027path\u0027], payload[\u0027params\u0027])\n\n\treturn",
+          "script": "\n\tsystem.perspective.print(\"updateNavigation() msg rcvd with \" + str(payload))\n\t# - implement your handler here\n\t# - any navigation action will call this, ex: menu tree, home button, any links\n\t# - this function adds new history items\n\t# - if this function is called when currentIndex is not pointing to the end of history,\n\t# delete every entry after the currentIndex, then add the new history item\n\t# - afterwards, navigate to the newly added history item/view\n\n\tif payload[\u0027type\u0027]\t!\u003d \u0027url\u0027:\t#urls will be opened in a new tab so we don\u0027t need to store history\n\t\t\t\n\t\tpageId \u003d self.page.props.pageId\n\t\tif \u0027/\u0027 in pageId: pageId \u003d \u0027designer\u0027\t\t#For debug in designer\n\t\t\t\n\t\ttabNavigation \u003d self.session.custom.kanoa[pageId].navigation\n\t\thistory \u003d tabNavigation[\"history\"]\n\t\tcurrentIndex \u003d tabNavigation[\"currentIndex\"]\n\t\t\n\t\tif currentIndex \u003c len(history) - 1: self.session.custom.kanoa[pageId].navigation[\"history\"] \u003d history[:currentIndex + 1]\n\t\t\t\n\t\tif history[currentIndex][\"path\"] !\u003d payload[\"path\"]:\n\t\t\tnewHistoryItem \u003d {\n\t\t\t\t\"path\": payload[\"path\"],\n\t\t\t\t\"name\": payload[\u0027name\u0027],\n\t\t\t\t\"type\": payload[\u0027type\u0027],\n\t\t\t\t\"params\": system.util.jsonEncode(payload[\u0027params\u0027])\n\t\t\t}\n\t\t\tself.session.custom.kanoa[pageId].navigation[\"history\"].append(newHistoryItem)\n\t\t\tif len(self.session.custom.kanoa[pageId].navigation[\"history\"]) \u003e 30: self.session.custom.kanoa[pageId].navigation[\"history\"] \u003d self.session.custom.kanoa[pageId].navigation[\"history\"][1:]\n\t\t\telse: self.session.custom.kanoa[pageId].navigation[\"currentIndex\"] +\u003d 1\n\t\t\t\t\t\n\t#Navigate even when this path is already the current history entry (no new entry then): the screen can show\n\t#something else, e.g. a dashboard in Asset Operation, and a click on an asset card there did nothing (868mw8qwy)\n\tself.navigateTo(payload[\u0027type\u0027], payload[\u0027path\u0027], payload[\u0027params\u0027])\n\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

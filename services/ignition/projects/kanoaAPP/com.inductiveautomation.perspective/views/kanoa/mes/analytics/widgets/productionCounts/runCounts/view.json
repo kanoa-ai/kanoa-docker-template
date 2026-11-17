@@ -1,0 +1,129 @@
+{
+  "custom": {},
+  "params": {
+    "value": {
+      "assetId": null,
+      "endDate": null,
+      "html": "",
+      "link": false,
+      "startDate": null
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 140,
+      "width": 280
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "mdRun"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.source": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.html"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "markdown": {
+            "escapeHtml": false
+          },
+          "style": {
+            "classes": "kanoa/font/bodySmall",
+            "color": "var(--kcOnSurface)"
+          }
+        },
+        "type": "ia.display.markdown"
+      }
+    ],
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\n\t# The run\u0027s Count Editor, opened by the chart (its productionRunCounts handler), for a user who can edit operations\n\tvalue \u003d self.view.params.value\n\tif not value or not value.link: return\n\tsystem.perspective.sendMessage(\u0027productionRunCounts\u0027, {\u0027assetId\u0027: value.assetId, \u0027startDate\u0027: value.startDate,\n\t\t\u0027endDate\u0027: value.endDate}, scope\u003d\u0027page\u0027)"
+          },
+          "scope": "G",
+          "type": "script"
+        },
+        "onMouseEnter": {
+          "config": {
+            "script": "\n\t# The chart shades this run\u0027s time while the pointer is over it (its productionRunHover handler)\n\tvalue \u003d self.view.params.value\n\tif not value: return\n\tsystem.perspective.sendMessage(\u0027productionRunHover\u0027, {\u0027assetId\u0027: value.assetId, \u0027startDate\u0027: value.startDate,\n\t\t\u0027endDate\u0027: value.endDate, \u0027on\u0027: True}, scope\u003d\u0027page\u0027)"
+          },
+          "scope": "G",
+          "type": "script"
+        },
+        "onMouseLeave": {
+          "config": {
+            "script": "\n\t# The chart shades this run\u0027s time while the pointer is over it (its productionRunHover handler)\n\tvalue \u003d self.view.params.value\n\tif not value: return\n\tsystem.perspective.sendMessage(\u0027productionRunHover\u0027, {\u0027assetId\u0027: value.assetId, \u0027startDate\u0027: value.startDate,\n\t\t\u0027endDate\u0027: value.endDate, \u0027on\u0027: False}, scope\u003d\u0027page\u0027)"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
+    "meta": {
+      "name": "root",
+      "tooltip": {
+        "delay": 600,
+        "location": "top",
+        "text": "Edit the counts"
+      }
+    },
+    "propConfig": {
+      "meta.tooltip.enabled": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.link"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn bool(value)",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.classes": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.link"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t# A section that opens the Count Editor looks like a link (the summary\u0027s other sections do the same)\n\treturn \u0027kanoa/panelSection kanoa/panelSectionLink\u0027 if value else \u0027kanoa/panelSection\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "padding": "8px 10px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

@@ -65,7 +65,22 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n#\tsystem.perspective.print(\"Building mainView child asset instances\")\n\n\tparams \u003d self.view.params.value\n\texpand \u003d params[\u0027expand\u0027] if value.has_key(\u0027expand\u0027) else True\n\tlevel \u003d params[\u0027level\u0027] if value.has_key(\u0027level\u0027) else 0\n\n\tinfo \u003d []\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in value[item]:\n\t\t\tif childAssets !\u003d \u0027assetInfo\u0027: children.append(value[item][childAssets])\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item, \u0027assetInfo\u0027: value[item][\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\n#\tsystem.perspective.print(\"Completed mainView child asset instances\")\n\n\treturn sorted(info, key\u003dlambda x: x[\u0027value\u0027][\u0027assetInfo\u0027][\u0027sortOrder\u0027])",
+                      "code": "\n#\tsystem.perspective.print(\"Building mainView child asset instances\")\n\n\tparams \u003d self.view.params.value\n\texpand \u003d params[\u0027expand\u0027] if value.has_key(\u0027expand\u0027) else True\n\tlevel \u003d params[\u0027level\u0027] if value.has_key(\u0027level\u0027) else 0\n\n\t#A lone enterprise, site, division or region at the top only wraps what\u0027s under it: skip it and start at the\n\t#level below, while that level is all groups (868mvwg9e). Its children keep their own level\u0027s view, with tabs.\n\tskipped \u003d 0\n\ttry:\n\t\ttop \u003d dict((name, value[name]) for name in value)\n\t\twhile len(top) \u003d\u003d 1:\n\t\t\tonly \u003d top.values()[0]\n\t\t\tkids \u003d [name for name in only if name !\u003d \u0027assetInfo\u0027]\n\t\t\tif not kids or any(len(dict(only[name])) \u003d\u003d 1 for name in kids): break\n\t\t\ttop \u003d dict((name, only[name]) for name in kids)\n\t\t\tskipped +\u003d 1\n\t\tif skipped: value \u003d top\n\texcept Exception as e:\n\t\tskipped \u003d 0\n\t\tsystem.util.getLogger(\u0027kanoa.overview.mainView\u0027).warn(\u0027Showing every top level: skipping the lone ones failed: %s\u0027 % e)\n\tlevel +\u003d skipped\n\n\tinfo \u003d []\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in value[item]:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\t#Below the top level, the level views take groups and assets apart, as L0 hands them on\n\t\t\tchild \u003d value[item][childAssets]\n\t\t\tif skipped and len(dict(child)) \u003d\u003d 1: assets.append(child)\n\t\t\telse:\n\t\t\t\tchildren.append(child)\n\t\t\t\t#A line with cells is a tile among its area\u0027s lines too; its cells get a section of their own below it (868mvwg9e)\n\t\t\t\tif skipped and child[\u0027assetInfo\u0027] and child[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: assets.append({\u0027assetInfo\u0027: child[\u0027assetInfo\u0027]})\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item, \u0027assetInfo\u0027: value[item][\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\n#\tsystem.perspective.print(\"Completed mainView child asset instances\")\n\n\treturn sorted(info, key\u003dlambda x: x[\u0027value\u0027][\u0027assetInfo\u0027][\u0027sortOrder\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.instances"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#The level of the first group shown (868mvwg9e): lone top-level groups are skipped\n\ttry: level \u003d int(value[0][\u0027value\u0027][\u0027level\u0027]) if value else 0\n\texcept: level \u003d 0\n\treturn \u0027kanoa/mes/asset/overview/assetTreeOverviewL\u0027 + str(min(level, 5))",
                       "type": "script"
                     }
                   ],
@@ -83,7 +98,7 @@
               },
               "path": "kanoa/mes/asset/overview/assetTreeOverviewL0",
               "style": {
-                "gap": "5px",
+                "gap": "16px",
                 "overflow": "hidden",
                 "paddingX": "5px"
               },
@@ -118,7 +133,7 @@
       "style": {
         "borderStyle": "none",
         "classes": "kanoa/container",
-        "padding": "3px"
+        "padding": "8px"
       }
     },
     "type": "ia.container.flex"

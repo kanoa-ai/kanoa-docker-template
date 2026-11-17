@@ -71,6 +71,12 @@
         "label": "Schedule",
         "navItem": "schedule",
         "userFunction": null
+      },
+      {
+        "enabled": false,
+        "label": "Tooling",
+        "navItem": "tooling",
+        "userFunction": null
       }
     ],
     "navItemLocation": "Right Panel",
@@ -414,7 +420,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n#\tsystem.perspective.print(\"getting navItems for %s\"%value[\u0027assetPath\u0027])\n\tself.custom.customAttributes.navItems.inherited \u003d False\n\tself.custom.customAttributes.navItems.default \u003d False\n\n\tnavItems \u003d system.kanoa.utilities.getFieldValue(\u0027assetAttrValue\u0027, system.kanoa.asset.getAssetAttributes({\u0027assetPath\u0027: value[\u0027assetPath\u0027], \u0027assetAttrName\u0027: self.custom.customAttributes.navItems.attributeName}))\n#\tsystem.perspective.print(\"Found navItems %s for %s\"%(navItems,value[\u0027assetPath\u0027]))\n\tif navItems is None:\n#\t\tsystem.perspective.print(\"getting ancestor navItems for %s\"%value[\u0027assetPath\u0027])\n\t\tnavItems \u003d system.kanoa.asset.getClosestAncestorAttribute(value[\u0027assetPath\u0027], self.custom.customAttributes.navItems.attributeName)\n#\t\tsystem.perspective.print(\"Found ancestor navItems %s for %s\"%(navItems,value[\u0027assetPath\u0027]))\n\t\tif navItems: self.custom.customAttributes.navItems.inherited \u003d True\n\t\n\tif navItems is None:\n\t\tnavItems \u003d self.custom.defaultNavItems\n\t\tself.custom.customAttributes.navItems.default \u003d True\n\telse: navItems \u003d system.util.jsonDecode(navItems)\n\t\n\treturn navItems",
+            "code": "\n#\tsystem.perspective.print(\"getting navItems for %s\"%value[\u0027assetPath\u0027])\n\tself.custom.customAttributes.navItems.inherited \u003d False\n\tself.custom.customAttributes.navItems.default \u003d False\n\n\tnavItems \u003d system.kanoa.utilities.getFieldValue(\u0027assetAttrValue\u0027, system.kanoa.asset.getAssetAttributes({\u0027assetPath\u0027: value[\u0027assetPath\u0027], \u0027assetAttrName\u0027: self.custom.customAttributes.navItems.attributeName}))\n#\tsystem.perspective.print(\"Found navItems %s for %s\"%(navItems,value[\u0027assetPath\u0027]))\n\tif navItems is None:\n#\t\tsystem.perspective.print(\"getting ancestor navItems for %s\"%value[\u0027assetPath\u0027])\n\t\tnavItems \u003d system.kanoa.asset.getClosestAncestorAttribute(value[\u0027assetPath\u0027], self.custom.customAttributes.navItems.attributeName)\n#\t\tsystem.perspective.print(\"Found ancestor navItems %s for %s\"%(navItems,value[\u0027assetPath\u0027]))\n\t\tif navItems: self.custom.customAttributes.navItems.inherited \u003d True\n\t\n\tif navItems is None:\n\t\tnavItems \u003d self.custom.defaultNavItems\n\t\tself.custom.customAttributes.navItems.default \u003d True\n\telse: navItems \u003d system.util.jsonDecode(navItems)\n\t#Items added since the list was saved (such as Tooling) show up switched off\n\tif not self.custom.customAttributes.navItems.default:\n\t\tknown \u003d [item[\u0027navItem\u0027] for item in navItems]\n\t\tfor item in self.custom.defaultNavItems:\n\t\t\tif item[\u0027navItem\u0027] not in known:\n\t\t\t\tnewItem \u003d dict(item)\n\t\t\t\tnewItem[\u0027enabled\u0027] \u003d False\n\t\t\t\tnavItems.append(newItem)\n\t\n\treturn navItems",
             "type": "script"
           }
         ],

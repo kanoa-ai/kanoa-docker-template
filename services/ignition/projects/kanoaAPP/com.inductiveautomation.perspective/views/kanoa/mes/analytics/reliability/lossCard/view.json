@@ -1,0 +1,297 @@
+{
+  "custom": {},
+  "params": {
+    "biggest": "",
+    "color": "var(--kcRed-60)",
+    "family": "",
+    "isTop": false,
+    "label": "",
+    "mins": 0,
+    "pct": 0,
+    "selected": false
+  },
+  "propConfig": {
+    "params.biggest": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.color": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.family": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.isTop": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.label": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.mins": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.pct": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.selected": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 48,
+      "width": 320
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root",
+      "tooltip": {
+        "enabled": true,
+        "location": "bottom"
+      }
+    },
+    "position": {
+      "grow": 1
+    },
+    "props": {
+      "direction": "row",
+      "style": {
+        "classes": "kanoa/container",
+        "borderRadius": "8px",
+        "padding": "6px 12px",
+        "cursor": "pointer",
+        "borderStyle": "solid",
+        "borderWidth": "2px",
+        "overflow": "hidden"
+      },
+      "alignItems": "center"
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "flxSwatch"
+        },
+        "position": {
+          "basis": "12px",
+          "shrink": 0
+        },
+        "props": {
+          "direction": "row",
+          "style": {
+            "borderRadius": "6px",
+            "height": "12px",
+            "marginRight": "8px"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [],
+        "propConfig": {
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.color"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "lblTitle"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/titleSmall"
+          }
+        },
+        "type": "ia.display.label",
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.label"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "lblTop"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/labelSmall",
+            "borderRadius": "10px",
+            "padding": "1px 8px",
+            "marginLeft": "8px",
+            "color": "var(--kcGray-0)"
+          },
+          "text": "Biggest"
+        },
+        "type": "ia.display.label",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.params.isTop"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          },
+          "props.style.backgroundColor": {
+            "binding": {
+              "config": {
+                "path": "view.params.color"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "flxGap"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "direction": "row",
+          "style": {}
+        },
+        "type": "ia.container.flex",
+        "children": []
+      },
+      {
+        "meta": {
+          "name": "lblMins"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/titleMedium",
+            "whiteSpace": "nowrap"
+          }
+        },
+        "type": "ia.display.label",
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.mins"
+              },
+              "overlayOptOut": true,
+              "type": "property",
+              "transforms": [
+                {
+                  "code": "\treturn system.kanoa.utilities.secondsToText((value or 0) * 60, {\u0027showSecs\u0027: False}) or \u00270 mins\u0027",
+                  "type": "script"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "lblPct"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/bodySmall",
+            "marginLeft": "8px",
+            "color": "var(--kcGray-60)",
+            "whiteSpace": "nowrap"
+          }
+        },
+        "type": "ia.display.label",
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.pct"
+              },
+              "overlayOptOut": true,
+              "type": "property",
+              "transforms": [
+                {
+                  "code": "\treturn \u0027{:.1f}%\u0027.format(value or 0)",
+                  "type": "script"
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "propConfig": {
+      "props.style.borderColor": {
+        "binding": {
+          "config": {
+            "expression": "if({view.params.selected}, {view.params.color}, \u0027var(--kcOutlineVariant)\u0027)"
+          },
+          "overlayOptOut": true,
+          "type": "expr"
+        }
+      },
+      "meta.tooltip.text": {
+        "binding": {
+          "config": {
+            "struct": {
+              "mins": "{view.params.mins}",
+              "pct": "{view.params.pct}",
+              "biggest": "{view.params.biggest}"
+            },
+            "waitOnAll": true
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\t# The exact minutes, the share of planned run time, and the biggest part of it\n\ttext \u003d \u0027{:,.0f} minutes, {:.1f}% of planned run time\u0027.format(value[\u0027mins\u0027] or 0, value[\u0027pct\u0027] or 0)\n\treturn text + (\u0027. Most from \u0027 + value[\u0027biggest\u0027] if value[\u0027biggest\u0027] else \u0027\u0027)",
+              "type": "script"
+            }
+          ],
+          "type": "expr-struct"
+        }
+      }
+    },
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\n\t# Show this family\u0027s losses (or all of them again, when it\u0027s the one selected)\n\tsystem.perspective.sendMessage(\u0027reliabilityDrill\u0027, {\u0027level\u0027: \u0027family\u0027, \u0027key\u0027: self.view.params.family,\n\t\t\u0027selected\u0027: self.view.params.selected}, scope\u003d\u0027page\u0027)"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    }
+  }
+}

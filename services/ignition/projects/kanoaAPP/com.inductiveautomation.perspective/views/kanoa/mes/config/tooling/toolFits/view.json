@@ -1,0 +1,1208 @@
+{
+  "custom": {
+    "edit": {
+      "toolingCompatibilityId": null,
+      "child": null,
+      "kind": "asset",
+      "parentId": null,
+      "enabled": true
+    },
+    "refresh": null,
+    "rules": [],
+    "selectedData": [],
+    "selectedRow": null,
+    "toolingAssetId": null,
+    "userAction": {
+      "canCreate": false,
+      "canRead": true,
+      "canUpdate": false
+    },
+    "targets": [],
+    "toastId": null
+  },
+  "params": {
+    "value": {
+      "toolingAssetId": null
+    }
+  },
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.security"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.toolingAssetId": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "type": "property",
+        "transforms": [
+          {
+            "code": "\n\treturn value.get(\u0027toolingAssetId\u0027) if value else None",
+            "type": "script"
+          }
+        ]
+      },
+      "persistent": true
+    },
+    "custom.rules": {
+      "binding": {
+        "config": {
+          "struct": {
+            "toolingAssetId": "{view.custom.toolingAssetId}",
+            "refresh": "{view.custom.refresh}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\ttid \u003d value[\u0027toolingAssetId\u0027]\n\tif tid is None: return []\n\trows \u003d (system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getCompatibilityRules({\u0027toolingAssetId\u0027: tid}) or []) or [])\n\tfmt \u003d lambda p: system.kanoa.utilities.formatPath(p, {}) if p else \u0027\u0027\n\tout \u003d []\n\tfor r in rows:\n\t\tif r[\u0027parentKind\u0027] \u003d\u003d \u0027asset\u0027: fits \u003d \u0027Machine: \u0027 + (fmt(r[\u0027parentAssetPath\u0027]) or r[\u0027parentName\u0027])\n\t\telif r[\u0027parentKind\u0027] \u003d\u003d \u0027tool\u0027: fits \u003d \u0027In the pockets of \u0027 + r[\u0027parentName\u0027]\n\t\telse: fits \u003d \u0027Any \u0027 + r[\u0027parentName\u0027]\n\t\tif r[\u0027ruleFor\u0027] \u003d\u003d \u0027tool\u0027: who \u003d \u0027This tool\u0027\n\t\telse: who \u003d \u0027Every \u0027 + r[\u0027childName\u0027]\n\t\tr \u003d dict(r)\n\t\tr.update({\u0027forLabel\u0027: who, \u0027fitsLabel\u0027: fits})\n\t\tout.append(r)\n\treturn out",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.selectedData": {
+      "binding": {
+        "config": {
+          "struct": {
+            "rows": "{view.custom.rules}",
+            "row": "{view.custom.selectedRow}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\trows \u003d value[\u0027rows\u0027] or []\n\trow \u003d value[\u0027row\u0027]\n\tif row is None or row \u003c 0 or row \u003e\u003d len(rows): return []\n\treturn [dict(rows[row])]",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "security": "{view.custom.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecurity \u003d value[\u0027security\u0027]\n\tuserCRUD \u003d security[\u0027userCRUD\u0027] if security else {}\n\tcanEdit \u003d bool(userCRUD) and (userCRUD.get(\u0027isGatewayAdmin\u0027) or userCRUD.get(\u0027configureAssets\u0027, {}).get(\u0027enabled\u0027))\n\treturn {\u0027canCreate\u0027: canEdit, \u0027canUpdate\u0027: canEdit, \u0027canRead\u0027: True}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.targets": {
+      "binding": {
+        "config": {
+          "struct": {
+            "kind": "{view.custom.edit.kind}",
+            "child": "{view.custom.edit.child}",
+            "toolingAssetId": "{view.custom.toolingAssetId}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tkind \u003d value[\u0027kind\u0027]\n\tchild \u003d value[\u0027child\u0027]\n\ttoolId \u003d value[\u0027toolingAssetId\u0027]\n\tif kind \u003d\u003d \u0027tool\u0027:\n\t\t# Tools with pockets, other than this one\n\t\ttools \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027enabled\u0027: True}) or []) or []\n\t\treturn [{\u0027assetId\u0027: r[\u0027toolingAssetId\u0027], \u0027assetPath\u0027: r[\u0027assetPath\u0027]} for r in tools if r[\u0027holdsInserts\u0027] and r[\u0027toolingAssetId\u0027] !\u003d toolId]\n\tif kind !\u003d \u0027asset\u0027: return []\n\t# A rule for the type applies to its tools in every site\n\tif child and child.startswith(\u0027type:\u0027): toolId \u003d None\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027usesTooling\u0027: True}) or []) or []\n\ttools \u003d (system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027toolingAssetId\u0027: toolId}) or []) or []) if toolId else []\n\tsiteId \u003d tools[0][\u0027siteId\u0027] if tools else None\n\tif siteId is not None:\n\t\tsites \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: siteId}) or []) or []\n\t\tsitePath \u003d sites[0][\u0027assetPath\u0027] + \u0027\\\\\u0027 if sites else None\n\t\trows \u003d [r for r in rows if sitePath and (r[\u0027assetPath\u0027] or \u0027\u0027).startswith(sitePath)]\n\treturn [{\u0027assetId\u0027: r[\u0027assetId\u0027], \u0027assetPath\u0027: r[\u0027assetPath\u0027]} for r in rows]",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 500,
+      "width": 950
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "lblNoTool"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.toolingAssetId"
+              },
+              "overlayOptOut": true,
+              "type": "property",
+              "transforms": [
+                {
+                  "code": "\n\treturn value is None",
+                  "type": "script"
+                }
+              ]
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default"
+          },
+          "text": "Save the tool first."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "lblSummary"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "rules": "{view.custom.rules}",
+                  "toolingAssetId": "{view.custom.toolingAssetId}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value[\u0027toolingAssetId\u0027] is None: return \u0027\u0027\n\trules \u003d [r for r in (value[\u0027rules\u0027] or []) if r[\u0027enabled\u0027]]\n\tif not rules:\n\t\treturn \"No rules: this tool fits any machine in its site that uses tooling. Add a rule to limit where it can be mounted.\"\n\tif any(r[\u0027ruleFor\u0027] \u003d\u003d \u0027type\u0027 for r in rules):\n\t\treturn (\"This tool only mounts where one of these rules allows. A rule for \u0027Every \u003ctype\u003e\u0027 applies to every tool of that type, \"\n\t\t\t\t\"so changing it changes them all.\")\n\treturn \"This tool only mounts where one of these rules allows.\"",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "paddingLeft": "5px",
+            "whiteSpace": "normal"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "flxTable"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/border"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onRowClick": {
+                  "config": {
+                    "script": "\n\tr \u003d self.props.data[event.row]\n\tkind \u003d r[\u0027parentKind\u0027]\n\tparentId \u003d r[\u0027parentAssetId\u0027] if kind \u003d\u003d \u0027asset\u0027 else r[\u0027parentToolingAssetId\u0027] if kind \u003d\u003d \u0027tool\u0027 else r[\u0027parentAssetTypeId\u0027]\n\tchild \u003d \u0027tool:%s\u0027 % r[\u0027childToolingAssetId\u0027] if r[\u0027ruleFor\u0027] \u003d\u003d \u0027tool\u0027 else \u0027type:%s\u0027 % r[\u0027childAssetTypeId\u0027]\n\tself.view.custom.edit \u003d {\u0027toolingCompatibilityId\u0027: r[\u0027toolingCompatibilityId\u0027], \u0027child\u0027: child, \u0027kind\u0027: kind, \u0027parentId\u0027: parentId,\n\t\t\t\t\t\t\t \u0027enabled\u0027: r[\u0027enabled\u0027]}\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "tblRules"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.rules"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedRow": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selectedRow",
+                    "bidirectional": true
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "bodyStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "dragOrderable": false,
+              "headerStyle": {
+                "classes": "kanoa/font/default",
+                "fontWeight": "bold"
+              },
+              "pager": {
+                "bottom": false
+              },
+              "rows": {
+                "striped": {
+                  "enabled": false
+                },
+                "style": {
+                  "gap": "2px",
+                  "padding": "2px"
+                }
+              },
+              "selection": {
+                "mode": "single"
+              },
+              "style": {
+                "borderStyle": "none"
+              },
+              "columns": [
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "forLabel",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "For"
+                  },
+                  "justify": "left",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 220
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "fitsLabel",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Fits"
+                  },
+                  "justify": "left",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 420
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "enabled",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Enabled"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "boolean",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                }
+              ],
+              "data": []
+            },
+            "type": "ia.display.table"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "lblHint"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontSize": "12px",
+            "paddingLeft": "5px",
+            "whiteSpace": "normal"
+          },
+          "text": "A machine rule lets the tool on that machine; a tool rule, into that tool\u0027s pockets (a mold base or frame that holds inserts); a type rule, on any machine or into any tool of that type. Mounting anywhere else is refused, and the scheduler won\u0027t reserve the tool there. Tools already mounted stay mounted; a new rule applies from the next mount."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "flxForm"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "id": "{view.custom.toolingAssetId}",
+                  "action": "{view.custom.userAction}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn value[\u0027id\u0027] is not None and value[\u0027action\u0027][\u0027canUpdate\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "children": [
+          {
+            "meta": {
+              "name": "lblEditing"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "edit": "{view.custom.edit}",
+                      "rules": "{view.custom.rules}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tedit \u003d value[\u0027edit\u0027]\n\truleId \u003d edit[\u0027toolingCompatibilityId\u0027] if edit else None\n\tif ruleId is None: return \u0027New rule: Save adds it.\u0027\n\tfor r in (value[\u0027rules\u0027] or []):\n\t\tif r[\u0027toolingCompatibilityId\u0027] \u003d\u003d ruleId:\n\t\t\treturn system.util.translate(\u0027Editing\u0027, self.session.props.locale) + \u0027: %s, %s. Save changes it; Clear starts a new rule.\u0027 % (r[\u0027forLabel\u0027], r[\u0027fitsLabel\u0027])\n\treturn \u0027Editing a rule. Save changes it; Clear starts a new rule.\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "fontWeight": "bold",
+                "paddingLeft": "145px",
+                "whiteSpace": "normal"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "flxFor"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "lblFor"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "For"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ddFor"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.child",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "toolingAssetId": "{view.custom.toolingAssetId}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\ttid \u003d value[\u0027toolingAssetId\u0027]\n\ttools \u003d (system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027toolingAssetId\u0027: tid}) or []) or []) if tid else []\n\tif not tools: return []\n\toptions \u003d [{\u0027value\u0027: \u0027tool:%s\u0027 % tid, \u0027label\u0027: \u0027This tool\u0027}]\n\tif tools[0][\u0027assetTypeId\u0027] is not None:\n\t\toptions.append({\u0027value\u0027: \u0027type:%s\u0027 % tools[0][\u0027assetTypeId\u0027], \u0027label\u0027: \u0027Every %s (every tool of this type)\u0027 % tools[0][\u0027assetTypeName\u0027]})\n\treturn options",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "placeholder": {
+                    "text": "This tool"
+                  },
+                  "showClearIcon": false,
+                  "search": {
+                    "enabled": true
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxKind"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "lblKind"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Fits"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ddKind"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.kind",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "expression": "1"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn [{\u0027value\u0027: \u0027asset\u0027, \u0027label\u0027: \u0027A machine\u0027}, {\u0027value\u0027: \u0027tool\u0027, \u0027label\u0027: \"In a tool\u0027s pockets (a mold base or frame)\"},\n\t\t\t{\u0027value\u0027: \u0027type\u0027, \u0027label\u0027: \u0027Any asset of a type (machines or tools)\u0027}]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "placeholder": {
+                    "text": "Where it fits"
+                  },
+                  "showClearIcon": false,
+                  "search": {
+                    "enabled": true
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxTarget"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "lblTarget"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "On"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ddTarget"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.parentId",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "kind": "{view.custom.edit.kind}",
+                          "child": "{view.custom.edit.child}",
+                          "toolingAssetId": "{view.custom.toolingAssetId}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# Only a type is picked here; a machine or a tool is picked in the asset selector\n\tif value[\u0027kind\u0027] !\u003d \u0027type\u0027: return []\n\ttypes \u003d (system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssetTypes({}) or []) or [])\n\treturn [{\u0027value\u0027: r[\u0027assetTypeId\u0027], \u0027label\u0027: r[\u0027assetTypeName\u0027]} for r in sorted(types, key\u003dlambda r: r[\u0027assetTypeName\u0027])]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "{view.custom.edit.kind} \u003d \u0027type\u0027"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "placeholder": {
+                    "text": "The asset type"
+                  },
+                  "showClearIcon": true,
+                  "search": {
+                    "enabled": true
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              },
+              {
+                "meta": {
+                  "name": "evTarget"
+                },
+                "position": {
+                  "basis": "0px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.params.value.assetPath": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "assetId": "{view.custom.edit.parentId}",
+                          "targets": "{view.custom.targets}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# The selector shows the asset by its path\n\tfor t in value[\u0027targets\u0027] or []:\n\t\tif t[\u0027assetId\u0027] \u003d\u003d value[\u0027assetId\u0027]: return t[\u0027assetPath\u0027]\n\treturn None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.params.value.parentPathList": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.targets"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property",
+                      "transforms": [
+                        {
+                          "code": "\n\t# Only these assets can be picked\n\treturn [t[\u0027assetPath\u0027] for t in value or []]",
+                          "type": "script"
+                        }
+                      ]
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "{view.custom.edit.kind} !\u003d \u0027type\u0027 \u0026\u0026 len({view.custom.targets}) \u003e 0"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "value": {
+                      "followValue": true,
+                      "msgHandler": "toolFitTargetSelected",
+                      "options": {
+                        "dragDrop": false,
+                        "expand": false,
+                        "multiSelect": false,
+                        "showBreadcrumb": true,
+                        "showClear": true,
+                        "showSelectedPath": false
+                      },
+                      "parentPathList": [],
+                      "persistent": false,
+                      "useSessionValue": false
+                    }
+                  },
+                  "path": "kanoa/core/templates/selectors/assetSelector",
+                  "style": {
+                    "minWidth": "120px"
+                  }
+                },
+                "type": "ia.display.view"
+              },
+              {
+                "meta": {
+                  "name": "lblNoTargets"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "{view.custom.edit.kind} !\u003d \u0027type\u0027 \u0026\u0026 len({view.custom.targets}) \u003d 0"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  },
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "expression": "if({view.custom.edit.kind} \u003d \u0027tool\u0027, \u0027No other tool holds inserts\u0027, \"No machine in this tool\u0027s site uses tooling\")"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontStyle": "italic"
+                  },
+                  "text": ""
+                },
+                "type": "ia.display.label"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxEnabled"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "lblEnabled"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Enabled"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "chkEnabled"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.enabled",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "text": "Use this rule"
+                },
+                "type": "ia.input.checkbox"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxActions"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "justify": "center",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tself.view.custom.edit \u003d {\u0027toolingCompatibilityId\u0027: None, \u0027child\u0027: None, \u0027kind\u0027: \u0027asset\u0027, \u0027parentId\u0027: None, \u0027enabled\u0027: True}\n\tself.view.custom.selectedRow \u003d None\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnNew"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/clear"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined"
+                  },
+                  "text": "Clear"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tedit \u003d self.view.custom.edit\n\ttoolId \u003d self.view.custom.toolingAssetId\n\tchild \u003d edit.child or \u0027tool:%s\u0027 % toolId\n\tif edit.kind \u003d\u003d \u0027type\u0027:\n\t\tallowed \u003d [o[\u0027value\u0027] for o in (self.parent.parent.getChild(\u0027flxTarget\u0027).getChild(\u0027ddTarget\u0027).props.options or [])]\n\telse:\n\t\tallowed \u003d [t[\u0027assetId\u0027] for t in (self.view.custom.targets or [])]\n\tif edit.parentId is None or edit.parentId not in allowed:\n\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Pick where it fits\u0027})\n\t\treturn\n\tchildKind, childId \u003d child.split(\u0027:\u0027)\n\tinfo \u003d {\u0027toolingCompatibilityId\u0027: edit.toolingCompatibilityId, \u0027enabled\u0027: edit.enabled}\n\tinfo[\u0027childToolingAssetId\u0027 if childKind \u003d\u003d \u0027tool\u0027 else \u0027childAssetTypeId\u0027] \u003d int(childId)\n\tinfo[{\u0027asset\u0027: \u0027parentAssetId\u0027, \u0027tool\u0027: \u0027parentToolingAssetId\u0027, \u0027type\u0027: \u0027parentAssetTypeId\u0027}[edit.kind]] \u003d edit.parentId\n\tfirst \u003d edit.toolingCompatibilityId is None and not [r for r in (self.view.custom.rules or []) if r[\u0027enabled\u0027]]\n\tresult \u003d system.kanoa.tooling.saveCompatibilityRule(info, self.view.custom.security.userId)\n\tif not result:\n\t\tsystem.util.getLogger(\u0027toolFits\u0027).warn(\u0027saveCompatibilityRule returned %r for %r\u0027 % (result, info))\n\t\tresult \u003d (None, \"Couldn\u0027t save the rule; see the gateway log\")\n\truleId, msg \u003d result\n\tif msg:\n\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\t\treturn\n\tmessage \u003d \u0027Fit rule saved. This tool now only mounts where its rules allow\u0027 if first else \u0027Fit rule saved\u0027\n\tself.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: message})\n\tself.view.custom.edit \u003d {\u0027toolingCompatibilityId\u0027: None, \u0027child\u0027: None, \u0027kind\u0027: \u0027asset\u0027, \u0027parentId\u0027: None, \u0027enabled\u0027: True}\n\tself.view.custom.selectedRow \u003d None\n\tself.view.custom.refresh \u003d system.date.now()\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnSave"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/save"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/filled"
+                  },
+                  "text": "Save rule"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\ttotal, failed \u003d 0, []\n\tfor r in self.view.custom.selectedData:\n\t\tresult, msg \u003d system.kanoa.tooling.deleteCompatibilityRule(r[\u0027toolingCompatibilityId\u0027], self.view.custom.security.userId)\n\t\ttotal +\u003d 1\n\t\tif msg: failed.append(msg)\n\t#One toast for the whole selection (868mvvzbz)\n\tif failed: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027 if len(failed) \u003d\u003d total else \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete %d of %d fit rules: %s\" % (len(failed), total, \u0027; \u0027.join(sorted(set(failed))))})\n\tself.view.custom.edit \u003d {\u0027toolingCompatibilityId\u0027: None, \u0027child\u0027: None, \u0027kind\u0027: \u0027asset\u0027, \u0027parentId\u0027: None, \u0027enabled\u0027: True}\n\tself.view.custom.selectedRow \u003d None\n\tself.view.custom.refresh \u003d system.date.now()\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnDelete"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/delete_forever"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined"
+                  },
+                  "text": "Delete selected"
+                },
+                "type": "ia.input.button",
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selectedData"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property",
+                      "transforms": [
+                        {
+                          "code": "\n\treturn len(value) \u003e 0",
+                          "type": "script"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)\n"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "toolFitTargetSelected",
+          "pageScope": true,
+          "script": "\n\t# The machine or tool picked (or cleared) in the selector\n\tpath \u003d payload[\u0027assetPath\u0027]\n\tparentId \u003d ([t[\u0027assetId\u0027] for t in self.view.custom.targets or [] if t[\u0027assetPath\u0027] \u003d\u003d path] or [None])[0]\n\tif self.view.custom.edit.parentId !\u003d parentId:\n\t\tself.view.custom.edit.parentId \u003d parentId",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

@@ -35,7 +35,14 @@
         "scheduleId": null,
         "woId": null
       }
-    }
+    },
+    "dates": {
+      "startDate": null,
+      "endDate": null,
+      "selectedRange": "Today"
+    },
+    "zoomId": null,
+    "overRange": false
   },
   "params": {
     "value": {
@@ -45,9 +52,14 @@
         "showLevels": null,
         "showOutfeed": true,
         "showTarget": true,
-        "showWaste": true
+        "showWaste": true,
+        "showModes": true
       },
-      "interval": null
+      "interval": null,
+      "showAssetName": false,
+      "showOptions": false,
+      "showDateRange": true,
+      "uncodedScrapPercent": 5
     }
   },
   "propConfig": {
@@ -62,7 +74,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tviewFilter \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tviewFilter[\u0027interval\u0027] \u003d self.params.value[\u0027interval\u0027]\n\treturn viewFilter",
+            "code": "\n\tviewFilter \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value[\u0027viewParams\u0027], self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tviewFilter[\u0027interval\u0027] \u003d None\n\treturn viewFilter",
             "type": "script"
           }
         ],
@@ -73,6 +85,27 @@
     "params.value": {
       "paramDirection": "input",
       "persistent": true
+    },
+    "custom.dates": {
+      "persistent": true
+    },
+    "custom.zoomId": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\t# This widget\u0027s id: its charts name its date selector by it when a box is dragged across them (setDateRange)\n\treturn str(system.kanoa.utilities.getUUID())",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.overRange": {
+      "persistent": true
     }
   },
   "props": {},
@@ -81,36 +114,48 @@
       {
         "children": [
           {
-            "events": {
-              "system": {
-                "onStartup": {
-                  "config": {
-                    "script": "\t\n\tself.props.value \u003d None\n\t\n\treturn"
-                  },
-                  "scope": "G",
-                  "type": "script"
-                }
-              }
-            },
             "meta": {
-              "domId": "ddInterval",
-              "name": "ddInterval",
-              "tooltip": {
-                "enabled": true,
-                "location": "top-left",
-                "text": "You can select the time interval or leave as auto-range. Auto range will show data by hour, by day or by week based on the selected date range"
-              }
+              "domId": "evDateRange",
+              "name": "evDateRange"
             },
             "position": {
-              "basis": "160px",
-              "shrink": 0
+              "grow": 1,
+              "shrink": 1
             },
             "propConfig": {
-              "props.value": {
+              "props.params.dates.endDate": {
                 "binding": {
                   "config": {
                     "bidirectional": true,
-                    "path": "view.params.value.interval"
+                    "path": "view.custom.dates.endDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.dates.startDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.dates.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.value.assetPath": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.filter.assetPath"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.value.id": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.zoomId"
                   },
                   "overlayOptOut": true,
                   "type": "property"
@@ -118,38 +163,113 @@
               }
             },
             "props": {
-              "dropdownOptionStyle": {
-                "classes": "kanoa/font/default"
-              },
-              "options": [
-                {
-                  "label": "Auto Range",
-                  "value": null
+              "params": {
+                "dates": {
+                  "selectedRange": "Today"
                 },
-                {
-                  "label": "By Hour",
-                  "value": "Hour"
-                },
-                {
-                  "label": "By Day",
-                  "value": "Day"
-                },
-                {
-                  "label": "By Week",
-                  "value": "Week"
+                "value": {
+                  "display": {
+                    "persistent": false,
+                    "showAutoRefresh": true,
+                    "showDateSelector": true,
+                    "showPeriodSelector": true
+                  },
+                  "enabled": true,
+                  "options": [
+                    {
+                      "enabled": true,
+                      "label": "Current Run"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Current Shift"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Previous Shift"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Today"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Yesterday"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "This Week"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last Week"
+                    },
+                    {
+                      "enabled": false,
+                      "label": "This Month"
+                    },
+                    {
+                      "enabled": false,
+                      "label": "Last Month"
+                    },
+                    {
+                      "enabled": false,
+                      "label": "Year To Date"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 24 Hrs"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Last 7 Days"
+                    },
+                    {
+                      "enabled": false,
+                      "label": "Last 14 Days"
+                    },
+                    {
+                      "enabled": true,
+                      "label": "Custom"
+                    }
+                  ],
+                  "period": "Week"
                 }
-              ],
-              "placeholder": {
-                "text": "Group by..."
               },
-              "showClearIcon": true,
-              "style": {
-                "classes": "kanoa/font/default",
-                "height": "30px"
-              }
+              "path": "kanoa/core/templates/selectors/dateSelector"
             },
-            "type": "ia.input.dropdown"
-          },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "domId": "flxDates",
+          "name": "flxDates"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "// The date range selector, unless the widget\u0027s showDateRange is off (the Production page has its own)\r\ncoalesce({view.params.value.showDateRange}, true)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "padding": "5px",
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
           {
             "meta": {
               "domId": "chkInfeed",
@@ -167,7 +287,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif not value[\u0027showInfeed\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "code": "\t\n\tif not value[\u0027showInfeed\u0027]: return True\n\tcounts \u003d sum([1 for item in [\u0027showInfeed\u0027, \u0027showOutfeed\u0027, \u0027showWaste\u0027, \u0027showTarget\u0027] if value[item]])\n\treturn counts \u003e 1",
                       "type": "script"
                     }
                   ],
@@ -210,7 +330,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif not value[\u0027showOutfeed\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "code": "\t\n\tif not value[\u0027showOutfeed\u0027]: return True\n\tcounts \u003d sum([1 for item in [\u0027showInfeed\u0027, \u0027showOutfeed\u0027, \u0027showWaste\u0027, \u0027showTarget\u0027] if value[item]])\n\treturn counts \u003e 1",
                       "type": "script"
                     }
                   ],
@@ -253,7 +373,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif not value[\u0027showWaste\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "code": "\t\n\tif not value[\u0027showWaste\u0027]: return True\n\tcounts \u003d sum([1 for item in [\u0027showInfeed\u0027, \u0027showOutfeed\u0027, \u0027showWaste\u0027, \u0027showTarget\u0027] if value[item]])\n\treturn counts \u003e 1",
                       "type": "script"
                     }
                   ],
@@ -296,7 +416,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif not value[\u0027showTarget\u0027]: return True\n\tcounts \u003d sum([1 for item in value if value[item]])\n\treturn counts \u003e 1",
+                      "code": "\t\n\tif not value[\u0027showTarget\u0027]: return True\n\tcounts \u003d sum([1 for item in [\u0027showInfeed\u0027, \u0027showOutfeed\u0027, \u0027showWaste\u0027, \u0027showTarget\u0027] if value[item]])\n\treturn counts \u003e 1",
                       "type": "script"
                     }
                   ],
@@ -319,6 +439,38 @@
                 "classes": "kanoa/font/default"
               },
               "text": "Show Target"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "domId": "chkModes",
+              "name": "chkModes",
+              "tooltip": {
+                "enabled": true,
+                "text": "Shade the times the asset was in a mode other than Production"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.params.value.displayOptions.showModes"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Show Modes"
             },
             "type": "ia.input.checkbox"
           },
@@ -399,7 +551,47 @@
             "padding": "5px"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "// The checkboxes and levels row, only when the widget\u0027s showOptions is on: the chart alone, as on the Production page, by default\r\ncoalesce({view.params.value.showOptions}, false)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        }
+      },
+      {
+        "type": "ia.display.label",
+        "meta": {
+          "name": "lblOverRange"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "text": "Choose a range of up to 7 days",
+          "style": {
+            "classes": "kanoa/font/bodyLarge",
+            "color": "var(--kcOnSurfaceVariant)",
+            "padding": "16px 16px 4px",
+            "textAlign": "center"
+          }
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.custom.overRange"
+              },
+              "overlayOptOut": true
+            }
+          }
+        }
       },
       {
         "meta": {
@@ -414,16 +606,23 @@
           "props.instances": {
             "binding": {
               "config": {
-                "path": "view.custom.filter"
+                "struct": {
+                  "filter": "{view.custom.filter}",
+                  "dates": "{view.custom.dates}",
+                  "show": "{view.params.value.showDateRange}",
+                  "pct": "{view.params.value.uncodedScrapPercent}",
+                  "zoomId": "{view.custom.zoomId}"
+                },
+                "waitOnAll": false
               },
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\tif value is None: return []\n\tassetPath \u003d value[\u0027assetPath\u0027] if (value[\u0027assetPath\u0027] or None) is not None else \u0027xxx\u0027\n\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027oeeEnabled\u0027: True, \u0027enabled\u0027: True}\n\tshowLevels \u003d value[\u0027displayOptions\u0027][\u0027showLevels\u0027]\n\tif showLevels \u003d\u003d -1: \n\t\tparamsDict[\u0027assetPath\u0027] \u003d assetPath + \u0027%\u0027\n\t\tassets \u003d system.kanoa.asset.getAssets(paramsDict)\n\telif showLevels \u003d\u003d 1: \n\t\tparentAsset \u003d system.kanoa.asset.getAssets(paramsDict)\n\t\tparentId \u003d self.view.custom.filter.assetId\n\t\tchildAssets \u003d system.kanoa.asset.getAssets({\u0027parentId\u0027: parentId})\n\t\tassets \u003d system.dataset.appendDataset(parentAsset, childAssets)\n\t\tassets \u003d system.dataset.toPyDataSet(assets)\n\telse:\n\t\tassets \u003d system.kanoa.asset.getAssets(paramsDict)\n\t\t\n\treturn [{\u0027values\u0027: {\n\t\t\"assetId\": row[\u0027assetId\u0027], \n\t\t\"startDate\": value[\u0027dateRange\u0027][\u0027startDate\u0027],\n\t\t\"endDate\": value[\u0027dateRange\u0027][\u0027endDate\u0027],\n\t\t\"displayOptions\": value[\u0027displayOptions\u0027],\n\t\t\"interval\": self.view.params.value.interval}\n\t} for row in assets]",
+                  "code": "\t# The date range: the widget\u0027s own selector when it shows (showDateRange), else the dashboard\u0027s filter; today when\n\t# neither has dates (the operator station passes none)\n\tdates, show, value_zoomId \u003d value[\u0027dates\u0027] or {}, value[\u0027show\u0027], value[\u0027zoomId\u0027]\n\t# Uncoded scrap is marked in an hour when it is at least this % of the infeed (5 when not set)\n\tpct \u003d value[\u0027pct\u0027] if value[\u0027pct\u0027] is not None else 5\n\tvalue \u003d value[\u0027filter\u0027]\n\t# The filter can come through part-built as the view opens\n\tif value is None or value.get(\u0027displayOptions\u0027) is None: return []\n\tdr \u003d value.get(\u0027dateRange\u0027) or {}\n\tif show is not False and dates.get(\u0027startDate\u0027) is not None and dates.get(\u0027endDate\u0027) is not None: start, end \u003d dates[\u0027startDate\u0027], dates[\u0027endDate\u0027]\n\telif dr.get(\u0027startDate\u0027) is not None and dr.get(\u0027endDate\u0027) is not None: start, end \u003d dr[\u0027startDate\u0027], dr[\u0027endDate\u0027]\n\telse: start, end \u003d system.date.midnight(system.date.now()), system.date.addDays(system.date.midnight(system.date.now()), 1)\n\t# Up to 7 days: a longer range reads weeks of events and counts for each chart, which filled the gateway\u0027s memory on the\n\t# demo server (Year To Date, the months and Last 14 Days are off in the date selector; a custom range or the dashboard\u0027s filter can still be longer)\n\tover \u003d system.date.daysBetween(start, end) \u003e 7\n\tif self.view.custom.overRange !\u003d over: self.view.custom.overRange \u003d over\n\tif over:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027productionRangeCap\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Choose a range of up to 7 days\u0027, self.session.props.locale)})\n\t\treturn []\n\tassetPath \u003d value.get(\u0027assetPath\u0027) if (value.get(\u0027assetPath\u0027) or None) is not None else \u0027xxx\u0027\n\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027oeeEnabled\u0027: True, \u0027enabled\u0027: True}\n\tshowLevels \u003d value[\u0027displayOptions\u0027][\u0027showLevels\u0027]\n\tif showLevels \u003d\u003d -1: \n\t\tparamsDict[\u0027assetPath\u0027] \u003d assetPath + \u0027%\u0027\n\t\tassets \u003d system.kanoa.asset.getAssets(paramsDict)\n\telif showLevels \u003d\u003d 1: \n\t\tparentAsset \u003d system.kanoa.asset.getAssets(paramsDict)\n\t\tparentId \u003d self.view.custom.filter.assetId\n\t\tchildAssets \u003d system.kanoa.asset.getAssets({\u0027parentId\u0027: parentId})\n\t\tassets \u003d system.dataset.appendDataset(parentAsset, childAssets)\n\t\tassets \u003d system.dataset.toPyDataSet(assets)\n\telse:\n\t\tassets \u003d system.kanoa.asset.getAssets(paramsDict)\n\t\t\n\treturn [{\u0027values\u0027: {\n\t\t\"assetId\": row[\u0027assetId\u0027], \n\t\t\"startDate\": start,\n\t\t\"endDate\": end,\n\t\t\"displayOptions\": value[\u0027displayOptions\u0027],\n\t\t\"interval\": None,\n\t\t# The asset name over each chart: off unless the widget\u0027s showAssetName is on\n\t\t\"showAssetName\": bool(self.view.params.value.get(\u0027showAssetName\u0027)),\n\t\t\"uncodedScrapPercent\": pct,\n\t\t# Dragging across the chart sets the range on this widget\u0027s own date selector, so only when it shows\n\t\t\"zoomId\": value_zoomId if show is not False else None}\n\t} for row in assets]",
                   "type": "script"
                 }
               ],
-              "type": "property"
+              "type": "expr-struct"
             },
             "persistent": true
           }
@@ -431,14 +630,19 @@
         "props": {
           "direction": "column",
           "elementPosition": {
-            "basis": "auto",
+            "basis": "0px",
+            "grow": 1,
             "shrink": 0
           },
           "path": "kanoa/mes/analytics/widgets/productionCounts/countBarChart",
           "style": {
             "gap": "5px"
           },
-          "useDefaultViewWidth": false
+          "useDefaultViewWidth": false,
+          "elementStyle": {
+            "minHeight": "600px"
+          },
+          "useDefaultViewHeight": false
         },
         "type": "ia.display.flex-repeater"
       }
@@ -448,7 +652,10 @@
       "name": "root"
     },
     "props": {
-      "direction": "column"
+      "direction": "column",
+      "style": {
+        "overflow": "auto"
+      }
     },
     "scripts": {
       "customMethods": [],
@@ -463,6 +670,17 @@
         }
       ]
     },
-    "type": "ia.container.flex"
+    "type": "ia.container.flex",
+    "events": {
+      "system": {
+        "onStartup": {
+          "config": {
+            "script": "\t# A widget saved before the mode overlay has no displayOptions, or none with showModes: the chart treats showModes as on,\n\t# so the checkbox matches. Without displayOptions there\u0027s nothing to set (868mwaypk)\n\tvalue \u003d self.view.params.value\n\tif value is None or not value.has_key(\u0027displayOptions\u0027) or value.displayOptions is None: return\n\ttry:\n\t\tshowModes \u003d value.displayOptions[\u0027showModes\u0027]\n\texcept:\n\t\tshowModes \u003d None\n\tif showModes is None:\n\t\tvalue.displayOptions.showModes \u003d True"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    }
   }
 }

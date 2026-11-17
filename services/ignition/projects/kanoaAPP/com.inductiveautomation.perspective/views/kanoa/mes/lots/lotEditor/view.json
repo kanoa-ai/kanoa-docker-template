@@ -40,14 +40,42 @@
       "itemUnitName": null,
       "lotId": null,
       "lotName": null
-    }
+    },
+    "stock": null,
+    "locationOptions": [],
+    "original": null,
+    "lotChanged": false,
+    "stockChanged": false
   },
   "params": {
     "value": {
       "lotId": null
-    }
+    },
+    "stock": null
   },
   "propConfig": {
+    "custom.locationOptions": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\t# Places stock can be: enabled assets that aren\u0027t transports\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027enabled\u0027: True}))\n\treturn sorted([{\u0027label\u0027: r[\u0027displayPath\u0027] or r[\u0027assetPath\u0027], \u0027value\u0027: r[\u0027assetPath\u0027]} for r in rows if not r[\u0027mobile\u0027]], key\u003dlambda o: o[\u0027label\u0027])",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      }
+    },
+    "custom.lotChanged": {
+      "binding": {
+        "config": {
+          "expression": "coalesce({view.custom.lotInfo.lotName}, \u0027\u0027) !\u003d coalesce({view.custom.original.lotName}, \u0027\u0027) || coalesce({view.custom.lotInfo.itemId}, -1) !\u003d coalesce({view.custom.original.itemId}, -1) || coalesce({view.custom.lotInfo.itemUnitId}, -1) !\u003d coalesce({view.custom.original.itemUnitId}, -1)"
+        },
+        "type": "expr"
+      }
+    },
     "custom.lotInfo": {
       "binding": {
         "config": {
@@ -64,6 +92,49 @@
       },
       "persistent": true
     },
+    "custom.original": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tlotInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.lot.getLots({\u0027lotId\u0027: value[\u0027lotId\u0027] or -1}), 0)\n\t\n\treturn lotInfo\n\t\t",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.stock": {
+      "binding": {
+        "config": {
+          "path": "view.params.stock"
+        },
+        "transforms": [
+          {
+            "code": "\t# Where the lot\u0027s stock the editor was opened on is, and how much: the starting values of the Stock fields\n\tif not value:\n\t\treturn None\n\treturn {\u0027assetPath\u0027: value[\u0027assetPath\u0027], \u0027qty\u0027: value[\u0027qty\u0027], \u0027comment\u0027: \u0027\u0027}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.stockChanged": {
+      "binding": {
+        "config": {
+          "expression": "!isNull({view.params.stock}) \u0026\u0026 (coalesce({view.custom.stock.qty}, 0) !\u003d coalesce({view.params.stock.qty}, 0) || coalesce({view.custom.stock.assetPath}, \u0027\u0027) !\u003d coalesce({view.params.stock.assetPath}, \u0027\u0027))"
+        },
+        "type": "expr"
+      }
+    },
+    "params.stock": {
+      "paramDirection": "input",
+      "persistent": true
+    },
     "params.value": {
       "paramDirection": "input",
       "persistent": true
@@ -71,7 +142,7 @@
   },
   "props": {
     "defaultSize": {
-      "height": 166,
+      "height": 410,
       "width": 600
     }
   },
@@ -358,6 +429,313 @@
       {
         "children": [
           {
+            "meta": {
+              "name": "lblStock"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.stock.location"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\t# Machining\\Machine 2 shown as Machining \u003e Machine 2, like the Location dropdown\n\treturn \u0027Stock at \u0027 + \u0027 \u003e \u0027.join((value or \u0027\u0027).split(\u0027\\\\\u0027))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "fontWeight": "bold"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "lblLocation"
+                },
+                "position": {
+                  "basis": "90px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "alignSelf": "center",
+                    "textAlign": "right"
+                  },
+                  "text": "Location"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ddLocation"
+                },
+                "position": {
+                  "basis": "0px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.locationOptions"
+                      },
+                      "type": "property"
+                    }
+                  },
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.stock.assetPath"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "dropdownOptionStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "height": "36px"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              }
+            ],
+            "meta": {
+              "name": "flxLocation"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "lblQty"
+                },
+                "position": {
+                  "basis": "90px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "alignSelf": "center",
+                    "textAlign": "right"
+                  },
+                  "text": "Qty"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "numQty"
+                },
+                "position": {
+                  "basis": "150px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.stock.qty"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "inputBounds": {
+                    "minimum": 0
+                  },
+                  "spinner": {
+                    "enabled": false
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "height": "36px"
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              },
+              {
+                "meta": {
+                  "name": "lblUnit"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "expression": "coalesce({view.params.stock.itemUnitName}, \u0027\u0027) + \u0027 (\u0027 + coalesce({view.params.stock.lotStateName}, \u0027\u0027) + if(isNull({view.params.stock.lotStateReasonName}), \u0027\u0027, \u0027 / \u0027 + {view.params.stock.lotStateReasonName}) + \u0027)\u0027"
+                      },
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "alignSelf": "center"
+                  }
+                },
+                "type": "ia.display.label"
+              }
+            ],
+            "meta": {
+              "name": "flxQty"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "lblComment"
+                },
+                "position": {
+                  "basis": "90px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "alignSelf": "center",
+                    "textAlign": "right"
+                  },
+                  "text": "Comment"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "txtComment"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.stock.comment"
+                      },
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "placeholder": "Why the quantity or location changed (optional)",
+                  "style": {
+                    "height": "36px"
+                  }
+                },
+                "type": "ia.input.text-field"
+              }
+            ],
+            "meta": {
+              "name": "flxComment"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "flxStock"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "!isNull({view.params.stock})"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "classes": "kanoa/border",
+            "gap": "5px",
+            "marginTop": "5px",
+            "padding": "8px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "lblStockNote"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "fontSize": "12px",
+            "opacity": 0.7,
+            "paddingLeft": "8px"
+          },
+          "text": "A new quantity is recorded as an Adjust lot operation, and a new location as a Transfer."
+        },
+        "type": "ia.display.label",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "!isNull({view.params.stock})"
+              },
+              "type": "expr"
+            }
+          }
+        }
+      },
+      {
+        "children": [
+          {
             "events": {
               "component": {
                 "onActionPerformed": {
@@ -371,45 +749,19 @@
             },
             "meta": {
               "domId": "btnSave",
-              "name": "btnSave",
-              "tooltip": {
-                "enabled": true,
-                "location": "bottom"
-              }
+              "name": "btnSave"
             },
             "position": {
               "basis": "100px",
               "shrink": 0
             },
             "propConfig": {
-              "meta.tooltip.text": {
-                "binding": {
-                  "config": {
-                    "path": "view.custom.lotAttributeInfo"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\t\n\tif value[\u0027lotId\u0027] is None: return \u0027No lot selected\u0027\n\tif (value[\u0027lotAttributeName\u0027] or None) is None: return \u0027No name set for lot attribute\u0027\n\tif (value[\u0027lotAttributeValue\u0027] or None) is None: return \u0027No value set for lot attribute\u0027\n\t\n\treturn \u0027\u0027",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              },
               "props.enabled": {
                 "binding": {
                   "config": {
-                    "path": "view.custom.lotAttributeInfo"
+                    "expression": "len(trim(coalesce({view.custom.lotInfo.lotName}, \u0027\u0027))) \u003e 0 \u0026\u0026 ({view.custom.lotChanged} || {view.custom.stockChanged})"
                   },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\t\n\treturn value[\u0027lotId\u0027] is not None and (value[\u0027lotAttributeValue\u0027] or None) is not None and value[\u0027lotAttributeName\u0027] is not None",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
+                  "type": "expr"
                 }
               }
             },
@@ -551,7 +903,14 @@
         {
           "name": "save",
           "params": [],
-          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tlotInfo \u003d self.view.custom.lotInfo\n\t\n\tif lotInfo[\u0027lotId\u0027]:\t\n\t\tretVal, msg \u003d system.kanoa.lot.updateLot(lotInfo, userId)\n\telse: \n\t\tlotId, msg \u003d system.kanoa.lot.addLot(lotInfo, userId)\n\t\n\tif msg:\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Lot was not saved. %s\u0027%msg})\t\t\t\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot has been saved\u0027})\n\t\n\tsystem.perspective.sendMessage(\u0027lotUpdate\u0027, {})\t\n\t\n\treturn True if msg is None else False"
+          "script": "\t# Save the lot, then any change to its stock: a new quantity as an Adjust operation, a new location as a Transfer\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdef toast(kind, message):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: kind, \u0027message\u0027: message})\n\n\tlotInfo \u003d self.view.custom.lotInfo\n\tlotChanged \u003d self.view.custom.lotChanged\n\tmsg \u003d None\n\tif not lotInfo[\u0027lotId\u0027]:\n\t\tlotId, msg \u003d system.kanoa.lot.addLot(lotInfo, userId)\n\telif lotChanged:\n\t\tretVal, msg \u003d system.kanoa.lot.updateLot(lotInfo, userId)\n\tif msg:\n\t\ttoast(\u0027warning\u0027, \u0027Lot was not saved. %s\u0027 % msg)\n\t\treturn False\n\n\tmsg, adjusted, selectLot \u003d self.adjustStock(userId)\n\tsystem.perspective.sendMessage(\u0027lotUpdate\u0027, {\u0027selectLot\u0027: selectLot})\n\tif msg:\n\t\ttoast(\u0027warning\u0027, \u0027The lot was saved, but its stock was not fully updated. %s\u0027 % msg)\n\t\treturn False\n\tif lotChanged and adjusted:\n\t\ttoast(\u0027success\u0027, \u0027Lot has been saved, and its stock updated\u0027)\n\telif adjusted:\n\t\ttoast(\u0027success\u0027, \u0027Stock has been updated\u0027)\n\telif lotChanged or not lotInfo[\u0027lotId\u0027]:\n\t\ttoast(\u0027success\u0027, \u0027Lot has been saved\u0027)\n\telse:\n\t\ttoast(\u0027info\u0027, \u0027Nothing changed\u0027)\n\treturn True"
+        },
+        {
+          "name": "adjustStock",
+          "params": [
+            "userId"
+          ],
+          "script": "\t# Record a change to the stock the editor was opened on: a new quantity as an Adjust operation where the lot is (an\n\t# input takes stock out, an output puts it in), then a new location as a Transfer of what\u0027s left there. The lot state\n\t# and reason stay as they are. Returns (error or None, whether anything changed, the lot and place for the lot table to select).\n\tstock \u003d self.view.params.stock\n\tif not stock:\n\t\treturn None, False, None\n\tlotInfo \u003d self.view.custom.lotInfo\n\tfields \u003d self.view.custom.stock\n\tqty \u003d fields[\u0027qty\u0027] if fields[\u0027qty\u0027] is not None else 0\n\tpath \u003d fields[\u0027assetPath\u0027] or stock[\u0027assetPath\u0027]\n\thad \u003d stock[\u0027qty\u0027] or 0\n\tmoved \u003d path !\u003d stock[\u0027assetPath\u0027] and qty \u003e 0   # nothing left to move when it\u0027s adjusted to 0\n\tselectLot \u003d {\u0027lotId\u0027: stock[\u0027lotId\u0027], \u0027assetPath\u0027: path if moved else stock[\u0027assetPath\u0027]}\n\tif qty \u003c 0:\n\t\treturn \"The quantity can\u0027t be negative.\", False, selectLot\n\tif not moved and qty \u003d\u003d had:\n\t\treturn None, False, selectLot\n\n\tsources \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.item.getItemSource({}), \u0027itemSourceName\u0027, \u0027itemSourceId\u0027)\n\ttStamp \u003d system.date.now()\n\tcomment \u003d (fields[\u0027comment\u0027] or \u0027\u0027).strip() or None\n\tdef event(source, eventQty, eventAssetId, transportId):\n\t\treturn {\n\t\t\t\u0027lotEventId\u0027: None, \u0027lotOperationEventId\u0027: None,\n\t\t\t\u0027lotId\u0027: stock[\u0027lotId\u0027], \u0027lotName\u0027: lotInfo[\u0027lotName\u0027], \u0027itemId\u0027: lotInfo[\u0027itemId\u0027], \u0027itemUnitId\u0027: lotInfo[\u0027itemUnitId\u0027],\n\t\t\t\u0027lotEventQty\u0027: eventQty, \u0027assetId\u0027: eventAssetId, \u0027itemSourceId\u0027: sources[source],\n\t\t\t\u0027lotStateId\u0027: stock[\u0027lotStateId\u0027], \u0027lotStateReasonId\u0027: stock[\u0027lotStateReasonId\u0027],\n\t\t\t\u0027workOrderId\u0027: None, \u0027shiftId\u0027: None, \u0027tStamp\u0027: tStamp, \u0027comment\u0027: comment, \u0027assetTransportId\u0027: transportId,\n\t\t}\n\tdef run(opName, assetId, inputs, outputs):\n\t\top \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperations({\u0027lotOperationName\u0027: opName}))\n\t\tif not op:\n\t\t\treturn \"There\u0027s no %s lot operation.\" % opName\n\t\toperation \u003d {\u0027lotOperationEventId\u0027: None, \u0027lotOperationId\u0027: op[0][\u0027lotOperationId\u0027], \u0027assetId\u0027: assetId, \u0027tStamp\u0027: tStamp, \u0027enabled\u0027: True}\n\t\tlotOperationEventId, msg \u003d system.kanoa.lot.executeLotOperation(operation, inputs, outputs, userId)\n\t\treturn msg\n\n\t# The new quantity, where the lot is now\n\tif qty !\u003d had:\n\t\tif qty \u003e had:\n\t\t\tmsg \u003d run(\u0027Adjust\u0027, stock[\u0027assetId\u0027], [], [event(\u0027output\u0027, qty - had, stock[\u0027assetId\u0027], stock[\u0027assetTransportId\u0027])])\n\t\telse:\n\t\t\tmsg \u003d run(\u0027Adjust\u0027, stock[\u0027assetId\u0027], [event(\u0027input\u0027, had - qty, stock[\u0027assetId\u0027], stock[\u0027assetTransportId\u0027])], [])\n\t\tif msg:\n\t\t\treturn msg, False, {\u0027lotId\u0027: stock[\u0027lotId\u0027], \u0027assetPath\u0027: stock[\u0027assetPath\u0027]}\n\t# Then all of it to the new location\n\tif moved:\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: path}))\n\t\tif assetId is None:\n\t\t\treturn \u0027There is no asset %s.\u0027 % path, qty !\u003d had, {\u0027lotId\u0027: stock[\u0027lotId\u0027], \u0027assetPath\u0027: stock[\u0027assetPath\u0027]}\n\t\tmsg \u003d run(\u0027Transfer\u0027, assetId, [event(\u0027input\u0027, qty, stock[\u0027assetId\u0027], stock[\u0027assetTransportId\u0027])], [event(\u0027output\u0027, qty, assetId, None)])\n\t\tif msg:\n\t\t\treturn (\u0027The quantity was adjusted, but the lot was not moved. %s\u0027 % msg) if qty !\u003d had else msg, qty !\u003d had, {\u0027lotId\u0027: stock[\u0027lotId\u0027], \u0027assetPath\u0027: stock[\u0027assetPath\u0027]}\n\treturn None, True, selectLot"
         }
       ],
       "extensionFunctions": null,

@@ -1,0 +1,343 @@
+{
+  "custom": {
+    "only": true,
+    "rows": [],
+    "tick": 0,
+    "canEdit": false
+  },
+  "params": {
+    "value": {
+      "assetId": null,
+      "assetName": null,
+      "endDate": null,
+      "kind": null,
+      "label": null,
+      "match": [],
+      "startDate": null,
+      "targets": []
+    }
+  },
+  "propConfig": {
+    "custom.canEdit": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetId": "{view.params.value.assetId}",
+            "security": "{session.custom.kanoa.security}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# Setting a speed-loss reason needs the Edit Operations right on this asset, as on the asset\u0027s info panel (assetInfo).\n\t# A guest (not logged in) has none\n\tsecurity \u003d value[\u0027security\u0027]\n\tuserCRUD \u003d security[\u0027userCRUD\u0027] if security else {}\n\tif not userCRUD: return False\n\tif userCRUD.get(\u0027isGatewayAdmin\u0027): return True\n\tentry \u003d userCRUD.get(\u0027editOperations\u0027) or {}\n\tif not entry.get(\u0027enabled\u0027): return False\n\tassets \u003d entry.get(\u0027assets\u0027) or []\n\tif not assets: return True\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value[\u0027assetId\u0027] or -1})) or \u0027\u0027\n\treturn any(assetPath \u003d\u003d a or assetPath.startswith(a + \u0027\\\\\u0027) for a in assets)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.only": {
+      "persistent": true
+    },
+    "custom.tick": {
+      "persistent": true
+    },
+    "custom.rows": {
+      "binding": {
+        "config": {
+          "struct": {
+            "params": "{view.params.value}",
+            "only": "{view.custom.only}",
+            "tick": "{view.custom.tick}",
+            "tz": "{session.props.device.timezone.id}"
+          },
+          "waitOnAll": false
+        },
+        "type": "expr-struct",
+        "transforms": [
+          {
+            "code": "\n\t# The events behind one line of the Production Counts summary, read again here so they\u0027re current after an edit (custom.tick):\n\t# speed loss (performance events), quality checks (check sheet events scheduled in the range) or maintenance (work order\n\t# events due in the range, on the asset or a tool mounted on it). Statuses are worked out as countBarChart\u0027s custom.events\n\t# works them out, so the lines match. With onlyMatching, only the line\u0027s reasons / status\n\t# Times in the device\u0027s time zone, as the chart shows them\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tdef dfmt(d, pattern):\n\t\tf \u003d SimpleDateFormat(pattern)\n\t\tif value[\u0027tz\u0027]: f.setTimeZone(TimeZone.getTimeZone(value[\u0027tz\u0027]))\n\t\treturn f.format(d)\n\tp \u003d value[\u0027params\u0027] or {}\n\tkind, assetId, start, end \u003d p.get(\u0027kind\u0027), p.get(\u0027assetId\u0027), p.get(\u0027startDate\u0027), p.get(\u0027endDate\u0027)\n\tmatch \u003d list(p.get(\u0027match\u0027) or [])\n\tonly \u003d bool(value[\u0027only\u0027]) and len(match) \u003e 0\n\tif assetId is None or start is None or end is None: return []\n\tnow \u003d system.date.now()\n\tt0, t1, tNow \u003d system.date.toMillis(start), system.date.toMillis(end), system.date.toMillis(now)\n\tfmt \u003d lambda d: dfmt(d, \u0027MMM d, HH:mm\u0027) if d is not None else \u0027\u0027\n\ttext \u003d lambda secs: system.kanoa.utilities.secondsToText(int(secs), {\u0027showSecs\u0027: False, \u0027showDays\u0027: False}) or \u0027\u0027\n\trows \u003d []\n\tif kind \u003d\u003d \u0027speedLoss\u0027:\n\t\t# From a week before the range: getPerformanceEvents filters on the start, and an event can start before the range\n\t\tdata \u003d system.kanoa.event.getPerformanceEvents({\u0027assetId\u0027: assetId, \u0027startDate\u0027: system.date.addDays(start, -7), \u0027endDate\u0027: end})\n\t\tif data is None or isinstance(data, basestring): return []\n\t\tfor e in system.kanoa.utilities.convertDatasetToJSON(data):\n\t\t\tif e.get(\u0027startDate\u0027) is None: continue\n\t\t\tactive \u003d e.get(\u0027isActive\u0027) or e.get(\u0027endDate\u0027) is None\n\t\t\ts \u003d system.date.toMillis(e[\u0027startDate\u0027])\n\t\t\tx2 \u003d tNow if active else system.date.toMillis(e[\u0027endDate\u0027])\n\t\t\tif min(x2, t1, tNow) \u003c\u003d max(s, t0): continue\n\t\t\tname \u003d e.get(\u0027performanceStateName\u0027) or \u0027Unassigned\u0027\n\t\t\tif only and name not in match: continue\n\t\t\t# The end as a time only when it\u0027s the same day\n\t\t\tif active: until \u003d \u0027now\u0027\n\t\t\telif dfmt(e[\u0027startDate\u0027], \u0027yyyyMMdd\u0027) \u003d\u003d dfmt(e[\u0027endDate\u0027], \u0027yyyyMMdd\u0027): until \u003d dfmt(e[\u0027endDate\u0027], \u0027HH:mm\u0027)\n\t\t\telse: until \u003d fmt(e[\u0027endDate\u0027])\n\t\t\trows.append({\u0027id\u0027: e[\u0027performanceEventId\u0027], \u0027sort\u0027: s, \u0027when\u0027: \u0027%s to %s\u0027 % (fmt(e[\u0027startDate\u0027]), until),\n\t\t\t\t\u0027name\u0027: name + (\u0027 (automatic)\u0027 if e.get(\u0027autoReason\u0027) else \u0027\u0027), \u0027status\u0027: \u0027%s lost\u0027 % text(float(e.get(\u0027value\u0027) or 0) * 60),\n\t\t\t\t\u0027detail\u0027: e.get(\u0027note\u0027) or \u0027\u0027})\n\telif kind \u003d\u003d \u0027checks\u0027:\n\t\tdata \u003d system.kanoa.quality.event.getChkShtEvents({\u0027assetId\u0027: assetId, \u0027startDate\u0027: start, \u0027endDate\u0027: end, \u0027searchDate\u0027: \u0027scheduledDate\u0027})\n\t\tif data is None or isinstance(data, basestring): return []\n\t\tlabels \u003d {\u0027passed\u0027: \u0027Passed\u0027, \u0027failed\u0027: \u0027Failed\u0027, \u0027missed\u0027: \u0027Missed\u0027, \u0027overdue\u0027: \u0027Overdue\u0027, \u0027upcoming\u0027: \u0027Upcoming\u0027}\n\t\tfor e in system.kanoa.utilities.convertDatasetToJSON(data):\n\t\t\tstate \u003d e[\u0027chkShtStateName\u0027]\n\t\t\tif state in (\u0027Canceled\u0027, \u0027Disabled\u0027) or e[\u0027scheduledDate\u0027] is None: continue\n\t\t\tif state in (\u0027Submitted\u0027, \u0027Approved\u0027): status \u003d \u0027failed\u0027 if (e[\u0027failedChecks\u0027] or 0) \u003e 0 else \u0027passed\u0027\n\t\t\telif state \u003d\u003d \u0027Rejected\u0027: status \u003d \u0027failed\u0027\n\t\t\telif state in (\u0027Missed\u0027, \u0027Overdue\u0027): status \u003d \u0027missed\u0027\n\t\t\telse: status \u003d \u0027upcoming\u0027 if system.date.toMillis(e[\u0027scheduledDate\u0027]) \u003e tNow else \u0027overdue\u0027\n\t\t\tif only and status not in match: continue\n\t\t\tdetail \u003d state or \u0027\u0027\n\t\t\tif e[\u0027failedChecks\u0027]: detail +\u003d \u0027, %d failed check%s\u0027 % (e[\u0027failedChecks\u0027], \u0027\u0027 if e[\u0027failedChecks\u0027] \u003d\u003d 1 else \u0027s\u0027)\n\t\t\tif e[\u0027takenDate\u0027]: detail +\u003d \u0027, taken %s\u0027 % fmt(e[\u0027takenDate\u0027])\n\t\t\trows.append({\u0027id\u0027: e[\u0027chkShtEventId\u0027], \u0027sort\u0027: system.date.toMillis(e[\u0027scheduledDate\u0027]), \u0027when\u0027: fmt(e[\u0027scheduledDate\u0027]),\n\t\t\t\t\u0027name\u0027: e[\u0027chkShtName\u0027] or \u0027\u0027, \u0027status\u0027: labels[status], \u0027detail\u0027: detail})\n\telif kind \u003d\u003d \u0027workOrders\u0027:\n\t\tlabels \u003d {\u0027done\u0027: \u0027Done\u0027, \u0027inprogress\u0027: \u0027In progress\u0027, \u0027overdue\u0027: \u0027Overdue\u0027, \u0027missed\u0027: \u0027Missed\u0027, \u0027upcoming\u0027: \u0027Upcoming\u0027}\n\t\tfor target in p.get(\u0027targets\u0027) or [{\u0027assetId\u0027: assetId, \u0027name\u0027: None}]:\n\t\t\tdata \u003d system.kanoa.cmms.getWorkOrderEvents({\u0027assetId\u0027: target[\u0027assetId\u0027], \u0027startDate\u0027: start, \u0027endDate\u0027: end})\n\t\t\tif data is None or isinstance(data, basestring): continue\n\t\t\tfor e in system.kanoa.utilities.convertDatasetToJSON(data):\n\t\t\t\tif e[\u0027dueDate\u0027] is None: continue\n\t\t\t\tdue \u003d system.date.toMillis(e[\u0027dueDate\u0027])\n\t\t\t\tif due \u003c t0 or due \u003e t1 or e[\u0027workOrderEventStatusName\u0027] \u003d\u003d \u0027Cancelled\u0027: continue\n\t\t\t\tcategory, name \u003d e[\u0027workOrderEventStatusCategoryName\u0027], e[\u0027workOrderEventStatusName\u0027]\n\t\t\t\tif name \u003d\u003d \u0027Missed\u0027: status \u003d \u0027missed\u0027\n\t\t\t\telif category \u003d\u003d \u0027Closed\u0027: status \u003d \u0027done\u0027\n\t\t\t\telif due \u003c tNow: status \u003d \u0027overdue\u0027\n\t\t\t\telif category \u003d\u003d \u0027In Progress\u0027: status \u003d \u0027inprogress\u0027\n\t\t\t\telse: status \u003d \u0027upcoming\u0027\n\t\t\t\tif only and status not in match: continue\n\t\t\t\tdetail \u003d \u0027, \u0027.join([x for x in [name, e[\u0027maintenanceTypeName\u0027], (\u0027on %s\u0027 % target[\u0027name\u0027]) if target.get(\u0027name\u0027) else None,\n\t\t\t\t\t(\u0027assigned to %s\u0027 % e[\u0027assignedUser\u0027]) if e[\u0027assignedUser\u0027] else None] if x])\n\t\t\t\trows.append({\u0027id\u0027: e[\u0027workOrderEventId\u0027], \u0027sort\u0027: due, \u0027when\u0027: fmt(e[\u0027dueDate\u0027]),\n\t\t\t\t\t\u0027name\u0027: (\u0027%s %s\u0027 % (e[\u0027workOrderEventName\u0027] or \u0027\u0027, e[\u0027title\u0027] or \u0027\u0027)).strip(), \u0027status\u0027: labels[status], \u0027detail\u0027: detail})\n\trows.sort(key\u003dlambda r: r[\u0027sort\u0027])\n\treturn rows",
+            "type": "script"
+          }
+        ]
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 460,
+      "width": 960
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "flxHeader"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "12px"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "lblTitle"
+            },
+            "position": {
+              "grow": 1,
+              "shrink": 1,
+              "basis": "0px"
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "params": "{view.params.value}",
+                      "tz": "{session.props.device.timezone.id}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "type": "expr-struct",
+                  "transforms": [
+                    {
+                      "code": "\n\t# What the list is: the line clicked, the asset and the range (in the device\u0027s time zone)\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tp \u003d value[\u0027params\u0027] or {}\n\tdef fmt(d):\n\t\tif d is None: return \u0027\u0027\n\t\tf \u003d SimpleDateFormat(\u0027MMM d, HH:mm\u0027)\n\t\tif value[\u0027tz\u0027]: f.setTimeZone(TimeZone.getTimeZone(value[\u0027tz\u0027]))\n\t\treturn f.format(d)\n\treturn u\u0027%s%s \\u00b7 %s to %s\u0027 % (p.get(\u0027assetName\u0027) or \u0027\u0027, (u\u0027 \\u00b7 %s\u0027 % p[\u0027label\u0027]) if p.get(\u0027label\u0027) else \u0027\u0027, fmt(p.get(\u0027startDate\u0027)), fmt(p.get(\u0027endDate\u0027)))",
+                      "type": "script"
+                    }
+                  ]
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/titleMedium",
+                "color": "var(--kcOnSurface)",
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "chkOnly"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.match"
+                  },
+                  "type": "property",
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value or []) \u003e 0",
+                      "type": "script"
+                    }
+                  ]
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.only"
+                  },
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.label"
+                  },
+                  "type": "property",
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027Only %s\u0027 % (value or \u0027\u0027)",
+                      "type": "script"
+                    }
+                  ]
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/bodySmall",
+                "color": "var(--kcOnSurfaceVariant)"
+              }
+            },
+            "type": "ia.input.checkbox"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "lblHint"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.kind"
+              },
+              "type": "property",
+              "transforms": [
+                {
+                  "code": "\n\treturn {\u0027speedLoss\u0027: \u0027Click an event to set its reason.\u0027, \u0027checks\u0027: \u0027Click a check to open it.\u0027,\n\t\t\u0027workOrders\u0027: \u0027Click a work order to open it.\u0027}.get(value, \u0027\u0027)",
+                  "type": "script"
+                }
+              ]
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/bodySmall",
+            "color": "var(--kcOnSurfaceVariant)"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "tblEvents"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "events": {
+          "component": {
+            "onRowClick": {
+              "config": {
+                "script": "\n\t# Each event opens in the editor its own screens use (event.row: the row\u0027s index in the data, which has the id the columns\n\t# don\u0027t show)\n\tdata \u003d self.props.data or []\n\trow \u003d data[event.row] if event.row is not None and 0 \u003c\u003d event.row \u003c len(data) else None\n\tif not row or row[\u0027id\u0027] is None: return\n\tkind \u003d self.view.params.value.kind\n\tif kind \u003d\u003d \u0027speedLoss\u0027:\n\t\tif not self.view.custom.canEdit:\n\t\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027speedLossLogIn\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Log in with the Edit Operations right to set a speed loss reason\u0027, self.session.props.locale)})\n\t\t\treturn\n\t\tsystem.perspective.openPopup(\u0027speedLossReason\u0027, \u0027kanoa/mes/asset/operation/speedLoss/speedLossReason\u0027,\n\t\t\t{\u0027value\u0027: {\u0027assetId\u0027: self.view.params.value.assetId, \u0027performanceEventId\u0027: row[\u0027id\u0027]}},\n\t\t\ttitle\u003d\u0027Speed Loss\u0027, draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\telif kind \u003d\u003d \u0027checks\u0027:\n\t\tsystem.perspective.openPopup(\u0027productionSummaryCheck\u0027, \u0027kanoa/qds/schedule/chkShtEventEditor\u0027,\n\t\t\t{\u0027chkShtEventId\u0027: row[\u0027id\u0027], \u0027value\u0027: {\u0027navBack\u0027: False, \u0027previewMode\u0027: False}},\n\t\t\ttitle\u003drow[\u0027name\u0027], draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\telif kind \u003d\u003d \u0027workOrders\u0027:\n\t\tsystem.perspective.openPopup(\u0027productionSummaryWorkOrder\u0027, \u0027kanoa/cmms/events/workOrderEventEditor\u0027,\n\t\t\t{\u0027values\u0027: {\u0027workOrderEventId\u0027: row[\u0027id\u0027]}},\n\t\t\ttitle\u003drow[\u0027name\u0027], draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.rows"
+              },
+              "type": "property"
+            }
+          },
+          "props.columns": {
+            "binding": {
+              "config": {
+                "path": "view.params.value.kind"
+              },
+              "type": "property",
+              "transforms": [
+                {
+                  "code": "\n\t# Column titles for the kind of event\n\ttitles \u003d {\u0027speedLoss\u0027: (\u0027From\u0027, \u0027Reason\u0027, \u0027Lost\u0027, \u0027Note\u0027), \u0027checks\u0027: (\u0027Scheduled\u0027, \u0027Check sheet\u0027, \u0027Result\u0027, \u0027State\u0027),\n\t\t\u0027workOrders\u0027: (\u0027Due\u0027, \u0027Work order\u0027, \u0027Status\u0027, \u0027Detail\u0027)}.get(value, (\u0027When\u0027, \u0027Name\u0027, \u0027Status\u0027, \u0027Detail\u0027))\n\t# Minimum widths that fit the popup with its scroll bar (no horizontal scrolling); each column grows to fill it\n\twidths \u003d (180, 220, 130, 240)\n\tcols \u003d []\n\tfor field, title, width in zip((\u0027when\u0027, \u0027name\u0027, \u0027status\u0027, \u0027detail\u0027), titles, widths):\n\t\tcols.append({\u0027field\u0027: field, \u0027header\u0027: {\u0027title\u0027: title}, \u0027width\u0027: width, \u0027grow\u0027: 1, \u0027strictWidth\u0027: False, \u0027sortable\u0027: True, \u0027visible\u0027: True,\n\t\t\t\u0027render\u0027: \u0027auto\u0027, \u0027justify\u0027: \u0027auto\u0027, \u0027align\u0027: \u0027center\u0027, \u0027resizable\u0027: True, \u0027editable\u0027: False})\n\treturn cols",
+                  "type": "script"
+                }
+              ]
+            }
+          }
+        },
+        "props": {
+          "bodyStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "dragOrderable": false,
+          "headerStyle": {
+            "classes": "kanoa/font/default",
+            "fontWeight": "bold"
+          },
+          "pager": {
+            "bottom": false
+          },
+          "rows": {
+            "striped": {
+              "enabled": false
+            },
+            "style": {
+              "cursor": "pointer",
+              "gap": "2px",
+              "padding": "2px"
+            }
+          },
+          "selection": {
+            "mode": "single"
+          },
+          "style": {
+            "borderStyle": "none"
+          }
+        },
+        "type": "ia.display.table"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "8px",
+        "padding": "12px"
+      }
+    },
+    "scripts": {
+      "customMethods": [],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "perfEventsUpdated",
+          "pageScope": true,
+          "script": "\n\tself.view.custom.tick \u003d self.view.custom.tick + 1\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "refreshWorkOrders",
+          "pageScope": true,
+          "script": "\n\tself.view.custom.tick \u003d self.view.custom.tick + 1\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "chkShtEventEditor",
+          "pageScope": true,
+          "script": "\n\t# The check sheet event editor closed (Close, or submitted): close its popup and read the checks again\n\tsystem.perspective.closePopup(\u0027productionSummaryCheck\u0027)\n\tself.view.custom.tick \u003d self.view.custom.tick + 1\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "chkEventsChanged",
+          "pageScope": true,
+          "script": "\n\tself.view.custom.tick \u003d self.view.custom.tick + 1\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

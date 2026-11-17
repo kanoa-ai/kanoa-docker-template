@@ -50,17 +50,107 @@
   "props": {
     "defaultSize": {
       "height": 60,
-      "width": 130
+      "width": 160
     }
   },
   "root": {
     "children": [
       {
+        "children": [
+          {
+            "meta": {
+              "name": "lblCategory"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn bool(value[\u0027itemStateClassPath\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#The state\u0027s class path (its category), e.g. Quality > Coating\n\treturn (value[\u0027itemStateClassPath\u0027] or \u0027\u0027).replace(\u0027\\\\\u0027, \u0027 > \u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "fontWeight": "bold",
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "nowrap",
+                "maxWidth": "100%",
+                "color": "inherit"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "lblName"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value[\u0027itemStateName\u0027] or \u0027\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelMedium",
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "nowrap",
+                "maxWidth": "100%",
+                "color": "inherit"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
         "events": {
-          "component": {
-            "onActionPerformed": {
+          "dom": {
+            "onClick": {
               "config": {
-                "script": "\t\n\tsystem.perspective.sendMessage(\u0027itemStateSelected\u0027, {\u0027itemStateInfo\u0027: self.view.params.value})\n\n\treturn\n"
+                "script": "\t#A container, not a button, so the category can sit on its own line above the name\n\tif not self.view.params.enabled: return\n\tsystem.perspective.sendMessage(\u0027itemStateSelected\u0027, {\u0027itemStateInfo\u0027: self.view.params.value})\n\n\treturn\n"
               },
               "scope": "G",
               "type": "script"
@@ -73,31 +163,14 @@
           "tooltip": {
             "delay": 0,
             "location": "top",
-            "tail": false
+            "tail": false,
+            "enabled": true
           }
         },
         "position": {
           "grow": 1
         },
         "propConfig": {
-          "props.enabled": {
-            "binding": {
-              "config": {
-                "path": "view.params.enabled"
-              },
-              "overlayOptOut": true,
-              "type": "property"
-            }
-          },
-          "props.image.icon.path": {
-            "binding": {
-              "config": {
-                "path": "view.custom.modeInfo.iconPath"
-              },
-              "overlayOptOut": true,
-              "type": "property"
-            }
-          },
           "props.style.backgroundColor": {
             "binding": {
               "config": {
@@ -146,7 +219,22 @@
               "type": "property"
             }
           },
-          "props.text": {
+          "props.style.cursor": {
+            "binding": {
+              "config": {
+                "path": "view.params.enabled"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027pointer\u0027 if value else \u0027default\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "meta.tooltip.text": {
             "binding": {
               "config": {
                 "path": "view.params.value"
@@ -154,7 +242,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\treturn value[\u0027itemStateName\u0027] or \u0027\u0027",
+                  "code": "\tcategory \u003d (value[\u0027itemStateClassPath\u0027] or \u0027\u0027).replace(\u0027\\\\\u0027, \u0027 > \u0027)\n\treturn \u0027%s > %s\u0027 % (category, value[\u0027itemStateName\u0027]) if category else (value[\u0027itemStateName\u0027] or \u0027\u0027)",
                   "type": "script"
                 }
               ],
@@ -163,19 +251,20 @@
           }
         },
         "props": {
-          "image": {
-            "icon": {}
-          },
+          "alignItems": "center",
+          "direction": "column",
+          "justify": "center",
           "style": {
             "borderColor": "#D5D5D5",
             "borderWidth": "1px",
-            "classes": "kanoa/button/filled"
-          },
-          "textStyle": {
-            "classes": "kanoa/font/titleMedium"
+            "classes": "kanoa/button/filled",
+            "overflow": "hidden",
+            "paddingLeft": "12px",
+            "paddingRight": "12px",
+            "borderRadius": "9999px"
           }
         },
-        "type": "ia.input.button"
+        "type": "ia.container.flex"
       }
     ],
     "meta": {

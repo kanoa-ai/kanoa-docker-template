@@ -1,5 +1,6 @@
 {
   "custom": {
+    "toastId": null,
     "filter": {
       "selected": {
         "attributeDescription": null,
@@ -2542,6 +2543,14 @@
                   "grow": 1
                 },
                 "propConfig": {
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
+                  },
                   "props.params.values.data": {
                     "binding": {
                       "config": {
@@ -3035,71 +3044,7 @@
               "grow": 1
             },
             "propConfig": {
-              "props.columns[13].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Viscosity\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[14].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Long Label\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[1].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Name\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[2].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Attribute\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[3].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Description\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[4].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Code\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[5].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Enabled\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[6].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Created By\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[7].dateFormat": {
+              "props.columns[9].dateFormat": {
                 "binding": {
                   "config": {
                     "path": "session.props.locale"
@@ -3113,15 +3058,7 @@
                   "type": "property"
                 }
               },
-              "props.columns[7].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Created\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[9].dateFormat": {
+              "props.columns[11].dateFormat": {
                 "binding": {
                   "config": {
                     "path": "session.props.locale"
@@ -3143,7 +3080,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn system.kanoa.utilities.convertDatasetToJSON(value)",
+                      "code": "\trows \u003d system.kanoa.utilities.convertDatasetToJSON(value)\n\t#Summarize each attribute\u0027s data sources (tags) and tolerances so they show without opening the editor\n\tsources, tolerances \u003d {}, {}\n\ttry:\n\t\tfor ds in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.config.getDataSource({})):\n\t\t\tsources.setdefault(ds[\u0027attributeId\u0027], []).append(ds)\n\t\tfor tol in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.config.getTolerances({})):\n\t\t\ttolerances.setdefault(tol[\u0027attributeId\u0027], []).append(tol)\n\texcept:\n\t\tpass\n\t\n\tdef num(v):\n\t\treturn (\u0027%f\u0027 % v).rstrip(\u00270\u0027).rstrip(\u0027.\u0027)\n\t\n\tdef limits(tol):\n\t\tparts \u003d [\u0027%s %s\u0027 % (name.upper(), num(tol[name])) for name in (\u0027lsl\u0027, \u0027tgt\u0027, \u0027usl\u0027) if tol[name] is not None]\n\t\treturn \u0027 / \u0027.join(parts) or \u0027No limits set\u0027\n\t\n\tdef summary(found, describe, noun):\n\t\tif not found:\n\t\t\treturn \u0027\u0027\n\t\tdisabled \u003d len([f for f in found if not f[\u0027enabled\u0027]])\n\t\tif len(found) \u003d\u003d 1:\n\t\t\treturn describe(found[0]) + (\u0027 (disabled)\u0027 if disabled else \u0027\u0027)\n\t\treturn \u0027%d %s\u0027 % (len(found), noun) + (\u0027 (%d disabled)\u0027 % disabled if disabled else \u0027\u0027)\n\t\n\tfor row in rows:\n\t\trow[\u0027dataSource\u0027] \u003d summary(sources.get(row[\u0027attributeId\u0027]), lambda ds: ds[\u0027sourceTagPath\u0027], \u0027tags\u0027)\n\t\trow[\u0027tolerance\u0027] \u003d summary(tolerances.get(row[\u0027attributeId\u0027]), limits, \u0027tolerances\u0027)\n\treturn rows",
                       "type": "script"
                     }
                   ],
@@ -3318,7 +3255,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Name"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3409,7 +3347,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Attribute"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3500,7 +3439,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Description"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3591,7 +3531,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Code"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3649,6 +3590,190 @@
                   "boolean": "checkbox",
                   "dateFormat": "MM/DD/YYYY",
                   "editable": false,
+                  "field": "dataSource",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Data Source"
+                  },
+                  "justify": "auto",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": ""
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "tolerance",
+                  "filter": {
+                    "boolean": {
+                      "condition": ""
+                    },
+                    "date": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "enabled": false,
+                    "number": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "string": {
+                      "condition": "",
+                      "value": ""
+                    },
+                    "visible": "on-hover"
+                  },
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": "Tolerance"
+                  },
+                  "justify": "auto",
+                  "nullFormat": {
+                    "includeNullStrings": false,
+                    "nullFormatValue": "",
+                    "strict": false
+                  },
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": false,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": ""
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
                   "field": "enabled",
                   "filter": {
                     "boolean": {
@@ -3682,7 +3807,8 @@
                     "justify": "center",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Enabled"
                   },
                   "justify": "center",
                   "nullFormat": {
@@ -3773,7 +3899,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Created By"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3863,7 +3990,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Created"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -4164,9 +4292,16 @@
     "scripts": {
       "customMethods": [
         {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
+        },
+        {
           "name": "openDetailEditor",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"openDetailEditor() called\")\n\tattributeId \u003d self.view.custom.table.selection.data[0].attributeId\n\tattributeName \u003d self.view.custom.table.selection.data[0].attributeName\n\tsystem.perspective.openPopup(\"attributeDetailEditor\", \"kanoa/qds/config/attributes/attributeDetailsEditor\", params\u003d{\u0027value\u0027:{\u0027attributeId\u0027:attributeId}}, overlayDismiss\u003dTrue, title\u003d\u0027Attribute Detail Editor - %s\u0027%attributeName, position\u003d{\u0027width\u0027: \u0027980px\u0027,\u0027height\u0027: \u0027500px\u0027}, modal\u003dTrue, resizable\u003dTrue, draggable\u003dTrue, viewportBound\u003dTrue)\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"openDetailEditor() called\")\n\tattributeId \u003d self.view.custom.table.selection.data[0].attributeId\n\tattributeName \u003d self.view.custom.table.selection.data[0].attributeName\n\tsystem.perspective.openPopup(\"attributeDetailEditor\", \"kanoa/qds/config/attributes/attributeDetailsEditor\", params\u003d{\u0027value\u0027:{\u0027attributeId\u0027:attributeId}}, overlayDismiss\u003dTrue, title\u003d\u0027Attribute Detail Editor - %s\u0027%attributeName, position\u003d{\u0027width\u0027: \u00271300px\u0027,\u0027height\u0027: \u0027500px\u0027}, modal\u003dTrue, resizable\u003dTrue, draggable\u003dTrue, viewportBound\u003dTrue)\n\treturn"
         },
         {
           "name": "openAttributeEditor",
@@ -4178,17 +4313,17 @@
         {
           "name": "deleteAttributes",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"deleteAttributes() called for %s\"%self.view.custom.table.selection.data)\n\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteAttribute(row[\u0027attributeId\u0027], self.view.custom.security.userId)\n\n\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: msg})\n\t\telse: \n\t\t\tif \u0027The DELETE statement conflicted with the REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \u0027These attributes have been linked to check items. Deleting them will also delete the check item event data as well as the links to the check items. Do you wish to continue?\u0027\n\t\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\t\treturn\n\t\t\telif \u0027The DELETE statement conflicted with the SAME TABLE REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \u0027There are child attributes underneth this attribute. Do you wish to delete them and any check item event data as well as the links to the check items?\u0027\n\t\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\t\treturn\t\t\t\n\t\t\telse:\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"deleteAttributes() called for %s\"%self.view.custom.table.selection.data)\n\n\tdeleted \u003d []\n\tfailed \u003d []\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteAttribute(row[\u0027attributeId\u0027], self.view.custom.security.userId)\n\n\t\tif retVal: deleted.append(row[\u0027attributeName\u0027])\n\t\telse: \n\t\t\tif \u0027The DELETE statement conflicted with the REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \u0027These attributes have been linked to check items. Deleting them will also delete the check item event data as well as the links to the check items. Do you wish to continue?\u0027\n\t\t\t\tif deleted: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute \"%s\" deleted\u0027%deleted[0] if len(deleted) \u003d\u003d 1 else \u0027Deleted %i attributes\u0027%len(deleted)})\n\t\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\t\treturn\n\t\t\telif \u0027The DELETE statement conflicted with the SAME TABLE REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \u0027There are child attributes underneth this attribute. Do you wish to delete them and any check item event data as well as the links to the check items?\u0027\n\t\t\t\tif deleted: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute \"%s\" deleted\u0027%deleted[0] if len(deleted) \u003d\u003d 1 else \u0027Deleted %i attributes\u0027%len(deleted)})\n\t\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\t\treturn\t\t\t\n\t\t\telse:\n\t\t\t\tfailed.append(\u0027\"%s\" (%s)\u0027%(row[\u0027attributeName\u0027], msg))\n\n\tif failed and deleted:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Deleted %i of %i attributes; %i couldn\u0027t be deleted: %s\"%(len(deleted), len(deleted) + len(failed), len(failed), \u0027, \u0027.join(failed))})\n\telif failed:\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t delete %s\"%\u0027, \u0027.join(failed)})\n\telif len(deleted) \u003d\u003d 1:\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute \"%s\" deleted\u0027%deleted[0]})\n\telif deleted:\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Deleted %i attributes\u0027%len(deleted)})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
         },
         {
           "name": "deleteAttribute",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"deleteAttribute() called\")\n\n\tretVal, msg \u003d system.kanoa.quality.config.deleteAttribute(self.view.custom.filter.selected.attributeId, self.view.custom.security.userId)\n\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: msg})\n\telse: \n\t\tif \u0027The DELETE statement conflicted with the REFERENCE constraint\u0027 in str(msg):\n\t\t\tmsg \u003d \u0027This attribute has links to check items. Deleting %s will also delete the check item event data as well as the links to the check items. Do you wish to continue?\u0027%self.view.custom.filter.selected.attributeName\n\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\treturn\n\t\telif \u0027The DELETE statement conflicted with the SAME TABLE REFERENCE constraint\u0027 in str(msg):\n\t\t\tmsg \u003d \u0027There are child attributes underneth this attribute. Do you wish to delete them and any check item event data as well as the links to the check items?\u0027\n\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\treturn\t\t\t\t\t\t\n\t\telse:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"deleteAttribute() called\")\n\n\tretVal, msg \u003d system.kanoa.quality.config.deleteAttribute(self.view.custom.filter.selected.attributeId, self.view.custom.security.userId)\n\tif retVal: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: msg})\n\telse: \n\t\tif \u0027The DELETE statement conflicted with the REFERENCE constraint\u0027 in str(msg):\n\t\t\tmsg \u003d \u0027This attribute has links to check items. Deleting %s will also delete the check item event data as well as the links to the check items. Do you wish to continue?\u0027%self.view.custom.filter.selected.attributeName\n\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\treturn\n\t\telif \u0027The DELETE statement conflicted with the SAME TABLE REFERENCE constraint\u0027 in str(msg):\n\t\t\tmsg \u003d \u0027There are child attributes underneth this attribute. Do you wish to delete them and any check item event data as well as the links to the check items?\u0027\n\t\t\tsystem.perspective.openPopup(\u0027userDeleteConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027, {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027deleteAttributeHistory\u0027}, title\u003d\u0027Delete Attribute and Historical data\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\t\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\t\t\tself.view.refreshBinding(\"custom.table.data\")\n\t\t\treturn\t\t\t\t\t\t\n\t\telse:\n\t\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
         },
         {
           "name": "deleteAttributesWithHistory",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"deleteAttribute() called \")\n\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal \u003d system.kanoa.quality.config.deleteAttributeWithHistory(row[\u0027attributeId\u0027], self.view.custom.security.userId)\n\n\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute deleted\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Attribute could not be deleted\u0027})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"deleteAttribute() called \")\n\n\tdeleted \u003d []\n\tfailed \u003d []\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal \u003d system.kanoa.quality.config.deleteAttributeWithHistory(row[\u0027attributeId\u0027], self.view.custom.security.userId)\n\n\t\t#0 rows: it had already gone with a selected parent (deleting an attribute deletes its children), so it\u0027s deleted too (868mw881c)\n\t\tif retVal is not None: deleted.append(row[\u0027attributeName\u0027])\n\t\telse: failed.append(\u0027\"%s\"\u0027%row[\u0027attributeName\u0027])\n\n\tif failed and deleted:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Deleted %i of %i attributes; %i couldn\u0027t be deleted: %s\"%(len(deleted), len(deleted) + len(failed), len(failed), \u0027, \u0027.join(failed))})\n\telif failed:\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t delete %s\"%\u0027, \u0027.join(failed)})\n\telif len(deleted) \u003d\u003d 1:\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute \"%s\" deleted\u0027%deleted[0]})\n\telif deleted:\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Deleted %i attributes\u0027%len(deleted)})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
         }
       ],
       "extensionFunctions": null,

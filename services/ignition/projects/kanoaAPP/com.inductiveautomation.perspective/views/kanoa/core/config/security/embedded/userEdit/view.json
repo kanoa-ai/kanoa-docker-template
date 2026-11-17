@@ -121,7 +121,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\tif value[\u0027changePassword\u0027] and value[\u0027password\u0027] !\u003d value[\u0027confirmPassword\u0027]: return \u0027Passwords do not match.\u0027\n\treturn \u0027\u0027",
+            "code": "\tif value and value[\u0027changePassword\u0027] and value[\u0027password\u0027] !\u003d value[\u0027confirmPassword\u0027]: return \u0027Passwords do not match.\u0027\n\treturn \u0027\u0027",
             "type": "script"
           }
         ],
@@ -188,7 +188,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\t\n\tsecConfig \u003d self.custom.security.config\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.security.getUsers({\u0027userId\u0027: value[\u0027userId\u0027] or -1}),0)\n\tinfo[\u0027userName\u0027] \u003d info[\u0027userName\u0027] or \u0027\u0027\n\tinfo[\u0027firstName\u0027] \u003d info[\u0027firstName\u0027] or \u0027\u0027\t\n\tinfo[\u0027lastName\u0027] \u003d info[\u0027lastName\u0027] or \u0027\u0027\n\tinfo[\u0027email\u0027] \u003d info[\u0027email\u0027] or \u0027\u0027\n\tinfo[\u0027password\u0027] \u003d \u0027\u0027\n\tinfo[\u0027confirmPassword\u0027] \u003d \u0027\u0027\n\tinfo[\u0027changePassword\u0027] \u003d False if info[\u0027userId\u0027] else True\n\tif value[\u0027userId\u0027] is None: info[\u0027userSource\u0027] \u003d secConfig[\u0027userSource\u0027] if secConfig.has_key(\u0027userSource\u0027) else \u0027default\u0027 \n\n\treturn info",
+            "code": "\t\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.security.getUsers({\u0027userId\u0027: value[\u0027userId\u0027] or -1}),0)\n\tinfo[\u0027userName\u0027] \u003d info[\u0027userName\u0027] or \u0027\u0027\n\tinfo[\u0027firstName\u0027] \u003d info[\u0027firstName\u0027] or \u0027\u0027\t\n\tinfo[\u0027lastName\u0027] \u003d info[\u0027lastName\u0027] or \u0027\u0027\n\tinfo[\u0027email\u0027] \u003d info[\u0027email\u0027] or \u0027\u0027\n\tinfo[\u0027password\u0027] \u003d \u0027\u0027\n\tinfo[\u0027confirmPassword\u0027] \u003d \u0027\u0027\n\tinfo[\u0027changePassword\u0027] \u003d False if info[\u0027userId\u0027] else True\n\tif value[\u0027userId\u0027] is None:\n\t\t# read the config here, not from custom.security: that binding may not have run yet\n\t\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027) or {}\n\t\tinfo[\u0027userSource\u0027] \u003d secConfig.get(\u0027userSource\u0027) or \u0027default\u0027\n\n\treturn info",
             "type": "script"
           }
         ],
@@ -1043,7 +1043,10 @@
                   "alignContent": "flex-start",
                   "alignItems": "flex-start"
                 },
-                "type": "ia.container.flex"
+                "type": "ia.container.flex",
+                "position": {
+                  "shrink": 0
+                }
               },
               {
                 "children": [
@@ -1063,9 +1066,29 @@
                       }
                     },
                     "position": {
+                      "basis": "30px",
                       "shrink": 0
                     },
                     "propConfig": {
+                      "props.params.values.paths": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "data": "{this.props.params.values.data}",
+                              "rows": "{view.custom.roles.selectedData}"
+                            },
+                            "waitOnAll": false
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\t#The selected role\u0027s assets as tree paths: the tree opens with them selected and their branches open, so Select adds to them\n\trows \u003d value[\u0027rows\u0027] or []\n\tif not len(rows) or value[\u0027data\u0027] is None: return []\n\tassetIds \u003d [assetId.strip() for assetId in (rows[0][\u0027assetIds\u0027] or \u0027\u0027).split(\u0027,\u0027) if assetId.strip()]\n\treturn [row[\u0027path\u0027] for row in system.dataset.toPyDataSet(value[\u0027data\u0027]) if str(row[\u0027assetId\u0027]) in assetIds]",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      },
                       "props.params.values.data": {
                         "binding": {
                           "config": {
@@ -1092,9 +1115,11 @@
                           "options": {
                             "expand": false,
                             "multiSelect": true,
-                            "selectable": []
+                            "selectable": [],
+                            "showBreadcrumb": false,
+                            "showSelectedPath": false
                           },
-                          "selection": [],
+                          "paths": [],
                           "showClear": false,
                           "style": {
                             "backgroundColor": "",
@@ -1120,9 +1145,37 @@
                       "name": "lblInfo"
                     },
                     "props": {
-                      "text": "\u003c- Select assets that  the user has this role for."
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "paddingTop": "4px"
+                      },
+                      "textStyle": {
+                        "overflowWrap": "break-word",
+                        "whiteSpace": "pre-wrap"
+                      }
                     },
-                    "type": "ia.display.label"
+                    "type": "ia.display.label",
+                    "position": {
+                      "basis": "0px",
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.text": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.roles.selectedData"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\t#The selected role\u0027s assets, wrapped: the selector\u0027s own text is one line, and stays on the last selection when the role changes\n\trows \u003d value or []\n\tpaths \u003d rows[0][\u0027assetPaths\u0027] if len(rows) else \u0027\u0027\n\tif not paths: return \u0027No assets: choose them with the tree icon\u0027\n\treturn paths.replace(\u0027\\\\\u0027, \u0027 \u003e \u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    }
                   }
                 ],
                 "meta": {
@@ -1146,7 +1199,16 @@
                     }
                   }
                 },
-                "type": "ia.container.flex"
+                "type": "ia.container.flex",
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "flex-start",
+                  "style": {
+                    "gap": "5px"
+                  }
+                }
               },
               {
                 "meta": {
@@ -1154,6 +1216,7 @@
                   "name": "tblRoles"
                 },
                 "position": {
+                  "basis": "0px",
                   "grow": 1
                 },
                 "propConfig": {
@@ -1535,7 +1598,10 @@
                       "paddingLeft": "5px"
                     }
                   },
-                  "selection": {}
+                  "selection": {},
+                  "style": {
+                    "borderStyle": "none"
+                  }
                 },
                 "type": "ia.display.table"
               },
@@ -1583,10 +1649,8 @@
                           "path": "material/delete_forever"
                         }
                       },
-                      "primary": false,
                       "style": {
-                        "classes": "kanoa/button/filled",
-                        "color": "white"
+                        "classes": "kanoa/button/filled"
                       },
                       "text": "Remove Assets"
                     },
@@ -1673,7 +1737,8 @@
           "name": "tabUserEdit"
         },
         "position": {
-          "basis": "457px"
+          "basis": "0px",
+          "grow": 1
         },
         "propConfig": {
           "props.currentTabIndex": {
@@ -1759,7 +1824,7 @@
         {
           "name": "saveUser",
           "params": [],
-          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tuserInfo \u003d dict(self.view.custom.values)\n\tif self.view.custom.values[\u0027userId\u0027]: \n\t\tsystem.perspective.print(\"userInfo: %s, userId: %s\"%(userInfo, userId))\n\t\tretVal, msg \u003d system.kanoa.security.updateUser(userInfo, userId)\n\t\tif msg: system.kanoa.toast.show({\"type\": \"error\", \"message\": \"User not updated: %s\"%msg})\n\t\telse: system.kanoa.toast.show({\"type\": \"success\", \"message\": \"User updated\"})\n\t\tself.view.refreshBinding(\"custom.values\")\n\telse:\n\t\tresponse \u003d system.kanoa.security.addUserToUserSource(userInfo)\n\t\twarnings \u003d [warning for warning in response.getWarns()]\n\t\terrors \u003d [error for error in response.getErrors()]\n\n\t\tif len(errors) \u003e 0:\n\t\t\tsystem.kanoa.toast.show({\"type\": \"error\", \"message\": \"User not created: %s\"% errors})\n\t\telse:\n\t\t\tuserId, msg \u003d system.kanoa.security.addUser(userInfo, userId)\n\t\t\tif msg: system.kanoa.toast.show({\"type\": \"error\", \"message\": \"User not created: %s\"%msg})\n\t\t\telse: \n\t\t\t\tsystem.kanoa.toast.show({\"type\": \"success\", \"message\": \"User created\"})\n\t\t\t\tself.view.params.values.userId \u003d userId\n\t\t\t\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027)\n\t\n\treturn"
+          "script": "\t\n\tif self.view.custom.values is None:\n\t\tsystem.kanoa.toast.show({\"type\": \"error\", \"message\": \"The user form didn\u0027t load; close and reopen it\"})\n\t\treturn\n\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tuserInfo \u003d dict(self.view.custom.values)\n\tif self.view.custom.values[\u0027userId\u0027]: \n\t\tsystem.perspective.print(\"userInfo: %s, userId: %s\"%(userInfo, userId))\n\t\tretVal, msg \u003d system.kanoa.security.updateUser(userInfo, userId)\n\t\tif msg: system.kanoa.toast.show({\"type\": \"error\", \"message\": \"User not updated: %s\"%msg})\n\t\telse: system.kanoa.toast.show({\"type\": \"success\", \"message\": \"User updated\"})\n\t\tself.view.refreshBinding(\"custom.values\")\n\telse:\n\t\tresponse \u003d system.kanoa.security.addUserToUserSource(userInfo)\n\t\twarnings \u003d [warning for warning in response.getWarns()]\n\t\terrors \u003d [error for error in response.getErrors()]\n\n\t\tif len(errors) \u003e 0:\n\t\t\tsystem.kanoa.toast.show({\"type\": \"error\", \"message\": \"User not created: %s\"% errors})\n\t\telse:\n\t\t\tuserId, msg \u003d system.kanoa.security.addUser(userInfo, userId)\n\t\t\tif msg: system.kanoa.toast.show({\"type\": \"error\", \"message\": \"User not created: %s\"%msg})\n\t\t\telse: \n\t\t\t\tsystem.kanoa.toast.show({\"type\": \"success\", \"message\": \"User created\"})\n\t\t\t\tself.view.params.values.userId \u003d userId\n\t\t\t\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027)\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,
@@ -1767,7 +1832,7 @@
         {
           "messageType": "userAssetSelected",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"updateUserRoleAssets msg rcvd with %s\"%payload)\t\n\n\tupdaterId \u003d self.view.custom.security.userId\n\tuserId \u003d self.view.params.values.userId\n\troleId \u003d self.view.custom.roles.selectedData[0].roleId\n\tselectedAssets \u003d payload[\u0027selection\u0027]\n\tassetIds \u003d [asset[\u0027value\u0027][\u0027assetId\u0027] for asset in selectedAssets]\n\tuserRoles \u003d system.kanoa.security.getUserAssetRoles({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId})\n\tcurrentAssetIds \u003d [record[\u0027assetId\u0027] for record in userRoles]\n\tdeleteAssets \u003d [assetId for assetId in currentAssetIds if assetId not in assetIds]\n\tfor assetId in deleteAssets:\n\t\tsystem.kanoa.security.deleteUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\t\n\tinsertAssets \u003d [assetId for assetId in assetIds if assetId not in currentAssetIds]\n\tfor assetId in insertAssets: system.kanoa.security.addUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\tself.view.refreshBinding(\u0027custom.roles.data\u0027)\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027, {})\n\treturn",
+          "script": "\n\tsystem.perspective.print(\"updateUserRoleAssets msg rcvd with %s\"%payload)\t\n\n\tupdaterId \u003d self.view.custom.security.userId\n\tuserId \u003d self.view.params.values.userId\n\troleId \u003d self.view.custom.roles.selectedData[0].roleId\n\tselectedAssets \u003d payload[\u0027selection\u0027]\n\tassetIds \u003d [asset[\u0027value\u0027][\u0027assetId\u0027] for asset in selectedAssets if asset[\u0027value\u0027].get(\u0027assetId\u0027) is not None]\n\tuserRoles \u003d system.kanoa.security.getUserAssetRoles({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId})\n\tcurrentAssetIds \u003d [record[\u0027assetId\u0027] for record in userRoles]\n\t#The tree opens with the role\u0027s assets selected (params paths), so one that isn\u0027t selected now was deselected. Only assets the\n\t#tree lists, though: a disabled asset, or one outside this user\u0027s scope, can\u0027t be selected and so isn\u0027t removed\n\ttreeData \u003d self.getChild(\u0027tabUserEdit\u0027).getChild(\u0027flxRoles\u0027).getChild(\u0027flxAssetSelector\u0027).getChild(\u0027evAssets\u0027).props.params.values.data\n\ttreeAssetIds \u003d set([row[\u0027assetId\u0027] for row in system.dataset.toPyDataSet(treeData)]) if treeData is not None else set()\n\tdeleteAssets \u003d [assetId for assetId in currentAssetIds if assetId not in assetIds and assetId in treeAssetIds]\n\tfor assetId in deleteAssets:\n\t\tsystem.kanoa.security.deleteUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\t\n\tinsertAssets \u003d [assetId for assetId in assetIds if assetId not in currentAssetIds]\n\tfor assetId in insertAssets: system.kanoa.security.addUserAssetRole({\u0027userId\u0027: userId, \u0027roleId\u0027: roleId, \u0027assetId\u0027: assetId}, updaterId)\n\tself.view.refreshBinding(\u0027custom.roles.data\u0027)\n\tsystem.perspective.sendMessage(\u0027updateUsers\u0027, {})\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

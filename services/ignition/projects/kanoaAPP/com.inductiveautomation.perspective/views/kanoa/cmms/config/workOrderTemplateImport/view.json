@@ -1,0 +1,513 @@
+{
+  "custom": {
+    "onDuplicate": "rename",
+    "preview": {},
+    "rows": [],
+    "userId": null
+  },
+  "params": {
+    "data": null
+  },
+  "propConfig": {
+    "custom.onDuplicate": {
+      "persistent": true
+    },
+    "custom.userId": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.security.userId"
+        },
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.preview": {
+      "binding": {
+        "config": {
+          "struct": {
+            "data": "{view.params.data}",
+            "onDuplicate": "{view.custom.onDuplicate}",
+            "userId": "{view.custom.userId}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#dry run: reports exactly what the import would do, writes nothing\n\tif value[\u0027data\u0027] is None or value[\u0027userId\u0027] is None:\n\t\treturn {\u0027passed\u0027: False, \u0027dryRun\u0027: True, \u0027message\u0027: \u0027Nothing to import\u0027, \u0027results\u0027: []}\n\tdata \u003d system.util.jsonDecode(system.util.jsonEncode(value[\u0027data\u0027]))\n\treturn system.kanoa.cmms.importWorkOrderTemplates({\u0027data\u0027: data, \u0027onDuplicate\u0027: value[\u0027onDuplicate\u0027], \u0027dryRun\u0027: True}, int(value[\u0027userId\u0027]))\n",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.rows": {
+      "binding": {
+        "config": {
+          "path": "view.custom.preview"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tlabels \u003d {\u0027create\u0027: \u0027New\u0027, \u0027rename\u0027: \u0027Rename\u0027, \u0027overwrite\u0027: \u0027Overwrite\u0027, \u0027skip\u0027: \u0027Skip\u0027}\n\trows \u003d []\n\tfor result in (value or {}).get(\u0027results\u0027) or []:\n\t\terrors \u003d list(result.get(\u0027errors\u0027) or [])\n\t\twarnings \u003d list(result.get(\u0027warnings\u0027) or [])\n\t\tif errors: status \u003d \u0027Error\u0027\n\t\telif warnings: status \u003d \u0027Warning\u0027\n\t\telse: status \u003d \u0027OK\u0027\n\t\trows.append({\n\t\t\t\u0027status\u0027: status,\n\t\t\t\u0027title\u0027: result.get(\u0027title\u0027) or \u0027\u0027,\n\t\t\t\u0027action\u0027: labels.get(result.get(\u0027action\u0027), \u0027\u0027),\n\t\t\t\u0027importAs\u0027: result.get(\u0027importedTitle\u0027) or \u0027\u0027,\n\t\t\t\u0027notes\u0027: \u0027\\n\u0027.join(errors + warnings)\n\t\t})\n\treturn rows\n",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.data": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "width": 860,
+      "height": 480
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "version": 0,
+    "props": {
+      "direction": "column",
+      "style": {
+        "padding": 10,
+        "backgroundColor": "transparent",
+        "classes": "Kanoa/Containers/popup",
+        "gap": 5
+      }
+    },
+    "meta": {
+      "name": "root"
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "version": 0,
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": 5
+          }
+        },
+        "meta": {
+          "name": "flxOptions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "version": 0,
+            "props": {
+              "text": "If a template with the same maintenance type and title exists:"
+            },
+            "meta": {
+              "name": "lblOnDuplicate"
+            },
+            "position": {
+              "shrink": 0
+            }
+          },
+          {
+            "type": "ia.input.dropdown",
+            "version": 0,
+            "props": {
+              "options": [
+                {
+                  "value": "rename",
+                  "label": "Import a renamed copy"
+                },
+                {
+                  "value": "skip",
+                  "label": "Skip it"
+                },
+                {
+                  "value": "overwrite",
+                  "label": "Overwrite it"
+                }
+              ],
+              "showClearIcon": false
+            },
+            "meta": {
+              "name": "ddOnDuplicate"
+            },
+            "position": {
+              "basis": "220px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.onDuplicate"
+                  },
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.display.label",
+        "version": 0,
+        "props": {
+          "style": {
+            "marginLeft": "5px"
+          }
+        },
+        "meta": {
+          "name": "lblMessage"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.preview.message"
+              },
+              "type": "property"
+            }
+          },
+          "props.textStyle.color": {
+            "binding": {
+              "config": {
+                "expression": "if({view.custom.preview.passed}, \u0027\u0027, \u0027red\u0027)"
+              },
+              "type": "expr"
+            }
+          }
+        }
+      },
+      {
+        "type": "ia.display.table",
+        "version": 0,
+        "props": {
+          "virtualized": false,
+          "selection": {
+            "enableRowSelection": false
+          },
+          "columns": [
+            {
+              "field": "status",
+              "visible": true,
+              "editable": false,
+              "render": "auto",
+              "justify": "left",
+              "align": "center",
+              "resizable": true,
+              "sortable": false,
+              "sort": "none",
+              "viewPath": "",
+              "viewParams": {},
+              "boolean": "checkbox",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "dateFormat": "MM/DD/YYYY",
+              "width": 70,
+              "strictWidth": true,
+              "style": {
+                "classes": "",
+                "whiteSpace": "pre-wrap"
+              },
+              "header": {
+                "title": "Status",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              },
+              "footer": {
+                "title": "",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              }
+            },
+            {
+              "field": "title",
+              "visible": true,
+              "editable": false,
+              "render": "auto",
+              "justify": "left",
+              "align": "center",
+              "resizable": true,
+              "sortable": false,
+              "sort": "none",
+              "viewPath": "",
+              "viewParams": {},
+              "boolean": "checkbox",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "dateFormat": "MM/DD/YYYY",
+              "width": 170,
+              "strictWidth": false,
+              "style": {
+                "classes": "",
+                "whiteSpace": "pre-wrap"
+              },
+              "header": {
+                "title": "Template",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              },
+              "footer": {
+                "title": "",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              }
+            },
+            {
+              "field": "action",
+              "visible": true,
+              "editable": false,
+              "render": "auto",
+              "justify": "left",
+              "align": "center",
+              "resizable": true,
+              "sortable": false,
+              "sort": "none",
+              "viewPath": "",
+              "viewParams": {},
+              "boolean": "checkbox",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "dateFormat": "MM/DD/YYYY",
+              "width": 80,
+              "strictWidth": true,
+              "style": {
+                "classes": "",
+                "whiteSpace": "pre-wrap"
+              },
+              "header": {
+                "title": "Action",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              },
+              "footer": {
+                "title": "",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              }
+            },
+            {
+              "field": "importAs",
+              "visible": true,
+              "editable": false,
+              "render": "auto",
+              "justify": "left",
+              "align": "center",
+              "resizable": true,
+              "sortable": false,
+              "sort": "none",
+              "viewPath": "",
+              "viewParams": {},
+              "boolean": "checkbox",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "dateFormat": "MM/DD/YYYY",
+              "width": 190,
+              "strictWidth": false,
+              "style": {
+                "classes": "",
+                "whiteSpace": "pre-wrap"
+              },
+              "header": {
+                "title": "Imported As",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              },
+              "footer": {
+                "title": "",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              }
+            },
+            {
+              "field": "notes",
+              "visible": true,
+              "editable": false,
+              "render": "auto",
+              "justify": "left",
+              "align": "center",
+              "resizable": true,
+              "sortable": false,
+              "sort": "none",
+              "viewPath": "",
+              "viewParams": {},
+              "boolean": "checkbox",
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "dateFormat": "MM/DD/YYYY",
+              "width": 300,
+              "strictWidth": false,
+              "style": {
+                "classes": "",
+                "whiteSpace": "pre-wrap"
+              },
+              "header": {
+                "title": "Notes",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              },
+              "footer": {
+                "title": "",
+                "justify": "left",
+                "align": "center",
+                "style": {
+                  "classes": ""
+                }
+              }
+            }
+          ],
+          "emptyMessage": {
+            "noData": {
+              "text": "No templates in this file"
+            }
+          }
+        },
+        "meta": {
+          "name": "tblResults"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.data": {
+            "binding": {
+              "config": {
+                "path": "view.custom.rows"
+              },
+              "type": "property"
+            }
+          }
+        }
+      },
+      {
+        "type": "ia.container.flex",
+        "version": 0,
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": 5
+          }
+        },
+        "meta": {
+          "name": "flxActions"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "children": [
+          {
+            "type": "ia.input.button",
+            "version": 0,
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/get_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Import"
+            },
+            "meta": {
+              "name": "btnImport"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tuserId \u003d self.view.custom.userId\n\tif userId is None or self.view.params.data is None: return\n\t\n\tdata \u003d system.util.jsonDecode(system.util.jsonEncode(self.view.params.data))\n\tresult \u003d system.kanoa.cmms.importWorkOrderTemplates({\u0027data\u0027: data, \u0027onDuplicate\u0027: self.view.custom.onDuplicate, \u0027dryRun\u0027: False}, int(userId))\n\t\n\tif result[\u0027passed\u0027]:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: result[\u0027message\u0027]})\n\t\tsystem.perspective.sendMessage(\u0027refreshWorkOrders\u0027, {})\n\t\tsystem.perspective.closePopup(\u0027\u0027)\n\telse:\n\t\t#nothing was written; show the fresh dry run so the reason is in the table\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: result[\u0027message\u0027]})\n\t\tself.view.refreshBinding(\u0027custom.preview\u0027)\n\t\n\treturn\n"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.preview.passed}"
+                  },
+                  "type": "expr"
+                }
+              }
+            }
+          },
+          {
+            "type": "ia.input.button",
+            "version": 0,
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/exit_to_app"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Cancel"
+            },
+            "meta": {
+              "name": "btnClose"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

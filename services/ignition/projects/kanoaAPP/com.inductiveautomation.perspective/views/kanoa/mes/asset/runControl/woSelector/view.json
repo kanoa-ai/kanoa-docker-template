@@ -4,7 +4,7 @@
     "system": {
       "onStartup": {
         "config": {
-          "script": "\t\n\tself.getChild(\"root\").custom.mesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\t"
+          "script": "\t\n\tself.getChild(\"root\").custom.mesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\t\n\t#The Due Date / Start Date choice last made on this page: kept for the page like the date range (868mw881c)\n\tstored \u003d system.kanoa.utilities.getPageObject(self, \u0027woSelector\u0027)\n\tif stored and stored.get(\u0027dateField\u0027) in (\u0027dueDate\u0027, \u0027startDate\u0027):\n\t\tself.getChild(\"root\").custom.filter.dateField \u003d stored[\u0027dateField\u0027]"
         },
         "scope": "G",
         "type": "script"
@@ -32,6 +32,103 @@
     "children": [
       {
         "children": [
+          {
+            "meta": {
+              "domId": "ddDateField",
+              "name": "ddDateField",
+              "tooltip": {
+                "delay": 0,
+                "enabled": true,
+                "location": "top",
+                "text": "The order date the range matches"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "/root.custom.filter.dateField"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\t\n\t#Remember the user\u0027s choice for this page; the view\u0027s onStartup puts it back (868mw881c)\n\tif origin \u003d\u003d \u0027Browser\u0027 and currentValue is not None and currentValue.value in (\u0027dueDate\u0027, \u0027startDate\u0027):\n\t\tsystem.kanoa.utilities.storePageObject(self, \u0027woSelector\u0027, {\u0027dateField\u0027: currentValue.value})"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default",
+                "textAlign": "center"
+              },
+              "options": [
+                {
+                  "label": "Due Date",
+                  "value": "dueDate"
+                },
+                {
+                  "label": "Start Date",
+                  "value": "startDate"
+                }
+              ],
+              "search": {
+                "enabled": false
+              },
+              "showClearIcon": false,
+              "style": {
+                "classes": "kanoa/font/default",
+                "height": "25px",
+                "minWidth": 120,
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "evDateRange",
+              "name": "evDateRange"
+            },
+            "position": {
+              "basis": "650px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.endDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "/root.custom.filter.endDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.params.startDate": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "/root.custom.filter.startDate"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "selectedRange": "This Week"
+              },
+              "path": "kanoa/core/templates/selectors/date/dateRangeSelectorCompact"
+            },
+            "type": "ia.display.view"
+          },
           {
             "meta": {
               "domId": "lblTxtFilter",
@@ -83,13 +180,14 @@
           "name": "flxCntFilter"
         },
         "position": {
-          "basis": "30px",
           "shrink": 0
         },
         "props": {
+          "alignItems": "center",
           "style": {
             "gap": 5
-          }
+          },
+          "wrap": "wrap"
         },
         "type": "ia.container.flex"
       },
@@ -114,7 +212,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tdata \u003d value[\u0027data\u0027]\t\t\n\tinstances \u003d []\n\tfilterStr \u003d value[\u0027filterStr\u0027].lower()\n\tif filterStr !\u003d \u0027\u0027:\n\t\tfor row in data:\n\t\t\tif filterStr in row[\u0027workOrderName\u0027].lower() or filterStr in row[\u0027itemName\u0027].lower():\n\t\t\t\tinstances.append({\u0027value\u0027: row})\n\t\treturn instances\n\telse:\n\t\treturn [{\u0027value\u0027: value} for value in data]\n",
+                  "code": "\n\tdata \u003d value[\u0027data\u0027]\t\t\n\tinstances \u003d []\n\tfilterStr \u003d value[\u0027filterStr\u0027].lower()\n\tif filterStr !\u003d \u0027\u0027:\n\t\tfor row in data:\n\t\t\tif filterStr in (row[\u0027workOrderName\u0027] or \u0027\u0027).lower() or filterStr in (row[\u0027itemName\u0027] or \u0027\u0027).lower():\n\t\t\t\tinstances.append({\u0027value\u0027: row})\n\t\treturn instances\n\telse:\n\t\treturn [{\u0027value\u0027: value} for value in data]\n",
                   "type": "script"
                 }
               ],
@@ -135,6 +233,11 @@
       }
     ],
     "custom": {
+      "filter": {
+        "dateField": "dueDate",
+        "endDate": null,
+        "startDate": null
+      },
       "filterStr": "",
       "mesTagProvider": "[Kanoa]"
     },
@@ -163,14 +266,15 @@
           "config": {
             "struct": {
               "activeWorkOrders": "{this.custom.woData}",
-              "assetItems": "{this.custom.assetItems}"
+              "assetItems": "{this.custom.assetItems}",
+              "filter": "{this.custom.filter}"
             },
             "waitOnAll": true
           },
           "overlayOptOut": true,
           "transforms": [
             {
-              "code": "\n\tif len(value[\u0027assetItems\u0027]) \u003d\u003d 0: return []\n\n\tworkOrders \u003d system.dataset.toPyDataSet(value[\u0027activeWorkOrders\u0027])\n\tdeleteRows \u003d [i for i, workOrder in enumerate(workOrders) if workOrder[\u0027itemId\u0027] not in value[\u0027assetItems\u0027] or not workOrder[\u0027canExecute\u0027]]\n\tdata \u003d system.dataset.deleteRows(value[\u0027activeWorkOrders\u0027], deleteRows)\n\tdata \u003d system.dataset.sort(data, \u0027workOrderName\u0027)\n\treturn system.kanoa.utilities.convertDatasetToJSON(data)",
+              "code": "\n\tfilters \u003d value[\u0027filter\u0027]\n\tif len(value[\u0027assetItems\u0027]) \u003d\u003d 0 or filters[\u0027startDate\u0027] is None or filters[\u0027endDate\u0027] is None: return []\n\n\t# activeWorkOrders only refreshes the list: that tag holds the orders due within 4 weeks of now, not the selected range\n\tdata \u003d system.kanoa.order.getProductionOrders({\u0027isActive\u0027: True, \u0027canExecute\u0027: True, \u0027ignoreActualQty\u0027: True,\n\t\t\u0027itemIdList\u0027: list(value[\u0027assetItems\u0027]), \u0027startDate\u0027: filters[\u0027startDate\u0027], \u0027endDate\u0027: filters[\u0027endDate\u0027],\n\t\t\u0027dateField\u0027: filters[\u0027dateField\u0027] or \u0027dueDate\u0027})\n\tif data is None: return []\n\tdata \u003d system.dataset.sort(data, \u0027workOrderName\u0027)\n\treturn system.kanoa.utilities.convertDatasetToJSON(data)",
               "type": "script"
             }
           ],

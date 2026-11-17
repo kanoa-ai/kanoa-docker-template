@@ -26,6 +26,7 @@
       "bodyPanelViewPath": "kanoa/core/dbp/blankView",
       "infoPanelPath": "kanoa/core/dbp/blankView"
     },
+    "infoCollapsed": false,
     "security": {
       "config": {
         "allowGuest": "1",
@@ -315,10 +316,19 @@
   },
   "params": {},
   "propConfig": {
+    "custom.infoCollapsed": {
+      "binding": {
+        "config": {
+          "expression": "try(toBoolean({session.custom.kanoa.infoPanelCollapsed}), false) \u0026\u0026 {view.custom.assetPanels.infoPanelPath} \u003d \u0027kanoa/mes/asset/operation/infoPanel/assetInfoPanel\u0027"
+        },
+        "overlayOptOut": true,
+        "type": "expr"
+      }
+    },
     "custom.assetInfo": {
       "onChange": {
         "enabled": null,
-        "script": "\n#\tsystem.perspective.print(\u0027assetInfo change\u0027)\n\tif previousValue is None or currentValue.value !\u003d previousValue.value: self.getChild(\"root\").setAssetPanels()\n\n\treturn"
+        "script": "\n\t# An empty asset while the page has one selected: the two-way binding lost it at startup (takeSelectedAsset)\n\tif currentValue is not None and (currentValue.value is None or currentValue.value[\u0027assetId\u0027] is None):\n\t\tif self.getChild(\"root\").takeSelectedAsset(None): return\n\n#\tsystem.perspective.print(\u0027assetInfo change\u0027)\n\tif previousValue is None or currentValue.value !\u003d previousValue.value: self.getChild(\"root\").setAssetPanels()\n\n\treturn"
       },
       "persistent": true
     },
@@ -330,7 +340,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\treturn self.getChild(\"root\").getAssetPanels(value)",
+            "code": "\n\t#The asset now, not the value this run started with: runs can finish out of order, and a stale run with no asset\n\t#would leave the panels blank (868mt2m21). self is the view here\n\treturn self.getChild(\"root\").getAssetPanels(self.custom.assetInfo or value)",
             "type": "script"
           }
         ],
@@ -402,13 +412,10 @@
             },
             "props": {
               "style": {
-                "backgroundColor": "--kcSurface",
                 "classes": "kanoa/font/labelSmall",
                 "key": "value",
                 "paddingLeft": "5px",
-                "paddingRight": "5px",
-                "position": "absolute",
-                "top": 0
+                "paddingRight": "5px"
               },
               "text": "Select Asset"
             },
@@ -539,6 +546,23 @@
             "position": {
               "shrink": 0
             },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.viewPanels.body.viewTitle"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#The back button\u0027s row only shows when there\u0027s somewhere to go back to (not on the Main Menu itself)\n\tif value is None: return True\n\treturn value !\u003d \u0027Main Menu\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
             "props": {
               "alignItems": "center",
               "style": {
@@ -556,7 +580,7 @@
         "props": {
           "alignItems": "center",
           "style": {
-            "classes": "kanoa/container",
+            "classes": "",
             "margin": "2px",
             "padding": "3px"
           }
@@ -734,19 +758,38 @@
                   "props.params": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.viewPanels.infoPanel.viewParams"
+                        "struct": {
+                          "assetId": "{view.custom.assetInfo.assetId}"
+                        },
+                        "waitOnAll": false
                       },
                       "overlayOptOut": true,
-                      "type": "property"
+                      "transforms": [
+                        {
+                          "code": "\t#The info panel follows the selected asset straight from it, not from viewPanels: that was set only by onChange\n\t#scripts, and when neither ran with the asset the panel kept viewPanels\u0027 saved default, no asset (868mt2m21)\n\treturn {\u0027value\u0027: {\u0027assetId\u0027: value[\u0027assetId\u0027]}}",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
                     }
                   },
                   "props.path": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.viewPanels.infoPanel.viewPath"
+                        "struct": {
+                          "assetId": "{view.custom.assetInfo.assetId}",
+                          "path": "{view.custom.assetPanels.infoPanelPath}"
+                        },
+                        "waitOnAll": false
                       },
                       "overlayOptOut": true,
-                      "type": "property"
+                      "transforms": [
+                        {
+                          "code": "\t#The asset\u0027s info panel view (blank until the asset is known)\n\treturn value[\u0027path\u0027] if value[\u0027assetId\u0027] is not None and value[\u0027path\u0027] else \u0027kanoa/core/dbp/blankView\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
                     }
                   }
                 },
@@ -760,10 +803,42 @@
             "position": {
               "grow": 1
             },
+            "propConfig": {
+              "props.split.draggable": {
+                "binding": {
+                  "config": {
+                    "expression": "!{view.custom.infoCollapsed}"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.split.position": {
+                "binding": {
+                  "config": {
+                    "expression": "if({view.custom.infoCollapsed}, 58, \u002728%\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.style.classes": {
+                "binding": {
+                  "config": {
+                    "expression": "if({view.custom.infoCollapsed}, \u0027kanoa/split kanoa/splitCollapsed\u0027, \u0027kanoa/split\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              }
+            },
             "props": {
               "split": {
                 "position": "28%",
                 "size": 6
+              },
+              "style": {
+                "classes": "kanoa/split"
               }
             },
             "type": "ia.container.split"
@@ -799,6 +874,51 @@
           }
         },
         "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "domId": "evAssetNav",
+          "name": "evAssetNav"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.assetInfo"
+              },
+              "transforms": [
+                {
+                  "code": "\t\n\t# An asset that isn\u0027t OEE-enabled (a site, area or line): cards for the assets under it (868mwap0a)\n\treturn bool(value and value[\u0027assetId\u0027] is not None and not value[\u0027oeeEnabled\u0027])",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.params": {
+            "binding": {
+              "config": {
+                "path": "view.custom.assetInfo"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t\n\tif not value: return {\u0027value\u0027: {\u0027assetId\u0027: None, \u0027assetName\u0027: \u0027\u0027, \u0027assetPath\u0027: \u0027\u0027}}\n\treturn {\u0027value\u0027: {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027assetName\u0027: value[\u0027assetName\u0027], \u0027assetPath\u0027: value[\u0027assetPath\u0027]}}",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "path": "kanoa/mes/asset/operation/navigation/assetNavPanel"
+        },
+        "type": "ia.display.view"
       }
     ],
     "meta": {
@@ -824,6 +944,13 @@
             "assetInfo"
           ],
           "script": "\n\tif assetInfo[\u0027assetId\u0027] is None: return {\u0027infoPanelPath\u0027: \u0027kanoa/core/dbp/blankView\u0027, \u0027bodyPanelViewPath\u0027: \u0027kanoa/core/dbp/blankView\u0027}\n\t\n\tinfoPanelPath \u003d system.kanoa.asset.getClosestAncestorAttribute(assetInfo[\u0027assetPath\u0027], \u0027_assetOpsInfoPanelViewPath\u0027) or \u0027kanoa/mes/asset/operation/infoPanel/assetInfoPanel\u0027\n\tbodyPanelViewPath \u003d system.kanoa.asset.getClosestAncestorAttribute(assetInfo[\u0027assetPath\u0027], \u0027_assetOpsViewPath\u0027) or \u0027kanoa/mes/asset/operation/opsPanel/assetOperationPanel\u0027\n\t\n\treturn {\u0027infoPanelPath\u0027: infoPanelPath, \u0027bodyPanelViewPath\u0027: bodyPanelViewPath}"
+        },
+        {
+          "name": "takeSelectedAsset",
+          "params": [
+            "assetInfo"
+          ],
+          "script": "\t# The asset selector\u0027s assetInfo reaches this view through a two-way binding on its output param. When many\n\t# sessions start together, that binding can write an empty asset back after the selector found the asset, which\n\t# left the screen on Select Asset with the asset in the breadcrumb. This puts the page\u0027s selected asset back.\n\t# assetInfo is the selector\u0027s asset, or None to look the selected asset up. Returns True when it set one\n\tpage \u003d self.page.props.pageId\n\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in page else page\n\ttry:\n\t\tselected \u003d self.session.custom.kanoa[page][\u0027selectors\u0027][\u0027assetPath\u0027]\n\texcept:\n\t\treturn False\n\tif not selected:\n\t\treturn False\n\tcurrent \u003d self.view.custom.assetInfo\n\tif current is not None and current[\u0027assetId\u0027] is not None and current[\u0027assetPath\u0027] \u003d\u003d selected:\n\t\treturn False\n\tif assetInfo is None:\n\t\tassetInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027: selected}), 0)\n\tif not assetInfo or assetInfo[\u0027assetId\u0027] is None or assetInfo[\u0027assetPath\u0027] !\u003d selected:\n\t\treturn False\n\tsystem.util.getLogger(\u0027kanoa.assetOperation\u0027).debug(\u0027Took the selected asset %s back after it was cleared at startup\u0027 % selected)\n\tself.view.custom.assetInfo \u003d assetInfo\n\treturn True"
         }
       ],
       "extensionFunctions": null,
@@ -839,6 +966,13 @@
           "messageType": "navItemsUpdated",
           "pageScope": true,
           "script": "\n#\tsystem.perspective.print(\"navItemsUpdated() msg rcvd with %s\"%payload)\n#\tself.view.refreshBinding(\"custom.viewPanels\")\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "assetSelectorUpdate",
+          "pageScope": true,
+          "script": "\t# The asset selector sends its asset on every change: take it if the two-way binding lost it (takeSelectedAsset).\n\t# Other selectors on the page send this too; only the page\u0027s selected asset is taken\n\tif payload:\n\t\tself.takeSelectedAsset(payload)",
           "sessionScope": false,
           "viewScope": false
         }

@@ -173,16 +173,20 @@
     "custom.data.oeeSummary": {
       "binding": {
         "config": {
-          "path": "view.custom.data.oeeData"
+          "struct": {
+            "filters": "{view.custom.filters}",
+            "oeeData": "{view.custom.data.oeeData}"
+          },
+          "waitOnAll": false
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(value)\n\tdurationSecs \u003d 0\n\truntimeSecs \u003d 0\n\ttotalSecs \u003d 0\n\tinfeedCount \u003d 0\n\ttargetCount \u003d 0\n\twasteCount \u003d 0\n\t\n\tfor item in data:\n\t\truntimeSecs +\u003d item[\u0027runtimeSecs\u0027] or 0\n\t\ttotalSecs +\u003d (item[\u0027runtimeSecs\u0027] or 0) + (item[\u0027unplannedDowntimeSecs\u0027] or 0)\n\t\tinfeedCount +\u003d item[\u0027infeedCount\u0027] or 0\n\t\ttargetCount +\u003d item[\u0027targetCount\u0027] or 0\n\t\twasteCount +\u003d item[\u0027wasteCount\u0027] or 0\n\t\t\t\n\ta \u003d float(runtimeSecs) / float(totalSecs) if totalSecs \u003e 0 else None\n\tp \u003d float(infeedCount) / float(targetCount) if targetCount \u003e 0 else 1\n\tq \u003d float(infeedCount) / (float(infeedCount + wasteCount)) if infeedCount \u003e 0 and wasteCount \u003e 0 else 1\n\t\n\treturn {\u0027a\u0027: a, \u0027p\u0027: p, \u0027q\u0027: q, \u0027oee\u0027: (a or 0) * (p or 0) * (q or 0)}",
-            "type": "script"
+            "type": "script",
+            "code": "\n\t#The range\u0027s overall OEE as system.kanoa.event.getOEESummary works it out, as the OEE Dial, OEE KPI and Asset Shift OEE\n\t#widgets show it. Re-read with the chart\u0027s data (custom.data.oeeData), so an auto refresh updates both\n\tfilters \u003d value[\u0027filters\u0027]\n\tempty \u003d {\u0027a\u0027: None, \u0027p\u0027: 1, \u0027q\u0027: 1, \u0027oee\u0027: 0}\n\tif filters is None or filters[\u0027assetId\u0027] is None or not filters[\u0027dateRange\u0027]:\n\t\treturn empty\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getOEESummary({\u0027assetId\u0027: filters[\u0027assetId\u0027],\n\t\t\t\t\u0027startDate\u0027: filters[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: filters[\u0027dateRange\u0027][\u0027endDate\u0027]}))\n\tif not rows or not rows[0][\u0027durationSecs\u0027]:\n\t\treturn empty\n\ta, p, q \u003d [rows[0][name] or 0.0 for name in (\u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027)]\n\treturn {\u0027a\u0027: a, \u0027p\u0027: p, \u0027q\u0027: q, \u0027oee\u0027: a * p * q}"
           }
         ],
-        "type": "property"
+        "type": "expr-struct"
       }
     },
     "custom.filters": {
@@ -555,7 +559,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\n\tif value[\u0027oeeMetric\u0027] is None or value[\u0027thresholds\u0027] is None or value[\u0027oeeMetric\u0027] \u003d\u003d \u0027all\u0027: return {}\n\t\n\tif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027availability\u0027: key \u003d \u0027a\u0027\n\telif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027performance\u0027: key \u003d \u0027p\u0027\n\telif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027quality\u0027: key \u003d \u0027q\u0027\n\telif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027oee\u0027: key \u003d \u0027oee\u0027\n\t\n\tranges \u003d [\n\t\t\t\t{\"from\": 0, \"to\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)] - value[\u0027thresholds\u0027][\u0027%sTolerance\u0027%(key)],\t\"color\": \"var(--kcBad)\"}, \n\t\t\t\t{\"from\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)] - value[\u0027thresholds\u0027][\u0027%sTolerance\u0027%(key)], \"to\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)], \"color\": \"var(--kcOK)\"}, \n\t\t\t\t{\"from\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)], \"to\": 1.0, \"color\": \"var(--kcGood)\"}\n\t\t\t]\n\t\n\treturn {\"ranges\": ranges}",
+                          "code": "\n\t#Replace the last metric\u0027s ranges with one no value (0-1) falls in: the chart merges option changes and drops empty ones, so {} or an empty list would leave them coloring every series\n\tif value[\u0027oeeMetric\u0027] is None or value[\u0027thresholds\u0027] is None or value[\u0027oeeMetric\u0027] \u003d\u003d \u0027all\u0027: return {\"ranges\": [{\"from\": -2, \"to\": -1, \"color\": \"var(--kcChart-01)\"}]}\n\t\n\tif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027availability\u0027: key \u003d \u0027a\u0027\n\telif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027performance\u0027: key \u003d \u0027p\u0027\n\telif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027quality\u0027: key \u003d \u0027q\u0027\n\telif value[\u0027oeeMetric\u0027] \u003d\u003d \u0027oee\u0027: key \u003d \u0027oee\u0027\n\t\n\tranges \u003d [\n\t\t\t\t{\"from\": 0, \"to\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)] - value[\u0027thresholds\u0027][\u0027%sTolerance\u0027%(key)],\t\"color\": \"var(--kcBad)\"}, \n\t\t\t\t{\"from\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)] - value[\u0027thresholds\u0027][\u0027%sTolerance\u0027%(key)], \"to\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)], \"color\": \"var(--kcOK)\"}, \n\t\t\t\t{\"from\": value[\u0027thresholds\u0027][\u0027%s\u0027%(key)], \"to\": 1.0, \"color\": \"var(--kcGood)\"}\n\t\t\t]\n\t\n\treturn {\"ranges\": ranges}",
                           "type": "script"
                         }
                       ],
@@ -593,7 +597,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\tif value is None:\n\t\treturn []\n\t\n\toeeMetric \u003d self.view.custom.filters[\u0027oeeMetric\u0027].lower()\n\tdateFormat \u003d \"MM/dd HH:mm\" if self.view.custom.data.interval \u003d\u003d \u0027Hour\u0027 else \"MM-dd\"\n\tgatewayOffSetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffsetMins \u003d int(self.session.props.device.timezone.utcOffset * 60)\n\toffsetMins \u003d clientOffsetMins - gatewayOffSetMins\n\t\n\tfrom collections import defaultdict\n\tdataByHour \u003d defaultdict(list)\n\tfor row in system.kanoa.utilities.convertDatasetToJSON(value):\n\t\tdataByHour[row[\u0027hourTimeStamp\u0027]].append(row)\n\t\n\tseriesOEE \u003d []\n\tseriesA \u003d []\n\tseriesP \u003d []\n\tseriesQ \u003d []\n\tfor tStamp, rows in sorted(dataByHour.items()):\n\t\ttotalWeight \u003d 0.0\n\t\tweightedAVal \u003d 0.0\n\t\tweightedPVal \u003d 0.0\n\t\tweightedQVal \u003d 0.0\n\t\tweightedOEEVal \u003d 0.0\n\t\tformattedTStamp \u003d system.date.format(system.date.addMinutes(tStamp, offsetMins), dateFormat)\n\t\t\n\t\tfor row in rows:\n\t\t\tduration \u003d row[\u0027durationSecs\u0027] or 0.0\n\t\t\tif duration \u003c\u003d 0: continue\n\t\n\t\t\taVal \u003d float(row[\u0027availability\u0027] or 0)\n\t\t\tpVal \u003d float(row[\u0027performance\u0027] or 0)\n\t\t\tqVal \u003d float(row[\u0027quality\u0027] or 0)\n\t\t\toeeVal \u003d aVal * pVal * qVal\n\n\t\t\tweightedAVal +\u003d aVal * duration\n\t\t\tweightedPVal +\u003d pVal * duration\n\t\t\tweightedQVal +\u003d qVal * duration\n\t\t\tweightedOEEVal +\u003d oeeVal * duration\n\t\t\ttotalWeight +\u003d duration\n\t\n\t\tseriesA.append({\u0027x\u0027: formattedTStamp, \u0027y\u0027: weightedAVal / totalWeight if totalWeight \u003e 0 else None})\n\t\tseriesP.append({\u0027x\u0027: formattedTStamp, \u0027y\u0027: weightedPVal / totalWeight if totalWeight \u003e 0 else None})\n\t\tseriesQ.append({\u0027x\u0027: formattedTStamp, \u0027y\u0027: weightedQVal / totalWeight if totalWeight \u003e 0 else None})\n\t\tseriesOEE.append({\u0027x\u0027: formattedTStamp, \u0027y\u0027: weightedOEEVal / totalWeight if totalWeight \u003e 0 else None})\n\t\n\tseries \u003d []\n\t\n\tif oeeMetric in (\u0027oee\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027OEE\u0027, \u0027data\u0027: seriesOEE})\n\tif oeeMetric in (\u0027availability\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027Availability\u0027, \u0027data\u0027: seriesA})\n\tif oeeMetric in (\u0027performance\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027Performance\u0027, \u0027data\u0027: seriesP})\n\tif oeeMetric in (\u0027quality\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027Quality\u0027, \u0027data\u0027: seriesQ})\n\t\t\n\treturn series",
+                          "code": "\tif value is None:\n\t\treturn []\n\t\n\toeeMetric \u003d self.view.custom.filters[\u0027oeeMetric\u0027].lower()\n\tdateFormat \u003d \"MM/dd HH:mm\" if self.view.custom.data.interval \u003d\u003d \u0027Hour\u0027 else \"MM-dd\"\n\tgatewayOffSetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffsetMins \u003d int(self.session.props.device.timezone.utcOffset * 60)\n\toffsetMins \u003d clientOffsetMins - gatewayOffSetMins\n\t\n\tfrom collections import defaultdict\n\tdataByHour \u003d defaultdict(list)\n\tfor row in system.kanoa.utilities.convertDatasetToJSON(value):\n\t\tdataByHour[row[\u0027hourTimeStamp\u0027]].append(row)\n\t\n\tseriesOEE \u003d []\n\tseriesA \u003d []\n\tseriesP \u003d []\n\tseriesQ \u003d []\n\tfor tStamp, rows in sorted(dataByHour.items()):\n\t\ttotalWeight \u003d 0.0\n\t\tweightedAVal \u003d 0.0\n\t\tweightedPVal \u003d 0.0\n\t\tweightedQVal \u003d 0.0\n\t\tweightedOEEVal \u003d 0.0\n\t\tformattedTStamp \u003d system.date.format(system.date.addMinutes(tStamp, offsetMins), dateFormat)\n\t\t\n\t\tfor row in rows:\n\t\t\tduration \u003d row[\u0027durationSecs\u0027] or 0.0\n\t\t\tif duration \u003c\u003d 0: continue\n\t\n\t\t\taVal \u003d float(row[\u0027availability\u0027] or 0)\n\t\t\tpVal \u003d float(row[\u0027performance\u0027] or 0)\n\t\t\tqVal \u003d float(row[\u0027quality\u0027] or 0)\n\t\t\toeeVal \u003d aVal * pVal * qVal\n\n\t\t\tweightedAVal +\u003d aVal * duration\n\t\t\tweightedPVal +\u003d pVal * duration\n\t\t\tweightedQVal +\u003d qVal * duration\n\t\t\tweightedOEEVal +\u003d oeeVal * duration\n\t\t\ttotalWeight +\u003d duration\n\t\n\t\t#[x, y] pairs: the chart reads an {x, y} point whose y is 0 or None in its key order, which can swap them\n\t\tseriesA.append([formattedTStamp, weightedAVal / totalWeight if totalWeight \u003e 0 else None])\n\t\tseriesP.append([formattedTStamp, weightedPVal / totalWeight if totalWeight \u003e 0 else None])\n\t\tseriesQ.append([formattedTStamp, weightedQVal / totalWeight if totalWeight \u003e 0 else None])\n\t\tseriesOEE.append([formattedTStamp, weightedOEEVal / totalWeight if totalWeight \u003e 0 else None])\n\t\n\tseries \u003d []\n\t\n\t#Each series carries its own color, so it doesn\u0027t depend on its position in the list\n\tif oeeMetric in (\u0027oee\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027OEE\u0027, \u0027data\u0027: seriesOEE, \u0027color\u0027: \u0027var(--kcChart-01)\u0027})\n\tif oeeMetric in (\u0027availability\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027Availability\u0027, \u0027data\u0027: seriesA, \u0027color\u0027: \u0027var(--kcChart-02)\u0027})\n\tif oeeMetric in (\u0027performance\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027Performance\u0027, \u0027data\u0027: seriesP, \u0027color\u0027: \u0027var(--kcChart-03)\u0027})\n\tif oeeMetric in (\u0027quality\u0027, \u0027all\u0027): series.append({\u0027name\u0027: \u0027Quality\u0027, \u0027data\u0027: seriesQ, \u0027color\u0027: \u0027var(--kcChart-04)\u0027})\n\t\t\n\treturn series",
                           "type": "script"
                         }
                       ],
@@ -670,7 +674,7 @@
                   },
                   "type": "bar"
                 },
-                "type": "kyvislabs.display.apexchart"
+                "type": "kanoa.ops.apexchart"
               },
               {
                 "children": [
@@ -706,8 +710,11 @@
                             "backgroundColor": "--kcSurface",
                             "color": "--kcOnSurface",
                             "left": 3,
+                            "paddingLeft": 3,
+                            "paddingRight": 3,
                             "position": "absolute",
-                            "top": -12
+                            "top": 0,
+                            "transform": "translateY(-50%)"
                           },
                           "text": "OEE",
                           "textStyle": {
@@ -784,8 +791,11 @@
                             "backgroundColor": "--kcSurface",
                             "color": "--kcOnSurface",
                             "left": 3,
+                            "paddingLeft": 3,
+                            "paddingRight": 3,
                             "position": "absolute",
-                            "top": -12
+                            "top": 0,
+                            "transform": "translateY(-50%)"
                           },
                           "text": "Availability",
                           "textStyle": {
@@ -862,8 +872,11 @@
                             "backgroundColor": "--kcSurface",
                             "color": "--kcOnSurface",
                             "left": 3,
+                            "paddingLeft": 3,
+                            "paddingRight": 3,
                             "position": "absolute",
-                            "top": -12
+                            "top": 0,
+                            "transform": "translateY(-50%)"
                           },
                           "text": "Performance",
                           "textStyle": {
@@ -940,8 +953,11 @@
                             "backgroundColor": "--kcSurface",
                             "color": "--kcOnSurface",
                             "left": 3,
+                            "paddingLeft": 3,
+                            "paddingRight": 3,
                             "position": "absolute",
-                            "top": -12
+                            "top": 0,
+                            "transform": "translateY(-50%)"
                           },
                           "text": "Quality",
                           "textStyle": {

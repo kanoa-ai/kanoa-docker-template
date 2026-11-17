@@ -65,7 +65,7 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
     "serialNumbers": {
       "selection": {
@@ -79,7 +79,8 @@
       "canDelete": false,
       "canRead": true,
       "canUpdate": false
-    }
+    },
+    "toastId": null
   },
   "params": {},
   "propConfig": {
@@ -666,7 +667,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\trows \u003d []\n\tfor row in value:\n\t\trow \u003d dict(row)\n\t\trow[\u0027lastUpdated\u0027] \u003d \"%s by %s\"%(row[\u0027changedDate\u0027] or row[\u0027createdDate\u0027], row[\u0027changedByUser\u0027] or row[\u0027createdByUser\u0027])\n\t\trows.append(row)\n\t\t\n\treturn rows",
+                      "code": "\t#In the device\u0027s time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MM/dd/yyyy h:mm a\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdef fmtDate(date):\n\t\tif date is None: return \u0027\u0027\n\t\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(long(date))\n\t\treturn fmt.format(date)\n\t\n\trows \u003d []\n\tfor row in value:\n\t\trow \u003d dict(row)\n\t\trow[\u0027lastUpdated\u0027] \u003d \"%s by %s\"%(fmtDate(row[\u0027changedDate\u0027] or row[\u0027createdDate\u0027]), row[\u0027changedByUser\u0027] or row[\u0027createdByUser\u0027])\n\t\trows.append(row)\n\t\t\n\treturn sorted(rows, key\u003dlambda row: (row[\u0027serialName\u0027] or \u0027\u0027).lower())",
                       "type": "script"
                     }
                   ],
@@ -1966,7 +1967,7 @@
           "params": [
             "serialId"
           ],
-          "script": "\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Deleting serial number template.....\u0027})\n\tretVal, msg \u003d system.kanoa.serial.deleteSerialNumber(serialId, self.view.custom.security.userId)\n\n\tif msg is None: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Serial Number template deleted\u0027})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t delete this Serial Number template. \\n%s\"%msg})\n\t\t\n\tself.view.refreshBinding(\"custom.serialNumbers.data\")\n\t\n\treturn"
+          "script": "\n\tretVal, msg \u003d system.kanoa.serial.deleteSerialNumber(serialId, self.view.custom.security.userId)\n\n\tif msg is None: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Serial Number template deleted\u0027})\n\telse: self.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t delete this Serial Number template. \\n%s\"%msg})\n\t\t\n\tself.view.refreshBinding(\"custom.serialNumbers.data\")\n\t\n\treturn"
         },
         {
           "name": "openEditor",
@@ -1978,12 +1979,19 @@
         {
           "name": "exportSerializations",
           "params": [],
-          "script": "\n\t\u0027\u0027\u0027\n\t\tExports serialization templates\n\t\tArgs:\n\t\tReturns:\n\t\t\texportInfo (dict)\n\t\t\tmessage (string): None if successful\n\t\tUpdated:\n\t\t\tjz 8/13/26 created\n\t\u0027\u0027\u0027\n\tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027)\n\tlog \u003d system.util.getLogger(\u0027kanoaSerial\u0027)\n\n\timport java.lang\n\n\tserialIds \u003d [row[\u0027serialId\u0027] for row in self.view.custom.serialNumbers.selection.data]\n\tlog.info(\"exportSerializations() called with %s\"%(serialIds))\n\texportInfo \u003d {}\n\n\ttry:\n\t\tallSerials \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.serial.getSerialNumbers({}))\n\t\tserialNumbers \u003d [row for row in allSerials if row[\u0027serialId\u0027] in serialIds]\n\n\t\texportInfo[\u0027serialNumbers\u0027] \u003d serialNumbers\n\n\t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n\t\tfileName \u003d \u0027Serializations Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027serialNumberInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Serializations exported\u0027})\n\n\texcept java.lang.Exception, e:\n\t\tlog.error(\"exportSerializations() threw exception %s \"%(e.cause))\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Serializations failed to export: %s\u0027%e.cause})\n\n\treturn"
+          "script": "\n\t\u0027\u0027\u0027\n\t\tExports serialization templates\n\t\tArgs:\n\t\tReturns:\n\t\t\texportInfo (dict)\n\t\t\tmessage (string): None if successful\n\t\tUpdated:\n\t\t\tjz 8/13/26 created\n\t\u0027\u0027\u0027\n\tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027)\n\tlog \u003d system.util.getLogger(\u0027kanoaSerial\u0027)\n\n\timport java.lang\n\n\tserialIds \u003d [row[\u0027serialId\u0027] for row in self.view.custom.serialNumbers.selection.data]\n\tlog.info(\"exportSerializations() called with %s\"%(serialIds))\n\texportInfo \u003d {}\n\n\ttry:\n\t\tallSerials \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.serial.getSerialNumbers({}))\n\t\tserialNumbers \u003d [row for row in allSerials if row[\u0027serialId\u0027] in serialIds]\n\n\t\texportInfo[\u0027serialNumbers\u0027] \u003d serialNumbers\n\n\t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n\t\tfileName \u003d \u0027Serializations Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027serialNumberInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Serializations exported\u0027})\n\n\texcept java.lang.Exception, e:\n\t\tlog.error(\"exportSerializations() threw exception %s \"%((getattr(e, \u0027cause\u0027, None) or e)))\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Serializations failed to export: %s\u0027%(getattr(e, \u0027cause\u0027, None) or e)})\n\n\treturn"
         },
         {
           "name": "importSerializations",
           "params": [],
           "script": "\n\tsystem.perspective.openPopup(\n\t\tid \u003d \u0027Serializations Importer\u0027,\n\t\tview \u003d \u0027kanoa/mes/config/lots/lotsDataImporter\u0027,\n\t\ttitle \u003d \u0027Serializations Importer\u0027,\n\t\tparams \u003d {\u0027callerId\u0027: system.kanoa.utilities.getUUID(), \u0027msgHandler\u0027: \u0027importSerializations\u0027},\n\t\tmodal \u003d True,\n\t\toverlayDismiss \u003d True\n\t)\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
         }
       ],
       "extensionFunctions": null,
@@ -1991,7 +1999,7 @@
         {
           "messageType": "importSerializations",
           "pageScope": true,
-          "script": "\n\t\u0027\u0027\u0027\n\t\tImports serialization templates\n\t\tArgs:\n\t\t\texportInfo (dict)\n\t\t\tuserId (int)\n\t\tReturns:\n\t\tUpdated:\n\t\t\tjz 8/13/26 created\n\t\u0027\u0027\u0027\n\tlog \u003d system.util.getLogger(\u0027kanoaSerial\u0027)\n\tuserId \u003d self.view.custom.security.userId\n\texportInfo \u003d payload[\u0027exportInfo\u0027][\u0027data\u0027]\n\n\tif not exportInfo.has_key(\u0027serialNumbers\u0027):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Import data does not have the expected fields\u0027})\n\t\treturn\n\n\tserialsAdded \u003d 0\n\tfor serial in exportInfo[\u0027serialNumbers\u0027]:\n\t\tserialInfo \u003d dict(serial)\n\t\texistingId \u003d system.kanoa.utilities.getFieldValue(\u0027serialId\u0027, system.kanoa.serial.getSerialNumbers({\u0027serialName\u0027: serialInfo[\u0027serialName\u0027]}))\n\t\tif not existingId:\n\t\t\tnewSerialId, msg \u003d system.kanoa.serial.addSerialNumber(serialInfo, userId)\n\t\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to import %s: %s\u0027%(serialInfo[\u0027serialName\u0027], msg)})\n\t\t\telse: serialsAdded +\u003d 1\n\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s serializations imported\u0027%serialsAdded})\n\tself.view.refreshBinding(\"custom.serialNumbers.data\")\n\n\treturn",
+          "script": "\n\t\u0027\u0027\u0027\n\t\tImports serialization templates\n\t\tArgs:\n\t\t\texportInfo (dict)\n\t\t\tuserId (int)\n\t\tReturns:\n\t\tUpdated:\n\t\t\tjz 8/13/26 created\n\t\u0027\u0027\u0027\n\tlog \u003d system.util.getLogger(\u0027kanoaSerial\u0027)\n\tuserId \u003d self.view.custom.security.userId\n\texportInfo \u003d payload[\u0027exportInfo\u0027][\u0027data\u0027]\n\n\tif not exportInfo.has_key(\u0027serialNumbers\u0027):\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Import data does not have the expected fields\u0027})\n\t\treturn\n\n\t#One toast for the import: the ones that couldn\u0027t be added are listed in it (868mvvzbz)\n\tserialsAdded \u003d 0\n\tfailed \u003d []\n\tfor serial in exportInfo[\u0027serialNumbers\u0027]:\n\t\tserialInfo \u003d dict(serial)\n\t\texistingId \u003d system.kanoa.utilities.getFieldValue(\u0027serialId\u0027, system.kanoa.serial.getSerialNumbers({\u0027serialName\u0027: serialInfo[\u0027serialName\u0027]}))\n\t\tif not existingId:\n\t\t\tnewSerialId, msg \u003d system.kanoa.serial.addSerialNumber(serialInfo, userId)\n\t\t\tif msg: failed.append(\u0027%s (%s)\u0027%(serialInfo[\u0027serialName\u0027], msg))\n\t\t\telse: serialsAdded +\u003d 1\n\n\tif failed: self.toast({\u0027type\u0027: \u0027warning\u0027 if serialsAdded else \u0027error\u0027, \u0027message\u0027: \"Imported %s serializations; %s couldn\u0027t be imported: %s\"%(serialsAdded, len(failed), \u0027; \u0027.join(failed))})\n\telse: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Imported %s serializations\u0027%serialsAdded})\n\tself.view.refreshBinding(\"custom.serialNumbers.data\")\n\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

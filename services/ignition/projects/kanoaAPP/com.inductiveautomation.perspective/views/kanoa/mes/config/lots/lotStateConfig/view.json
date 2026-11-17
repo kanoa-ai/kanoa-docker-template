@@ -318,7 +318,8 @@
         }
       },
       "userId": 5
-    }
+    },
+    "toastId": null
   },
   "params": {},
   "propConfig": {
@@ -996,7 +997,7 @@
                                   "component": {
                                     "onEditCellCommit": {
                                       "config": {
-                                        "script": "\n\tif self.view.custom.lotStates.userAction.canUpdate:\n\t\tlotStateId \u003d self.props.data[event.row][\u0027lotStateId\u0027]\n\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027lotStateName\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.lot.updateLotStateField(lotStateId, event.column, event.value, self.view.custom.security.userId)\n\t\t\t\n\t\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the lot state. %s\u0027%msg})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot State has been updated\u0027})\t\t\n\t\telse:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states\u0027})\n\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
+                                        "script": "\n\tif self.view.custom.lotStates.userAction.canUpdate:\n\t\tlotStateId \u003d self.props.data[event.row][\u0027lotStateId\u0027]\n\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027lotStateName\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.lot.updateLotStateField(lotStateId, event.column, event.value, self.view.custom.security.userId)\n\t\t\t\n\t\t\tif msg: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the lot state. %s\u0027%msg})\n\t\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot State has been updated\u0027})\t\t\n\t\telse:\n\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse:\n\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states\u0027})\n\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
                                       },
                                       "scope": "G",
                                       "type": "script"
@@ -1020,14 +1021,6 @@
                                       "type": "property"
                                     }
                                   },
-                                  "props.columns[1].header.title": {
-                                    "binding": {
-                                      "config": {
-                                        "expression": "translate(\u0027Lot State\u0027)"
-                                      },
-                                      "type": "expr"
-                                    }
-                                  },
                                   "props.columns[2].editable": {
                                     "binding": {
                                       "config": {
@@ -1035,14 +1028,6 @@
                                       },
                                       "overlayOptOut": true,
                                       "type": "property"
-                                    }
-                                  },
-                                  "props.columns[2].header.title": {
-                                    "binding": {
-                                      "config": {
-                                        "expression": "translate(\u0027Enabled\u0027)"
-                                      },
-                                      "type": "expr"
                                     }
                                   },
                                   "props.columns[4].dateFormat": {
@@ -1164,7 +1149,7 @@
                                       },
                                       "justify": "center",
                                       "number": "value",
-                                      "numberFormat": "0,0.##",
+                                      "numberFormat": "#",
                                       "progressBar": {
                                         "bar": {
                                           "color": "",
@@ -1206,7 +1191,7 @@
                                       "viewParams": {},
                                       "viewPath": "",
                                       "visible": true,
-                                      "width": 40
+                                      "width": 55
                                     },
                                     {
                                       "align": "center",
@@ -1226,7 +1211,8 @@
                                         "justify": "center",
                                         "style": {
                                           "classes": "kanoa/font/default"
-                                        }
+                                        },
+                                        "title": "Lot State"
                                       },
                                       "justify": "center",
                                       "number": "value",
@@ -1292,7 +1278,8 @@
                                         "justify": "center",
                                         "style": {
                                           "classes": "kanoa/font/default"
-                                        }
+                                        },
+                                        "title": "Enabled"
                                       },
                                       "justify": "center",
                                       "number": "value",
@@ -1750,14 +1737,13 @@
                       "name": "flxLotStates"
                     },
                     "position": {
-                      "basis": "500px"
+                      "basis": "500px",
+                      "shrink": 0
                     },
                     "props": {
                       "direction": "column",
                       "style": {
-                        "classes": "kanoa/containerVariant",
-                        "overflow": "visible",
-                        "padding": 5
+                        "overflow": "visible"
                       }
                     },
                     "type": "ia.container.flex"
@@ -2134,7 +2120,7 @@
                                   "component": {
                                     "onEditCellCommit": {
                                       "config": {
-                                        "script": "\n\tif self.view.custom.lotStateReasons.userAction.canUpdate:\n\t\tlotStateReasonId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonId\u0027)\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027lotStateReasonName\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.lot.updateLotStateReasonField(lotStateReasonId, event.column, event.value, self.view.custom.security.userId)\t\t\t\n\t\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the lot state reason. %s\u0027%msg})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot State Reason has been updated\u0027})\t\t\n\t\telse:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states\u0027})\n\n\tself.view.refreshBinding(\"custom.lotStateReasons.data\")\n\tself.props.selection.selectedRow \u003d None\n\tself.props.selection.selectedCol \u003d None\n\t\t\n\treturn"
+                                        "script": "\n\tif self.view.custom.lotStateReasons.userAction.canUpdate:\n\t\tlotStateReasonId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonId\u0027)\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027lotStateReasonName\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.lot.updateLotStateReasonField(lotStateReasonId, event.column, event.value, self.view.custom.security.userId)\t\t\t\n\t\t\tif msg: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the lot state reason. %s\u0027%msg})\n\t\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot State Reason has been updated\u0027})\t\t\n\t\telse:\n\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse:\n\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states\u0027})\n\n\tself.view.refreshBinding(\"custom.lotStateReasons.data\")\n\tself.props.selection.selectedRow \u003d None\n\tself.props.selection.selectedCol \u003d None\n\t\t\n\treturn"
                                       },
                                       "scope": "G",
                                       "type": "script"
@@ -2164,14 +2150,6 @@
                                       "type": "property"
                                     }
                                   },
-                                  "props.columns[1].header.title": {
-                                    "binding": {
-                                      "config": {
-                                        "expression": "translate(\u0027Lot State Reason\u0027)"
-                                      },
-                                      "type": "expr"
-                                    }
-                                  },
                                   "props.columns[5].editable": {
                                     "binding": {
                                       "config": {
@@ -2179,14 +2157,6 @@
                                       },
                                       "overlayOptOut": true,
                                       "type": "property"
-                                    }
-                                  },
-                                  "props.columns[5].header.title": {
-                                    "binding": {
-                                      "config": {
-                                        "expression": "translate(\u0027Enabled\u0027)"
-                                      },
-                                      "type": "expr"
                                     }
                                   },
                                   "props.columns[7].dateFormat": {
@@ -2294,7 +2264,7 @@
                                       },
                                       "justify": "center",
                                       "number": "value",
-                                      "numberFormat": "0,0.##",
+                                      "numberFormat": "#",
                                       "progressBar": {
                                         "bar": {
                                           "color": "",
@@ -2336,7 +2306,7 @@
                                       "viewParams": {},
                                       "viewPath": "",
                                       "visible": true,
-                                      "width": 40
+                                      "width": 55
                                     },
                                     {
                                       "align": "center",
@@ -2357,7 +2327,8 @@
                                         "justify": "left",
                                         "style": {
                                           "classes": "kanoa/font/default"
-                                        }
+                                        },
+                                        "title": "Lot State Reason"
                                       },
                                       "justify": "auto",
                                       "number": "value",
@@ -2565,7 +2536,7 @@
                                       },
                                       "justify": "auto",
                                       "number": "value",
-                                      "numberFormat": "0,0.##",
+                                      "numberFormat": "#",
                                       "progressBar": {
                                         "bar": {
                                           "color": "",
@@ -2627,7 +2598,8 @@
                                         "justify": "center",
                                         "style": {
                                           "classes": "kanoa/font/default"
-                                        }
+                                        },
+                                        "title": "Enabled"
                                       },
                                       "justify": "center",
                                       "number": "value",
@@ -3091,9 +3063,7 @@
                     "props": {
                       "direction": "column",
                       "style": {
-                        "classes": "kanoa/containerVariant",
-                        "overflow": "hidden",
-                        "padding": "5px"
+                        "overflow": "hidden"
                       }
                     },
                     "type": "ia.container.flex"
@@ -3147,10 +3117,18 @@
                           "name": "evAssetTree"
                         },
                         "position": {
-                          "basis": "320px",
+                          "basis": "0px",
                           "grow": 1
                         },
                         "propConfig": {
+                          "props.path": {
+                            "binding": {
+                              "config": {
+                                "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                              },
+                              "type": "expr"
+                            }
+                          },
                           "props.params.values.data": {
                             "binding": {
                               "config": {
@@ -3189,6 +3167,7 @@
                       "name": "flxAssets"
                     },
                     "position": {
+                      "basis": "500px",
                       "shrink": 0
                     },
                     "props": {
@@ -3196,6 +3175,8 @@
                       "style": {
                         "backgroundColor": "--kcSurface",
                         "classes": "kanoa/border",
+                        "minHeight": "0px",
+                        "minWidth": "0px",
                         "overflow": "visible",
                         "padding": "5px",
                         "position": "relative"
@@ -3425,7 +3406,7 @@
                           "component": {
                             "onEditCellCommit": {
                               "config": {
-                                "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
+                                "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
                               },
                               "scope": "G",
                               "type": "script"
@@ -3437,28 +3418,10 @@
                           "name": "tblAssetStates"
                         },
                         "position": {
-                          "basis": "400px",
-                          "grow": 1,
-                          "shrink": 0
+                          "basis": "0px",
+                          "grow": 1
                         },
                         "propConfig": {
-                          "props.columns[3].header.title": {
-                            "binding": {
-                              "config": {
-                                "expression": "translate(\u0027Asset\u0027)"
-                              },
-                              "overlayOptOut": true,
-                              "type": "expr"
-                            }
-                          },
-                          "props.columns[6].header.title": {
-                            "binding": {
-                              "config": {
-                                "expression": "translate(\u0027Lot State\u0027)"
-                              },
-                              "type": "expr"
-                            }
-                          },
                           "props.columns[7].editable": {
                             "binding": {
                               "config": {
@@ -3466,22 +3429,6 @@
                               },
                               "overlayOptOut": true,
                               "type": "property"
-                            }
-                          },
-                          "props.columns[7].header.title": {
-                            "binding": {
-                              "config": {
-                                "expression": "translate(\u0027Enabled\u0027)"
-                              },
-                              "type": "expr"
-                            }
-                          },
-                          "props.columns[8].header.title": {
-                            "binding": {
-                              "config": {
-                                "expression": "translate(\u0027Enabled\u0027)"
-                              },
-                              "type": "expr"
                             }
                           },
                           "props.data": {
@@ -3564,7 +3511,7 @@
                               },
                               "justify": "center",
                               "number": "value",
-                              "numberFormat": "0,0.##",
+                              "numberFormat": "#",
                               "progressBar": {
                                 "bar": {
                                   "color": "",
@@ -3606,7 +3553,7 @@
                               "viewParams": {},
                               "viewPath": "",
                               "visible": true,
-                              "width": 40
+                              "width": 55
                             },
                             {
                               "align": "center",
@@ -3700,7 +3647,7 @@
                               },
                               "justify": "center",
                               "number": "value",
-                              "numberFormat": "0,0.##",
+                              "numberFormat": "#",
                               "progressBar": {
                                 "bar": {
                                   "color": "",
@@ -3763,7 +3710,8 @@
                                 "justify": "left",
                                 "style": {
                                   "classes": ""
-                                }
+                                },
+                                "title": "Asset"
                               },
                               "justify": "left",
                               "number": "value",
@@ -3966,7 +3914,8 @@
                                 "justify": "left",
                                 "style": {
                                   "classes": ""
-                                }
+                                },
+                                "title": "Lot State"
                               },
                               "justify": "left",
                               "number": "value",
@@ -4032,7 +3981,8 @@
                                 "justify": "center",
                                 "style": {
                                   "classes": "kanoa/font/default"
-                                }
+                                },
+                                "title": "Enabled"
                               },
                               "justify": "center",
                               "number": "value",
@@ -4099,7 +4049,8 @@
                                 "justify": "center",
                                 "style": {
                                   "classes": "kanoa/font/default"
-                                }
+                                },
+                                "title": "Enabled"
                               },
                               "justify": "center",
                               "number": "value",
@@ -4196,6 +4147,7 @@
                       "name": "flxTable"
                     },
                     "position": {
+                      "basis": "0px",
                       "grow": 1
                     },
                     "props": {
@@ -4203,6 +4155,8 @@
                       "style": {
                         "backgroundColor": "--kcSurface",
                         "classes": "kanoa/border",
+                        "minHeight": "0px",
+                        "minWidth": "0px",
                         "overflow": "visible",
                         "padding": "5px",
                         "position": "relative"
@@ -4222,7 +4176,11 @@
                 "props": {
                   "style": {
                     "gap": "3px",
+                    "minHeight": "0px",
+                    "minWidth": "0px",
                     "overflow": "visible",
+                    "paddingLeft": "5px",
+                    "paddingRight": "5px",
                     "paddingTop": "5px"
                   }
                 },
@@ -4292,7 +4250,7 @@
         {
           "name": "unlinkAssetStates",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.assetStates.selectedData:\n\t\tif system.kanoa.lot.unlinkAssetLotState(row[\u0027lotStateReasonAssetLinkId\u0027], self.view.custom.security.userId) \u003d\u003d \u0027Disabled\u0027: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027%s state has been disabled as there are historical entries asssociated with this lot state.\u0027%row[\u0027stateName\u0027]})\n\t\t\n\tself.view.refreshBinding(\"custom.assetStates.data\")\n\t\n\treturn"
+          "script": "\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdisabled \u003d []\n\tfor row in self.view.custom.assetStates.selectedData:\n\t\tif system.kanoa.lot.unlinkAssetLotState(row[\u0027lotStateReasonAssetLinkId\u0027], self.view.custom.security.userId) \u003d\u003d \u0027Disabled\u0027: disabled.append(row[\u0027stateName\u0027])\n\t\n\tif disabled: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete %s asset state links as there are historical entries associated with them; they were disabled instead: %s\"%(len(disabled), \u0027, \u0027.join(disabled))})\n\t\t\n\tself.view.refreshBinding(\"custom.assetStates.data\")\n\t\n\treturn"
         },
         {
           "name": "openLotStateReasonEditor",
@@ -4311,12 +4269,12 @@
         {
           "name": "deleteStates",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.lotStateReasons.selectedData:\n\t\tretVal, response \u003d system.kanoa.lot.deleteLotStateReason(row[\u0027lotStateReasonId\u0027], self.view.custom.security.userId)\n\t\tif response \u003d\u003d \u0027Disabled\u0027: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Lot state reason %s has been disabled as there are historical entries asssociated with this lot state reason\u0027%row[\u0027lotStateReasonName\u0027]})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot state reason %s has been deleted\u0027%row[\u0027lotStateReasonName\u0027]})\n\n\tself.view.refreshBinding(\"custom.lotStateReasons.data\")\n\tself.view.custom.lotStateReasons.row \u003d None\n\tself.view.custom.lotStateReasons.col \u003d None\n\n\treturn"
+          "script": "\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdeleted, disabled \u003d [], []\n\tfor row in self.view.custom.lotStateReasons.selectedData:\n\t\tretVal, response \u003d system.kanoa.lot.deleteLotStateReason(row[\u0027lotStateReasonId\u0027], self.view.custom.security.userId)\n\t\tif response \u003d\u003d \u0027Disabled\u0027: disabled.append(row[\u0027lotStateReasonName\u0027])\n\t\telse: deleted.append(row[\u0027lotStateReasonName\u0027])\n\n\tif disabled:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Deleted %s of %s lot state reasons; %s couldn\u0027t be deleted as there are historical entries associated with them, so they were disabled: %s\"%(len(deleted), len(deleted) + len(disabled), len(disabled), \u0027, \u0027.join(disabled))})\n\telif len(deleted) \u003d\u003d 1: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot state reason \"%s\" deleted\u0027%deleted[0]})\n\telif deleted: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Deleted %s lot state reasons\u0027%len(deleted)})\n\n\n\tself.view.refreshBinding(\"custom.lotStateReasons.data\")\n\tself.view.custom.lotStateReasons.row \u003d None\n\tself.view.custom.lotStateReasons.col \u003d None\n\n\treturn"
         },
         {
           "name": "deleteLotStates",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.lotStates.selectedData:\n\t\tretVal, response \u003d system.kanoa.lot.deleteLotState(row[\u0027lotStateId\u0027], self.view.custom.security.userId)\n\t\tif response \u003d\u003d \u0027Disabled\u0027: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Lot state %s has been disabled as there are historical entries asssociated with this lot state\u0027%row[\u0027lotStateName\u0027]})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot state %s has been deleted\u0027%row[\u0027lotStateName\u0027]})\n\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\tself.view.custom.lotStates.row \u003d None\n\tself.view.custom.lotStates.col \u003d None\n\n\treturn"
+          "script": "\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdeleted, disabled \u003d [], []\n\tfor row in self.view.custom.lotStates.selectedData:\n\t\tretVal, response \u003d system.kanoa.lot.deleteLotState(row[\u0027lotStateId\u0027], self.view.custom.security.userId)\n\t\tif response \u003d\u003d \u0027Disabled\u0027: disabled.append(row[\u0027lotStateName\u0027])\n\t\telse: deleted.append(row[\u0027lotStateName\u0027])\n\n\tif disabled:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Deleted %s of %s lot states; %s couldn\u0027t be deleted as there are historical entries associated with them, so they were disabled: %s\"%(len(deleted), len(deleted) + len(disabled), len(disabled), \u0027, \u0027.join(disabled))})\n\telif len(deleted) \u003d\u003d 1: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot state \"%s\" deleted\u0027%deleted[0]})\n\telif deleted: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Deleted %s lot states\u0027%len(deleted)})\n\n\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\tself.view.custom.lotStates.row \u003d None\n\tself.view.custom.lotStates.col \u003d None\n\n\treturn"
         },
         {
           "name": "refreshAssetStates",
@@ -4326,12 +4284,19 @@
         {
           "name": "exportLotStates",
           "params": [],
-          "script": "\t# implement your method here\t\t\n\t\u0027\u0027\u0027 \n \t\tExports lot operation information and associated data such as asset and item links\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\tlotStateIds \u003d [row[\u0027lotStateId\u0027] for row in self.view.custom.lotStates.selectedData]\n \tlog.info(\"exportLotStates() called with %s\"%(lotStateIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\tlotStates \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotStates({\u0027lotStateIdList\u0027: lotStateIds}))\n\t\tlotStateReasons \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotStateReasons({\u0027lotStateIdList\u0027: lotStateIds}))\n\t\tlotStateReasonIds \u003d list(set([row[\u0027lotStateReasonId\u0027] for row in lotStateReasons]))\n\t\tassetLotStateReasons \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getAssetLotStateReasons({\u0027lotStateReasonIdList\u0027: lotStateReasonIds}))\n\t\t\n \t\texportInfo[\u0027lotStates\u0027] \u003d lotStates\n\t\texportInfo[\u0027lotStateReasons\u0027] \u003d lotStateReasons\n\t\texportInfo[\u0027assetLotStateReasons\u0027] \u003d assetLotStateReasons\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Lot States Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027lotStateInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot States exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportLotStates() threw exception %s \"%(e.cause))\n \t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027LotStates failed to export: %s\u0027%e.cause})\n\t\n\treturn"
+          "script": "\t# implement your method here\t\t\n\t\u0027\u0027\u0027 \n \t\tExports lot operation information and associated data such as asset and item links\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\tlotStateIds \u003d [row[\u0027lotStateId\u0027] for row in self.view.custom.lotStates.selectedData]\n \tlog.info(\"exportLotStates() called with %s\"%(lotStateIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\tlotStates \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotStates({\u0027lotStateIdList\u0027: lotStateIds}))\n\t\tlotStateReasons \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotStateReasons({\u0027lotStateIdList\u0027: lotStateIds}))\n\t\tlotStateReasonIds \u003d list(set([row[\u0027lotStateReasonId\u0027] for row in lotStateReasons]))\n\t\tassetLotStateReasons \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getAssetLotStateReasons({\u0027lotStateReasonIdList\u0027: lotStateReasonIds}))\n\t\t\n \t\texportInfo[\u0027lotStates\u0027] \u003d lotStates\n\t\texportInfo[\u0027lotStateReasons\u0027] \u003d lotStateReasons\n\t\texportInfo[\u0027assetLotStateReasons\u0027] \u003d assetLotStateReasons\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Lot States Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027lotStateInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot States exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportLotStates() threw exception %s \"%((getattr(e, \u0027cause\u0027, None) or e)))\n \t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027LotStates failed to export: %s\u0027%(getattr(e, \u0027cause\u0027, None) or e)})\n\t\n\treturn"
         },
         {
           "name": "importLotStates",
           "params": [],
           "script": "\t\t\n\tsystem.perspective.openPopup(\n\t\tid \u003d \u0027Lot State Importer\u0027,\n\t\tview \u003d \u0027kanoa/mes/config/lots/lotsDataImporter\u0027,\n\t\ttitle \u003d \u0027Lot State Importer\u0027,\n\t\tparams \u003d {\u0027callerId\u0027: system.kanoa.utilities.getUUID(), \u0027msgHandler\u0027: \u0027importLotStates\u0027},\n\t\tmodal \u003d True,\n\t\toverlayDismiss \u003d True\n\t)\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
         }
       ],
       "extensionFunctions": null,
@@ -4346,7 +4311,7 @@
         {
           "messageType": "addLotState",
           "pageScope": true,
-          "script": "\n\tif (payload[\u0027label\u0027] or None) is None: return\n\t\n\tlotStateInfo \u003d {\u0027lotStateName\u0027: payload[\u0027label\u0027], \u0027enabled\u0027: True}\n\tlotStateId, msg \u003d system.kanoa.lot.addLotState(lotStateInfo, self.view.custom.security.userId)\n\t\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to add the lot state %s\u0027%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot State has been added\u0027})\n\t\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\t\n\treturn",
+          "script": "\n\tif (payload[\u0027label\u0027] or None) is None: return\n\t\n\tlotStateInfo \u003d {\u0027lotStateName\u0027: payload[\u0027label\u0027], \u0027enabled\u0027: True}\n\tlotStateId, msg \u003d system.kanoa.lot.addLotState(lotStateInfo, self.view.custom.security.userId)\n\t\n\tif msg: self.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to add the lot state %s\u0027%msg})\n\telse: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot State has been added\u0027})\n\t\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },
@@ -4367,7 +4332,7 @@
         {
           "messageType": "importLotStates",
           "pageScope": true,
-          "script": "\n\t\u0027\u0027\u0027\n\t\tImports all lot operation info including asset links, and item links (kanoaOPS)\n\t\tArgs:\n\t\t\texportInfo: dict\n\t\t\tuserId: int\n\t\tReturns:\n\t\t\tsuccess: bit\n\t\t\tmsg: string\n\t\tUpdated:\n\t\t\t10/14/25 JZ Created\n\t\u0027\u0027\u0027\n\tsystem.perspective.print(\u0027import lot states received\u0027)\n\tlog \u003d system.util.getLogger(\u0027kanoaLotImporter\u0027)\n\tuserId \u003d self.view.custom.security.userId\n\texportInfo \u003d payload[\u0027exportInfo\u0027][\u0027data\u0027]\n\t\t\n\timport java.lang\n\tif not (exportInfo.has_key(\u0027lotStates\u0027) and exportInfo.has_key(\u0027lotStateReasons\u0027) and exportInfo.has_key(\u0027assetLotStateReasons\u0027)):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Import data does not have the expected fields\u0027})\n\t\treturn\n\t\t\n\troleId \u003d system.kanoa.utilities.getFieldValue(\u0027roleId\u0027, system.kanoa.security.getRoles({\u0027roleName\u0027: \u0027Administrator\u0027}))\n\t\n\t# add lot state data\n\tlotStatesAdded \u003d 0\n\tlotStates \u003d exportInfo[\u0027lotStates\u0027]\n\tlotStatesIdMap \u003d {}\n\tfor lotState in lotStates:\n\t\tlotStateInfo \u003d dict(lotState)\n\t\tlotStateId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateId\u0027, system.kanoa.lot.getLotStates(({\u0027lotStateName\u0027: lotStateInfo[\u0027lotStateName\u0027]})))\n\t\tif lotStateId:\n\t\t\tlotStatesIdMap[lotStateInfo[\u0027lotStateId\u0027]] \u003d lotStateId\n\t\telse:\n\t\t\tnewLotStateId, msg \u003d system.kanoa.lot.addLotState(lotStateInfo, userId)\n\t\t\tlotStatesIdMap[lotStateInfo[\u0027lotStateId\u0027]] \u003d newLotStateId\n\t\t\tlotStatesAdded +\u003d 1\n\t\n\t# Linking lot state reasons to lot states\n\tlotStateReasons \u003d exportInfo[\u0027lotStateReasons\u0027]\n\tlotStateReasonsAdded \u003d 0\n\tlotStateReasonsIdMap \u003d {}\n\tfor lsr in lotStateReasons:\n\t\tlsrInfo \u003d dict(lsr)\n\t\tlotStateReasonId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateReasonId\u0027, system.kanoa.lot.getLotStateReasons({\u0027lotStateReasonName\u0027: lsrInfo[\u0027lotStateReasonName\u0027], \u0027lotStateId\u0027: lotStatesIdMap[lsrInfo[\u0027lotStateId\u0027]]}))\n\t\tif lotStateReasonId:\n\t\t\tlotStateReasonsIdMap[lsrInfo[\u0027lotStateReasonId\u0027]] \u003d lotStateReasonId\n\t\telse:\n\t\t\tlsrInfo[\u0027lotStateId\u0027] \u003d lotStatesIdMap[lsrInfo[\u0027lotStateId\u0027]]\n\t\t\tnewLSRId, msg \u003d system.kanoa.lot.addLotStateReason(lsrInfo, userId)\n\t\t\tlotStateReasonsIdMap[lsrInfo[\u0027lotStateReasonId\u0027]] \u003d newLSRId\n\t\t\tlotStateReasonsAdded +\u003d 1\n\t\n\t# Linking lot states/state reasons to assets\n\tassetLotStateReasons \u003d exportInfo[\u0027assetLotStateReasons\u0027]\n\treasonsLinked \u003d 0\n\tfor alsr in assetLotStateReasons:\n\t\talsrInfo \u003d dict(alsr)\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: alsrInfo[\u0027assetPath\u0027]}))\n\t\tif assetId:\n\t\t\talsrId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateReasonAssetLinkId\u0027, system.kanoa.lot.getAssetLotStateReasons({\u0027assetId\u0027: assetId, \u0027lotStateReasonId\u0027: lotStateReasonsIdMap[alsrInfo[\u0027lotStateReasonId\u0027]]}))\n\t\t\tif not alsrId:\n\t\t\t\tsystem.kanoa.lot.linkAssetLotStates([assetId], [lotStateReasonsIdMap[alsrInfo[\u0027lotStateReasonId\u0027]]], userId)\n\t\t\t\treasonsLinked +\u003d 1\n\t\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s lot states, %s lot state reasons, %s asset links imported\u0027%(lotStatesAdded, lotStateReasonsAdded, reasonsLinked)})\n\tself.view.refreshBinding(\"custom.assetStates.data\")\n\tself.view.refreshBinding(\"custom.lotStateReasons.data\")\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\t\n\treturn {\u0027passed\u0027: True, \u0027message\u0027: \u0027Lot States imported\u0027}",
+          "script": "\n\t\u0027\u0027\u0027\n\t\tImports all lot operation info including asset links, and item links (kanoaOPS)\n\t\tArgs:\n\t\t\texportInfo: dict\n\t\t\tuserId: int\n\t\tReturns:\n\t\t\tsuccess: bit\n\t\t\tmsg: string\n\t\tUpdated:\n\t\t\t10/14/25 JZ Created\n\t\u0027\u0027\u0027\n\tsystem.perspective.print(\u0027import lot states received\u0027)\n\tlog \u003d system.util.getLogger(\u0027kanoaLotImporter\u0027)\n\tuserId \u003d self.view.custom.security.userId\n\texportInfo \u003d payload[\u0027exportInfo\u0027][\u0027data\u0027]\n\t\t\n\timport java.lang\n\tif not (exportInfo.has_key(\u0027lotStates\u0027) and exportInfo.has_key(\u0027lotStateReasons\u0027) and exportInfo.has_key(\u0027assetLotStateReasons\u0027)):\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Import data does not have the expected fields\u0027})\n\t\treturn\n\t\t\n\troleId \u003d system.kanoa.utilities.getFieldValue(\u0027roleId\u0027, system.kanoa.security.getRoles({\u0027roleName\u0027: \u0027Administrator\u0027}))\n\t\n\t# add lot state data\n\tlotStatesAdded \u003d 0\n\tlotStates \u003d exportInfo[\u0027lotStates\u0027]\n\tlotStatesIdMap \u003d {}\n\tfor lotState in lotStates:\n\t\tlotStateInfo \u003d dict(lotState)\n\t\tlotStateId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateId\u0027, system.kanoa.lot.getLotStates(({\u0027lotStateName\u0027: lotStateInfo[\u0027lotStateName\u0027]})))\n\t\tif lotStateId:\n\t\t\tlotStatesIdMap[lotStateInfo[\u0027lotStateId\u0027]] \u003d lotStateId\n\t\telse:\n\t\t\tnewLotStateId, msg \u003d system.kanoa.lot.addLotState(lotStateInfo, userId)\n\t\t\tlotStatesIdMap[lotStateInfo[\u0027lotStateId\u0027]] \u003d newLotStateId\n\t\t\tlotStatesAdded +\u003d 1\n\t\n\t# Linking lot state reasons to lot states\n\tlotStateReasons \u003d exportInfo[\u0027lotStateReasons\u0027]\n\tlotStateReasonsAdded \u003d 0\n\tlotStateReasonsIdMap \u003d {}\n\tfor lsr in lotStateReasons:\n\t\tlsrInfo \u003d dict(lsr)\n\t\tlotStateReasonId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateReasonId\u0027, system.kanoa.lot.getLotStateReasons({\u0027lotStateReasonName\u0027: lsrInfo[\u0027lotStateReasonName\u0027], \u0027lotStateId\u0027: lotStatesIdMap[lsrInfo[\u0027lotStateId\u0027]]}))\n\t\tif lotStateReasonId:\n\t\t\tlotStateReasonsIdMap[lsrInfo[\u0027lotStateReasonId\u0027]] \u003d lotStateReasonId\n\t\telse:\n\t\t\tlsrInfo[\u0027lotStateId\u0027] \u003d lotStatesIdMap[lsrInfo[\u0027lotStateId\u0027]]\n\t\t\tnewLSRId, msg \u003d system.kanoa.lot.addLotStateReason(lsrInfo, userId)\n\t\t\tlotStateReasonsIdMap[lsrInfo[\u0027lotStateReasonId\u0027]] \u003d newLSRId\n\t\t\tlotStateReasonsAdded +\u003d 1\n\t\n\t# Linking lot states/state reasons to assets\n\tassetLotStateReasons \u003d exportInfo[\u0027assetLotStateReasons\u0027]\n\treasonsLinked \u003d 0\n\tfor alsr in assetLotStateReasons:\n\t\talsrInfo \u003d dict(alsr)\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: alsrInfo[\u0027assetPath\u0027]}))\n\t\tif assetId:\n\t\t\talsrId \u003d system.kanoa.utilities.getFieldValue(\u0027lotStateReasonAssetLinkId\u0027, system.kanoa.lot.getAssetLotStateReasons({\u0027assetId\u0027: assetId, \u0027lotStateReasonId\u0027: lotStateReasonsIdMap[alsrInfo[\u0027lotStateReasonId\u0027]]}))\n\t\t\tif not alsrId:\n\t\t\t\tsystem.kanoa.lot.linkAssetLotStates([assetId], [lotStateReasonsIdMap[alsrInfo[\u0027lotStateReasonId\u0027]]], userId)\n\t\t\t\treasonsLinked +\u003d 1\n\t\n\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s lot states, %s lot state reasons, %s asset links imported\u0027%(lotStatesAdded, lotStateReasonsAdded, reasonsLinked)})\n\tself.view.refreshBinding(\"custom.assetStates.data\")\n\tself.view.refreshBinding(\"custom.lotStateReasons.data\")\n\tself.view.refreshBinding(\"custom.lotStates.data\")\n\t\n\treturn {\u0027passed\u0027: True, \u0027message\u0027: \u0027Lot States imported\u0027}",
           "sessionScope": false,
           "viewScope": false
         }

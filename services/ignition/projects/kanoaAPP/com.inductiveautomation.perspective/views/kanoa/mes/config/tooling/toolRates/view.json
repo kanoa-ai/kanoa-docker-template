@@ -1,0 +1,1063 @@
+{
+  "custom": {
+    "edit": {
+      "assetId": null,
+      "cycleRate": null,
+      "enabled": true,
+      "itemPeriodId": null
+    },
+    "rates": [],
+    "refresh": null,
+    "selectedData": [],
+    "selectedRow": null,
+    "toolingAssetId": null,
+    "userAction": {
+      "canCreate": false,
+      "canRead": true,
+      "canUpdate": false
+    },
+    "hosts": [],
+    "toastId": null
+  },
+  "params": {
+    "value": {
+      "toolingAssetId": null
+    }
+  },
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.security"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.toolingAssetId": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn value.get(\u0027toolingAssetId\u0027) if value else None",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.rates": {
+      "binding": {
+        "config": {
+          "struct": {
+            "toolingAssetId": "{view.custom.toolingAssetId}",
+            "refresh": "{view.custom.refresh}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value[\u0027toolingAssetId\u0027] is None: return []\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getCycleRates({\u0027toolingAssetId\u0027: value[\u0027toolingAssetId\u0027]}) or [])",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.selectedData": {
+      "binding": {
+        "config": {
+          "struct": {
+            "rows": "{view.custom.rates}",
+            "row": "{view.custom.selectedRow}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\trows \u003d value[\u0027rows\u0027] or []\n\trow \u003d value[\u0027row\u0027]\n\tif row is None or row \u003c 0 or row \u003e\u003d len(rows): return []\n\treturn [dict(rows[row])]",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "security": "{view.custom.security}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecurity \u003d value[\u0027security\u0027]\n\tuserCRUD \u003d security[\u0027userCRUD\u0027] if security else {}\n\tcanEdit \u003d bool(userCRUD) and (userCRUD.get(\u0027isGatewayAdmin\u0027) or userCRUD.get(\u0027configureAssets\u0027, {}).get(\u0027enabled\u0027))\n\treturn {\u0027canCreate\u0027: canEdit, \u0027canUpdate\u0027: canEdit, \u0027canRead\u0027: True}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.hosts": {
+      "binding": {
+        "config": {
+          "path": "view.custom.toolingAssetId"
+        },
+        "overlayOptOut": true,
+        "type": "property",
+        "transforms": [
+          {
+            "code": "\n\t# A tool that belongs to a site has rates only on that site\u0027s machines; one outside any site, on any machine\n\ttoolId \u003d value\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027usesTooling\u0027: True}) or []) or []\n\ttools \u003d (system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027toolingAssetId\u0027: toolId}) or []) or []) if toolId else []\n\tsiteId \u003d tools[0][\u0027siteId\u0027] if tools else None\n\tif siteId is not None:\n\t\tsites \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: siteId}) or []) or []\n\t\tsitePath \u003d sites[0][\u0027assetPath\u0027] + \u0027\\\\\u0027 if sites else None\n\t\trows \u003d [r for r in rows if sitePath and (r[\u0027assetPath\u0027] or \u0027\u0027).startswith(sitePath)]\n\treturn [{\u0027assetId\u0027: r[\u0027assetId\u0027], \u0027assetPath\u0027: r[\u0027assetPath\u0027]} for r in rows]",
+            "type": "script"
+          }
+        ]
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 500,
+      "width": 950
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "lblNoTool"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.toolingAssetId"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn value is None",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default"
+          },
+          "text": "Save the tool first."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "flxTable"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/border"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onRowClick": {
+                  "config": {
+                    "script": "\n\tr \u003d self.props.data[event.row]\n\tself.view.custom.edit \u003d {\u0027assetId\u0027: r[\u0027assetId\u0027], \u0027cycleRate\u0027: r[\u0027cycleRate\u0027], \u0027itemPeriodId\u0027: r[\u0027itemPeriodId\u0027], \u0027enabled\u0027: r[\u0027enabled\u0027]}\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "tblRates"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.rates"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedRow": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selectedRow",
+                    "bidirectional": true
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "bodyStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "dragOrderable": false,
+              "headerStyle": {
+                "classes": "kanoa/font/default",
+                "fontWeight": "bold"
+              },
+              "pager": {
+                "bottom": false
+              },
+              "rows": {
+                "striped": {
+                  "enabled": false
+                },
+                "style": {
+                  "gap": "2px",
+                  "padding": "2px"
+                }
+              },
+              "selection": {
+                "mode": "single"
+              },
+              "style": {
+                "borderStyle": "none"
+              },
+              "columns": [
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "assetPath",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Machine"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 320
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "cycleRate",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Cycle rate"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0.##",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 100
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "itemPeriodName",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Per"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 90
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "enabled",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Enabled"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "boolean",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 80
+                }
+              ],
+              "data": []
+            },
+            "type": "ia.display.table"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "lblHint"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontSize": "12px",
+            "paddingLeft": "5px",
+            "whiteSpace": "normal"
+          },
+          "text": "Cycle rate: how many times a minute or hour the machine cycles with this tool (shots, strokes). An item\u0027s standard rate is the cycle rate x its parts per cycle, from the tool\u0027s positions set to that item or to no item, x the package count of the machine\u0027s rate for the item (parts are outfeed units; the standard rate is in the rate\u0027s infeed units, so a 0.1 lb part with a package count of 0.1 makes 0.1 lb a part) (blocked positions count: the parts they aren\u0027t making show as a performance loss; retired ones don\u0027t). An item with its own rate for this tool (Configuration \u003e Ops \u003e Materials, Production Rates: edit the machine\u0027s rate for the item and pick the tool) uses that instead; with neither, the machine\u0027s item rate is used."
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "flxForm"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "column",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "flxHost"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "flxHostLbl"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Machine"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "evHost"
+                },
+                "position": {
+                  "basis": "0px",
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.params.value.assetPath": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "assetId": "{view.custom.edit.assetId}",
+                          "targets": "{view.custom.hosts}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\t# The selector shows the asset by its path\n\tfor t in value[\u0027targets\u0027] or []:\n\t\tif t[\u0027assetId\u0027] \u003d\u003d value[\u0027assetId\u0027]: return t[\u0027assetPath\u0027]\n\treturn None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.params.value.parentPathList": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.hosts"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property",
+                      "transforms": [
+                        {
+                          "code": "\n\t# Only these assets can be picked\n\treturn [t[\u0027assetPath\u0027] for t in value or []]",
+                          "type": "script"
+                        }
+                      ]
+                    }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "len({view.custom.hosts}) \u003e 0"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "params": {
+                    "value": {
+                      "followValue": true,
+                      "msgHandler": "toolHostSelected",
+                      "options": {
+                        "dragDrop": false,
+                        "expand": false,
+                        "multiSelect": false,
+                        "showBreadcrumb": true,
+                        "showClear": true,
+                        "showSelectedPath": false
+                      },
+                      "parentPathList": [],
+                      "persistent": false,
+                      "useSessionValue": false
+                    }
+                  },
+                  "path": "kanoa/core/templates/selectors/assetSelector",
+                  "style": {
+                    "minWidth": "120px"
+                  }
+                },
+                "type": "ia.display.view"
+              },
+              {
+                "meta": {
+                  "name": "lblNoHosts"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "expression": "len({view.custom.hosts}) \u003d 0"
+                      },
+                      "overlayOptOut": true,
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontStyle": "italic"
+                  },
+                  "text": "No machine in this tool\u0027s site uses tooling"
+                },
+                "type": "ia.display.label"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxRate"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "flxRateLbl"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Cycle rate"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "numRate"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.cycleRate",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "format": "0,0.##",
+                  "spinner": {
+                    "enabled": false
+                  }
+                },
+                "type": "ia.input.numeric-entry-field"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxPeriod"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "flxPeriodLbl"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Per"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ddPeriod"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.itemPeriodId",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "expression": "now(0)"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getItemPeriod({}) or [])\n\treturn [{\u0027value\u0027: r[\u0027itemPeriodId\u0027], \u0027label\u0027: r[\u0027itemPeriodName\u0027]} for r in rows if r[\u0027itemPeriodName\u0027] in (\u0027Minute\u0027, \u0027Hour\u0027)]",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr"
+                    }
+                  }
+                },
+                "props": {
+                  "placeholder": {
+                    "text": "Minute or Hour"
+                  },
+                  "showClearIcon": true
+                },
+                "type": "ia.input.dropdown"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxEnabled"
+            },
+            "position": {
+              "basis": "32px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "flxEnabledLbl"
+                },
+                "position": {
+                  "basis": "140px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "textAlign": "right"
+                  },
+                  "text": "Enabled"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "chkEnabled"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.edit.enabled",
+                        "bidirectional": true
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "text": "Use this rate"
+                },
+                "type": "ia.input.checkbox"
+              }
+            ]
+          },
+          {
+            "meta": {
+              "name": "flxActions"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "justify": "center",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tedit \u003d dict(self.view.custom.edit)\n\tedit[\u0027toolingAssetId\u0027] \u003d self.view.custom.toolingAssetId\n\trateId, msg \u003d system.kanoa.tooling.setCycleRate(edit, self.view.custom.security.userId)\n\tif msg: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Cycle rate saved\u0027})\n\tself.view.custom.refresh \u003d system.date.now()\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnSave"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/save"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/filled"
+                  },
+                  "text": "Save rate"
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\ttotal, failed \u003d 0, []\n\tfor r in self.view.custom.selectedData:\n\t\tresult, msg \u003d system.kanoa.tooling.deleteCycleRate(r[\u0027assetToolingRateId\u0027], self.view.custom.security.userId)\n\t\ttotal +\u003d 1\n\t\tif msg: failed.append(msg)\n\t#One toast for the whole selection (868mvvzbz)\n\tif failed: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027 if len(failed) \u003d\u003d total else \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete %d of %d cycle rates: %s\" % (len(failed), total, \u0027; \u0027.join(sorted(set(failed))))})\n\tself.view.custom.refresh \u003d system.date.now()\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnDelete"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.selectedData"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn len(value) \u003e 0",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/delete_forever"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/outlined"
+                  },
+                  "text": "Delete selected"
+                },
+                "type": "ia.input.button"
+              }
+            ]
+          }
+        ],
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "id": "{view.custom.toolingAssetId}",
+                  "action": "{view.custom.userAction}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn value[\u0027id\u0027] is not None and value[\u0027action\u0027][\u0027canUpdate\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        }
+      }
+    ],
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)\n"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "toolHostSelected",
+          "pageScope": true,
+          "script": "\n\t# The machine picked (or cleared) in the Machine selector\n\tpath \u003d payload[\u0027assetPath\u0027]\n\tassetId \u003d ([h[\u0027assetId\u0027] for h in self.view.custom.hosts or [] if h[\u0027assetPath\u0027] \u003d\u003d path] or [None])[0]\n\tif self.view.custom.edit.assetId !\u003d assetId:\n\t\tself.view.custom.edit.assetId \u003d assetId",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

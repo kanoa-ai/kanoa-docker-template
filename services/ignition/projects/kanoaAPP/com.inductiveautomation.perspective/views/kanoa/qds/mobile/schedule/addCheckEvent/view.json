@@ -40,6 +40,7 @@
       "items": []
     },
     "clearForm": false,
+    "includeAuto": false,
     "security": {
       "config": {
         "allowGuest": "1",
@@ -225,7 +226,7 @@
           "enabled": true
         }
       },
-      "userId": 5
+      "userId": null
     },
     "selection": {
       "asset": {
@@ -241,11 +242,12 @@
         "selected": false
       }
     },
-    "step": "",
+    "step": "Select Check Sheet",
     "values": {
       "itemId": null,
       "itemPath": null
-    }
+    },
+    "toastId": null
   },
   "events": {
     "system": {
@@ -273,6 +275,9 @@
         "enabled": null,
         "script": "\t\n\tif currentValue.value \u003d\u003d True:\n\t\tself.getChild(\"root\").getChkShtInfo(None)\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tself.custom.clearForm \u003d False\n\t\n\treturn"
       },
+      "persistent": true
+    },
+    "custom.includeAuto": {
       "persistent": true
     },
     "custom.security": {
@@ -495,6 +500,14 @@
               "grow": 1
             },
             "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
               "position.display": {
                 "binding": {
                   "config": {
@@ -513,16 +526,20 @@
               "props.params.values.data": {
                 "binding": {
                   "config": {
-                    "path": "view.custom.security.userCRUD"
+                    "struct": {
+                      "includeAuto": "{view.custom.includeAuto}",
+                      "userCRUD": "{view.custom.security.userCRUD}"
+                    },
+                    "waitOnAll": false
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tparams \u003d {\u0027chkShtVersionStateNameList\u0027: [\u0027Released\u0027, \u0027In Revision\u0027, \u0027Draft\u0027]} if value[\u0027isGatewayAdmin\u0027] or value[\u0027configureQuality\u0027][\u0027enabled\u0027] else {\u0027chkShtVersionStateNameList\u0027: [\u0027Released\u0027], \u0027enabled\u0027: True}\t\n\treturn system.kanoa.quality.sheet.getSheets(params)",
+                      "code": "\t\n\t#Operators only ever start a check from an enabled, Released check sheet - never a Draft or In Revision one.\n\t#Auto check sheets are filled in from their tags, so they\u0027re left out unless Include Auto Checks is ticked (read live: a struct binding can run with stale inputs)\n\tfilters \u003d {\u0027chkShtVersionStateNameList\u0027: [\u0027Released\u0027], \u0027enabled\u0027: True}\n\tif not self.view.custom.includeAuto: filters[\u0027auto\u0027] \u003d False\n\treturn system.kanoa.quality.sheet.getSheets(filters)",
                       "type": "script"
                     }
                   ],
-                  "type": "property"
+                  "type": "expr-struct"
                 }
               }
             },
@@ -576,7 +593,70 @@
             "overflow": "hidden"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.grow": {
+            "binding": {
+              "config": {
+                "expression": "if({view.custom.step} \u003d \u0027Select Check Sheet\u0027, 1, 0)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "chkIncludeAuto",
+          "tooltip": {
+            "enabled": true,
+            "location": "bottom",
+            "text": "Also list automatic check sheets, which are normally filled in from their tags"
+          }
+        },
+        "position": {
+          "basis": "26px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.step"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value \u003d\u003d \u0027Select Check Sheet\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.selected": {
+            "binding": {
+              "config": {
+                "bidirectional": true,
+                "path": "view.custom.includeAuto"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "text": "Include Auto Checks",
+          "style": {
+            "fontSize": "0.9em",
+            "paddingLeft": "5px"
+          }
+        },
+        "type": "ia.input.checkbox"
       },
       {
         "children": [
@@ -674,51 +754,6 @@
                 "type": "ia.display.label"
               },
               {
-                "events": {
-                  "dom": {
-                    "onClick": {
-                      "config": {
-                        "script": "\t\n\tself.view.custom.selection.asset.selected \u003d True\t\n\tif self.view.custom.chkShtInfo.chkSht.itemReqd: self.view.custom.step \u003d \u0027Select Item\u0027\n\telse: self.view.custom.step \u003d \u0027\u0027\t\n\t\n\treturn"
-                      },
-                      "scope": "G",
-                      "type": "script"
-                    }
-                  }
-                },
-                "meta": {
-                  "domId": "btnSelect",
-                  "name": "btnSelect"
-                },
-                "position": {
-                  "basis": "60px",
-                  "shrink": 0
-                },
-                "propConfig": {
-                  "position.display": {
-                    "binding": {
-                      "config": {
-                        "path": "view.custom.selection.asset"
-                      },
-                      "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\treturn value[\u0027assetPath\u0027] is not None and value[\u0027selected\u0027] is False",
-                          "type": "script"
-                        }
-                      ],
-                      "type": "property"
-                    }
-                  }
-                },
-                "props": {
-                  "style": {
-                    "height": "30px"
-                  },
-                  "text": "Select"
-                },
-                "type": "ia.input.button"
-              },
-              {
                 "meta": {
                   "domId": "icostatus-1",
                   "name": "icostatus"
@@ -800,6 +835,14 @@
               "grow": 1
             },
             "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
               "position.display": {
                 "binding": {
                   "config": {
@@ -871,6 +914,15 @@
               "overlayOptOut": true,
               "type": "property"
             }
+          },
+          "position.grow": {
+            "binding": {
+              "config": {
+                "expression": "if({view.custom.step} \u003d \u0027Select Asset\u0027, 1, 0)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
           }
         },
         "props": {
@@ -881,7 +933,10 @@
             "overflow": "hidden"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "position": {
+          "shrink": 0
+        }
       },
       {
         "children": [
@@ -979,48 +1034,6 @@
                 "type": "ia.display.label"
               },
               {
-                "events": {
-                  "dom": {
-                    "onClick": {
-                      "config": {
-                        "script": "\t\n\tself.view.custom.selection.item.selected \u003d True\n\tself.view.custom.step \u003d \u0027\u0027\t\n\t\n\treturn"
-                      },
-                      "scope": "G",
-                      "type": "script"
-                    }
-                  }
-                },
-                "meta": {
-                  "domId": "btnSelect-1",
-                  "name": "btnSelect"
-                },
-                "position": {
-                  "basis": "60px",
-                  "shrink": 0
-                },
-                "propConfig": {
-                  "position.display": {
-                    "binding": {
-                      "config": {
-                        "path": "view.custom.selection.item"
-                      },
-                      "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\treturn value[\u0027itemPath\u0027] is not None and value[\u0027selected\u0027] is False",
-                          "type": "script"
-                        }
-                      ],
-                      "type": "property"
-                    }
-                  }
-                },
-                "props": {
-                  "text": "Select"
-                },
-                "type": "ia.input.button"
-              },
-              {
                 "meta": {
                   "domId": "icostatus-2",
                   "name": "icostatus"
@@ -1103,6 +1116,14 @@
               "grow": 1
             },
             "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
               "position.display": {
                 "binding": {
                   "config": {
@@ -1179,6 +1200,15 @@
               ],
               "type": "property"
             }
+          },
+          "position.grow": {
+            "binding": {
+              "config": {
+                "expression": "if({view.custom.step} \u003d \u0027Select Item\u0027, 1, 0)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
           }
         },
         "props": {
@@ -1188,7 +1218,10 @@
             "minHeight": "30px"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "position": {
+          "shrink": 0
+        }
       },
       {
         "children": [
@@ -1310,7 +1343,6 @@
           "name": "flxAction"
         },
         "position": {
-          "grow": 1,
           "shrink": 0
         },
         "props": {
@@ -1319,7 +1351,8 @@
           "style": {
             "gap": "5px",
             "overflow": "hidden",
-            "padding": "5px"
+            "padding": "5px",
+            "marginTop": "auto"
           }
         },
         "type": "ia.container.flex"
@@ -1343,14 +1376,21 @@
         {
           "name": "add",
           "params": [],
-          "script": "\n\tchkShtId \u003d self.view.custom.selection.chkShtId\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({\u0027enabled\u0027: True}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\t\n\tchkShtTriggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtId\u0027: chkShtId}), \u0027triggerTypeName\u0027, \u0027chkShtTriggerId\u0027)\t\n\tif not chkShtTriggers.has_key(\u0027Manual\u0027):\n\t\ttriggerTypeId \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeId\u0027, system.kanoa.quality.config.getTriggerTypes({\u0027triggerTypeName\u0027: \u0027Manual\u0027}))\n\t\ttriggerInfo \u003d {\u0027chkShtId\u0027: chkShtId,\u0027triggerTypeId\u0027:triggerTypeId, \u0027modeId\u0027: None, \u0027shiftNameId\u0027: None, \u0027intervalMins\u0027: 10, \u0027delayMins\u0027: 5, \u0027productionCount\u0027: None, \u0027comingDueMins\u0027: 5, \u0027overDueMins\u0027: 5, \u0027graceMins\u0027: 10, \u0027enabled\u0027: True, \u0027modifier\u0027: None}\n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\telse:\n\t\tchkShtTriggerId \u003d chkShtTriggers[\u0027Manual\u0027]\n\t\n\titemId \u003d self.view.custom.selection.item.itemId\n\tassetId \u003d self.view.custom.selection.asset.assetId\t\n\tshiftNameId \u003d system.kanoa.utilities.getFieldValue(\u0027shiftNameId\u0027, system.kanoa.shift.getCurrentShift({\u0027assetId\u0027: assetId})) if assetId is not None else None\n\t\n\tchkEventInfo \u003d {\n\t\t\t\t\t\t\u0027chkShtId\u0027: chkShtId,\n\t\t\t\t\t\t\u0027assetId\u0027: assetId,\n\t\t\t\t\t\t\u0027itemId\u0027: itemId,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: shiftNameId,\n\t\t\t\t\t\t\u0027comment\u0027: None,\n\t\t\t\t\t\t\u0027scheduledDate\u0027: system.date.now(),\n\t\t\t\t\t\t\u0027chkShtStateId\u0027: chkStates[\u0027Due\u0027],\n\t\t\t\t\t\t\u0027chkShtTriggerId\u0027: chkShtTriggerId\n\t\t\t\t\t}\n\t\n\tchkShtEventId \u003d system.kanoa.quality.event.addCheckEvent(chkEventInfo, userId)\n\tif chkShtEventId:\n\t\tsystem.kanoa.quality.event.updatePersistentValues(chkShtId, assetId, itemId, chkShtEventId, userId)\n\t\t\n\t\tsystem.kanoa.quality.event.updateChkEventDataTag()\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, \u0027Check Sheet has been added\u0027)\n\t\tsystem.perspective.sendMessage(\u0027chkShtEventAdded\u0027, {})\n\t\tself.getChkShtInfo(None)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, \u0027Failed to add Check Sheet\u0027)\n\t\n\treturn"
+          "script": "\n\tchkShtId \u003d self.view.custom.selection.chkShtId\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({\u0027enabled\u0027: True}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\t\n\tchkShtTriggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtId\u0027: chkShtId}), \u0027triggerTypeName\u0027, \u0027chkShtTriggerId\u0027)\t\n\tif not chkShtTriggers.has_key(\u0027Manual\u0027):\n\t\ttriggerTypeId \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeId\u0027, system.kanoa.quality.config.getTriggerTypes({\u0027triggerTypeName\u0027: \u0027Manual\u0027}))\n\t\ttriggerInfo \u003d {\u0027chkShtId\u0027: chkShtId,\u0027triggerTypeId\u0027:triggerTypeId, \u0027modeId\u0027: None, \u0027shiftNameId\u0027: None, \u0027intervalMins\u0027: 10, \u0027delayMins\u0027: 5, \u0027productionCount\u0027: None, \u0027comingDueMins\u0027: 5, \u0027overDueMins\u0027: 5, \u0027graceMins\u0027: 10, \u0027enabled\u0027: True, \u0027modifier\u0027: None}\n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\t\t# Adding the trigger changes the sheet, so it\u0027s recorded in its change log, as the Trigger Editor does\n\t\tif chkShtTriggerId and system.kanoa.utilities.getFieldValue(\u0027chkShtVersionStateName\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: chkShtId})) !\u003d \u0027Draft\u0027:\n\t\t\tchange \u003d \u0027Trigger Manual added by Add Check: Over Due %s, Grace %s mins\u0027 % (triggerInfo[\u0027overDueMins\u0027], triggerInfo[\u0027graceMins\u0027])\n\t\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: chkShtId, \u0027change\u0027: change}, userId)\n\telse:\n\t\tchkShtTriggerId \u003d chkShtTriggers[\u0027Manual\u0027]\n\t\n\titemId \u003d self.view.custom.selection.item.itemId\n\tassetId \u003d self.view.custom.selection.asset.assetId\t\n\tshiftNameId \u003d system.kanoa.utilities.getFieldValue(\u0027shiftNameId\u0027, system.kanoa.shift.getCurrentShift({\u0027assetId\u0027: assetId})) if assetId is not None else None\n\t\n\tchkEventInfo \u003d {\n\t\t\t\t\t\t\u0027chkShtId\u0027: chkShtId,\n\t\t\t\t\t\t\u0027assetId\u0027: assetId,\n\t\t\t\t\t\t\u0027itemId\u0027: itemId,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: shiftNameId,\n\t\t\t\t\t\t\u0027comment\u0027: None,\n\t\t\t\t\t\t\u0027scheduledDate\u0027: system.date.now(),\n\t\t\t\t\t\t\u0027chkShtStateId\u0027: chkStates[\u0027Due\u0027],\n\t\t\t\t\t\t\u0027chkShtTriggerId\u0027: chkShtTriggerId\n\t\t\t\t\t}\n\t\n\tchkShtEventId \u003d system.kanoa.quality.event.addCheckEvent(chkEventInfo, userId)\n\tif chkShtEventId:\n\t\tsystem.kanoa.quality.event.updatePersistentValues(chkShtId, assetId, itemId, chkShtEventId, userId)\n\t\t\n\t\tself.toast({\u0027message\u0027: \u0027Check sheet added\u0027, \u0027type\u0027: \u0027success\u0027})\n\t\tsystem.perspective.sendMessage(\u0027chkShtEventAdded\u0027, {})\n\t\tself.getChkShtInfo(None)\n\telse:\n\t\tself.toast({\u0027message\u0027: \"Couldn\u0027t add the check sheet\", \u0027type\u0027: \u0027error\u0027})\n\t\n\treturn"
         },
         {
           "name": "getChkShtInfo",
           "params": [
             "chkShtId"
           ],
-          "script": "\n#\tif chkShtId is None: return\n\tsystem.perspective.print(\"getChkShtInfo() called with %s\"%chkShtId)\n\t\n\tself.view.custom.chkShtInfo \u003d {\n\t\t\t\t\u0027chkSht\u0027: system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: chkShtId or -1}), 0),\n\t\t\t\t\u0027assets\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getAssets(chkShtId or -1)),\n\t\t\t\t\u0027items\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItems(chkShtId or -1)),\n\t\t\t\t\u0027itemClasses\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItemClasses(chkShtId or -1)),\n\t\t\t\t\u0027itemSets\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItemSets(chkShtId or -1)),\n\t\t\t}\n\n\tself.view.custom.selection \u003d {\n\t\t\t\t  \"asset\": {\n\t\t\t\t    \"assetId\": None,\n\t\t\t\t    \"assetPath\": None,\n\t\t\t\t    \"required\": self.view.custom.chkShtInfo.chkSht.assetReqd or False,\n\t\t\t\t    \"selected\": False\n\t\t\t\t  },\n\t\t\t\t  \"item\": {\n\t\t\t\t    \"itemId\": None,\n\t\t\t\t    \"itemPath\": None,\n\t\t\t\t    \"required\": self.view.custom.chkShtInfo.chkSht.itemReqd or False,\n\t\t\t\t    \"selected\": False\n\t\t\t\t  },\n\t\t\t\t  \"chkShtId\": chkShtId\n\t\t\t\t}\n\t\t\t\t\n\tif self.view.custom.chkShtInfo.chkSht.assetReqd: self.view.custom.step \u003d \u0027Select Asset\u0027\n\telif self.view.custom.chkShtInfo.chkSht.itemReqd: self.view.custom.step \u003d \u0027Select Item\u0027\n\telse: self.view.custom.step \u003d \u0027\u0027\t\t\t\t\n\n\treturn"
+          "script": "\n#\tif chkShtId is None: return\n\tsystem.perspective.print(\"getChkShtInfo() called with %s\"%chkShtId)\n\t\n\tself.view.custom.chkShtInfo \u003d {\n\t\t\t\t\u0027chkSht\u0027: system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: chkShtId or -1}), 0),\n\t\t\t\t\u0027assets\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getAssets(chkShtId or -1)),\n\t\t\t\t\u0027items\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItems(chkShtId or -1)),\n\t\t\t\t\u0027itemClasses\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItemClasses(chkShtId or -1)),\n\t\t\t\t\u0027itemSets\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItemSets(chkShtId or -1)),\n\t\t\t}\n\n\tself.view.custom.selection \u003d {\n\t\t\t\t  \"asset\": {\n\t\t\t\t    \"assetId\": None,\n\t\t\t\t    \"assetPath\": None,\n\t\t\t\t    \"required\": self.view.custom.chkShtInfo.chkSht.assetReqd or False,\n\t\t\t\t    \"selected\": False\n\t\t\t\t  },\n\t\t\t\t  \"item\": {\n\t\t\t\t    \"itemId\": None,\n\t\t\t\t    \"itemPath\": None,\n\t\t\t\t    \"required\": self.view.custom.chkShtInfo.chkSht.itemReqd or False,\n\t\t\t\t    \"selected\": False\n\t\t\t\t  },\n\t\t\t\t  \"chkShtId\": chkShtId\n\t\t\t\t}\n\t\t\t\t\n\tif self.view.custom.chkShtInfo.chkSht.assetReqd: self.view.custom.step \u003d \u0027Select Asset\u0027\n\telif self.view.custom.chkShtInfo.chkSht.itemReqd: self.view.custom.step \u003d \u0027Select Item\u0027\n\telse: self.view.custom.step \u003d \u0027\u0027 if chkShtId is not None else \u0027Select Check Sheet\u0027\t#No sheet picked yet: keep the check sheet list open\t\t\t\t\n\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
         }
       ],
       "extensionFunctions": null,
@@ -1358,7 +1398,7 @@
         {
           "messageType": "updatePopupSelection",
           "pageScope": true,
-          "script": "\n#\tsystem.perspective.print(\"updatePopupSelection() msg rcvd with %s\"%payload)\n\n\tif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027chkShtSelected\u0027:\n\t\tsystem.perspective.print(\"chkShtSelected() msg rcvd with %s\"%payload)\n\t\tchkShtId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027chkShtId\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 and payload[\u0027selection\u0027][0][\u0027value\u0027].has_key(\u0027chkShtId\u0027) else None\n\t\tif chkShtId is not None: self.getChkShtInfo(chkShtId)\n\n\telif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027assetSelected\u0027:\n\t\tsystem.perspective.print(\"assetSelected() msg rcvd with %s\"%payload)\n\t\tassetId \u003d None\n\t\tassetPath \u003d None\n\t\tif len(payload[\u0027selection\u0027]) \u003e 0 and payload[\u0027selection\u0027][0].value.has_key(\u0027assetId\u0027): \n\t\t\tv \u003d payload[\u0027selection\u0027][0].value\n\t\t\tassetId \u003d  v[\u0027assetId\u0027] \n\t\t\tassetPath \u003d v[\u0027path\u0027]\n\t\t\t\n\t\tself.view.custom.selection.asset.assetId \u003d assetId\n\t\tself.view.custom.selection.asset.assetPath \u003d assetPath\n\t\t\t\n\telif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027itemSelected\u0027:\n\t\tsystem.perspective.print(\"itemSelected() msg rcvd with %s\"%payload)\n\t\titemId \u003d None\n\t\titemPath \u003d None\n\t\tif len(payload[\u0027selection\u0027]) \u003e 0 and payload[\u0027selection\u0027][0].value.has_key(\u0027itemId\u0027): \n\t\t\tv \u003d payload[\u0027selection\u0027][0].value\n\t\t\titemId \u003d  v[\u0027itemId\u0027] \n\t\t\titemPath \u003d v[\u0027path\u0027]\n\t\t\t\n\t\tself.view.custom.selection.item.itemId \u003d itemId\n\t\tself.view.custom.selection.item.itemPath \u003d itemPath\n\n\treturn",
+          "script": "\n#\tsystem.perspective.print(\"updatePopupSelection() msg rcvd with %s\"%payload)\n\n\tif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027chkShtSelected\u0027:\n\t\tsystem.perspective.print(\"chkShtSelected() msg rcvd with %s\"%payload)\n\t\tchkShtId \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027chkShtId\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 and payload[\u0027selection\u0027][0][\u0027value\u0027].has_key(\u0027chkShtId\u0027) else None\n\t\tif chkShtId is not None: self.getChkShtInfo(chkShtId)\n\n\telif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027assetSelected\u0027:\n\t\tsystem.perspective.print(\"assetSelected() msg rcvd with %s\"%payload)\n\t\tassetId \u003d None\n\t\tassetPath \u003d None\n\t\tif len(payload[\u0027selection\u0027]) \u003e 0 and payload[\u0027selection\u0027][0].value.has_key(\u0027assetId\u0027): \n\t\t\tv \u003d payload[\u0027selection\u0027][0].value\n\t\t\tassetId \u003d  v[\u0027assetId\u0027] \n\t\t\tassetPath \u003d v[\u0027path\u0027]\n\t\t\t\n\t\tself.view.custom.selection.asset.assetId \u003d assetId\n\t\tself.view.custom.selection.asset.assetPath \u003d assetPath\n\t\t#Picking an asset selects it: move on to the item, if the sheet needs one\n\t\tself.view.custom.selection.asset.selected \u003d assetId is not None\n\t\tif assetId is not None:\n\t\t\tself.view.custom.step \u003d \u0027Select Item\u0027 if self.view.custom.chkShtInfo.chkSht.itemReqd else \u0027\u0027\n\t\t\t\n\telif payload[\u0027msgHandler\u0027] \u003d\u003d \u0027itemSelected\u0027:\n\t\tsystem.perspective.print(\"itemSelected() msg rcvd with %s\"%payload)\n\t\titemId \u003d None\n\t\titemPath \u003d None\n\t\tif len(payload[\u0027selection\u0027]) \u003e 0 and payload[\u0027selection\u0027][0].value.has_key(\u0027itemId\u0027): \n\t\t\tv \u003d payload[\u0027selection\u0027][0].value\n\t\t\titemId \u003d  v[\u0027itemId\u0027] \n\t\t\titemPath \u003d v[\u0027path\u0027]\n\t\t\t\n\t\tself.view.custom.selection.item.itemId \u003d itemId\n\t\tself.view.custom.selection.item.itemPath \u003d itemPath\n\t\t#Picking an item selects it\n\t\tself.view.custom.selection.item.selected \u003d itemId is not None\n\t\tif itemId is not None: self.view.custom.step \u003d \u0027\u0027\n\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

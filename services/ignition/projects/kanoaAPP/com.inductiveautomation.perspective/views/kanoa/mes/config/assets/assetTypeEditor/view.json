@@ -5,12 +5,21 @@
     "clearSelection": false,
     "data": null,
     "selectedAsset": [],
-    "values": null
+    "tooling": {
+      "calibrationIntervalDays": null,
+      "hasPositions": false,
+      "holdsInserts": false,
+      "lifeUnit": null,
+      "scalesOutput": false
+    },
+    "values": null,
+    "refreshTypes": null
   },
   "params": {
     "value": {
       "assetTypeId": null
-    }
+    },
+    "toolingOnly": false
   },
   "propConfig": {
     "custom.assetType": {
@@ -61,32 +70,55 @@
     "custom.data": {
       "binding": {
         "config": {
-          "expression": "now(0)"
+          "struct": {
+            "tick": "{view.custom.refreshTypes}",
+            "toolingOnly": "{view.params.toolingOnly}"
+          },
+          "waitOnAll": true
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\treturn system.kanoa.asset.getAssetTypes({})\n",
+            "code": "\n\treturn system.kanoa.asset.getAssetTypes({\u0027isTooling\u0027: True} if value[\u0027toolingOnly\u0027] else {})",
             "type": "script"
           }
         ],
-        "type": "expr"
+        "type": "expr-struct"
       },
       "persistent": true
     },
-    "custom.values": {
+    "custom.tooling": {
       "binding": {
         "config": {
-          "path": "view.params.value.assetTypeId"
+          "path": "view.custom.values.assetTypeId"
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027:value or -1}), 0)\n\tif data[\u0027assetTypeName\u0027] is None: data[\u0027assetTypeName\u0027] \u003d \u0027\u0027\n\tif data[\u0027assetTypeId\u0027] is None: \n\t\tdata[\u0027enabled\u0027] \u003d True\n\t\tdata[\u0027mobile\u0027] \u003d False\n\t\n\treturn data",
+            "code": "\n\tinfo \u003d {\u0027hasPositions\u0027: False, \u0027holdsInserts\u0027: False, \u0027scalesOutput\u0027: False, \u0027lifeUnit\u0027: None, \u0027calibrationIntervalDays\u0027: None}\n\tif value is not None:\n\t\ttypes \u003d system.kanoa.tooling.getToolTypes({\u0027assetTypeId\u0027: value})\n\t\tif hasattr(types, \u0027getRowCount\u0027) and types.getRowCount():\n\t\t\tfor k in info: info[k] \u003d types.getValueAt(0, k)\n\treturn info",
             "type": "script"
           }
         ],
         "type": "property"
+      }
+    },
+    "custom.values": {
+      "binding": {
+        "config": {
+          "struct": {
+            "assetTypeId": "{view.params.value.assetTypeId}",
+            "toolingOnly": "{view.params.toolingOnly}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027: value[\u0027assetTypeId\u0027] or -1}), 0)\n\tif data[\u0027assetTypeName\u0027] is None: data[\u0027assetTypeName\u0027] \u003d \u0027\u0027\n\t# A text box shows None as \u0027null\u0027; saving a blank clears it\n\tif data.get(\u0027description\u0027) is None: data[\u0027description\u0027] \u003d \u0027\u0027\n\tif data[\u0027assetTypeId\u0027] is None:\n\t\tdata[\u0027enabled\u0027] \u003d True\n\t\tdata[\u0027mobile\u0027] \u003d False\n\t\tif value[\u0027toolingOnly\u0027]:\n\t\t\tdata[\u0027isTooling\u0027] \u003d True\n\t\t\tdata[\u0027parentId\u0027] \u003d self.rootContainer.toolingParentId(None)\n\treturn data",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
       },
       "persistent": true
     },
@@ -95,6 +127,10 @@
       "persistent": true
     },
     "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.toolingOnly": {
       "paramDirection": "input",
       "persistent": true
     }
@@ -118,6 +154,14 @@
               "grow": 1
             },
             "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
               "props.params.values.data": {
                 "binding": {
                   "config": {
@@ -283,14 +327,15 @@
                             "binding": {
                               "config": {
                                 "struct": {
-                                  "parentId": "{view.custom.assetType.parentId}"
+                                  "parentId": "{view.custom.assetType.parentId}",
+                                  "valuesParentId": "{view.custom.values.parentId}"
                                 },
                                 "waitOnAll": false
                               },
                               "overlayOptOut": true,
                               "transforms": [
                                 {
-                                  "code": "\n\n\tparentPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetTypePath\u0027, system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027:value.parentId or -1}))\n\treturn system.kanoa.utilities.formatPath(parentPath, {})",
+                                  "code": "\n\n\tparentPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetTypePath\u0027, system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027:value.parentId or value.valuesParentId or -1}))\n\treturn system.kanoa.utilities.formatPath(parentPath, {})",
                                   "type": "script"
                                 }
                               ],
@@ -443,6 +488,90 @@
                     "type": "ia.container.flex"
                   },
                   {
+                    "meta": {
+                      "name": "flxCntDescription"
+                    },
+                    "position": {
+                      "basis": "60px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 5,
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.container.flex",
+                    "children": [
+                      {
+                        "meta": {
+                          "name": "lblDescription",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "What the type is for. The tool editor shows a tooling type\u0027s description under the Tooling type."
+                          }
+                        },
+                        "position": {
+                          "basis": "100px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "textAlign": "right"
+                          },
+                          "text": "Description"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "name": "txtDescription"
+                        },
+                        "position": {
+                          "basis": "200px",
+                          "grow": 1,
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.enabled": {
+                            "binding": {
+                              "config": {
+                                "path": "view.custom.values.reservedBySystem"
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\treturn not value",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "property"
+                            }
+                          },
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.description"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "deferUpdates": false,
+                          "placeholder": "What the type is for",
+                          "style": {
+                            "classes": "kanoa/border"
+                          }
+                        },
+                        "type": "ia.input.text-area"
+                      }
+                    ]
+                  },
+                  {
                     "children": [
                       {
                         "meta": {
@@ -484,6 +613,10 @@
                               },
                               "overlayOptOut": true,
                               "type": "property"
+                            },
+                            "onChange": {
+                              "enabled": null,
+                              "script": "\n\t# Mobile and Tooling are exclusive\n\tif currentValue.value: self.view.custom.values.isTooling \u003d False"
                             }
                           }
                         },
@@ -511,7 +644,29 @@
                         "overflow": "hidden"
                       }
                     },
-                    "type": "ia.container.flex"
+                    "type": "ia.container.flex",
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "own": "{view.custom.values.mobile}",
+                              "other": "{view.custom.values.isTooling}",
+                              "name": "{view.custom.values.assetTypeName}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\t# Mobile and Tooling exclude each other; the plant hierarchy levels are neither (shown only to turn one off)\n\tif value[\u0027other\u0027]: return False\n\treturn bool(value[\u0027own\u0027]) or (value[\u0027name\u0027] or \u0027\u0027).strip().lower() not in (\u0027enterprise\u0027, \u0027site\u0027, \u0027area\u0027, \u0027line\u0027, \u0027cell\u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    }
                   },
                   {
                     "children": [
@@ -655,6 +810,463 @@
                     "children": [
                       {
                         "meta": {
+                          "name": "lblTooling"
+                        },
+                        "position": {
+                          "basis": "100px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "textAlign": "right"
+                          },
+                          "text": "Tooling"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "name": "chkTooling",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "A tooling type (Mold, Die, Gauge...) is for tools: the tool editor offers it and the asset tree editor leaves it out"
+                          }
+                        },
+                        "position": {
+                          "basis": "25px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.selected": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.values.isTooling"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            },
+                            "onChange": {
+                              "enabled": null,
+                              "script": "\n\t# Mobile and Tooling are exclusive\n\tif currentValue.value: self.view.custom.values.mobile \u003d False"
+                            }
+                          }
+                        },
+                        "props": {
+                          "text": ""
+                        },
+                        "type": "ia.input.checkbox"
+                      }
+                    ],
+                    "meta": {
+                      "name": "flxCntTooling"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 5,
+                        "overflow": "hidden"
+                      }
+                    },
+                    "type": "ia.container.flex",
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "own": "{view.custom.values.isTooling}",
+                              "other": "{view.custom.values.mobile}",
+                              "name": "{view.custom.values.assetTypeName}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\t# Mobile and Tooling exclude each other; the plant hierarchy levels are neither (shown only to turn one off)\n\tif value[\u0027other\u0027]: return False\n\treturn bool(value[\u0027own\u0027]) or (value[\u0027name\u0027] or \u0027\u0027).strip().lower() not in (\u0027enterprise\u0027, \u0027site\u0027, \u0027area\u0027, \u0027line\u0027, \u0027cell\u0027)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "lblHasPositions"
+                            },
+                            "position": {
+                              "basis": "100px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "textAlign": "right"
+                              },
+                              "text": "Has positions"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "name": "chkHasPositions",
+                              "tooltip": {
+                                "enabled": true,
+                                "location": "center-right",
+                                "text": "New tools of this type have cavities or pockets"
+                              }
+                            },
+                            "position": {
+                              "basis": "25px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.selected": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.tooling.hasPositions"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "text": ""
+                            },
+                            "type": "ia.input.checkbox"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxCntHasPositions"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "lblHoldsInserts"
+                            },
+                            "position": {
+                              "basis": "100px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "textAlign": "right"
+                              },
+                              "text": "Holds inserts"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "name": "chkHoldsInserts",
+                              "tooltip": {
+                                "enabled": true,
+                                "location": "center-right",
+                                "text": "New tools of this type take inserts in their pockets"
+                              }
+                            },
+                            "position": {
+                              "basis": "25px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.selected": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.tooling.holdsInserts"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "text": ""
+                            },
+                            "type": "ia.input.checkbox"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxCntHoldsInserts"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "lblScalesOutput"
+                            },
+                            "position": {
+                              "basis": "100px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "textAlign": "right"
+                              },
+                              "text": "Scales output"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "name": "chkScalesOutput",
+                              "tooltip": {
+                                "enabled": true,
+                                "location": "center-right",
+                                "text": "New tools of this type multiply the machine\u0027s output by their positions"
+                              }
+                            },
+                            "position": {
+                              "basis": "25px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.selected": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.tooling.scalesOutput"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "text": ""
+                            },
+                            "type": "ia.input.checkbox"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxCntScalesOutput"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "lblLifeUnit"
+                            },
+                            "position": {
+                              "basis": "100px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "textAlign": "right"
+                              },
+                              "text": "Life unit"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "name": "ddLifeUnit"
+                            },
+                            "position": {
+                              "basis": "200px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.value": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.tooling.lifeUnit"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              },
+                              "props.options": {
+                                "binding": {
+                                  "config": {
+                                    "expression": "now(0)"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\n\treturn [{\u0027value\u0027: \u0027cycles\u0027, \u0027label\u0027: \u0027Cycles\u0027}, {\u0027value\u0027: \u0027runMinutes\u0027, \u0027label\u0027: \u0027Run minutes\u0027}, {\u0027value\u0027: \u0027calendarDays\u0027, \u0027label\u0027: \u0027Calendar days\u0027}]",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "expr"
+                                }
+                              }
+                            },
+                            "props": {
+                              "placeholder": {
+                                "text": "No limits"
+                              },
+                              "showClearIcon": true,
+                              "style": {
+                                "classes": "kanoa/border kanoa/font/default"
+                              }
+                            },
+                            "type": "ia.input.dropdown"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxCntLifeUnit"
+                        },
+                        "position": {
+                          "shrink": 0,
+                          "basis": "30px"
+                        },
+                        "props": {
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "lblCalibration"
+                            },
+                            "position": {
+                              "basis": "100px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "textAlign": "right"
+                              },
+                              "text": "Calibration days"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "name": "numCalInterval"
+                            },
+                            "position": {
+                              "basis": "100px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.value": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.tooling.calibrationIntervalDays"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "format": "0",
+                              "spinner": {
+                                "enabled": false
+                              },
+                              "style": {
+                                "classes": "kanoa/border"
+                              }
+                            },
+                            "type": "ia.input.numeric-entry-field"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxCntCalibration"
+                        },
+                        "position": {
+                          "shrink": 0,
+                          "basis": "30px"
+                        },
+                        "props": {
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
+                        },
+                        "type": "ia.container.flex"
+                      }
+                    ],
+                    "meta": {
+                      "name": "flxCntToolingDefaults"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.values.isTooling"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn bool(value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "direction": "column",
+                      "style": {
+                        "gap": 5
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
                           "domId": "label-2",
                           "name": "label"
                         },
@@ -774,7 +1386,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\n\tself.view.custom.values \u003d self.view.getChild(\"root\").clearAssetInfo()\n\tself.view.custom.values.parentId \u003d self.view.custom.assetType.assetTypeId\n\tself.view.custom.assetType.parentId \u003d self.view.custom.assetType.assetTypeId\n\t\n\treturn"
+                        "script": "\n\tself.view.custom.values \u003d self.view.getChild(\"root\").clearAssetInfo()\n\tself.view.custom.values.parentId \u003d self.view.custom.assetType.assetTypeId\n\tself.view.custom.assetType.parentId \u003d self.view.custom.assetType.assetTypeId\n\tif self.view.params.toolingOnly:\n\t\tparentId \u003d self.view.getChild(\u0027root\u0027).toolingParentId(self.view.custom.assetType.assetTypeId)\n\t\tself.view.custom.values.isTooling \u003d True\n\t\tself.view.custom.values.parentId \u003d parentId\n\t\tself.view.custom.assetType.parentId \u003d parentId\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -968,7 +1580,7 @@
         {
           "name": "saveAssetType",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"saveAssetType() called\")\n\tassetTypeInfo \u003d dict(self.view.custom.values)\n\tassetTypeId \u003d assetTypeInfo[\u0027assetTypeId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\n\tif assetTypeId is None:\n\t\tsystem.perspective.print(\"checking name...\")\n\t\tif system.kanoa.asset.getAssetTypes({\u0027assetTypeName\u0027:assetTypeInfo[\u0027assetTypeName\u0027], \u0027parentTypeId\u0027:assetTypeInfo[\u0027parentId\u0027]}).rowCount \u003e 0:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027This asset type already exists\u0027})\n\t\t\treturn\n\t\n\t\tassetTypeId, msg \u003d system.kanoa.asset.addAssetType(assetTypeInfo, userId)\n\t\tself.view.custom.values.assetTypeId \u003d assetTypeId\n\telse:\n\t\tsystem.perspective.print(\"Caling updateAssetType() ...\")\n\t\tretVal, msg \u003d system.kanoa.asset.updateAssetType(assetTypeInfo, userId)\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save Asset Type. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Asset Type saved\u0027})\n\t\t\n\tself.view.refreshBinding(\"custom.data\") #Update the Tree Selector\n\tsystem.perspective.sendMessage(\"refreshAssetTypes\", {})\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"saveAssetType() called\")\n\tassetTypeInfo \u003d dict(self.view.custom.values)\n\tassetTypeId \u003d assetTypeInfo[\u0027assetTypeId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\n\tif assetTypeId is None:\n\t\tsystem.perspective.print(\"checking name...\")\n\t\tif system.kanoa.asset.getAssetTypes({\u0027assetTypeName\u0027:assetTypeInfo[\u0027assetTypeName\u0027], \u0027parentTypeId\u0027:assetTypeInfo[\u0027parentId\u0027]}).rowCount \u003e 0:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027This asset type already exists\u0027})\n\t\t\treturn\n\t\n\t\tassetTypeId, msg \u003d system.kanoa.asset.addAssetType(assetTypeInfo, userId)\n\t\tself.view.custom.values.assetTypeId \u003d assetTypeId\n\telse:\n\t\tsystem.perspective.print(\"Caling updateAssetType() ...\")\n\t\tretVal, msg \u003d system.kanoa.asset.updateAssetType(assetTypeInfo, userId)\n\n\t# Tooling type and its new-tool defaults: saved for a tooling type, and when a type stops being one\n\tif not msg and assetTypeId:\n\t\tisTooling \u003d bool(assetTypeInfo.get(\u0027isTooling\u0027))\n\t\tknown \u003d system.kanoa.tooling.getToolTypes({\u0027assetTypeId\u0027: assetTypeId})\n\t\tif isTooling or (hasattr(known, \u0027getRowCount\u0027) and known.getRowCount() \u003e 0):\n\t\t\ttypeInfo \u003d dict(self.view.custom.tooling)\n\t\t\ttypeInfo.update({\u0027assetTypeId\u0027: assetTypeId, \u0027isTooling\u0027: isTooling})\n\t\t\tok, msg \u003d system.kanoa.tooling.saveToolType(typeInfo, userId)\n\t\t\tif msg: self.view.refreshBinding(\"custom.values\")\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save Asset Type. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Asset Type saved\u0027})\n\t\t\n\tself.view.refreshBinding(\"custom.data\") #Update the Tree Selector\n\tsystem.perspective.sendMessage(\"refreshAssetTypes\", {})\n\treturn"
         },
         {
           "name": "deleteAssetType",
@@ -978,7 +1590,14 @@
         {
           "name": "clearAssetInfo",
           "params": [],
-          "script": "\n\treturn {\n\t\t\t\t\u0027path\u0027: \u0027\u0027,\n\t\t\t\t\u0027changedDate\u0027: None,\n\t\t\t\t\u0027createdDate\u0027: None,\n\t\t\t\t\u0027assetTypeId\u0027: None,\n\t\t\t\t\u0027createdBy\u0027: None,\n\t\t\t\t\u0027changedBy\u0027: None,\n\t\t\t\t\u0027assetTypeName\u0027: \u0027\u0027,\n\t\t\t\t\u0027iconPath\u0027: \u0027\u0027,\n\t\t\t\t\u0027parentId\u0027: None,\n\t\t\t\t\u0027enabled\u0027: True\n\t\t\t}"
+          "script": "\n\treturn {\n\t\t\t\t\u0027path\u0027: \u0027\u0027,\n\t\t\t\t\u0027changedDate\u0027: None,\n\t\t\t\t\u0027createdDate\u0027: None,\n\t\t\t\t\u0027assetTypeId\u0027: None,\n\t\t\t\t\u0027createdBy\u0027: None,\n\t\t\t\t\u0027changedBy\u0027: None,\n\t\t\t\t\u0027assetTypeName\u0027: \u0027\u0027,\n\t\t\t\t\u0027iconPath\u0027: \u0027\u0027,\n\t\t\t\t\u0027description\u0027: \u0027\u0027,\n\t\t\t\t\u0027parentId\u0027: None,\n\t\t\t\t\u0027enabled\u0027: True\n\t\t\t}"
+        },
+        {
+          "name": "toolingParentId",
+          "params": [
+            "assetTypeId"
+          ],
+          "script": "\n\t# Where a new tooling type goes: beside the selected tooling type, else under Tooling, else beside any tooling type\n\tif assetTypeId is not None:\n\t\tsel \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetTypes({\u0027assetTypeId\u0027: assetTypeId}), 0)\n\t\tif sel[\u0027assetTypeId\u0027] is not None and sel[\u0027isTooling\u0027]: return sel[\u0027parentId\u0027]\n\tstore \u003d system.kanoa.asset.getAssetTypes({\u0027assetTypeName\u0027: \u0027Tooling\u0027, \u0027isTooling\u0027: False})\n\tif store.getRowCount(): return store.getValueAt(0, \u0027assetTypeId\u0027)\n\ttools \u003d system.kanoa.asset.getAssetTypes({\u0027isTooling\u0027: True})\n\treturn tools.getValueAt(0, \u0027parentId\u0027) if tools.getRowCount() else None"
         }
       ],
       "extensionFunctions": null,

@@ -277,7 +277,8 @@
         }
       },
       "userId": 5
-    }
+    },
+    "toastId": null
   },
   "params": {},
   "propConfig": {
@@ -1000,7 +1001,7 @@
                   "component": {
                     "onEditCellCommit": {
                       "config": {
-                        "script": "\n\tif self.view.custom.lotOperations.userAction.canUpdate:\n\t\tlotOperationId \u003d self.props.data[event.row][\u0027lotOperationId\u0027]\n\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027lotOperationName\u0027, \u0027lotOperationColor\u0027, \u0027allowInputLots\u0027, \u0027allowOutputLots\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.lot.updateLotOperationField(lotOperationId, event.column, event.value, self.view.custom.security.userId)\n\t\t\t\n\t\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the lot Operation. %s\u0027%msg})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operation has been updated\u0027})\t\t\n\t\telse:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update lot operations\u0027})\n\n\tself.view.refreshBinding(\"custom.lotOperations.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
+                        "script": "\n\tif self.view.custom.lotOperations.userAction.canUpdate:\n\t\tlotOperationId \u003d self.props.data[event.row][\u0027lotOperationId\u0027]\n\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027lotOperationName\u0027, \u0027lotOperationColor\u0027, \u0027allowInputLots\u0027, \u0027allowOutputLots\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.lot.updateLotOperationField(lotOperationId, event.column, event.value, self.view.custom.security.userId)\n\t\t\t\n\t\t\tif msg: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the lot Operation. %s\u0027%msg})\n\t\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operation has been updated\u0027})\t\t\n\t\telse:\n\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse:\n\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update lot operations\u0027})\n\n\tself.view.refreshBinding(\"custom.lotOperations.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -1036,14 +1037,6 @@
                       },
                       "overlayOptOut": true,
                       "type": "property"
-                    }
-                  },
-                  "props.columns[1].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Lot Operation\u0027)"
-                      },
-                      "type": "expr"
                     }
                   },
                   "props.columns[2].editable": {
@@ -1187,7 +1180,7 @@
                       },
                       "justify": "center",
                       "number": "value",
-                      "numberFormat": "0,0.##",
+                      "numberFormat": "#",
                       "progressBar": {
                         "bar": {
                           "color": "",
@@ -1229,7 +1222,7 @@
                       "viewParams": {},
                       "viewPath": "",
                       "visible": true,
-                      "width": 30
+                      "width": 55
                     },
                     {
                       "align": "center",
@@ -1249,7 +1242,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Lot Operation"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1981,6 +1975,14 @@
                       "grow": 1
                     },
                     "propConfig": {
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                          },
+                          "type": "expr"
+                        }
+                      },
                       "props.params.values.data": {
                         "binding": {
                           "config": {
@@ -2266,7 +2268,7 @@
                       "component": {
                         "onEditCellCommit": {
                           "config": {
-                            "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
+                            "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -2282,24 +2284,6 @@
                       "shrink": 0
                     },
                     "propConfig": {
-                      "props.columns[3].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Lot Operation\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[4].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Asset\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
                       "props.columns[5].editable": {
                         "binding": {
                           "config": {
@@ -2307,22 +2291,6 @@
                           },
                           "overlayOptOut": true,
                           "type": "property"
-                        }
-                      },
-                      "props.columns[5].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Enabled\u0027)"
-                          },
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[6].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Enabled\u0027)"
-                          },
-                          "type": "expr"
                         }
                       },
                       "props.data": {
@@ -2400,7 +2368,7 @@
                           },
                           "justify": "center",
                           "number": "value",
-                          "numberFormat": "0,0.##",
+                          "numberFormat": "#",
                           "progressBar": {
                             "bar": {
                               "color": "",
@@ -2442,7 +2410,7 @@
                           "viewParams": {},
                           "viewPath": "",
                           "visible": true,
-                          "width": 40
+                          "width": 55
                         },
                         {
                           "align": "center",
@@ -2536,7 +2504,7 @@
                           },
                           "justify": "center",
                           "number": "value",
-                          "numberFormat": "0,0.##",
+                          "numberFormat": "#",
                           "progressBar": {
                             "bar": {
                               "color": "",
@@ -2599,7 +2567,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Lot Operation"
                           },
                           "justify": "left",
                           "number": "value",
@@ -2666,7 +2635,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Asset"
                           },
                           "justify": "left",
                           "number": "value",
@@ -2732,7 +2702,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Enabled"
                           },
                           "justify": "center",
                           "number": "value",
@@ -2799,7 +2770,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Enabled"
                           },
                           "justify": "center",
                           "number": "value",
@@ -2938,6 +2910,14 @@
                       "grow": 1
                     },
                     "propConfig": {
+                      "props.path": {
+                        "binding": {
+                          "config": {
+                            "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                          },
+                          "type": "expr"
+                        }
+                      },
                       "props.params.values.data": {
                         "binding": {
                           "config": {
@@ -3381,7 +3361,7 @@
                       "component": {
                         "onEditCellCommit": {
                           "config": {
-                            "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
+                            "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -3397,24 +3377,6 @@
                       "shrink": 0
                     },
                     "propConfig": {
-                      "props.columns[4].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Lot Operation\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[5].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Item / Item Class\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
                       "props.columns[7].editable": {
                         "binding": {
                           "config": {
@@ -3422,23 +3384,6 @@
                           },
                           "overlayOptOut": true,
                           "type": "property"
-                        }
-                      },
-                      "props.columns[7].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Source\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[9].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Enabled\u0027)"
-                          },
-                          "type": "expr"
                         }
                       },
                       "props.data": {
@@ -3521,7 +3466,7 @@
                           },
                           "justify": "center",
                           "number": "value",
-                          "numberFormat": "0,0.##",
+                          "numberFormat": "#",
                           "progressBar": {
                             "bar": {
                               "color": "",
@@ -3563,7 +3508,7 @@
                           "viewParams": {},
                           "viewPath": "",
                           "visible": true,
-                          "width": 40
+                          "width": 55
                         },
                         {
                           "align": "center",
@@ -3725,7 +3670,7 @@
                           },
                           "justify": "center",
                           "number": "value",
-                          "numberFormat": "0,0.##",
+                          "numberFormat": "#",
                           "progressBar": {
                             "bar": {
                               "color": "",
@@ -3788,7 +3733,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Lot Operation"
                           },
                           "justify": "left",
                           "number": "value",
@@ -3855,7 +3801,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Item / Item Class"
                           },
                           "justify": "left",
                           "number": "value",
@@ -3989,7 +3936,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Source"
                           },
                           "justify": "center",
                           "number": "value",
@@ -4124,7 +4072,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Enabled"
                           },
                           "justify": "center",
                           "number": "value",
@@ -4417,7 +4366,7 @@
                       "component": {
                         "onActionPerformed": {
                           "config": {
-                            "script": "\n\tuserId \u003d self.view.custom.security.userId\n\tlotOperationAttributeId \u003d self.view.custom.lotOperationAttributes.selectedData[0].lotOperationAttributeId\n\tretVal, msg \u003d system.kanoa.lot.deleteLotOperationAttribute(lotOperationAttributeId, userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Lot Operation Attribute could not be deleted. %s\u0027%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operation Attribute has been deleted\u0027})\n\n\tself.view.refreshBinding(\"custom.lotOperationAttributes.data\")\t\n\t\n\treturn"
+                            "script": "\n\tuserId \u003d self.view.custom.security.userId\n\tlotOperationAttributeId \u003d self.view.custom.lotOperationAttributes.selectedData[0].lotOperationAttributeId\n\tretVal, msg \u003d system.kanoa.lot.deleteLotOperationAttribute(lotOperationAttributeId, userId)\n\tif msg: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Lot Operation Attribute could not be deleted. %s\u0027%msg})\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operation Attribute has been deleted\u0027})\n\n\tself.view.refreshBinding(\"custom.lotOperationAttributes.data\")\t\n\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -4513,7 +4462,7 @@
                       "component": {
                         "onEditCellCommit": {
                           "config": {
-                            "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
+                            "script": "\t\t\t\n\tlotStateReasonAssetLinkId \u003d self.props.data.getValueAt(event.row, \u0027lotStateReasonAssetLinkId\u0027)\n\tif self.view.custom.security.action.canUpdate:\n\t\tif event.column \u003d\u003d \u0027enabled\u0027:\t\n\t\t\tretVal \u003dsystem.kanoa.asset.lotStateReasonAssetLinkId(lotStateReasonAssetLinkId, event.value)\n\t\t\tif retVal \u003e 0: \n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027link updated\u0027})\n\t\t\telse:\n\t\t\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027link was not updated\u0027})\n\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\n\t\tself.view.refreshBinding(\"custom.assetStates.data\")\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update states.\u0027})\n\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -4528,33 +4477,6 @@
                       "grow": 1
                     },
                     "propConfig": {
-                      "props.columns[2].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Lot Operation\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[3].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\"Attribute\")"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[4].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\"Value\")"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
                       "props.columns[5].dateFormat": {
                         "binding": {
                           "config": {
@@ -4567,15 +4489,6 @@
                             }
                           ],
                           "type": "property"
-                        }
-                      },
-                      "props.columns[5].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Last Updated\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
                         }
                       },
                       "props.data": {
@@ -4658,7 +4571,7 @@
                           },
                           "justify": "center",
                           "number": "value",
-                          "numberFormat": "0,0.##",
+                          "numberFormat": "#",
                           "progressBar": {
                             "bar": {
                               "color": "",
@@ -4700,7 +4613,7 @@
                           "viewParams": {},
                           "viewPath": "",
                           "visible": true,
-                          "width": 40
+                          "width": 55
                         },
                         {
                           "align": "center",
@@ -4726,7 +4639,7 @@
                           },
                           "justify": "center",
                           "number": "value",
-                          "numberFormat": "0,0.##",
+                          "numberFormat": "#",
                           "progressBar": {
                             "bar": {
                               "color": "",
@@ -4789,7 +4702,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Lot Operation"
                           },
                           "justify": "left",
                           "number": "value",
@@ -4875,7 +4789,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Attribute"
                           },
                           "justify": "auto",
                           "nullFormat": {
@@ -4966,7 +4881,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Value"
                           },
                           "justify": "auto",
                           "nullFormat": {
@@ -5037,7 +4953,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Last Updated"
                           },
                           "justify": "center",
                           "number": "value",
@@ -5217,17 +5134,17 @@
         {
           "name": "linkAssets",
           "params": [],
-          "script": "\t\n\tsystem.perspective.print(\"linkAssets() called\")\n\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsAssets(self.view.custom.assetIdList, self.view.custom.lotOperations.lotOperationIdList, self.view.custom.security.userId)\n\t\n\tsystem.perspective.print(\"%s %s\"%(retVal, msg))\n\t\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Failed to link asset. %s\u0027%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s Asset link(s) has been saved\u0027%retVal})\n\t\n\tself.view.refreshBinding(\"custom.assetLinks.data\")\n\t\n\treturn"
+          "script": "\t\n\tsystem.perspective.print(\"linkAssets() called\")\n\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsAssets(self.view.custom.assetIdList, self.view.custom.lotOperations.lotOperationIdList, self.view.custom.security.userId)\n\t\n\tsystem.perspective.print(\"%s %s\"%(retVal, msg))\n\t\n\tif msg: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Failed to link asset. %s\u0027%msg})\n\telse: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s Asset link(s) has been saved\u0027%retVal})\n\t\n\tself.view.refreshBinding(\"custom.assetLinks.data\")\n\t\n\treturn"
         },
         {
           "name": "unlinkAssets",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.assetLinks.selectedData:\n\t\tif system.kanoa.lot.unlinkLotOperationAsset(row[\u0027lotOperationAssetLinkId\u0027], self.view.custom.security.userId) \u003d\u003d \u0027Disabled\u0027: \n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027%s link has been disabled as there are historical entries asssociated with this lot operation.\u0027%row[\u0027lotOperationName\u0027]})\n\t\n\tself.view.refreshBinding(\"custom.assetLinks.data\")\n\t\n\treturn"
+          "script": "\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdisabled \u003d []\n\tfor row in self.view.custom.assetLinks.selectedData:\n\t\tif system.kanoa.lot.unlinkLotOperationAsset(row[\u0027lotOperationAssetLinkId\u0027], self.view.custom.security.userId) \u003d\u003d \u0027Disabled\u0027: \n\t\t\tdisabled.append(row[\u0027lotOperationName\u0027])\n\t\n\tif disabled:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete %s asset links as there are historical entries associated with them; they were disabled instead: %s\"%(len(disabled), \u0027, \u0027.join(disabled))})\n\t\n\tself.view.refreshBinding(\"custom.assetLinks.data\")\n\t\n\treturn"
         },
         {
           "name": "unlinkItems",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.itemLinks.selectedData:\n\t\tretVal \u003d system.kanoa.lot.unlinkLotOperationItem(row[\u0027lotOperationItemLinkId\u0027], self.view.custom.security.userId)\n\t\tsystem.perspective.print(\"Calling unlinkLotOperationItem() with %s returned %s\"%(row[\u0027lotOperationItemLinkId\u0027], retVal))\n\t\tif retVal \u003d\u003d \u0027Disabled\u0027: \n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027%s link has been disabled as there are historical entries asssociated with this lot operation.\u0027%row[\u0027lotOperationItemLinkId\u0027]})\n\t\telif retVal !\u003d \u0027Deleted\u0027:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027%s %s \u0027%(row[\u0027lotOperationItemLinkId\u0027], retVal)})\n\t\telse:\n\t\t\tpass\n\t\t\t\n\tself.view.refreshBinding(\"custom.itemLinks.data\")\n\t\n\treturn"
+          "script": "\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdisabled, failed \u003d [], []\n\tfor row in self.view.custom.itemLinks.selectedData:\n\t\tretVal \u003d system.kanoa.lot.unlinkLotOperationItem(row[\u0027lotOperationItemLinkId\u0027], self.view.custom.security.userId)\n\t\tsystem.perspective.print(\"Calling unlinkLotOperationItem() with %s returned %s\"%(row[\u0027lotOperationItemLinkId\u0027], retVal))\n\t\tif retVal \u003d\u003d \u0027Disabled\u0027: \n\t\t\tdisabled.append(str(row[\u0027lotOperationItemLinkId\u0027]))\n\t\telif retVal !\u003d \u0027Deleted\u0027:\n\t\t\tfailed.append(\u0027%s (%s)\u0027%(row[\u0027lotOperationItemLinkId\u0027], retVal))\n\t\telse:\n\t\t\tpass\n\t\n\tmsgs \u003d []\n\tif disabled: msgs.append(\"Couldn\u0027t delete %s item links as there are historical entries associated with them; they were disabled instead: %s\"%(len(disabled), \u0027, \u0027.join(disabled)))\n\tif failed: msgs.append(\"Couldn\u0027t unlink %s item links: %s\"%(len(failed), \u0027; \u0027.join(failed)))\n\tif msgs: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027. \u0027.join(msgs)})\n\t\t\t\n\tself.view.refreshBinding(\"custom.itemLinks.data\")\n\t\n\treturn"
         },
         {
           "name": "openLotOperationEditor",
@@ -5239,24 +5156,31 @@
         {
           "name": "deleteLotOperations",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.lotOperations.selectedData:\n\t\tretVal, msg \u003d system.kanoa.lot.deleteLotOperation(row[\u0027lotOperationId\u0027], self.view.custom.security.userId)\n\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Lot Operation could not be deleted. %s\u0027%msg})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operation %s has been deleted\u0027%row[\u0027lotOperationName\u0027]})\n\n\tself.view.refreshBinding(\"custom.lotOperations.data\")\n\n\treturn"
+          "script": "\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdeleted, failed \u003d [], []\n\tfor row in self.view.custom.lotOperations.selectedData:\n\t\tretVal, msg \u003d system.kanoa.lot.deleteLotOperation(row[\u0027lotOperationId\u0027], self.view.custom.security.userId)\n\t\tif msg: failed.append(\u0027%s (%s)\u0027%(row[\u0027lotOperationName\u0027], msg))\n\t\telse: deleted.append(row[\u0027lotOperationName\u0027])\n\n\tif failed:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027 if deleted else \u0027error\u0027, \u0027message\u0027: \"Deleted %s of %s lot operations; %s couldn\u0027t be deleted: %s\"%(len(deleted), len(deleted) + len(failed), len(failed), \u0027; \u0027.join(failed))})\n\telif len(deleted) \u003d\u003d 1: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot operation \"%s\" deleted\u0027%deleted[0]})\n\telif deleted: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Deleted %s lot operations\u0027%len(deleted)})\n\n\tself.view.refreshBinding(\"custom.lotOperations.data\")\n\n\treturn"
         },
         {
           "name": "linkItems",
           "params": [
             "itemSourceName"
           ],
-          "script": "\n\tsystem.perspective.print(\"linkItems() called\")\n\titemSourceId \u003d system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: itemSourceName}))\n\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsItems(self.view.custom.itemIdList, self.view.custom.itemClassIdList, self.view.custom.lotOperations.lotOperationIdList, itemSourceId, self.view.custom.security.userId)\n\t\n\tsystem.perspective.print(\"%s %s\"%(retVal, msg))\n\t\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Failed to link items. %s\u0027%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s item link(s) has been saved\u0027%retVal})\n\t\n\tself.view.refreshBinding(\"custom.itemLinks.data\")\n\t\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"linkItems() called\")\n\titemSourceId \u003d system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: itemSourceName}))\n\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsItems(self.view.custom.itemIdList, self.view.custom.itemClassIdList, self.view.custom.lotOperations.lotOperationIdList, itemSourceId, self.view.custom.security.userId)\n\t\n\tsystem.perspective.print(\"%s %s\"%(retVal, msg))\n\t\n\tif msg: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Failed to link items. %s\u0027%msg})\n\telse: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s item link(s) has been saved\u0027%retVal})\n\t\n\tself.view.refreshBinding(\"custom.itemLinks.data\")\n\t\n\treturn"
         },
         {
           "name": "exportLotOperations",
           "params": [],
-          "script": "\t# implement your method here\t\t\n\t\u0027\u0027\u0027 \n \t\tExports lot operation information and associated data such as asset and item links\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\tlotOperationIds \u003d [row[\u0027lotOperationId\u0027] for row in self.view.custom.lotOperations.selectedData]\n \tlog.info(\"exportLotOperations() called with %s\"%(lotOperationIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\tlotOperations \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperations({\u0027lotOperationIdList\u0027: lotOperationIds}))\n\t\tlotOperationAssetLinks \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperationAssetLinks({\u0027lotOperationIdList\u0027: lotOperationIds}))\n\t\tlotOperationItemLinks \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperationItemLinks({\u0027lotOperationIdList\u0027: lotOperationIds}))\n\t\t\n \t\texportInfo[\u0027lotOperations\u0027] \u003d lotOperations\n\t\texportInfo[\u0027lotOperationAssetLinks\u0027] \u003d lotOperationAssetLinks\n\t\texportInfo[\u0027lotOperationItemLinks\u0027] \u003d lotOperationItemLinks\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Lot Operations Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027lotOperationInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operations exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportLotOperations() threw exception %s \"%(e.cause))\n \t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Lot Operations failed to export: %s\u0027%e.cause})\n\t\n\treturn"
+          "script": "\t# implement your method here\t\t\n\t\u0027\u0027\u0027 \n \t\tExports lot operation information and associated data such as asset and item links\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\tlotOperationIds \u003d [row[\u0027lotOperationId\u0027] for row in self.view.custom.lotOperations.selectedData]\n \tlog.info(\"exportLotOperations() called with %s\"%(lotOperationIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\tlotOperations \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperations({\u0027lotOperationIdList\u0027: lotOperationIds}))\n\t\tlotOperationAssetLinks \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperationAssetLinks({\u0027lotOperationIdList\u0027: lotOperationIds}))\n\t\tlotOperationItemLinks \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperationItemLinks({\u0027lotOperationIdList\u0027: lotOperationIds}))\n\t\t\n \t\texportInfo[\u0027lotOperations\u0027] \u003d lotOperations\n\t\texportInfo[\u0027lotOperationAssetLinks\u0027] \u003d lotOperationAssetLinks\n\t\texportInfo[\u0027lotOperationItemLinks\u0027] \u003d lotOperationItemLinks\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Lot Operations Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027lotOperationInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Lot Operations exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportLotOperations() threw exception %s \"%((getattr(e, \u0027cause\u0027, None) or e)))\n \t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Lot Operations failed to export: %s\u0027%(getattr(e, \u0027cause\u0027, None) or e)})\n\t\n\treturn"
         },
         {
           "name": "importLotOperations",
           "params": [],
           "script": "\t\t\n\tsystem.perspective.openPopup(\n\t\tid \u003d \u0027Lot Operation Importer\u0027,\n\t\tview \u003d \u0027kanoa/mes/config/lots/lotsDataImporter\u0027,\n\t\ttitle \u003d \u0027Lot Operation Importer\u0027,\n\t\tparams \u003d {\u0027callerId\u0027: system.kanoa.utilities.getUUID(), \u0027msgHandler\u0027: \u0027importLotOperations\u0027},\n\t\tmodal \u003d True,\n\t\toverlayDismiss \u003d True\n\t)\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
         }
       ],
       "extensionFunctions": null,
@@ -5278,7 +5202,7 @@
         {
           "messageType": "importLotOperations",
           "pageScope": true,
-          "script": "\n\t\u0027\u0027\u0027\n\t\tImports all lot operation info including asset links, and item links (kanoaOPS)\n\t\tArgs:\n\t\t\texportInfo: dict\n\t\t\tuserId: int\n\t\tReturns:\n\t\t\tsuccess: bit\n\t\t\tmsg: string\n\t\tUpdated:\n\t\t\t10/14/25 JZ Created\n\t\u0027\u0027\u0027\n\tsystem.perspective.print(\u0027import los received\u0027)\n\tlog \u003d system.util.getLogger(\u0027kanoaLotImporter\u0027)\n\tuserId \u003d self.view.custom.security.userId\n\texportInfo \u003d payload[\u0027exportInfo\u0027][\u0027data\u0027]\n\t\t\n\timport java.lang\n\tif not (exportInfo.has_key(\u0027lotOperations\u0027) and exportInfo.has_key(\u0027lotOperationAssetLinks\u0027) and exportInfo.has_key(\u0027lotOperationItemLinks\u0027)):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Import data does not have the expected fields\u0027})\n\t\treturn\n\t\t\n\troleId \u003d system.kanoa.utilities.getFieldValue(\u0027roleId\u0027, system.kanoa.security.getRoles({\u0027roleName\u0027: \u0027Administrator\u0027}))\n\t\n\t# add lot operation data\n\tlotOperationsAdded \u003d 0\n\tlotOperations \u003d exportInfo[\u0027lotOperations\u0027]\n\tlotOperationsIdMap \u003d {}\n\tfor lotOperation in lotOperations:\n\t\tlotOperationInfo \u003d dict(lotOperation)\n\t\tlotOperationId \u003d system.kanoa.utilities.getFieldValue(\u0027lotOperationId\u0027, system.kanoa.lot.getLotOperations(({\u0027lotOperationName\u0027: lotOperationInfo[\u0027lotOperationName\u0027]})))\n\t\tif lotOperationId:\n\t\t\tlotOperationsIdMap[lotOperationInfo[\u0027lotOperationId\u0027]] \u003d lotOperationId\n\t\telse:\n\t\t\tnewLotOperationId, msg \u003d system.kanoa.lot.addLotOperation(lotOperationInfo, userId)\n\t\t\tlotOperationsIdMap[lotOperationInfo[\u0027lotOperationId\u0027]] \u003d newLotOperationId\n\t\t\tlotOperationsAdded +\u003d 1\n\t\n\t# Linking lot operations to assets\n\tlotOperationAssetLinks \u003d exportInfo[\u0027lotOperationAssetLinks\u0027]\n\tassetsLinked \u003d 0\n\tassetIdMap \u003d {}\n\tfor loaLink in lotOperationAssetLinks:\n\t\tloaLinkInfo \u003d dict(loaLink)\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: loaLinkInfo[\u0027assetPath\u0027]}))\n\t\tif assetId: \n\t\t\tassetIdMap[loaLinkInfo[\u0027assetId\u0027]] \u003d assetId\n\t\t\tlotOperationAssetLinkId \u003d system.kanoa.utilities.getFieldValue(\u0027lotOperationAssetLinkId\u0027, system.kanoa.lot.getLotOperationAssetLinks({\u0027assetId\u0027: assetId,\u0027lotOperationName\u0027: loaLinkInfo[\u0027lotOperationName\u0027]}))\n\t\t\tif not lotOperationAssetLinkId:\n\t\t\t\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsAssets([assetId], [lotOperationsIdMap[loaLinkInfo[\u0027lotOperationId\u0027]]], userId)\n\t\t\t\tlog.info(\u0027linkLotOperationsAssets returned %s, %s for %s at %s\u0027%(retVal, msg, loaLinkInfo[\u0027lotOperationName\u0027], loaLinkInfo[\u0027assetPath\u0027]))\n\t\t\t\tassetsLinked +\u003d 1\n\t\t\telse:\n\t\t\t\tlog.info(\u0027Lot operation asset link already exists for %s at %s\u0027%(loaLinkInfo[\u0027lotOperationName\u0027], loaLinkInfo[\u0027assetPath\u0027]))\n\t\telse:\n\t\t\tlog.info(\u0027AssetId not found for %s. Not adding asset link\u0027%loaLinkInfo[\u0027assetPath\u0027])\n\t\t\t\t\n\t# Linking operations to items\n\tlotOperationItemLinks \u003d exportInfo[\u0027lotOperationItemLinks\u0027]\n\titemsLinked \u003d 0\n\titemIdMap \u003d {}\n\tfor loiLink in lotOperationItemLinks:\n\t\tloiLinkInfo \u003d dict(loiLink)\n\t\tif loiLinkInfo[\u0027itemId\u0027]:\n\t\t\titemId \u003d system.kanoa.utilities.getFieldValue(\u0027itemId\u0027, system.kanoa.item.getItems({\u0027itemPath\u0027: loiLinkInfo[\u0027itemPath\u0027]}))\n\t\t\tif itemId:\n\t\t\t\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsItems([itemId], [], [lotOperationsIdMap[loiLinkInfo[\u0027lotOperationId\u0027]]], loiLinkInfo[\u0027itemSourceId\u0027], userId)\n\t\t\t\titemsLinked +\u003d 1\n\t\t\telse:\n\t\t\t\tlog.info(\u0027ItemId not found for %s. Not adding item link\u0027%loiLinkInfo[\u0027itemPath\u0027])\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027item not found\u0027})\n\t\telif loiLinkInfo[\u0027itemClassId\u0027]:\n\t\t\titemClassId \u003d system.kanoa.utilities.getFieldValue(\u0027itemClassId\u0027, system.kanoa.item.getItemClasses({\u0027itemClassPath\u0027: loiLinkInfo[\u0027itemClassPath\u0027]}))\n\t\t\tif itemClassId:\n\t\t\t\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsItems([], [itemClassId], [lotOperationsIdMap[loiLinkInfo[\u0027lotOperationId\u0027]]], loiLinkInfo[\u0027itemSourceId\u0027], userId)\n\t\t\t\titemsLinked +\u003d 1\n\t\t\telse:\n\t\t\t\tlog.info(\u0027ItemClassId not found for %s. Not adding item class link\u0027%loiLinkInfo[\u0027itemClassPath\u0027])\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027item class not found\u0027})\n\t\telse:\n\t\t\tlog.info(\u0027No items found. Not adding item link\u0027)\n\t\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s lot operations, %s asset links, %s item links imported\u0027%(lotOperationsAdded, assetsLinked, itemsLinked)})\n\tself.view.refreshBinding(\"custom.assetLinks.data\")\n\tself.view.refreshBinding(\"custom.itemLinks.data\")\n\tself.view.refreshBinding(\"custom.lotOperations.data\")\n\t\n\treturn {\u0027passed\u0027: True, \u0027message\u0027: \u0027Lot Operations imported\u0027}",
+          "script": "\n\t\u0027\u0027\u0027\n\t\tImports all lot operation info including asset links, and item links (kanoaOPS)\n\t\tArgs:\n\t\t\texportInfo: dict\n\t\t\tuserId: int\n\t\tReturns:\n\t\t\tsuccess: bit\n\t\t\tmsg: string\n\t\tUpdated:\n\t\t\t10/14/25 JZ Created\n\t\u0027\u0027\u0027\n\tsystem.perspective.print(\u0027import los received\u0027)\n\tlog \u003d system.util.getLogger(\u0027kanoaLotImporter\u0027)\n\tuserId \u003d self.view.custom.security.userId\n\texportInfo \u003d payload[\u0027exportInfo\u0027][\u0027data\u0027]\n\t\t\n\timport java.lang\n\tif not (exportInfo.has_key(\u0027lotOperations\u0027) and exportInfo.has_key(\u0027lotOperationAssetLinks\u0027) and exportInfo.has_key(\u0027lotOperationItemLinks\u0027)):\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Import data does not have the expected fields\u0027})\n\t\treturn\n\t\t\n\troleId \u003d system.kanoa.utilities.getFieldValue(\u0027roleId\u0027, system.kanoa.security.getRoles({\u0027roleName\u0027: \u0027Administrator\u0027}))\n\t\n\t# add lot operation data\n\tlotOperationsAdded \u003d 0\n\tlotOperations \u003d exportInfo[\u0027lotOperations\u0027]\n\tlotOperationsIdMap \u003d {}\n\tfor lotOperation in lotOperations:\n\t\tlotOperationInfo \u003d dict(lotOperation)\n\t\tlotOperationId \u003d system.kanoa.utilities.getFieldValue(\u0027lotOperationId\u0027, system.kanoa.lot.getLotOperations(({\u0027lotOperationName\u0027: lotOperationInfo[\u0027lotOperationName\u0027]})))\n\t\tif lotOperationId:\n\t\t\tlotOperationsIdMap[lotOperationInfo[\u0027lotOperationId\u0027]] \u003d lotOperationId\n\t\telse:\n\t\t\tnewLotOperationId, msg \u003d system.kanoa.lot.addLotOperation(lotOperationInfo, userId)\n\t\t\tlotOperationsIdMap[lotOperationInfo[\u0027lotOperationId\u0027]] \u003d newLotOperationId\n\t\t\tlotOperationsAdded +\u003d 1\n\t\n\t# Linking lot operations to assets\n\tlotOperationAssetLinks \u003d exportInfo[\u0027lotOperationAssetLinks\u0027]\n\tassetsLinked \u003d 0\n\tassetIdMap \u003d {}\n\tfor loaLink in lotOperationAssetLinks:\n\t\tloaLinkInfo \u003d dict(loaLink)\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: loaLinkInfo[\u0027assetPath\u0027]}))\n\t\tif assetId: \n\t\t\tassetIdMap[loaLinkInfo[\u0027assetId\u0027]] \u003d assetId\n\t\t\tlotOperationAssetLinkId \u003d system.kanoa.utilities.getFieldValue(\u0027lotOperationAssetLinkId\u0027, system.kanoa.lot.getLotOperationAssetLinks({\u0027assetId\u0027: assetId,\u0027lotOperationName\u0027: loaLinkInfo[\u0027lotOperationName\u0027]}))\n\t\t\tif not lotOperationAssetLinkId:\n\t\t\t\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsAssets([assetId], [lotOperationsIdMap[loaLinkInfo[\u0027lotOperationId\u0027]]], userId)\n\t\t\t\tlog.info(\u0027linkLotOperationsAssets returned %s, %s for %s at %s\u0027%(retVal, msg, loaLinkInfo[\u0027lotOperationName\u0027], loaLinkInfo[\u0027assetPath\u0027]))\n\t\t\t\tassetsLinked +\u003d 1\n\t\t\telse:\n\t\t\t\tlog.info(\u0027Lot operation asset link already exists for %s at %s\u0027%(loaLinkInfo[\u0027lotOperationName\u0027], loaLinkInfo[\u0027assetPath\u0027]))\n\t\telse:\n\t\t\tlog.info(\u0027AssetId not found for %s. Not adding asset link\u0027%loaLinkInfo[\u0027assetPath\u0027])\n\t\t\t\t\n\t# Linking operations to items\n\tlotOperationItemLinks \u003d exportInfo[\u0027lotOperationItemLinks\u0027]\n\titemsLinked \u003d 0\n\tnotFound \u003d []\t#Item and item class links not imported, shown in the summary (868mvvzbz)\n\titemIdMap \u003d {}\n\tfor loiLink in lotOperationItemLinks:\n\t\tloiLinkInfo \u003d dict(loiLink)\n\t\tif loiLinkInfo[\u0027itemId\u0027]:\n\t\t\titemId \u003d system.kanoa.utilities.getFieldValue(\u0027itemId\u0027, system.kanoa.item.getItems({\u0027itemPath\u0027: loiLinkInfo[\u0027itemPath\u0027]}))\n\t\t\tif itemId:\n\t\t\t\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsItems([itemId], [], [lotOperationsIdMap[loiLinkInfo[\u0027lotOperationId\u0027]]], loiLinkInfo[\u0027itemSourceId\u0027], userId)\n\t\t\t\titemsLinked +\u003d 1\n\t\t\telse:\n\t\t\t\tlog.info(\u0027ItemId not found for %s. Not adding item link\u0027%loiLinkInfo[\u0027itemPath\u0027])\n\t\t\t\tnotFound.append(str(loiLinkInfo[\u0027itemPath\u0027]))\n\t\telif loiLinkInfo[\u0027itemClassId\u0027]:\n\t\t\titemClassId \u003d system.kanoa.utilities.getFieldValue(\u0027itemClassId\u0027, system.kanoa.item.getItemClasses({\u0027itemClassPath\u0027: loiLinkInfo[\u0027itemClassPath\u0027]}))\n\t\t\tif itemClassId:\n\t\t\t\tretVal, msg \u003d system.kanoa.lot.linkLotOperationsItems([], [itemClassId], [lotOperationsIdMap[loiLinkInfo[\u0027lotOperationId\u0027]]], loiLinkInfo[\u0027itemSourceId\u0027], userId)\n\t\t\t\titemsLinked +\u003d 1\n\t\t\telse:\n\t\t\t\tlog.info(\u0027ItemClassId not found for %s. Not adding item class link\u0027%loiLinkInfo[\u0027itemClassPath\u0027])\n\t\t\t\tnotFound.append(str(loiLinkInfo[\u0027itemClassPath\u0027]))\n\t\telse:\n\t\t\tlog.info(\u0027No items found. Not adding item link\u0027)\n\t\n\tmsg \u003d \u0027Imported %s lot operations, %s asset links and %s item links\u0027%(lotOperationsAdded, assetsLinked, itemsLinked)\n\tif notFound: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"%s; couldn\u0027t link %s items or item classes that weren\u0027t found: %s\"%(msg, len(notFound), \u0027, \u0027.join(notFound))})\n\telse: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: msg})\n\tself.view.refreshBinding(\"custom.assetLinks.data\")\n\tself.view.refreshBinding(\"custom.itemLinks.data\")\n\tself.view.refreshBinding(\"custom.lotOperations.data\")\n\t\n\treturn {\u0027passed\u0027: True, \u0027message\u0027: \u0027Lot Operations imported\u0027}",
           "sessionScope": false,
           "viewScope": false
         },

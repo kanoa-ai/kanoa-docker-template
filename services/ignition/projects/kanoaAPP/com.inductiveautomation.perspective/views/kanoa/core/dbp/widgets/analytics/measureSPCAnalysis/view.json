@@ -1,14 +1,10 @@
 {
   "custom": {
+    "spc": {},
     "tagPath": "null",
     "timeSeries": {
       "plots": [],
-      "series": [
-        {
-          "data": [],
-          "name": "Ingot Width"
-        }
-      ]
+      "series": []
     }
   },
   "params": {
@@ -17,6 +13,27 @@
     }
   },
   "propConfig": {
+    "custom.spc": {
+      "binding": {
+        "config": {
+          "struct": {
+            "lastUpdated": "tag({view.custom.tagPath} + \"/lastUpdated\")",
+            "tagPath": "{view.custom.tagPath}",
+            "range": "{view.params.value}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t#The measure\u0027s latest spcPoints recorded events (each a minute or so of samples\u0027 average) and the SPC check of them\n\t#against its configured limits: the same check the UDT\u0027s update script writes to outOfControl / ruleViolations\n\t#(868mtrbyg). Refreshes each time an event is recorded (lastUpdated)\n\t#Given a startDate and endDate (the Production Counts summary\u0027s SPC Alerts link), the events in that range instead, as the\n\t#summary counted its alerts\n\ttagPath \u003d value[\u0027tagPath\u0027]\n\tif not tagPath: return {\u0027points\u0027: [], \u0027violationPoints\u0027: [], \u0027violations\u0027: [], \u0027outOfControl\u0027: False, \u0027limits\u0027: {}}\n\tnames \u003d [\u0027measureId\u0027, \u0027spcPoints\u0027, \u0027spcCheckEnabled\u0027, \u0027spec/lsl\u0027, \u0027spec/lcl\u0027, \u0027spec/tgt\u0027, \u0027spec/ucl\u0027, \u0027spec/usl\u0027]\n\tvals \u003d [q.value for q in system.tag.readBlocking([tagPath + \u0027/\u0027 + n for n in names])]\n\tmeasureId, spcPoints, enabled, lsl, lcl, tgt, ucl, usl \u003d vals\n\tlimits \u003d {\u0027lsl\u0027: lsl, \u0027lcl\u0027: lcl, \u0027tgt\u0027: tgt, \u0027ucl\u0027: ucl, \u0027usl\u0027: usl}\n\tgiven \u003d value[\u0027range\u0027] or {}\n\tstart, end \u003d given.get(\u0027startDate\u0027), given.get(\u0027endDate\u0027)\n\tif start is not None and end is not None:\n\t\tevents \u003d system.kanoa.measures.getMeasureEvents({\u0027measureId\u0027: measureId, \u0027tStampStart\u0027: start, \u0027tStampEnd\u0027: end, \u0027maxRows\u0027: 0})\n\telse:\n\t\tevents \u003d system.kanoa.measures.getMeasureEvents({\u0027measureId\u0027: measureId, \u0027maxRows\u0027: spcPoints or 30})\n\tpoints \u003d []\n\tif hasattr(events, \u0027getRowCount\u0027):\n\t\tfor i in range(events.rowCount):\n\t\t\tif events.getValueAt(i, \u0027measureValue\u0027) is not None:\n\t\t\t\tpoints.append({\u0027time\u0027: events.getValueAt(i, \u0027tStamp\u0027), \u0027value\u0027: events.getValueAt(i, \u0027measureValue\u0027)})\n\tresult \u003d {\u0027points\u0027: points, \u0027violationPoints\u0027: [], \u0027violations\u0027: [], \u0027outOfControl\u0027: False, \u0027limits\u0027: limits}\n\tif enabled and len(points) \u003e\u003d 2:\n\t\tinfo \u003d system.kanoa.quality.spc.spcCheck([pt[\u0027value\u0027] for pt in points], \u0027individuals\u0027, \u0027both\u0027, None, usl, lsl, None, ucl, lcl, tgt)\n\t\tif isinstance(info, dict):\n\t\t\t#Each point in a violating run, with the most serious kind of rule it breaks (as the legend colours them)\n\t\t\truleInfo \u003d system.kanoa.quality.spc.getRuleInfo()\n\t\t\tif not isinstance(ruleInfo, dict): ruleInfo \u003d {}\n\t\t\trank \u003d {\u0027limit\u0027: 3, \u0027pattern\u0027: 2, \u0027variation\u0027: 1}\n\t\t\tkinds \u003d {}\n\t\t\tfor rule, indexes in info[\u0027violationPoints\u0027].items():\n\t\t\t\tkind \u003d (ruleInfo.get(rule) or {}).get(\u0027kind\u0027) or \u0027pattern\u0027\n\t\t\t\tfor i in indexes:\n\t\t\t\t\tif rank.get(kind, 0) \u003e rank.get(kinds.get(i), 0): kinds[i] \u003d kind\n\t\t\tresult[\u0027violationPoints\u0027] \u003d [{\u0027index\u0027: i, \u0027kind\u0027: kinds[i]} for i in sorted(kinds)]\n\t\t\tresult[\u0027violations\u0027] \u003d list(info[\u0027violations\u0027].keys())\n\t\t\tresult[\u0027outOfControl\u0027] \u003d bool(info[\u0027outOfControl\u0027])\n\treturn result",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": false
+    },
     "custom.tagPath": {
       "binding": {
         "config": {
@@ -36,39 +53,40 @@
     "custom.timeSeries.plots": {
       "binding": {
         "config": {
-          "path": "view.custom.tagPath"
+          "struct": {
+            "series": "{view.custom.timeSeries.series}",
+            "spc": "{view.custom.spc}"
+          },
+          "waitOnAll": false
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\ttagPath \u003d value\n\tif (tagPath or None) is None: return []\n\tpaths \u003d [\n\t\ttagPath + \u0027/spec/lsl\u0027,\n\t\ttagPath + \u0027/spec/lcl\u0027,\n\t\ttagPath + \u0027/spec/tgt\u0027,\n\t\ttagPath + \u0027/spec/ucl\u0027,\n\t\ttagPath + \u0027/spec/usl\u0027,\n\t\ttagPath + \u0027/data\u0027\n\t]\n\tvals \u003d system.tag.readBlocking(paths)\n\tlsl \u003d vals[0].value\n\tlcl \u003d vals[1].value\n\ttgt \u003d vals[2].value\n\tucl \u003d vals[3].value\n\tusl \u003d vals[4].value\n\tdata \u003d vals[5].value\n\n\tvalueList \u003d [row[1] for row in system.dataset.toPyDataSet(data) if row[1] is not None]\n\tif not valueList: return []\n\n\tallVals \u003d valueList + [v for v in [lsl, lcl, tgt, ucl, usl] if v is not None]\n\tminRange \u003d min(allVals)\n\tmaxRange \u003d max(allVals)\n\tpadding \u003d (maxRange - minRange) * 0.1 if maxRange !\u003d minRange else 1.0\n\n\tdef buildMarker(name, val, color, dashArray, position):\n\t\treturn {\n\t\t\t\u0027visible\u0027: True,\n\t\t\t\u0027type\u0027: \u0027line\u0027,\n\t\t\t\u0027axis\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027value\u0027: val,\n\t\t\t\u0027line\u0027: {\n\t\t\t\t\u0027color\u0027: color,\n\t\t\t\t\u0027width\u0027: 1,\n\t\t\t\t\u0027opacity\u0027: 0.8,\n\t\t\t\t\u0027dashArray\u0027: dashArray,\n\t\t\t\t\u0027label\u0027: {\n\t\t\t\t\t\u0027text\u0027: name,\n\t\t\t\t\t\u0027position\u0027: position,\n\t\t\t\t\t\u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10},\n\t\t\t\t\t\u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\tmarkers \u003d []\n\tif lsl is not None: markers.append(buildMarker(\u0027LSL\u0027, lsl, \u0027#FF0000\u0027, 0, \u0027left\u0027))\n\tif lcl is not None: markers.append(buildMarker(\u0027LCL\u0027, lcl, \u0027#FF8C00\u0027, \u00275.5\u0027, \u0027left\u0027))\n\tif tgt is not None: markers.append(buildMarker(\u0027Target\u0027, tgt, \u0027#00AC00\u0027, 0, \u0027left\u0027))\n\tif ucl is not None: markers.append(buildMarker(\u0027UCL\u0027, ucl, \u0027#FF8C00\u0027, \u00275.5\u0027, \u0027right\u0027))\n\tif usl is not None: markers.append(buildMarker(\u0027USL\u0027, usl, \u0027#FF0000\u0027, 0, \u0027right\u0027))\n\n\treturn [{\n\t\t\u0027trends\u0027: [{\n\t\t\t\u0027visible\u0027: True,\n\t\t\t\u0027type\u0027: \u0027line\u0027,\n\t\t\t\u0027series\u0027: \u0027Ingot Width\u0027,\n\t\t\t\u0027interpolation\u0027: \u0027curveLinear\u0027,\n\t\t\t\u0027breakLine\u0027: True,\n\t\t\t\u0027stack\u0027: True,\n\t\t\t\u0027radius\u0027: 3,\n\t\t\t\u0027axis\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027columns\u0027: [],\n\t\t\t\u0027baselines\u0027: []\n\t\t}],\n\t\t\u0027axes\u0027: [{\n\t\t\t\u0027name\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027min\u0027: minRange - padding,\n\t\t\t\u0027max\u0027: maxRange + padding,\n\t\t\t\u0027alignment\u0027: \u0027right\u0027,\n\t\t\t\u0027width\u0027: 60,\n\t\t\t\u0027label\u0027: {\u0027visible\u0027: False, \u0027text\u0027: \u0027Value\u0027, \u0027offset\u0027: 1, \u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}},\n\t\t\t\u0027tick\u0027: {\u0027color\u0027: \u0027\u0027, \u0027label\u0027: {\u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}},\n\t\t\t\u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}\n\t\t}],\n\t\t\u0027markers\u0027: markers\n\t}]",
+            "code": "\t#Limit lines from the measure\u0027s spec, and the y axis over every value shown\n\tspc \u003d value[\u0027spc\u0027] or {}\n\tlimits \u003d spc.get(\u0027limits\u0027) or {}\n\tlsl, lcl, tgt, ucl, usl \u003d [limits.get(k) for k in (\u0027lsl\u0027, \u0027lcl\u0027, \u0027tgt\u0027, \u0027ucl\u0027, \u0027usl\u0027)]\n\tvalueList \u003d []\n\tfor s in value[\u0027series\u0027] or []:\n\t\tvalueList +\u003d [pt[k] for pt in s[\u0027data\u0027] for k in pt.keys() if k !\u003d \u0027time\u0027 and pt[k] is not None]\n\tif not valueList: return []\n\n\tallVals \u003d valueList + [v for v in [lsl, lcl, tgt, ucl, usl] if v is not None]\n\tminRange \u003d min(allVals)\n\tmaxRange \u003d max(allVals)\n\tpadding \u003d (maxRange - minRange) * 0.1 if maxRange !\u003d minRange else 1.0\n\n\tdef buildMarker(name, val, color, dashArray, position):\n\t\treturn {\n\t\t\t\u0027visible\u0027: True,\n\t\t\t\u0027type\u0027: \u0027line\u0027,\n\t\t\t\u0027axis\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027value\u0027: val,\n\t\t\t\u0027line\u0027: {\n\t\t\t\t\u0027color\u0027: color,\n\t\t\t\t\u0027width\u0027: 1,\n\t\t\t\t\u0027opacity\u0027: 0.8,\n\t\t\t\t\u0027dashArray\u0027: dashArray,\n\t\t\t\t\u0027label\u0027: {\n\t\t\t\t\t\u0027text\u0027: name,\n\t\t\t\t\t\u0027position\u0027: position,\n\t\t\t\t\t\u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10},\n\t\t\t\t\t\u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\tmarkers \u003d []\n\tif lsl is not None: markers.append(buildMarker(\u0027LSL\u0027, lsl, \u0027#FF0000\u0027, 0, \u0027left\u0027))\n\tif lcl is not None: markers.append(buildMarker(\u0027LCL\u0027, lcl, \u0027#FF8C00\u0027, \u00275.5\u0027, \u0027left\u0027))\n\tif tgt is not None: markers.append(buildMarker(\u0027Target\u0027, tgt, \u0027#00AC00\u0027, 0, \u0027left\u0027))\n\tif ucl is not None: markers.append(buildMarker(\u0027UCL\u0027, ucl, \u0027#FF8C00\u0027, \u00275.5\u0027, \u0027right\u0027))\n\tif usl is not None: markers.append(buildMarker(\u0027USL\u0027, usl, \u0027#FF0000\u0027, 0, \u0027right\u0027))\n\n\t#Each series\u0027 value key, as custom.timeSeries.series names it (the hover shows it)\n\tkeys \u003d {\u0027Recorded\u0027: \u0027Value\u0027, \u0027Current samples\u0027: \u0027Current sample\u0027}\n\tdef trend(series, kind, radius, color):\n\t\treturn {\u0027visible\u0027: True, \u0027type\u0027: kind, \u0027series\u0027: series, \u0027interpolation\u0027: \u0027curveLinear\u0027, \u0027breakLine\u0027: True, \u0027stack\u0027: False,\n\t\t\t\t\u0027radius\u0027: radius, \u0027axis\u0027: \u0027Axis1\u0027, \u0027columns\u0027: [{\u0027key\u0027: keys.get(series, series), \u0027color\u0027: color}], \u0027baselines\u0027: []}\n\n\t#Dots sized to how many points there are, so a day or a week of them (the Production Counts summary\u0027s range) doesn\u0027t run\n\t#together; a point in a violation stays bigger than a recorded one\n\tcount \u003d sum([len(s[\u0027data\u0027]) for s in value[\u0027series\u0027] or [] if s[\u0027name\u0027] \u003d\u003d \u0027Recorded\u0027])\n\tif count \u003c\u003d 60: dot, flagged \u003d 3, 6\n\telif count \u003c\u003d 300: dot, flagged \u003d 2, 4\n\telif count \u003c\u003d 1500: dot, flagged \u003d 1, 3\n\telse: dot, flagged \u003d 0, 2\n\n\t#A trend for each series that has points (the violations in the legend\u0027s colours), drawn in this order\n\tshown \u003d [s[\u0027name\u0027] for s in value[\u0027series\u0027] or []]\n\ttrends \u003d [trend(name, kind, radius, color) for name, kind, radius, color in [\n\t\t(\u0027Current samples\u0027, \u0027line\u0027, 0, \u0027#9E9E9E\u0027), (\u0027Recorded\u0027, \u0027line\u0027, dot, \u0027#7B1FA2\u0027),\n\t\t(\u0027Too little variation\u0027, \u0027scatter\u0027, flagged, \u0027var(--kcBlue-50)\u0027), (\u0027Shift or drift pattern\u0027, \u0027scatter\u0027, flagged, \u0027var(--kcOrange-50)\u0027),\n\t\t(\u0027Beyond a limit\u0027, \u0027scatter\u0027, flagged, \u0027var(--kcRed-50)\u0027)] if name in shown]\n\n\treturn [{\n\t\t\u0027trends\u0027: trends,\n\t\t\u0027axes\u0027: [{\n\t\t\t\u0027name\u0027: \u0027Axis1\u0027,\n\t\t\t\u0027min\u0027: minRange - padding,\n\t\t\t\u0027max\u0027: maxRange + padding,\n\t\t\t#One axis, on the left: every series is the measure\u0027s value, so they share its range\n\t\t\t\u0027alignment\u0027: \u0027left\u0027,\n\t\t\t\u0027width\u0027: 60,\n\t\t\t\u0027label\u0027: {\u0027visible\u0027: False, \u0027text\u0027: \u0027Value\u0027, \u0027offset\u0027: 1, \u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}},\n\t\t\t\u0027tick\u0027: {\u0027color\u0027: \u0027\u0027, \u0027label\u0027: {\u0027font\u0027: {\u0027color\u0027: \u0027\u0027, \u0027size\u0027: 10}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}}, \u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}},\n\t\t\t\u0027style\u0027: {\u0027classes\u0027: \u0027\u0027}\n\t\t}],\n\t\t\u0027markers\u0027: markers\n\t}]",
             "type": "script"
           }
         ],
-        "type": "property"
-      },
-      "persistent": true
+        "type": "expr-struct"
+      }
     },
     "custom.timeSeries.series": {
       "binding": {
         "config": {
-          "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "tagPath": "{view.custom.tagPath}"
+          "struct": {
+            "live": "tag({view.custom.tagPath} + \"/data\")",
+            "spc": "{view.custom.spc}"
           },
-          "tagPath": "{tagPath}/data"
+          "waitOnAll": false
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\tif value is None: return [{\u0027name\u0027: \u0027Ingot Width\u0027, \u0027data\u0027: []}]\n\tchartList \u003d []\n\tfor row in system.dataset.toPyDataSet(value):\n\t\tif row[\u0027value\u0027] is not None:\n\t\t\tchartList.append({\u0027time\u0027: row[\u0027tStamp\u0027], \u0027value\u0027: row[\u0027value\u0027]})\n\treturn [{\u0027name\u0027: \u0027Ingot Width\u0027, \u0027data\u0027: chartList}]",
+            "code": "\t#Recorded events, the points among them in a violating run, and the samples still being collected for the next event\n\tspc \u003d value[\u0027spc\u0027] or {}\n\trecorded \u003d [{\u0027time\u0027: pt[\u0027time\u0027], \u0027value\u0027: pt[\u0027value\u0027]} for pt in (spc.get(\u0027points\u0027) or [])]\n\tbyKind \u003d {\u0027limit\u0027: [], \u0027pattern\u0027: [], \u0027variation\u0027: []}\n\tfor point in spc.get(\u0027violationPoints\u0027) or []:\n\t\tif point[\u0027index\u0027] \u003c len(recorded): byKind.setdefault(point[\u0027kind\u0027], []).append(recorded[point[\u0027index\u0027]])\n\tlive \u003d []\n\tif value[\u0027live\u0027] is not None:\n\t\tlive \u003d [{\u0027time\u0027: row[\u0027tStamp\u0027], \u0027value\u0027: row[\u0027value\u0027]} for row in system.dataset.toPyDataSet(value[\u0027live\u0027]) if row[\u0027value\u0027] is not None]\n\tseries \u003d [{\u0027name\u0027: \u0027Recorded\u0027, \u0027data\u0027: recorded}, {\u0027name\u0027: \u0027Beyond a limit\u0027, \u0027data\u0027: byKind[\u0027limit\u0027]},\n\t\t\t  {\u0027name\u0027: \u0027Shift or drift pattern\u0027, \u0027data\u0027: byKind[\u0027pattern\u0027]}, {\u0027name\u0027: \u0027Too little variation\u0027, \u0027data\u0027: byKind[\u0027variation\u0027]},\n\t\t\t  {\u0027name\u0027: \u0027Current samples\u0027, \u0027data\u0027: live}]\n\t#Each series\u0027 value under a key of its own, which the chart\u0027s hover shows as its name (all of them under \u0027value\u0027 showed\n\t#\"value\" on every line)\n\tkeys \u003d {\u0027Recorded\u0027: \u0027Value\u0027, \u0027Current samples\u0027: \u0027Current sample\u0027}\n\tfor s in series:\n\t\tkey \u003d keys.get(s[\u0027name\u0027], s[\u0027name\u0027])\n\t\ts[\u0027data\u0027] \u003d [{\u0027time\u0027: pt[\u0027time\u0027], key: pt[\u0027value\u0027]} for pt in s[\u0027data\u0027]]\n\t#Only the series with points: the chart gives an empty one an axis of its own\n\treturn [s for s in series if s[\u0027data\u0027]]",
             "type": "script"
           }
         ],
-        "type": "tag"
-      },
-      "persistent": true
+        "type": "expr-struct"
+      }
     },
     "params.value": {
       "paramDirection": "input",
@@ -77,7 +95,7 @@
   },
   "props": {
     "defaultSize": {
-      "height": 394
+      "height": 560
     }
   },
   "root": {
@@ -127,15 +145,10 @@
               "position.display": {
                 "binding": {
                   "config": {
-                    "fallbackDelay": 2.5,
-                    "mode": "indirect",
-                    "references": {
-                      "tagPath": "{view.custom.tagPath}"
-                    },
-                    "tagPath": "{tagPath}/outOfControl"
+                    "path": "view.custom.spc.outOfControl"
                   },
                   "overlayOptOut": true,
-                  "type": "tag"
+                  "type": "property"
                 }
               }
             },
@@ -216,8 +229,256 @@
         "type": "ia.chart.timeseries"
       },
       {
+        "children": [
+          {
+            "meta": {
+              "name": "lblViolationsTitle"
+            },
+            "position": {
+              "basis": "0px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "classes": "kanoa/font/bodySmall",
+                "paddingLeft": 3,
+                "paddingRight": 3,
+                "position": "absolute",
+                "top": -8
+              },
+              "text": "Violations"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "rptViolations"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.instances": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.spc.violations"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t#Each rule the check flagged as a pill: its readable name, what it means, and a colour for its kind (868mtrbyg)\n\tCOLORS \u003d {\u0027limit\u0027: \u0027--kcRed-50\u0027, \u0027pattern\u0027: \u0027--kcOrange-50\u0027, \u0027variation\u0027: \u0027--kcBlue-50\u0027}\n\tinfo \u003d system.kanoa.quality.spc.getRuleInfo()\n\tif not isinstance(info, dict): info \u003d {}\n\tpills \u003d []\n\tfor rule in value or []:\n\t\tr \u003d info.get(rule) or {\u0027label\u0027: rule, \u0027description\u0027: rule, \u0027kind\u0027: \u0027pattern\u0027}\n\t\tpills.append({\u0027label\u0027: r[\u0027label\u0027], \u0027description\u0027: r[\u0027description\u0027], \u0027color\u0027: COLORS.get(r[\u0027kind\u0027], \u0027--kcOrange-50\u0027)})\n\treturn pills",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignContent": "flex-start",
+              "alignItems": "center",
+              "elementPosition": {
+                "basis": "auto",
+                "grow": 0,
+                "shrink": 0
+              },
+              "justify": "flex-start",
+              "path": "kanoa/core/dbp/widgets/analytics/spcViolationPill",
+              "style": {
+                "gap": "6px"
+              },
+              "useDefaultViewHeight": false,
+              "useDefaultViewWidth": false,
+              "wrap": "wrap"
+            },
+            "type": "ia.display.flex-repeater"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "dot"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcRed-50",
+                        "borderRadius": "50%",
+                        "height": "10px",
+                        "width": "10px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "lbl"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/bodySmall"
+                      },
+                      "text": "Beyond a limit"
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "legLimit",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top",
+                    "text": "A point is outside a control or spec limit."
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": "4px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "dot"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcOrange-50",
+                        "borderRadius": "50%",
+                        "height": "10px",
+                        "width": "10px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "lbl"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/bodySmall"
+                      },
+                      "text": "Shift or drift pattern"
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "legPattern",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top",
+                    "text": "A run of points shows the process has shifted, is drifting or is unstable."
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": "4px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "name": "dot"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcBlue-50",
+                        "borderRadius": "50%",
+                        "height": "10px",
+                        "width": "10px"
+                      }
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "lbl"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/bodySmall"
+                      },
+                      "text": "Too little variation"
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "legVariation",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "top",
+                    "text": "Points hug the center line: the limits may be too wide, or the data mixed."
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "alignItems": "center",
+                  "style": {
+                    "gap": "4px"
+                  }
+                },
+                "type": "ia.container.flex"
+              }
+            ],
+            "meta": {
+              "name": "flxLegend"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "justify": "center",
+              "style": {
+                "gap": "14px",
+                "marginTop": "4px"
+              },
+              "wrap": "wrap"
+            },
+            "type": "ia.container.flex"
+          }
+        ],
         "meta": {
-          "name": "lblViolations"
+          "name": "flxViolations"
         },
         "position": {
           "shrink": 0
@@ -226,43 +487,25 @@
           "position.display": {
             "binding": {
               "config": {
-                "fallbackDelay": 2.5,
-                "mode": "indirect",
-                "references": {
-                  "tagPath": "{view.custom.tagPath}"
-                },
-                "tagPath": "{tagPath}/outOfControl"
+                "path": "view.custom.spc.outOfControl"
               },
               "overlayOptOut": true,
-              "type": "tag"
-            }
-          },
-          "props.text": {
-            "binding": {
-              "config": {
-                "fallbackDelay": 2.5,
-                "mode": "indirect",
-                "references": {
-                  "tagPath": "{view.custom.tagPath}"
-                },
-                "tagPath": "{tagPath}/ruleViolations"
-              },
-              "transforms": [
-                {
-                  "code": "\treturn \u0027Violations: %s\u0027%\u0027, \u0027.join(value) if value else []",
-                  "type": "script"
-                }
-              ],
-              "type": "tag"
+              "type": "property"
             }
           }
         },
         "props": {
+          "direction": "column",
           "style": {
-            "color": "#c0392b"
+            "classes": "kanoa/border",
+            "marginTop": "6px",
+            "overflow": "visible",
+            "padding": "5px",
+            "paddingTop": "12px",
+            "position": "relative"
           }
         },
-        "type": "ia.display.label"
+        "type": "ia.container.flex"
       },
       {
         "meta": {

@@ -46,7 +46,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tdisplayValue \u003d value[\u0027params\u0027].get(\u0027displayJSON\u0027) or \u0027\u0027\n\tif value[\u0027display\u0027][\u0027showRaw\u0027]: return displayValue\n\t\n\tif displayValue: \n\t\timport json\n\t\tdata \u003d json.loads(displayValue)\t\t\n\t\treturn system.kanoa.utilities.jsonToMarkdown(data) or \u0027\u0027\n\t\n\treturn \u0027\u0027",
+                  "code": "\n\timport json\n\tdisplayValue \u003d value[\u0027params\u0027].get(\u0027displayJSON\u0027) or \u0027\u0027\n\tif value[\u0027display\u0027][\u0027showRaw\u0027] or not displayValue: return displayValue\n\t\n\t#A plain value (not a JSON object or list), like a lot attribute\u0027s text, shows as it is\n\ttry:\n\t\tdata \u003d json.loads(displayValue)\n\texcept (ValueError, TypeError):\n\t\treturn displayValue\n\tif not isinstance(data, (dict, list)):\n\t\treturn displayValue\n\treturn system.kanoa.utilities.jsonToMarkdown(data) or \u0027\u0027",
                   "type": "script"
                 }
               ],

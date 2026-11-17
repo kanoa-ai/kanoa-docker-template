@@ -171,7 +171,7 @@
           "enabled": true
         }
       },
-      "userId": 5
+      "userId": null
     }
   },
   "params": {},
@@ -229,6 +229,14 @@
                   "grow": 1
                 },
                 "propConfig": {
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
+                  },
                   "props.params.refresh": {
                     "binding": {
                       "config": {
@@ -309,6 +317,14 @@
                   "grow": 1
                 },
                 "propConfig": {
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
+                  },
                   "props.params.refresh": {
                     "binding": {
                       "config": {
@@ -389,86 +405,6 @@
       },
       {
         "children": [
-          {
-            "meta": {
-              "domId": "rdoSource",
-              "name": "rdoSource"
-            },
-            "position": {
-              "display": false,
-              "shrink": 0
-            },
-            "propConfig": {
-              "position.display": {
-                "binding": {
-                  "config": {
-                    "struct": {
-                      "assets": "{view.custom.assets.selected}",
-                      "itemSourceId": "{view.custom.itemSourceId}",
-                      "items": "{view.custom.items.selected}"
-                    },
-                    "waitOnAll": true
-                  },
-                  "enabled": false,
-                  "transforms": [
-                    {
-                      "code": "\t\n\treturn len(value[\u0027assets\u0027]) \u003e 0 and len(value[\u0027items\u0027]) \u003e 0 and value[\u0027itemSourceId\u0027] is not None",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "expr-struct"
-                }
-              },
-              "props.radios": {
-                "binding": {
-                  "config": {
-                    "expression": "1"
-                  },
-                  "enabled": false,
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\n\treturn [{\u0027text\u0027: row[\u0027itemSourceName\u0027], \u0027value\u0027: row[\u0027itemSourceId\u0027], \u0027selected\u0027: False} for i, row in enumerate(system.kanoa.item.getItemSource({\u0027enabled\u0027: True}))]",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "expr"
-                }
-              },
-              "props.value": {
-                "binding": {
-                  "config": {
-                    "bidirectional": true,
-                    "path": "view.custom.itemSourceId"
-                  },
-                  "enabled": false,
-                  "overlayOptOut": true,
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "index": 1,
-              "justify": "center",
-              "radios": [
-                {
-                  "selected": false,
-                  "text": "input",
-                  "value": 1
-                },
-                {
-                  "selected": true,
-                  "text": "output",
-                  "value": 2
-                }
-              ],
-              "style": {
-                "height": "35px"
-              },
-              "value": 2
-            },
-            "type": "ia.input.radio-group"
-          },
           {
             "events": {
               "component": {
@@ -638,7 +574,7 @@
         {
           "name": "linkItems",
           "params": [],
-          "script": "\t\n\tsystem.perspective.print(\"Link Items\")\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tfor asset in self.view.custom.assets.selected:\n\t\tfor itemId in self.view.custom.items.selected:\n\t\t\trateInfo \u003d {\n\t\t\t\t\t\t\t\u0027itemAssetRateId\u0027: None,\n\t\t\t\t\t\t\t\u0027itemId\u0027: itemId,\n\t\t\t\t\t\t\t\u0027assetId\u0027: asset[\u0027assetId\u0027],\n\t\t\t\t\t\t\t\u0027standardRate\u0027: None,\n\t\t\t\t\t\t\t\u0027scheduleRate\u0027: None,\n\t\t\t\t\t\t\t\u0027itemPeriodId\u0027: None,\n\t\t\t\t\t\t\t\u0027infeedUnitId\u0027: None,\n\t\t\t\t\t\t\t\u0027outfeedUnitId\u0027: None,\n\t\t\t\t\t\t\t\u0027wasteUnitId\u0027: None,\n\t\t\t\t\t\t\t\u0027packageCount\u0027: None,\n\t\t\t\t\t\t\t\u0027itemSourceId\u0027: self.view.custom.itemSourceId,\n\t\t\t\t\t\t\t\u0027enabled\u0027: True\n\t\t\t\t\t\t}\n\t\t\tsystem.kanoa.item.addItemAssetRate(rateInfo, userId)\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Adding link\u0027})\n\n\tsystem.perspective.sendMessage(\"refreshItems\", payload\u003d{})\n\t\n\treturn"
+          "script": "\t\n\tsystem.perspective.print(\"Link Items\")\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tassets \u003d self.view.custom.assets.selected\n\titemIds \u003d list(self.view.custom.items.selected)\n\n\t#Adding a pair that\u0027s already linked would overwrite its rates with these empty ones (868mu3aqr): an enabled link is left\n\t#alone, and a disabled one is re-enabled with its own rate settings\n\texisting \u003d system.kanoa.item.getAssetItems({\u0027assetIdList\u0027: [asset[\u0027assetId\u0027] for asset in assets], \u0027itemIdList\u0027: itemIds})\n\tlinked \u003d dict(((row[\u0027assetId\u0027], row[\u0027itemId\u0027]), row) for row in system.dataset.toPyDataSet(existing)) if existing is not None else {}\n\n\tlinks \u003d 0\n\tfailed \u003d 0\n\tfor asset in assets:\n\t\tfor itemId in itemIds:\n\t\t\trow \u003d linked.get((asset[\u0027assetId\u0027], itemId))\n\t\t\tif row is not None:\n\t\t\t\tif row[\u0027assetRateEnabled\u0027]: continue\n\t\t\t\trateInfo \u003d dict((key, row[key]) for key in (\u0027itemAssetRateId\u0027, \u0027itemId\u0027, \u0027assetId\u0027, \u0027standardRate\u0027, \u0027scheduleRate\u0027, \u0027itemPeriodId\u0027,\n\t\t\t\t\t\u0027infeedUnitId\u0027, \u0027outfeedUnitId\u0027, \u0027wasteUnitId\u0027, \u0027packageCount\u0027, \u0027itemSourceId\u0027))\n\t\t\t\trateInfo[\u0027enabled\u0027] \u003d True\n\t\t\t\tlinks +\u003d 1\n\t\t\t\tresult \u003d system.kanoa.item.updateItemAssetRate(rateInfo, userId)\n\t\t\t\tif result is None or isinstance(result, basestring): failed +\u003d 1\n\t\t\t\tcontinue\n\t\t\trateInfo \u003d {\n\t\t\t\t\t\t\t\u0027itemAssetRateId\u0027: None,\n\t\t\t\t\t\t\t\u0027itemId\u0027: itemId,\n\t\t\t\t\t\t\t\u0027assetId\u0027: asset[\u0027assetId\u0027],\n\t\t\t\t\t\t\t\u0027standardRate\u0027: None,\n\t\t\t\t\t\t\t\u0027scheduleRate\u0027: None,\n\t\t\t\t\t\t\t\u0027itemPeriodId\u0027: None,\n\t\t\t\t\t\t\t\u0027infeedUnitId\u0027: None,\n\t\t\t\t\t\t\t\u0027outfeedUnitId\u0027: None,\n\t\t\t\t\t\t\t\u0027wasteUnitId\u0027: None,\n\t\t\t\t\t\t\t\u0027packageCount\u0027: None,\n\t\t\t\t\t\t\t\u0027itemSourceId\u0027: self.view.custom.itemSourceId,\n\t\t\t\t\t\t\t\u0027enabled\u0027: True\n\t\t\t\t\t\t}\n\t\t\tlinks +\u003d 1\n\t\t\t#The new rate\u0027s id; None (logged) or a license message when it failed\n\t\t\tresult \u003d system.kanoa.item.addItemAssetRate(rateInfo, userId)\n\t\t\tif result is None or isinstance(result, basestring): failed +\u003d 1\n\n\t#The new rows show in Production Rates, so only a failure gets a toast: one for the whole action\n\tif failed:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027 if failed \u003d\u003d links else \u0027warning\u0027, \u0027autoClose\u0027: 0,\n\t\t\t\u0027message\u0027: \"Couldn\u0027t link %d of %d item and asset pairs: see the gateway log\" % (failed, links)})\n\n\tsystem.perspective.sendMessage(\"refreshItems\", payload\u003d{})\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,

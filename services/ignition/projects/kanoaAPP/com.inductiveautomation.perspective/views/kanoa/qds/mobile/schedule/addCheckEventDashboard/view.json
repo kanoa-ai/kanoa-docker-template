@@ -75,11 +75,13 @@
       ]
     },
     "clearForm": false,
+    "includeAuto": false,
     "selection": {},
     "values": {
       "itemId": null,
       "itemPath": null
-    }
+    },
+    "toastId": null
   },
   "events": {
     "system": {
@@ -113,6 +115,9 @@
         "enabled": null,
         "script": "\t\n\tif currentValue.value \u003d\u003d True:\n\t\tself.getChild(\"root\").getChkShtInfo(None)\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tself.custom.clearForm \u003d False\n\t\n\treturn"
       },
+      "persistent": true
+    },
+    "custom.includeAuto": {
       "persistent": true
     },
     "custom.selection": {
@@ -576,6 +581,14 @@
               "grow": 1
             },
             "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
               "position.display": {
                 "binding": {
                   "config": {
@@ -643,7 +656,21 @@
             "minHeight": "35px"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.grow": {
+            "binding": {
+              "config": {
+                "expression": "if(isNull({view.custom.selection.item.itemId}) \u0026\u0026 coalesce({view.custom.selection.item.required}, false), 1, 0)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        }
       },
       {
         "children": [
@@ -849,6 +876,55 @@
           },
           {
             "meta": {
+              "name": "chkIncludeAuto",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom",
+                "text": "Also list automatic check sheets, which are normally filled in from their tags"
+              }
+            },
+            "position": {
+              "basis": "26px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selection.item.itemId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value is not None",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.includeAuto"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "text": "Include Auto Checks",
+              "style": {
+                "fontSize": "0.9em",
+                "paddingLeft": "5px"
+              }
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
               "domId": "evChkShtSelector",
               "name": "evChkShtSelector"
             },
@@ -856,6 +932,14 @@
               "grow": 1
             },
             "propConfig": {
+              "props.path": {
+                "binding": {
+                  "config": {
+                    "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                  },
+                  "type": "expr"
+                }
+              },
               "position.display": {
                 "binding": {
                   "config": {
@@ -874,16 +958,20 @@
               "props.params.values.data": {
                 "binding": {
                   "config": {
-                    "path": "view.params.value"
+                    "struct": {
+                      "includeAuto": "{view.custom.includeAuto}",
+                      "value": "{view.params.value}"
+                    },
+                    "waitOnAll": false
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tdata \u003d system.kanoa.quality.sheet.getSheetsFilteredBy({\u0027chkShtVersionStateNameList\u0027: [\u0027Released\u0027], \u0027assetId\u0027: value[\u0027assetId\u0027], \u0027itemId\u0027: value[\u0027itemId\u0027], \u0027enabled\u0027: True})\n\trows \u003d []\n\tseen \u003d set()\n\tfor row in system.kanoa.quality.sheet.getUniqueChecksOnly(data):\n\t\tif (row[\u0027chkShtId\u0027], row[\u0027assetId\u0027]) in seen: continue\t#getUniqueChecksOnly returns one row per item link; keep one per check sheet and asset link\n\t\tseen.add((row[\u0027chkShtId\u0027], row[\u0027assetId\u0027]))\n\t\trows.append(row)\n\treturn system.kanoa.utilities.convertDictListToDataset(rows)",
+                      "code": "\t\n\t#Auto check sheets are filled in from their tags, so they\u0027re left out unless Include Auto Checks is ticked (read live: a struct binding can run with stale inputs)\n\tinfo \u003d self.view.params.value\n\tfilters \u003d {\u0027chkShtVersionStateNameList\u0027: [\u0027Released\u0027], \u0027assetId\u0027: info[\u0027assetId\u0027], \u0027itemId\u0027: info[\u0027itemId\u0027], \u0027enabled\u0027: True}\n\tif not self.view.custom.includeAuto: filters[\u0027auto\u0027] \u003d False\n\tdata \u003d system.kanoa.quality.sheet.getSheetsFilteredBy(filters)\n\trows \u003d []\n\tseen \u003d set()\n\tfor row in system.kanoa.quality.sheet.getUniqueChecksOnly(data):\n\t\tif (row[\u0027chkShtId\u0027], row[\u0027assetId\u0027]) in seen: continue\t#getUniqueChecksOnly returns one row per item link; keep one per check sheet and asset link\n\t\tseen.add((row[\u0027chkShtId\u0027], row[\u0027assetId\u0027]))\n\t\trows.append(row)\n\treturn system.kanoa.utilities.convertDictListToDataset(rows)",
                       "type": "script"
                     }
                   ],
-                  "type": "property"
+                  "type": "expr-struct"
                 }
               }
             },
@@ -925,7 +1013,21 @@
             "overflow": "hidden"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.grow": {
+            "binding": {
+              "config": {
+                "expression": "if(!isNull({view.custom.selection.item.itemId}), 1, 0)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        }
       },
       {
         "children": [
@@ -1047,7 +1149,6 @@
           "name": "flxAction"
         },
         "position": {
-          "grow": 1,
           "shrink": 0
         },
         "props": {
@@ -1056,7 +1157,8 @@
           "style": {
             "gap": "5px",
             "overflow": "hidden",
-            "padding": "5px"
+            "padding": "5px",
+            "marginTop": "auto"
           }
         },
         "type": "ia.container.flex"
@@ -1081,7 +1183,7 @@
         {
           "name": "add",
           "params": [],
-          "script": "\n\tchkShtId \u003d self.view.custom.selection.chkShtId\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({\u0027enabled\u0027: True}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\t\n\tchkShtTriggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtId\u0027: chkShtId}), \u0027triggerTypeName\u0027, \u0027chkShtTriggerId\u0027)\t\n\tif not chkShtTriggers.has_key(\u0027Manual\u0027):\n\t\ttriggerTypeId \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeId\u0027, system.kanoa.quality.config.getTriggerTypes({\u0027triggerTypeName\u0027: \u0027Manual\u0027}))\n\t\ttriggerInfo \u003d {\u0027chkShtId\u0027: chkShtId,\u0027triggerTypeId\u0027:triggerTypeId, \u0027modeId\u0027: None, \u0027shiftNameId\u0027: None, \u0027intervalMins\u0027: 10, \u0027delayMins\u0027: 5, \u0027productionCount\u0027: None, \u0027comingDueMins\u0027: 5, \u0027overDueMins\u0027: 5, \u0027graceMins\u0027: 10, \u0027enabled\u0027: True, \u0027modifier\u0027: None}\n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\telse:\n\t\tchkShtTriggerId \u003d chkShtTriggers[\u0027Manual\u0027]\n\t\n\titemId \u003d self.view.custom.selection.item.itemId if self.view.custom.selection.item.required else None\n\tassetId \u003d self.view.custom.selection.asset.assetId\n\tshiftNameId \u003d system.kanoa.utilities.getFieldValue(\u0027shiftNameId\u0027, system.kanoa.shift.getCurrentShift({\u0027assetId\u0027: assetId})) if assetId is not None else None\n\t\n\tchkEventInfo \u003d {\n\t\t\t\t\t\t\u0027chkShtId\u0027: chkShtId,\n\t\t\t\t\t\t\u0027assetId\u0027: assetId,\n\t\t\t\t\t\t\u0027itemId\u0027: itemId,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: shiftNameId,\n\t\t\t\t\t\t\u0027comment\u0027: None,\n\t\t\t\t\t\t\u0027scheduledDate\u0027: system.date.now(),\n\t\t\t\t\t\t\u0027chkShtStateId\u0027: chkStates[\u0027Due\u0027],\n\t\t\t\t\t\t\u0027chkShtTriggerId\u0027: chkShtTriggerId\n\t\t\t\t\t}\n\t\n\tchkShtEventId \u003d system.kanoa.quality.event.addCheckEvent(chkEventInfo, userId)\n\tif chkShtEventId:\n\t\tsystem.kanoa.quality.event.updatePersistentValues(chkShtId, assetId, itemId, chkShtEventId, userId)\n\t\t\n\t\tsystem.kanoa.quality.event.updateChkEventDataTag()\n\t\tsystem.perspective.sendMessage(\u0027showSuccessfulToast\u0027, \u0027Check Sheet has been added\u0027)\n\t\tsystem.perspective.sendMessage(\u0027chkShtEventAdded\u0027, {})\n\t\tself.getChkShtInfo(None)\n\t\t\n\t\tparams\u003d {\n\t\t\t\t\t\"path\": \u0027kanoa/qds/schedule/chkShtEventEditor\u0027,\n\t\t\t\t\t\"name\": \u0027Check Table\u0027,\n\t\t\t\t\t\"type\": \u0027view\u0027,\n\t\t\t\t\t\"params\": {\u0027chkShtEventId\u0027: chkShtEventId}\n\t\t\t\t}\n\t\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams)\n\telse:\n\t\tsystem.perspective.sendMessage(\u0027showFailerToast\u0027, \u0027Failed to add Check Sheet\u0027)\n\t\n\treturn"
+          "script": "\n\tchkShtId \u003d self.view.custom.selection.chkShtId\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tchkStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.sheet.getStates({\u0027enabled\u0027: True}), \u0027chkShtStateName\u0027, \u0027chkShtStateId\u0027)\n\t\n\tchkShtTriggers \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.quality.config.getChkShtTriggers({\u0027chkShtId\u0027: chkShtId}), \u0027triggerTypeName\u0027, \u0027chkShtTriggerId\u0027)\t\n\tif not chkShtTriggers.has_key(\u0027Manual\u0027):\n\t\ttriggerTypeId \u003d system.kanoa.utilities.getFieldValue(\u0027triggerTypeId\u0027, system.kanoa.quality.config.getTriggerTypes({\u0027triggerTypeName\u0027: \u0027Manual\u0027}))\n\t\ttriggerInfo \u003d {\u0027chkShtId\u0027: chkShtId,\u0027triggerTypeId\u0027:triggerTypeId, \u0027modeId\u0027: None, \u0027shiftNameId\u0027: None, \u0027intervalMins\u0027: 10, \u0027delayMins\u0027: 5, \u0027productionCount\u0027: None, \u0027comingDueMins\u0027: 5, \u0027overDueMins\u0027: 5, \u0027graceMins\u0027: 10, \u0027enabled\u0027: True, \u0027modifier\u0027: None}\n\t\tchkShtTriggerId \u003d system.kanoa.quality.config.addChkShtTrigger(triggerInfo, userId)\n\t\t# Adding the trigger changes the sheet, so it\u0027s recorded in its change log, as the Trigger Editor does\n\t\tif chkShtTriggerId and system.kanoa.utilities.getFieldValue(\u0027chkShtVersionStateName\u0027, system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: chkShtId})) !\u003d \u0027Draft\u0027:\n\t\t\tchange \u003d \u0027Trigger Manual added by Add Check: Over Due %s, Grace %s mins\u0027 % (triggerInfo[\u0027overDueMins\u0027], triggerInfo[\u0027graceMins\u0027])\n\t\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: chkShtId, \u0027change\u0027: change}, userId)\n\telse:\n\t\tchkShtTriggerId \u003d chkShtTriggers[\u0027Manual\u0027]\n\t\n\titemId \u003d self.view.custom.selection.item.itemId if self.view.custom.selection.item.required else None\n\tassetId \u003d self.view.custom.selection.asset.assetId\n\tshiftNameId \u003d system.kanoa.utilities.getFieldValue(\u0027shiftNameId\u0027, system.kanoa.shift.getCurrentShift({\u0027assetId\u0027: assetId})) if assetId is not None else None\n\t\n\tchkEventInfo \u003d {\n\t\t\t\t\t\t\u0027chkShtId\u0027: chkShtId,\n\t\t\t\t\t\t\u0027assetId\u0027: assetId,\n\t\t\t\t\t\t\u0027itemId\u0027: itemId,\n\t\t\t\t\t\t\u0027shiftNameId\u0027: shiftNameId,\n\t\t\t\t\t\t\u0027comment\u0027: None,\n\t\t\t\t\t\t\u0027scheduledDate\u0027: system.date.now(),\n\t\t\t\t\t\t\u0027chkShtStateId\u0027: chkStates[\u0027Due\u0027],\n\t\t\t\t\t\t\u0027chkShtTriggerId\u0027: chkShtTriggerId\n\t\t\t\t\t}\n\t\n\tchkShtEventId \u003d system.kanoa.quality.event.addCheckEvent(chkEventInfo, userId)\n\tif chkShtEventId:\n\t\tsystem.kanoa.quality.event.updatePersistentValues(chkShtId, assetId, itemId, chkShtEventId, userId)\n\t\t\n\t\tself.toast({\u0027message\u0027: \u0027Check sheet added\u0027, \u0027type\u0027: \u0027success\u0027})\n\t\tsystem.perspective.sendMessage(\u0027chkShtEventAdded\u0027, {})\n\t\tself.getChkShtInfo(None)\n\t\t\n\t\tparams\u003d {\n\t\t\t\t\t\"path\": \u0027kanoa/qds/schedule/chkShtEventEditor\u0027,\n\t\t\t\t\t\"name\": \u0027Check Table\u0027,\n\t\t\t\t\t\"type\": \u0027view\u0027,\n\t\t\t\t\t\"params\": {\u0027chkShtEventId\u0027: chkShtEventId}\n\t\t\t\t}\n\t\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams)\n\telse:\n\t\tself.toast({\u0027message\u0027: \"Couldn\u0027t add the check sheet\", \u0027type\u0027: \u0027error\u0027})\n\t\n\treturn"
         },
         {
           "name": "getChkShtInfo",
@@ -1089,6 +1191,13 @@
             "chkShtId"
           ],
           "script": "\n#\tif chkShtId is None: return\n\tsystem.perspective.print(\"getChkShtInfo() called with %s\"%chkShtId)\n\t\n\tself.view.custom.chkShtInfo \u003d {\n\t\t\t\t\u0027chkSht\u0027: system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.sheet.getSheets({\u0027chkShtId\u0027: chkShtId or -1}), 0),\n\t\t\t\t\u0027assets\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getAssets(chkShtId or -1)),\n\t\t\t\t\u0027items\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItems(chkShtId or -1)),\n\t\t\t\t\u0027itemClasses\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItemClasses(chkShtId or -1)),\n\t\t\t\t\u0027itemSets\u0027: system.kanoa.utilities.convertDatasetToJSON(system.kanoa.quality.sheet.getItemSets(chkShtId or -1)),\n\t\t\t}\n\n\tself.view.custom.selection[\"chkShtId\"] \u003d chkShtId\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
         }
       ],
       "extensionFunctions": null,

@@ -1,5 +1,6 @@
 {
   "custom": {
+    "toastId": null, 
     "routeSteps": {
       "selection": {
         "col": null, 
@@ -1010,7 +1011,7 @@
                       "render": "auto"
                     }, 
                     {
-                      "visible": true,
+                      "visible": true, 
                       "footer": {
                         "align": "center", 
                         "title": "", 
@@ -1074,7 +1075,7 @@
                         }
                       }, 
                       "viewParams": {}, 
-                      "render": "date"
+                      "render": "string"
                     }
                   ], 
                   "bodyStyle": {
@@ -1135,21 +1136,21 @@
                     "binding": {
                       "config": {
                         "path": "session.props.locale"
-                      },
+                      }, 
                       "transforms": [
                         {
                           "code": "\treturn system.kanoa.date.localizeDateFormat(\"MM/DD/YYYY\", value)",
                           "type": "script"
                         }
-                      ],
+                      ], 
                       "type": "property"
                     }
-                  },
+                  }, 
                   "props.data": {
                     "binding": {
                       "transforms": [
                         {
-                          "code": "\t\n\treturn value", 
+                          "code": "\t\n\treturn value",
                           "type": "script"
                         }
                       ], 
@@ -1260,8 +1261,15 @@
       ], 
       "customMethods": [
         {
+          "params": [
+            "params"
+          ], 
+          "script": "\t'''One toast at a time on this view. The first one's id is kept; every later toast updates it while it's showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).'''\n\tparams = dict(params)\n\ttoastId = self.view.custom.toastId\n\tif toastId:\n\t\tparams['id'] = toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId = system.kanoa.toast.show(params)", 
+          "name": "toast"
+        }, 
+        {
           "params": [], 
-          "script": "\n\tsystem.perspective.print(\"deleteRouteStep() called\")\n\n\tuserId = self.view.custom.security.userId\n\t\n\tfor routeStep in self.view.custom.routeSteps.selection.data:\n\t\tretVal, msg = system.kanoa.lot.deleteRouteStep(routeStep['routeStepId'], userId)\n\n\t\tif msg:\tsystem.kanoa.toast.show({'type': 'error', 'message': msg})\n\t\telse: system.kanoa.toast.show({'type': 'success', 'message': 'routeStep has been deleted'})\n\t\n\tself.view.refreshBinding(\"custom.routeSteps.data\")\n\t\n\treturn", 
+          "script": "\n\tsystem.perspective.print(\"deleteRouteStep() called\")\n\n\tuserId = self.view.custom.security.userId\n\t\n\t#One toast for the whole selection (868mvvzbz)\n\tdeleted, failed = [], []\n\tfor routeStep in self.view.custom.routeSteps.selection.data:\n\t\tretVal, msg = system.kanoa.lot.deleteRouteStep(routeStep['routeStepId'], userId)\n\n\t\tif msg:\tfailed.append('step %s (%s)'%(routeStep['stepNum'], msg))\n\t\telse: deleted.append(routeStep['stepNum'])\n\n\tif failed:\n\t\tself.toast({'type': 'warning' if deleted else 'error', 'message': \"Deleted %s of %s route steps; %s couldn't be deleted: %s\"%(len(deleted), len(deleted) + len(failed), len(failed), '; '.join(failed))})\n\telif len(deleted) == 1: self.toast({'type': 'success', 'message': 'Route step \"%s\" deleted'%deleted[0]})\n\telif deleted: self.toast({'type': 'success', 'message': 'Deleted %s route steps'%len(deleted)})\n\t\n\tself.view.refreshBinding(\"custom.routeSteps.data\")\n\t\n\treturn", 
           "name": "deleteRouteStep"
         }, 
         {
@@ -1346,7 +1354,7 @@
       "binding": {
         "transforms": [
           {
-            "code": "\t\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRouteSteps({'routeId': value['routeId'] or -1}))", 
+            "code": "\t\n\trows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRouteSteps({'routeId': value['routeId'] or -1}))\n\t#lastUpdated comes from the database as text in its own zone (UTC): rebuild it in the device's time zone. This runs\n\t#on the gateway, which would otherwise format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt = SimpleDateFormat(system.kanoa.date.localizeDateFormat('MM/dd/yyyy h:mm a', self.session.props.locale))\n\tdeviceZone = self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tfor row in rows:\n\t\tdate = row.get('changedDate') or row.get('createdDate')\n\t\tif date is not None:\n\t\t\t#getRoutes has no user name columns: the name is the text before ' on '\n\t\t\tuser = row.get('changedByUser') or row.get('createdByUser') or (row.get('lastUpdated') or '').split(' on ')[0]\n\t\t\trow['lastUpdated'] = \"%s on %s\" % (user, fmt.format(date))\n\treturn rows", 
             "type": "script"
           }
         ], 
@@ -1360,7 +1368,7 @@
     "custom.tableRowDroppedData": {
       "onChange": {
         "enabled": null, 
-        "script": "\n#\tsystem.perspective.print(\"rowdroppedData change droppedId %s draggedId%s\"%(currentValue.value[\"droppedId\"].value, currentValue.value[\"draggedId\"].value))\n\n\tif not self.custom.userAction.canCreate: return\n\tif int(currentValue.value[\"droppedId\"].value) == -1 and int(currentValue.value[\"draggedId\"].value) == -1: return\n\t\n\troutesSteps = self.custom.routeSteps.data\n#\tsystem.perspective.print(\"Inserting row %s to row %s\"%(currentValue.value[\"draggedId\"].value, currentValue.value[\"droppedId\"].value))\n#\tsystem.perspective.print(\"Removing row %s\"%(currentValue.value[\"draggedId\"].value))\n\t\n\troutesSteps.insert(int(currentValue.value[\"droppedId\"].value), routesSteps.pop(int(currentValue.value[\"draggedId\"].value)))\n\tself.custom.tableRowDroppedData = {'draggedId': -1, 'droppedId': -1}\n\t\n\tsuccess, msg = system.kanoa.lot.reorderRouteSteps(routesSteps, self.custom.security.userId)\n\tif msg: system.kanoa.toast.show({'type': 'error', 'message': 'Route Steps were not reordered %s'%(msg)})\n\telse: system.kanoa.toast.show({'type': 'success', 'message': \"Route Steps have been reordered\"})\n\n\tself.refreshBinding(\"custom.routeSteps.data\")\n\t\n\treturn"
+        "script": "\n#\tsystem.perspective.print(\"rowdroppedData change droppedId %s draggedId%s\"%(currentValue.value[\"droppedId\"].value, currentValue.value[\"draggedId\"].value))\n\n\tif not self.custom.userAction.canCreate: return\n\tif int(currentValue.value[\"droppedId\"].value) == -1 and int(currentValue.value[\"draggedId\"].value) == -1: return\n\t\n\troutesSteps = self.custom.routeSteps.data\n#\tsystem.perspective.print(\"Inserting row %s to row %s\"%(currentValue.value[\"draggedId\"].value, currentValue.value[\"droppedId\"].value))\n#\tsystem.perspective.print(\"Removing row %s\"%(currentValue.value[\"draggedId\"].value))\n\t\n\troutesSteps.insert(int(currentValue.value[\"droppedId\"].value), routesSteps.pop(int(currentValue.value[\"draggedId\"].value)))\n\tself.custom.tableRowDroppedData = {'draggedId': -1, 'droppedId': -1}\n\t\n\tsuccess, msg = system.kanoa.lot.reorderRouteSteps(routesSteps, self.custom.security.userId)\n\tif msg: self.getChild(\"root\").toast({'type': 'error', 'message': 'Route Steps were not reordered %s'%(msg)})\n\telse: self.getChild(\"root\").toast({'type': 'success', 'message': \"Route Steps have been reordered\"})\n\n\tself.refreshBinding(\"custom.routeSteps.data\")\n\t\n\treturn"
       }, 
       "persistent": true
     }

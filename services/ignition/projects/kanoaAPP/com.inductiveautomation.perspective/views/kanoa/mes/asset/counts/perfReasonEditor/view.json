@@ -181,7 +181,7 @@
                 "binding": {
                   "transforms": [
                     {
-                      "code": "\n\tparamsDict = {}\n\tif value['itemId']: paramsDict['itemPath'] = system.kanoa.utilities.getFieldValue('itemPath', system.kanoa.item.getItems({'itemId': value['itemId']}))\n\tif value['assetPath']: paramsDict['assetPath'] = value['assetPath']\n\t\n\treturn [{'value': item['performanceStateId'], 'label': system.kanoa.utilities.formatPath(item['performanceStatePath'], {})} for item in system.kanoa.performanceState.getAssetPerformanceStates(paramsDict)]", 
+                      "code": "\n\tparamsDict = {}\n\tif value['itemId']: paramsDict['itemPath'] = system.kanoa.utilities.getFieldValue('itemPath', system.kanoa.item.getItems({'itemId': value['itemId']}))\n\tif value['assetPath']: paramsDict['assetPath'] = value['assetPath']\n\t\n\t#A row per link: a reason the asset gets through two links (its class at the site and itself at the line) is listed once (868mvruq1)\n\toptions, seen = [], set()\n\tfor item in system.kanoa.performanceState.getAssetPerformanceStates(paramsDict):\n\t\tif item['performanceStateId'] in seen: continue\n\t\tseen.add(item['performanceStateId'])\n\t\toptions.append({'value': item['performanceStateId'], 'label': system.kanoa.utilities.formatPath(item['performanceStatePath'], {})})\n\treturn options", 
                       "type": "script"
                     }
                   ], 

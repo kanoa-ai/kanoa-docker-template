@@ -2331,7 +2331,8 @@
           "width": ""
         }
       ]
-    }
+    },
+    "toastId": null
   },
   "params": {},
   "propConfig": {
@@ -2670,6 +2671,14 @@
                   "grow": 1
                 },
                 "propConfig": {
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
+                  },
                   "props.params.values.data": {
                     "binding": {
                       "config": {
@@ -3159,70 +3168,6 @@
               "grow": 1
             },
             "propConfig": {
-              "props.columns[13].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Viscosity\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[14].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Long Label\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[1].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Name\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[2].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Attribute\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[3].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Description\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[4].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Code\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[5].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Enabled\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
-              "props.columns[6].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Created By\u0027)"
-                  },
-                  "type": "expr"
-                }
-              },
               "props.columns[7].dateFormat": {
                 "binding": {
                   "config": {
@@ -3235,14 +3180,6 @@
                     }
                   ],
                   "type": "property"
-                }
-              },
-              "props.columns[7].header.title": {
-                "binding": {
-                  "config": {
-                    "expression": "translate(\u0027Created\u0027)"
-                  },
-                  "type": "expr"
                 }
               },
               "props.columns[9].dateFormat": {
@@ -3442,7 +3379,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Name"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3533,7 +3471,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Attribute"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3624,7 +3563,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Description"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3715,7 +3655,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Code"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3806,7 +3747,8 @@
                     "justify": "center",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Enabled"
                   },
                   "justify": "center",
                   "nullFormat": {
@@ -3897,7 +3839,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Created By"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -3987,7 +3930,8 @@
                     "justify": "left",
                     "style": {
                       "classes": ""
-                    }
+                    },
+                    "title": "Created"
                   },
                   "justify": "auto",
                   "nullFormat": {
@@ -4302,12 +4246,19 @@
         {
           "name": "deleteAttributes",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"deleteAttributes() called for %s\"%self.view.custom.table.selection.data)\n\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.attribute.deleteAttribute(row[\u0027attributeId\u0027], self.view.custom.security.userId)\n\n\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute has bene deleted\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"deleteAttributes() called for %s\"%self.view.custom.table.selection.data)\n\n\tdeleted, failed \u003d [], []\n\tfor row in self.view.custom.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.attribute.deleteAttribute(row[\u0027attributeId\u0027], self.view.custom.security.userId)\n\n\t\tif retVal: deleted.append(row[\u0027attributeName\u0027])\n\t\telse: failed.append(\u0027%s (%s)\u0027 % (row[\u0027attributeName\u0027], msg))\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\t#One toast for the whole selection (868mvvzbz)\n\tif failed:\n\t\tif deleted: message \u003d \"Deleted %d of %d attributes; %d couldn\u0027t be deleted: %s\" % (len(deleted), len(deleted) + len(failed), len(failed), \u0027, \u0027.join(failed))\n\t\telse: message \u003d \"Couldn\u0027t delete %s\" % \u0027, \u0027.join(failed)\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027 if deleted else \u0027error\u0027, \u0027message\u0027: message})\n\telif deleted:\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute \"%s\" deleted\u0027 % deleted[0] if len(deleted) \u003d\u003d 1 else \u0027Deleted %d attributes\u0027 % len(deleted)})\n\n\treturn"
         },
         {
           "name": "deleteAttribute",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"deleteAttribute() called\")\n\n\tretVal, msg \u003d system.kanoa.attribute.deleteAttribute(self.view.custom.filter.selected.attributeId, self.view.custom.security.userId)\n\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute has been deleted\u0027})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"deleteAttribute() called\")\n\n\tretVal, msg \u003d system.kanoa.attribute.deleteAttribute(self.view.custom.filter.selected.attributeId, self.view.custom.security.userId)\n\tif retVal: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Attribute has been deleted\u0027})\n\telse: self.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\n\tself.view.refreshBinding(\"custom.filter.data\")\t #Update the Tree Selector\n\tself.view.refreshBinding(\"custom.table.data\")\n\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)\n"
         }
       ],
       "extensionFunctions": null,

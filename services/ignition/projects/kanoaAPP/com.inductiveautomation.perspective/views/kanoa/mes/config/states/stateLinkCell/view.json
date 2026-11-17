@@ -1,0 +1,142 @@
+{
+  "custom": {},
+  "params": {
+    "rowData": {
+      "stateCode": 21,
+      "statePath": "Unknown State",
+      "unknownState": true
+    },
+    "value": "Unknown State"
+  },
+  "propConfig": {
+    "params.rowData": {
+      "paramDirection": "input"
+    },
+    "params.value": {
+      "paramDirection": "input"
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 200
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "name": "icnUnknown"
+        },
+        "position": {
+          "basis": "18px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "toBoolean({view.params.rowData.unknownState})"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": "var(--warning)",
+          "path": "material/warning",
+          "style": {
+            "height": "18px"
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "meta": {
+          "name": "lblState"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 1
+        },
+        "propConfig": {
+          "props.style.color": {
+            "binding": {
+              "config": {
+                "expression": "if(toBoolean({view.params.rowData.unknownState}), \"var(--warning)\", \"\")"
+              },
+              "type": "expr"
+            }
+          },
+          "props.style.fontWeight": {
+            "binding": {
+              "config": {
+                "expression": "if(toBoolean({view.params.rowData.unknownState}), \"600\", \"\")"
+              },
+              "type": "expr"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "expression": "{view.params.value}"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "overflow": "hidden",
+            "textOverflow": "ellipsis",
+            "whiteSpace": "nowrap"
+          }
+        },
+        "type": "ia.display.label"
+      }
+    ],
+    "meta": {
+      "name": "root",
+      "tooltip": {
+        "enabled": true,
+        "location": "top-left"
+      }
+    },
+    "propConfig": {
+      "meta.tooltip.enabled": {
+        "binding": {
+          "config": {
+            "expression": "toBoolean({view.params.rowData.unknownState})"
+          },
+          "type": "expr"
+        }
+      },
+      "meta.tooltip.text": {
+        "binding": {
+          "config": {
+            "expression": "if({view.params.rowData.unknownState}, \"Code \" + toStr({view.params.rowData.stateCode}) + \" was reported but wasn\u0027t linked to a state, so Kanoa linked it to Unknown State (counted as unplanned downtime). Link it to the state it really means: link that state, then give it code \" + toStr({view.params.rowData.stateCode}) + \".\", \"\")"
+          },
+          "type": "expr"
+        }
+      },
+      "props.style.borderLeft": {
+        "binding": {
+          "config": {
+            "expression": "if(toBoolean({view.params.rowData.unknownState}), \"3px solid var(--warning)\", \"3px solid transparent\")"
+          },
+          "type": "expr"
+        }
+      }
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "gap": "4px",
+        "overflow": "hidden",
+        "paddingLeft": "4px"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

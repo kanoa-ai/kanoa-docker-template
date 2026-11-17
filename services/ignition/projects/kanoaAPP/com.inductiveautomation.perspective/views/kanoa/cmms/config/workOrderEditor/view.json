@@ -38,6 +38,7 @@
       }
     ],
     "counters": [],
+    "isTool": false,
     "maintenanceSubType": [
       {
         "changedBy": null,
@@ -424,7 +425,7 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
     "technicians": [
       {
@@ -659,6 +660,9 @@
       "lastGeneratedValue": null,
       "runHour": {
         "valueThreshold": null
+      },
+      "toolLife": {
+        "counter": "pm"
       },
       "workOrderConditionId": null
     },
@@ -895,7 +899,8 @@
         "workOrderStatusId": 1,
         "workOrderStatusName": "Archived"
       }
-    ]
+    ],
+    "saving": false
   },
   "params": {
     "values": {
@@ -949,6 +954,22 @@
         "transforms": [
           {
             "code": "\t\n\tif value[\u0027assetId\u0027] is None: return []\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getCounter({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027enabled\u0027: True}))",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.isTool": {
+      "binding": {
+        "config": {
+          "path": "view.custom.workOrderInfo"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\t#Tool Life conditions are only for a tool\n\tif not value or value.get(\u0027assetId\u0027) is None: return False\n\treturn bool(system.kanoa.utilities.getFieldValue(\u0027isTooling\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value[\u0027assetId\u0027]})))",
             "type": "script"
           }
         ],
@@ -1110,7 +1131,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tdefault \u003d {\n\t\t\t\t\t\"workOrderConditionId\": None,\n\t\t\t\t\t\"conditionId\": None,\n\t\t\t\t\t\"runHour\": {\"valueThreshold\": None},\n\t\t\t\t\t\"counter\": {\"counterId\": None, \"valueThreshold\": None },\n\t\t\t\t\t\u0027lastGeneratedDate\u0027: None,\n\t\t\t\t\t\u0027lastGeneratedValue\u0027: None\n\t\t\t\t}\n\t\n\tif value[\u0027workOrderId\u0027] is None: return default\n\t\n\tworkOrderConditionInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getWorkOrderConditions({\u0027workOrderId\u0027: value[\u0027workOrderId\u0027]}),0)\t\n\tconditionInfo \u003d system.util.jsonDecode(workOrderConditionInfo[\u0027conditionInfo\u0027])\n\tdefault[\u0027conditionId\u0027] \u003d workOrderConditionInfo[\u0027conditionId\u0027]\n\tdefault[\u0027workOrderConditionId\u0027] \u003d workOrderConditionInfo[\u0027workOrderConditionId\u0027]\n\tdefault[\u0027lastGeneratedDate\u0027] \u003d workOrderConditionInfo[\u0027lastGeneratedDate\u0027]\n\tdefault[\u0027lastGeneratedValue\u0027] \u003d workOrderConditionInfo[\u0027lastGeneratedValue\u0027]\n\tif conditionInfo: default[workOrderConditionInfo[\u0027conditionName\u0027]] \u003d conditionInfo\n\t\t\n\treturn default",
+            "code": "\n\tdefault \u003d {\n\t\t\t\t\t\"workOrderConditionId\": None,\n\t\t\t\t\t\"conditionId\": None,\n\t\t\t\t\t\"runHour\": {\"valueThreshold\": None},\n\t\t\t\t\t\"counter\": {\"counterId\": None, \"valueThreshold\": None },\n\t\t\t\t\t\"toolLife\": {\"counter\": \"pm\"},\n\t\t\t\t\t\u0027lastGeneratedDate\u0027: None,\n\t\t\t\t\t\u0027lastGeneratedValue\u0027: None\n\t\t\t\t}\n\t\n\tif value[\u0027workOrderId\u0027] is None: return default\n\t\n\tworkOrderConditionInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.cmms.getWorkOrderConditions({\u0027workOrderId\u0027: value[\u0027workOrderId\u0027]}),0)\t\n\tconditionInfo \u003d system.util.jsonDecode(workOrderConditionInfo[\u0027conditionInfo\u0027])\n\tdefault[\u0027conditionId\u0027] \u003d workOrderConditionInfo[\u0027conditionId\u0027]\n\tdefault[\u0027workOrderConditionId\u0027] \u003d workOrderConditionInfo[\u0027workOrderConditionId\u0027]\n\tdefault[\u0027lastGeneratedDate\u0027] \u003d workOrderConditionInfo[\u0027lastGeneratedDate\u0027]\n\tdefault[\u0027lastGeneratedValue\u0027] \u003d workOrderConditionInfo[\u0027lastGeneratedValue\u0027]\n\tif conditionInfo: default[workOrderConditionInfo[\u0027conditionName\u0027]] \u003d conditionInfo\n\t\t\n\treturn default",
             "type": "script"
           }
         ],
@@ -2099,7 +2120,7 @@
               "deferUpdates": false,
               "resize": "vertical",
               "style": {
-                "borderColor": "--kcGray-20",
+                "borderColor": "var(--border)",
                 "classes": "kanoa/font/default"
               }
             },
@@ -2336,7 +2357,8 @@
                   },
                   "parentPathList": [],
                   "persistent": false,
-                  "useSessionValue": false
+                  "useSessionValue": false,
+                  "includeTooling": true
                 }
               },
               "path": "kanoa/core/templates/selectors/assetSelector"
@@ -2735,16 +2757,20 @@
                   "props.options": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.conditions"
+                        "struct": {
+                          "conditions": "{view.custom.conditions}",
+                          "isTool": "{view.custom.isTool}"
+                        },
+                        "waitOnAll": true
                       },
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn [{\u0027value\u0027:row[\u0027conditionId\u0027], \u0027label\u0027:row[\u0027displayName\u0027]} for row in value]\n\t",
+                          "code": "\t\n\t#Tool Life is offered only when the work order\u0027s asset is a tool\n\treturn [{\u0027value\u0027:row[\u0027conditionId\u0027], \u0027label\u0027:row[\u0027displayName\u0027]} for row in value[\u0027conditions\u0027] if value[\u0027isTool\u0027] or row[\u0027conditionName\u0027] !\u003d \u0027toolLife\u0027]\n\t",
                           "type": "script"
                         }
                       ],
-                      "type": "property"
+                      "type": "expr-struct"
                     }
                   },
                   "props.value": {
@@ -3257,6 +3283,136 @@
                 "props": {
                   "style": {
                     "gap": "5px"
+                  }
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblDueFor",
+                      "name": "lblDueFor"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "Due for"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "ddToolLifeCounter",
+                      "name": "ddToolLifeCounter"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "props.enabled": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.userAction"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn value[\u0027canCreate\u0027]",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.workOrderConditions.toolLife.counter"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "dropdownOptionStyle": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "placeholder": {
+                        "text": "Select limit..."
+                      },
+                      "showClearIcon": false,
+                      "style": {
+                        "classes": "kanoa/border kanoa/font/default",
+                        "minWidth": "150px"
+                      },
+                      "options": [
+                        {
+                          "label": "PM",
+                          "value": "pm"
+                        },
+                        {
+                          "label": "Refurbishment",
+                          "value": "refurb"
+                        },
+                        {
+                          "label": "Calibration",
+                          "value": "calibration"
+                        }
+                      ]
+                    },
+                    "type": "ia.input.dropdown"
+                  },
+                  {
+                    "meta": {
+                      "domId": "lblToolLife",
+                      "name": "lblToolLife"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "text": "when the tool reaches its warning %. Completing the work order resets the count."
+                    },
+                    "type": "ia.display.label"
+                  }
+                ],
+                "meta": {
+                  "name": "flxToolLifeSettings"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.workOrderConditions.conditionId"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t\n\tif value is None: return False\n\tconditions \u003d {item[\u0027conditionId\u0027]: item[\u0027conditionName\u0027] for item in self.view.custom.conditions}\n\treturn conditions[value] \u003d\u003d \u0027toolLife\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "alignItems": "center"
                   }
                 },
                 "type": "ia.container.flex"
@@ -3856,7 +4012,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\n\tworkOrderId, msg \u003d self.view.getChild(\"root\").saveWorkOrder()\n\t\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t save work order. %s\"%msg})\n\telse: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order has been saved\u0027})\n\t\tself.view.params.values.workOrderId \u003d workOrderId\n\t\n\tsystem.perspective.sendMessage(\"refreshWorkOrders\", {})\t\n\t\n\treturn"
+                    "script": "\n\t#One save at a time: clicks while one runs do nothing, instead of each saving again and showing its own toast (868mvvxfj)\n\tif self.view.custom.saving: return\n\tself.view.custom.saving \u003d True\n\ttry:\n\t\tworkOrderId, msg \u003d self.view.getChild(\"root\").saveWorkOrder()\n\tfinally:\n\t\tself.view.custom.saving \u003d False\n\t\n\t#The only toast for a save: saveWorkOrder() returns the result. Its id per work order keeps saves in quick succession to\n\t#one toast (a show with the id of a toast still showing is ignored)\n\ttitle \u003d self.view.custom.workOrderInfo.title\n\tif msg: system.kanoa.toast.show({\u0027id\u0027: \u0027workOrderSaveError-%s\u0027 % workOrderId, \u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save work order \\\"%s\\\": %s\" % (title, msg)})\n\telse: \n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027workOrderSaved-%s\u0027 % workOrderId, \u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order \"%s\" saved\u0027 % title})\n\t\tself.view.params.values.workOrderId \u003d workOrderId\n\t\n\tsystem.perspective.sendMessage(\"refreshWorkOrders\", {})\t\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -3982,7 +4138,7 @@
         {
           "name": "saveWorkOrder",
           "params": [],
-          "script": "\n\tuserId \u003d self.view.custom.security.userId\n\tworkOrderInfo \u003d dict(self.view.custom.workOrderInfo)\n\t\n\tupdate \u003d True if workOrderInfo[\u0027workOrderId\u0027] else False\n\t\n\tif update:\n\t\tretVal, msg \u003d system.kanoa.cmms.updateWorkOrder(workOrderInfo, userId)\n\t\tworkOrderId \u003d workOrderInfo[\u0027workOrderId\u0027]\n\t\tsystem.perspective.print(\"updateWorkOrder() called with %s returned %s %s\"%(workOrderInfo, retVal, msg))\n\telse:\n\t\tworkOrderId, msg \u003d system.kanoa.cmms.addWorkOrder(workOrderInfo, userId)\n\t\tsystem.perspective.print(\"addWorkOrder() called with %s returned %s %s\"%(workOrderInfo,workOrderId, msg))\n\t\tself.view.params.values.workOrderId \u003d workOrderId\t\t\n\t\t\n\tif msg is None:\n\t\tif workOrderInfo[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Recurring\u0027:\n\t\t\tworkOrderScheduleInfo \u003d dict(self.view.custom.workOrderSchedule)\n\t\t\tworkOrderScheduleInfo[\u0027workOrderId\u0027] \u003d workOrderId\n\t\t\tworkOrderScheduleInfo[\u0027lastGeneratedDate\u0027] \u003d None\n\t\t\tsystem.perspective.print(\"setWorkOrderSchedule() called with %s\"%workOrderScheduleInfo)\n\t\t\tworkOrderScheduleId, msg \u003d system.kanoa.cmms.setWorkOrderSchedule(workOrderScheduleInfo, userId)\n\t\telif workOrderInfo[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027:\n\t\t\tworkOrderConditions \u003d self.view.custom.workOrderConditions\n\t\t\tconditions \u003d {item[\u0027conditionId\u0027]: item[\u0027conditionName\u0027] for item in self.view.custom.conditions}\n\t\t\tconditionName \u003d conditions[workOrderConditions[\u0027conditionId\u0027]]\n\t\t\t\n\t\t\tworkOrderConditionInfo \u003d {\n\t\t\t \t\t\t\t\t\t\t\u0027workOrderConditionId\u0027: workOrderConditions[\u0027workOrderConditionId\u0027],\n\t\t\t \t\t\t\t\t\t\t\u0027workOrderId\u0027: workOrderId,\n\t\t\t\t\t\t\t\t\t\t\u0027conditionId\u0027: workOrderConditions[\u0027conditionId\u0027],\n\t\t\t\t\t\t\t\t\t\t\u0027conditionInfo\u0027: system.util.jsonEncode(workOrderConditions[conditionName]),\n\t\t\t\t\t\t\t\t\t\t\u0027lastGeneratedDate\u0027: workOrderConditions[\u0027lastGeneratedDate\u0027],\n\t\t\t\t\t\t\t\t\t\t\u0027lastGeneratedValue\u0027: workOrderConditions[\u0027lastGeneratedValue\u0027]\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\n\t\t\tsystem.perspective.print(\"setWorkOrderCondition() called with %s\"%workOrderConditionInfo)\t\t\t\n\t\t\tworkOrderScheduleId, msg \u003d system.kanoa.cmms.setWorkOrderCondition(workOrderConditionInfo, userId)\n\t\telse:\n\t\t\tsystem.perspective.print(\"deleteWorkOrderSchedule() called with %s\"%workOrderInfo[\u0027workOrderId\u0027])\n\t\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderSchedule(workOrderInfo[\u0027workOrderId\u0027], userId)\n\t\t\t\n\t\t\tsystem.perspective.print(\"deleteWorkOrderCondition() called with %s\"%workOrderInfo[\u0027workOrderId\u0027])\n\t\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderCondition(workOrderInfo[\u0027workOrderId\u0027], userId)\t\t\t\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete this work order. %s\"%msg})\n\n\tworkOrderStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getWorkOrderStatus({}), \u0027workOrderStatusName\u0027, \u0027workOrderStatusId\u0027)\n\tscheduleTypes \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getScheduleTypes({}), \u0027scheduleTypeName\u0027, \u0027scheduleTypeId\u0027)\n\t\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save work order. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order has been saved.\u0027})\n\t\n\tself.view.refreshBinding(\"custom.workOrderInfo\")\t\n\n\tif workOrderInfo[\u0027scheduleTypeId\u0027] \u003d\u003d scheduleTypes[\u0027One Time\u0027] and workOrderInfo[\u0027workOrderStatusId\u0027] \u003d\u003d workOrderStates[\u0027Released\u0027] and not update:\n\t\t#We should go ahead and create the workOrder event for this.\n\t\tsystem.perspective.print(\"Creating workOrder event\")\n\t\tworkOrderEventInfo \u003d workOrderInfo\n\n\t\tserialId \u003d system.kanoa.utilities.getFieldValue(\u0027serialId\u0027, system.kanoa.cmms.getMaintenanceTypes({\u0027maintenanceTypeId\u0027: workOrderInfo[\u0027maintenanceTypeId\u0027]}))\n\t\tif serialId is None: serialId \u003d system.kanoa.utilities.getFieldValue(\u0027serialId\u0027, system.kanoa.serial.getSerialNumbers({\u0027serialName\u0027: \u0027maintenanceWorkOrder\u0027}))\n\t\tif serialId is None: serialId, msg \u003d system.kanoa.serial.addSerialNumber({\u0027enabled\u0027: True, \u0027prefix\u0027: \u0027MWO\u0027, \u0027serialName\u0027: \u0027maintenanceWorkOrder\u0027, \u0027zfill\u0027: 5}, userId)\n\t\tworkOrderEventStatusInfo \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getWorkOrderEventStatus({\u0027enabled\u0027: True}), \u0027workOrderEventStatusName\u0027, \u0027workOrderEventStatusId\u0027)\n\t\tworkOrderEventStatusName \u003d \u0027Assigned\u0027 if workOrderEventInfo[\u0027assignedTo\u0027] else \u0027Open\u0027\n\t\tworkOrderEventInfo[\u0027workOrderEventStatusId\u0027] \u003d workOrderEventStatusInfo[workOrderEventStatusName]\n\t\tserialNumber, msg \u003d system.kanoa.serial.getNextSerialNumber(serialId, userId)\n\t\tif msg:\n\t\t\tsystem.perspective.print(msg)\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save work order. %s\"%msg})\n\t\t\treturn\n\t\t\t\t\n\t\tworkOrderEventInfo[\u0027workOrderEventName\u0027] \u003d serialNumber\n\t\tworkOrderEventInfo[\u0027workOrderId\u0027] \u003d workOrderId\n\t\tworkOrderEventInfo[\u0027assetId\u0027] \u003d workOrderInfo[\u0027assetId\u0027]\n\t\tworkOrderEventId, msg \u003d system.kanoa.cmms.addWorkOrderEvent(workOrderEventInfo, userId)\n\t\tsystem.perspective.print(\"addWorkOrderEvent() called with %s returned %s %s\"%(workOrderEventInfo, workOrderEventId, msg))\n\telse:\n\t\tworkOrderEventId \u003d None\n\t\tworkOrderEventStatusName \u003d None\n\n\tsystem.perspective.sendMessage(\u0027refreshWorkOrders\u0027, {\u0027workOrderEventId\u0027: workOrderEventId, \u0027workOrderEventStatusName\u0027: workOrderEventStatusName})\n\n\tsystem.perspective.sendMessage(\u0027workOrderSelected\u0027, workOrderId)\n\n\treturn workOrderId, msg "
+          "script": "\n\tuserId \u003d self.view.custom.security.userId\n\tworkOrderInfo \u003d dict(self.view.custom.workOrderInfo)\n\t\n\tupdate \u003d True if workOrderInfo[\u0027workOrderId\u0027] else False\n\t\n\tif update:\n\t\tretVal, msg \u003d system.kanoa.cmms.updateWorkOrder(workOrderInfo, userId)\n\t\tworkOrderId \u003d workOrderInfo[\u0027workOrderId\u0027]\n\t\tsystem.perspective.print(\"updateWorkOrder() called with %s returned %s %s\"%(workOrderInfo, retVal, msg))\n\telse:\n\t\tworkOrderId, msg \u003d system.kanoa.cmms.addWorkOrder(workOrderInfo, userId)\n\t\tsystem.perspective.print(\"addWorkOrder() called with %s returned %s %s\"%(workOrderInfo,workOrderId, msg))\n\t\tself.view.params.values.workOrderId \u003d workOrderId\t\t\n\t\t\n\tif msg is None:\n\t\tif workOrderInfo[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Recurring\u0027:\n\t\t\tworkOrderScheduleInfo \u003d dict(self.view.custom.workOrderSchedule)\n\t\t\tworkOrderScheduleInfo[\u0027workOrderId\u0027] \u003d workOrderId\n\t\t\tworkOrderScheduleInfo[\u0027lastGeneratedDate\u0027] \u003d None\n\t\t\tsystem.perspective.print(\"setWorkOrderSchedule() called with %s\"%workOrderScheduleInfo)\n\t\t\tworkOrderScheduleId, msg \u003d system.kanoa.cmms.setWorkOrderSchedule(workOrderScheduleInfo, userId)\n\t\telif workOrderInfo[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027:\n\t\t\tworkOrderConditions \u003d self.view.custom.workOrderConditions\n\t\t\tconditions \u003d {item[\u0027conditionId\u0027]: item[\u0027conditionName\u0027] for item in self.view.custom.conditions}\n\t\t\tconditionName \u003d conditions[workOrderConditions[\u0027conditionId\u0027]]\n\t\t\t\n\t\t\tworkOrderConditionInfo \u003d {\n\t\t\t \t\t\t\t\t\t\t\u0027workOrderConditionId\u0027: workOrderConditions[\u0027workOrderConditionId\u0027],\n\t\t\t \t\t\t\t\t\t\t\u0027workOrderId\u0027: workOrderId,\n\t\t\t\t\t\t\t\t\t\t\u0027conditionId\u0027: workOrderConditions[\u0027conditionId\u0027],\n\t\t\t\t\t\t\t\t\t\t\u0027conditionInfo\u0027: system.util.jsonEncode(workOrderConditions[conditionName]),\n\t\t\t\t\t\t\t\t\t\t\u0027lastGeneratedDate\u0027: workOrderConditions[\u0027lastGeneratedDate\u0027],\n\t\t\t\t\t\t\t\t\t\t\u0027lastGeneratedValue\u0027: workOrderConditions[\u0027lastGeneratedValue\u0027]\n\t\t\t\t\t\t\t\t\t}\n\t\t\t\n\t\t\tsystem.perspective.print(\"setWorkOrderCondition() called with %s\"%workOrderConditionInfo)\t\t\t\n\t\t\tworkOrderScheduleId, msg \u003d system.kanoa.cmms.setWorkOrderCondition(workOrderConditionInfo, userId)\n\t\telse:\n\t\t\tsystem.perspective.print(\"deleteWorkOrderSchedule() called with %s\"%workOrderInfo[\u0027workOrderId\u0027])\n\t\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderSchedule(workOrderInfo[\u0027workOrderId\u0027], userId)\n\t\t\t\n\t\t\tsystem.perspective.print(\"deleteWorkOrderCondition() called with %s\"%workOrderInfo[\u0027workOrderId\u0027])\n\t\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderCondition(workOrderInfo[\u0027workOrderId\u0027], userId)\t\t\t\n\n\tworkOrderStates \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getWorkOrderStatus({}), \u0027workOrderStatusName\u0027, \u0027workOrderStatusId\u0027)\n\tscheduleTypes \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getScheduleTypes({}), \u0027scheduleTypeName\u0027, \u0027scheduleTypeId\u0027)\n\t\n\t#The result is the caller\u0027s to show, once: this method used to toast it too, so a save showed two toasts and a failed\n\t#one three (868mvvxfj)\n\tself.view.refreshBinding(\"custom.workOrderInfo\")\t\n\n\t#Only for a work order that saved: a failed add has no workOrderId to make its event for\n\tif msg is None and workOrderInfo[\u0027scheduleTypeId\u0027] \u003d\u003d scheduleTypes[\u0027One Time\u0027] and workOrderInfo[\u0027workOrderStatusId\u0027] \u003d\u003d workOrderStates[\u0027Released\u0027] and not update:\n\t\t#We should go ahead and create the workOrder event for this.\n\t\tsystem.perspective.print(\"Creating workOrder event\")\n\t\tworkOrderEventInfo \u003d workOrderInfo\n\n\t\tserialId \u003d system.kanoa.utilities.getFieldValue(\u0027serialId\u0027, system.kanoa.cmms.getMaintenanceTypes({\u0027maintenanceTypeId\u0027: workOrderInfo[\u0027maintenanceTypeId\u0027]}))\n\t\tif serialId is None: serialId \u003d system.kanoa.utilities.getFieldValue(\u0027serialId\u0027, system.kanoa.serial.getSerialNumbers({\u0027serialName\u0027: \u0027maintenanceWorkOrder\u0027}))\n\t\tif serialId is None: serialId, msg \u003d system.kanoa.serial.addSerialNumber({\u0027enabled\u0027: True, \u0027prefix\u0027: \u0027MWO\u0027, \u0027serialName\u0027: \u0027maintenanceWorkOrder\u0027, \u0027zfill\u0027: 5}, userId)\n\t\tworkOrderEventStatusInfo \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getWorkOrderEventStatus({\u0027enabled\u0027: True}), \u0027workOrderEventStatusName\u0027, \u0027workOrderEventStatusId\u0027)\n\t\tworkOrderEventStatusName \u003d \u0027Assigned\u0027 if workOrderEventInfo[\u0027assignedTo\u0027] else \u0027Open\u0027\n\t\tworkOrderEventInfo[\u0027workOrderEventStatusId\u0027] \u003d workOrderEventStatusInfo[workOrderEventStatusName]\n\t\tserialNumber, msg \u003d system.kanoa.serial.getNextSerialNumber(serialId, userId)\n\t\tif msg:\n\t\t\tsystem.perspective.print(msg)\n\t\t\treturn workOrderId, msg\t#Was a bare return: the caller\u0027s unpacking failed\n\t\t\t\t\n\t\tworkOrderEventInfo[\u0027workOrderEventName\u0027] \u003d serialNumber\n\t\tworkOrderEventInfo[\u0027workOrderId\u0027] \u003d workOrderId\n\t\tworkOrderEventInfo[\u0027assetId\u0027] \u003d workOrderInfo[\u0027assetId\u0027]\n\t\tworkOrderEventId, msg \u003d system.kanoa.cmms.addWorkOrderEvent(workOrderEventInfo, userId)\n\t\tsystem.perspective.print(\"addWorkOrderEvent() called with %s returned %s %s\"%(workOrderEventInfo, workOrderEventId, msg))\n\telse:\n\t\tworkOrderEventId \u003d None\n\t\tworkOrderEventStatusName \u003d None\n\n\tsystem.perspective.sendMessage(\u0027refreshWorkOrders\u0027, {\u0027workOrderEventId\u0027: workOrderEventId, \u0027workOrderEventStatusName\u0027: workOrderEventStatusName})\n\n\tsystem.perspective.sendMessage(\u0027workOrderSelected\u0027, workOrderId)\n\n\treturn workOrderId, msg "
         }
       ],
       "extensionFunctions": null,

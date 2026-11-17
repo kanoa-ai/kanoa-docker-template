@@ -428,7 +428,7 @@
                       "component": {
                         "onActionPerformed": {
                           "config": {
-                            "script": "\t\n\tmarqueeId \u003d self.view.custom.marquees.selection.data[0].marqueeId\n\tprojectName \u003d system.util.getProjectName()\n#\tprojectName \u003d \u0027kanoaMarquee\u0027\n\tgatewayAddress \u003d self.session.props.gateway.address\n\turl \u003d \u0027{:}/data/perspective/client/{}/marquee/{:}\u0027.format(gatewayAddress, projectName, marqueeId)\n\t\n\tsystem.perspective.print(\u0027url is %s\u0027%url)\n\tsystem.perspective.navigate(url\u003durl, newTab\u003dTrue)\n\t\n\treturn"
+                            "script": "\t\n\tmarqueeId \u003d self.view.custom.marquees.selection.data[0].marqueeId\n\t#The marquee project shows a marquee at /marquee/:marqueeId, as it shows displays; the editor\u0027s own project may not\n\tprojectName \u003d \u0027kanoaMarquee\u0027\n\tgatewayAddress \u003d self.session.props.gateway.address.rstrip(\u0027/\u0027)\n\turl \u003d \u0027{:}/data/perspective/client/{}/marquee/{:}\u0027.format(gatewayAddress, projectName, marqueeId)\n\t\n\tsystem.perspective.print(\u0027url is %s\u0027%url)\n\tsystem.perspective.navigate(url\u003durl, newTab\u003dTrue)\n\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -1645,7 +1645,7 @@
                       "component": {
                         "onActionPerformed": {
                           "config": {
-                            "script": "\t\n\tselection \u003d self.view.custom.marqueeDisplays.selection.data[0]\n\tgatewayAddress \u003d self.session.props.gateway.address[:-1]\n\turl \u003d \"{}/data/perspective/client/kanoaMarquee/marquee/display/{}/{}/{}\".format(gatewayAddress, selection[\u0027siteCode\u0027], selection[\u0027location\u0027], selection[\u0027screenName\u0027])\n\tsystem.perspective.navigate(url\u003durl, newTab\u003dTrue)\n\t\n\treturn"
+                            "script": "\t\n\tselection \u003d self.view.custom.marqueeDisplays.selection.data[0]\n\t#The address has no trailing slash (slicing one off cut the port\u0027s last digit); strip one only if it\u0027s there\n\tgatewayAddress \u003d self.session.props.gateway.address.rstrip(\u0027/\u0027)\n\turl \u003d \"{}/data/perspective/client/kanoaMarquee/marquee/display/{}/{}/{}\".format(gatewayAddress, selection[\u0027siteCode\u0027], selection[\u0027location\u0027], selection[\u0027screenName\u0027])\n\tsystem.perspective.navigate(url\u003durl, newTab\u003dTrue)\n\t\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"

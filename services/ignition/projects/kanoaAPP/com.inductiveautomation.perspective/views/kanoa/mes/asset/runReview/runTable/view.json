@@ -574,14 +574,15 @@
           "struct": {
             "assetId": "{view.custom.filter.assetId}",
             "data": "{view.custom.table.selection.data}",
-            "security": "{view.custom.security}"
+            "security": "{view.custom.security}",
+            "assetPath": "{view.custom.assetInfo.assetPath}"
           },
           "waitOnAll": true
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tsecurity \u003d value[\u0027security\u0027]\n\tcanCreate \u003d False\n\tcanEdit \u003d False\n\tif security[\u0027userCRUD\u0027] is not None and security[\u0027userId\u0027] is not None:\n\t\tif security[\u0027userCRUD\u0027][\u0027isGatewayAdmin\u0027] or security[\u0027userCRUD\u0027][\u0027editOperations\u0027][\u0027enabled\u0027]: \n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True if len(value[\u0027data\u0027] or []) \u003e 0 else False\n\t\n\taction \u003d {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}\n\t\n\treturn action",
+            "code": "\t\n\tsecurity \u003d value[\u0027security\u0027]\n\tcrud \u003d security[\u0027userCRUD\u0027]\n\tassetPath \u003d value[\u0027assetPath\u0027]\n\tcanCreate \u003d False\n\tcanEdit \u003d False\n\tif crud is not None and security[\u0027userId\u0027] is not None:\n\t\tif crud[\u0027isGatewayAdmin\u0027]:\n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True if len(value[\u0027data\u0027] or []) \u003e 0 else False\n\t\telif assetPath and crud[\u0027editOperations\u0027][\u0027enabled\u0027]:\n\t\t\t#The function is granted per asset: a role on this asset or one above it (none listed: a role on no asset, so every asset)\n\t\t\tpaths \u003d list(crud[\u0027editOperations\u0027][\u0027assets\u0027] or [])\n\t\t\tif len(paths) \u003d\u003d 0 or any(assetPath \u003d\u003d path or assetPath.startswith(path + \u0027\\\\\u0027) for path in paths):\n\t\t\t\tcanCreate \u003d True\n\t\t\t\tcanEdit \u003d True if len(value[\u0027data\u0027] or []) \u003e 0 else False\n\t\n\taction \u003d {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}\n\t\n\treturn action",
             "type": "script"
           }
         ],
@@ -1689,15 +1690,6 @@
                       "type": "property"
                     }
                   },
-                  "props.columns[23].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027From\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
                   "props.columns[24].dateFormat": {
                     "binding": {
                       "config": {
@@ -1712,84 +1704,6 @@
                       "type": "property"
                     }
                   },
-                  "props.columns[24].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027To\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[25].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Total Mins\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[26].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Running Mins\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[27].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Down Mins\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[28].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Planned Down Mins\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[29].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Infeed Rate\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[30].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Target Rate\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[3].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Mode\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[4].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Shift\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
                   "props.columns[4].visible": {
                     "binding": {
                       "config": {
@@ -1797,23 +1711,6 @@
                       },
                       "overlayOptOut": true,
                       "type": "property"
-                    }
-                  },
-                  "props.columns[5].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Work Order\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[8].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Item\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
                     }
                   },
                   "props.data": {
@@ -2177,7 +2074,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Mode"
                       },
                       "justify": "center",
                       "number": "value",
@@ -2244,7 +2142,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Shift"
                       },
                       "justify": "center",
                       "number": "value",
@@ -2310,7 +2209,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Work Order"
                       },
                       "justify": "center",
                       "number": "value",
@@ -2513,7 +2413,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Item"
                       },
                       "justify": "center",
                       "number": "value",
@@ -3542,7 +3443,8 @@
                         "justify": "right",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "From"
                       },
                       "justify": "right",
                       "number": "value",
@@ -3608,7 +3510,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "To"
                       },
                       "justify": "center",
                       "number": "value",
@@ -3675,7 +3578,8 @@
                         "justify": "right",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Total Mins"
                       },
                       "justify": "right",
                       "number": "value",
@@ -3742,7 +3646,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Running Mins"
                       },
                       "justify": "center",
                       "number": "value",
@@ -3809,7 +3714,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Down Mins"
                       },
                       "justify": "center",
                       "number": "value",
@@ -3876,7 +3782,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Planned Down Mins"
                       },
                       "justify": "center",
                       "number": "value",
@@ -3943,7 +3850,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Infeed Rate"
                       },
                       "justify": "center",
                       "number": "value",
@@ -4010,7 +3918,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Target Rate"
                       },
                       "justify": "center",
                       "number": "value",

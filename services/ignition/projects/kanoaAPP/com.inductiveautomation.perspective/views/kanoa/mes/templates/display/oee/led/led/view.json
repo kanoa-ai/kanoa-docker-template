@@ -90,7 +90,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\tname \u003d value.name\n\tvalue \u003d int(value.value * 100)\n\t\n\treturn \u0027%s: %d%%\u0027 % (name, value)",
+            "code": "\tname \u003d value.name\n\tvalue \u003d (value.value or 0) * 100\n\t\n\t# One decimal, so 99.9% isn\u0027t shown as 99% or 100%\n\treturn \u0027%s: %.1f%%\u0027 % (name, value)",
             "type": "script"
           }
         ],
@@ -240,7 +240,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\tif value \u003d\u003d \u0027Performance\u0027: return \u0027Performance is \u003e 100%. This indicates that the standard rate may not be set correctly for the item running on this asset\u0027\n\treturn \u0027This kpi \u003e 100%. This tends to indicate an issue with the underlying data\u0027",
+                  "code": "\tif value \u003d\u003d \u0027OEE\u0027: return \u0027OEE is over 105%, so Performance is too. This indicates that the standard rate may not be set correctly for the item running on this asset\u0027\n\tif value \u003d\u003d \u0027Performance\u0027: return \u0027Performance is over 105%. This indicates that the standard rate may not be set correctly for the item running on this asset\u0027\n\treturn \u0027This kpi \u003e 100%. This tends to indicate an issue with the underlying data\u0027",
                   "type": "script"
                 }
               ],
@@ -250,16 +250,10 @@
           "meta.visible": {
             "binding": {
               "config": {
-                "path": "view.custom.value"
+                "expression": "// Performance a little over 100% is normal on a short run (a cycle more or less is several percent), and OEE follows it, so they warn over 105%; Availability or Quality over 100% is bad data\nif({view.custom.name} \u003d \u0027Performance\u0027 || {view.custom.name} \u003d \u0027OEE\u0027, coalesce({view.custom.value}, 0) \u003e 1.05, coalesce({view.custom.value}, 0) \u003e 1)"
               },
               "overlayOptOut": true,
-              "transforms": [
-                {
-                  "code": "\treturn (value or 0) \u003e 1",
-                  "type": "script"
-                }
-              ],
-              "type": "property"
+              "type": "expr"
             }
           }
         },

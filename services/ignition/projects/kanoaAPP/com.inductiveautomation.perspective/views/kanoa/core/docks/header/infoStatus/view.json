@@ -138,7 +138,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\treturn \"This gateway is configured as a %s environment\"%value",
+                  "code": "\treturn system.util.translate(\"This gateway is configured as a %s environment\", self.session.props.locale) % system.util.translate({\u0027development\u0027: \u0027Development\u0027, \u0027production\u0027: \u0027Production\u0027, \u0027qa\u0027: \u0027QA\u0027}.get(value, value), self.session.props.locale)",
                   "type": "script"
                 }
               ],
@@ -168,7 +168,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\treturn value[\u0027environment\u0027].upper() if value.has_key(\u0027environment\u0027) else \u0027No Environment Set\u0027",
+                  "code": "\t\n\tlocale \u003d self.session.props.locale\n\tif not value.has_key(\u0027environment\u0027): return system.util.translate(\u0027No Environment Set\u0027, locale)\n\t#Stored lower case (the settings dropdown\u0027s value); translate its label\n\tenvironment \u003d value[\u0027environment\u0027]\n\tlabel \u003d {\u0027development\u0027: \u0027Development\u0027, \u0027production\u0027: \u0027Production\u0027, \u0027qa\u0027: \u0027QA\u0027}.get(environment, environment)\n\treturn system.util.translate(label, locale).upper()",
                   "type": "script"
                 }
               ],

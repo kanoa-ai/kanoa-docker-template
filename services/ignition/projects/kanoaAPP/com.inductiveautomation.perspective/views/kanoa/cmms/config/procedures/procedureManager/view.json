@@ -75,7 +75,7 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
     "userAction": {
       "canCreate": true,
@@ -426,7 +426,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\n\texportData = self.view.getChild(\"root\").exportProcedures()\n\t\n\tlabel = exportData.get('label')\n\ttimeNow = system.date.format(system.date.now(), 'yyyy-MM-dd HH:mm:ss')\n\tfileName = '{} ({}).json'.format(label, timeNow)\n\t\n\tdata = exportData.get('data')\n\tif not data:\n\t\tsystem.kanoa.toast.show({'type': 'error', 'message': 'No procedures selected to export'})\n\t\treturn\n\t\n\tdocument = system.util.jsonEncode({'exportType': 'procedureData', 'data': system.util.jsonDecode(system.util.jsonEncode(data))})\n\tsystem.perspective.download(fileName, document)\n\t\n\tsystem.kanoa.toast.show({'type': 'success', 'message': 'Procedures exported'})\n\treturn"
+                        "script": "\n\texportData = self.view.getChild(\"root\").exportProcedures()\n\t\n\tlabel = exportData.get('label') or 'Procedures'\n\tfor character in '\\\\/:*?\"<>|': label = label.replace(character, '-')\n\ttimeNow = system.date.format(system.date.now(), 'yyyy-MM-dd HH.mm.ss')\n\tfileName = '{} ({}).json'.format(label, timeNow)\n\t\n\tdata = exportData.get('data')\n\tif not data:\n\t\tsystem.kanoa.toast.show({'type': 'error', 'message': 'No procedures selected to export'})\n\t\treturn\n\t\n\tdocument = system.util.jsonEncode({'exportType': 'procedureData', 'data': system.util.jsonDecode(system.util.jsonEncode(data))})\n\tsystem.perspective.download(fileName, document)\n\t\n\tsystem.kanoa.toast.show({'type': 'success', 'message': 'Procedures exported'})\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -451,15 +451,9 @@
                   "position.display": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.procedures.selection"
+                        "path": "view.custom.userAction.canUpdate"
                       },
                       "overlayOptOut": true,
-                      "transforms": [
-                        {
-                          "code": "\n\treturn len(value['procedureIds']) > 0 or len(value['procedureCategoryPaths']) > 0",
-                          "type": "script"
-                        }
-                      ],
                       "type": "property"
                     }
                   }
@@ -567,6 +561,14 @@
                   "shrink": 0
                 },
                 "propConfig": {
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
+                  },
                   "props.params.values.data": {
                     "binding": {
                       "config": {
@@ -658,46 +660,6 @@
                       "grow": 1
                     },
                     "propConfig": {
-                      "props.columns[1].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate('Procedure')"
-                          },
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[2].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate('Procedure Type')"
-                          },
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[3].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate('Category')"
-                          },
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[4].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate('Asset Group')"
-                          },
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[5].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate('Enabled')"
-                          },
-                          "type": "expr"
-                        }
-                      },
                       "props.data": {
                         "binding": {
                           "config": {
@@ -836,7 +798,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Procedure"
                           },
                           "justify": "center",
                           "number": "value",
@@ -903,7 +866,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Procedure Type"
                           },
                           "justify": "center",
                           "number": "value",
@@ -970,7 +934,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Category"
                           },
                           "justify": "center",
                           "number": "value",
@@ -1037,7 +1002,8 @@
                             "justify": "left",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Asset Group"
                           },
                           "justify": "auto",
                           "number": "value",
@@ -1104,7 +1070,8 @@
                             "justify": "center",
                             "style": {
                               "classes": "kanoa/font/default"
-                            }
+                            },
+                            "title": "Enabled"
                           },
                           "justify": "center",
                           "number": "value",
@@ -1394,7 +1361,7 @@
         {
           "name": "deleteSelected",
           "params": [],
-          "script": "\n\tuserId = self.view.custom.security.userId\n\tselection = self.view.custom.procedures.selection\n\tmsgs = []\n\t\n\t#We'll start off by deleting any selected procedures\n\t\n\tfor procedureId in selection['procedureIds']:\n\t\tretVal, msg = system.kanoa.cmms.deleteProcedure(procedureId, userId)\n\t\tsystem.perspective.print('deleteProcedure() returned %s %s'%(retVal, msg))\n\t\tif msg: msgs.append('Procedure %s has not been deleted. \\n%s'%(procedureId, msg))\n\t\telse: msgs.append('Procedure %s has been deleted.'%(procedureId))\n\n\t#Now we'll delete any selected procedure categories\n\tselection['procedureCategoryPaths']\n\tif len(selection) > 0:\n\t\tprocedureCategories = system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getProcedureCategory({}), 'procedureCategoryPath', 'procedureCategoryId')\n\t\n\t\tfor procedureCategoryPath in selection['procedureCategoryPaths']:\n\t\t\tretVal, msg = system.kanoa.cmms.deleteProcedureCategory(procedureCategories[procedureCategoryPath], userId)\n\t\t\tif msg: msgs.append('%s category has not been deleted. \\n%s'%(procedureCategoryPath, msg))\n\t\t\telse: msgs.append('%s category has been deleted.'%procedureCategoryPath)\n\t\t\t\n\tif len(msgs) > 0: system.kanoa.toast.show({'type': 'info', 'message': '%s'%'\\n'.join(msgs)})\n\n#\tself.view.refreshBinding(\"custom.procedures.data\")\n\tsystem.perspective.sendMessage('updateProcedures', {})\n\tself.view.refreshbinding(\"custom.procedures.selection\")\n\n\treturn"
+          "script": "\n\tuserId = self.view.custom.security.userId\n\tselection = self.view.custom.procedures.selection\n\tmsgs = []\n\t\n\t#We'll start off by deleting any selected procedures\n\t\n\tfor procedureId in selection['procedureIds']:\n\t\tretVal, msg = system.kanoa.cmms.deleteProcedure(procedureId, userId)\n\t\tsystem.perspective.print('deleteProcedure() returned %s %s'%(retVal, msg))\n\t\tif msg: msgs.append('Procedure %s has not been deleted. \\n%s'%(procedureId, msg))\n\t\telse: msgs.append('Procedure %s has been deleted.'%(procedureId))\n\n\t#Now we'll delete any selected procedure categories\n\tif selection['procedureCategoryPaths']:\n\t\tprocedureCategories = system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getProcedureCategory({}), 'procedureCategoryPath', 'procedureCategoryId')\n\t\n\t\tfor procedureCategoryPath in selection['procedureCategoryPaths']:\n\t\t\tretVal, msg = system.kanoa.cmms.deleteProcedureCategory(procedureCategories[procedureCategoryPath], userId)\n\t\t\tif msg: msgs.append('%s category has not been deleted. \\n%s'%(procedureCategoryPath, msg))\n\t\t\telse: msgs.append('%s category has been deleted.'%procedureCategoryPath)\n\t\t\t\n\tif len(msgs) > 0: system.kanoa.toast.show({'type': 'info', 'message': '%s'%'\\n'.join(msgs)})\n\n#\tself.view.refreshBinding(\"custom.procedures.data\")\n\tsystem.perspective.sendMessage('updateProcedures', {})\n\tself.view.refreshBinding(\"custom.procedures.selection\")\n\n\treturn"
         },
         {
           "name": "updateProcedureParent",
@@ -1415,7 +1382,7 @@
             "data",
             "userId"
           ],
-          "script": "\n\timport java.lang\n\t\n\tlog = system.util.getLogger('kanoa_cmms')\n\tlog.info('Calling importProcedures()')\n\t\n\terrorLog = []\n\t\n\t# round-trip through JSON to normalize Java/PyDictionary types to plain python dict/list\n\tdata = system.util.jsonDecode(system.util.jsonEncode(data))\n\t\n\trecords = data.get('procedures', []) if data else []\n\t\n\tif not records: return {'passed': False, 'message': 'No procedures to import', 'errorLog': errorLog}\n\t\n\tdef toInt(value):\n\t\tif value is None: return None\n\t\ttry: return int(value)\n\t\texcept: return None\n\t\n\t# index the exported dataType/engUnit dumps by their old id, and cache\n\t# old-id -> resolved-new-id lookups as they're worked out below\n\tdataTypeRows = data.get('dataTypes', []) if data else []\n\tengUnitRows = data.get('engUnits', []) if data else []\n\tpickListRows = data.get('pickLists', []) if data else []\n\t\n\tdataTypeById = {}\n\tfor row in dataTypeRows:\n\t\trowId = toInt(row.get('dataTypeId'))\n\t\tif rowId is not None: dataTypeById[rowId] = row\n\t\n\tengUnitById = {}\n\tfor row in engUnitRows:\n\t\trowId = toInt(row.get('engUnitId'))\n\t\tif rowId is not None: engUnitById[rowId] = row\n\t\n\tpickListById = {}\n\tfor row in pickListRows:\n\t\trowId = toInt(row.get('pickListId'))\n\t\tif rowId is not None: pickListById[rowId] = row\n\t\n\tresolvedDataTypeIds = {}\n\tresolvedEngUnitIds = {}\n\tresolvedPickListIds = {}\n\t\n\tdef resolveDataTypeId(oldId):\n\t\toldId = toInt(oldId)\n\t\tif oldId is None: return None\n\t\tif oldId in resolvedDataTypeIds: return resolvedDataTypeIds[oldId]\n\t\t\n\t\toldRow = dataTypeById.get(oldId)\n\t\tname = oldRow.get('dataTypeName') if oldRow else None\n\t\tif not name: return None\n\t\t\n\t\tnewId = system.kanoa.utilities.getFieldValue('dataTypeId', system.kanoa.quality.config.getDataTypes({'dataTypeName': name}))\n\t\tif newId is None:\n\t\t\tnewDataTypeInfo = {\n\t\t\t\t'dataTypeName': name,\n\t\t\t\t'enabled': oldRow.get('enabled', True),\n\t\t\t\t'isNumeric': oldRow.get('isNumeric', False),\n\t\t\t\t'pickListEnabled': oldRow.get('pickListEnabled', False)\n\t\t\t}\n\t\t\tnewId = system.kanoa.quality.config.addDataType(newDataTypeInfo, userId)\n\t\t\n\t\tresolvedDataTypeIds[oldId] = newId\n\t\treturn newId\n\t\n\tdef resolveEngUnitId(oldId):\n\t\toldId = toInt(oldId)\n\t\tif oldId is None: return None\n\t\tif oldId in resolvedEngUnitIds: return resolvedEngUnitIds[oldId]\n\t\t\n\t\toldRow = engUnitById.get(oldId)\n\t\tname = oldRow.get('engUnitName') if oldRow else None\n\t\tif not name: return None\n\t\t\n\t\tnewId = system.kanoa.utilities.getFieldValue('engUnitId', system.kanoa.quality.config.getUnits({'engUnitName': name}))\n\t\tif newId is None:\n\t\t\tnewUnitInfo = {'engUnitName': name, 'enabled': oldRow.get('enabled', True)}\n\t\t\tnewId, msg = system.kanoa.quality.config.addUnit(newUnitInfo, userId)\n\t\t\tif msg: return None\n\t\t\n\t\tresolvedEngUnitIds[oldId] = newId\n\t\treturn newId\n\t\n\tdef resolvePickListId(oldId):\n\t\toldId = toInt(oldId)\n\t\tif oldId is None: return None\n\t\tif oldId in resolvedPickListIds: return resolvedPickListIds[oldId]\n\t\t\n\t\toldRow = pickListById.get(oldId)\n\t\tname = oldRow.get('pickListName') if oldRow else None\n\t\tif not name: return None\n\t\t\n\t\tnewId = system.kanoa.utilities.getFieldValue('pickListId', system.kanoa.quality.config.getPickList({'pickListName': name}))\n\t\tif newId is None:\n\t\t\tnewPickListInfo = {\n\t\t\t\t'pickListName': name,\n\t\t\t\t'description': oldRow.get('description'),\n\t\t\t\t'enabled': oldRow.get('enabled', True),\n\t\t\t\t'isNumeric': oldRow.get('isNumeric', False),\n\t\t\t\t'dataTypeId': resolveDataTypeId(oldRow.get('dataTypeId')),\n\t\t\t\t'example': oldRow.get('example')\n\t\t\t}\n\t\t\tnewId, msg = system.kanoa.quality.config.addPickList(newPickListInfo, userId)\n\t\t\tif msg: return None\n\t\t\n\t\tresolvedPickListIds[oldId] = newId\n\t\treturn newId\n\t\n\tdef remapConfig(configStr):\n\t\t# rewrites dataTypeId/engUnitId/pickListInfo.pickListId to the target system's equivalent\n\t\t# record, resolved by name (created if missing)\n\t\tif not configStr: return configStr\n\t\tconfig = system.util.jsonDecode(configStr)\n\t\tif config is None: return configStr\n\t\tif 'dataTypeId' in config: config['dataTypeId'] = resolveDataTypeId(config.get('dataTypeId'))\n\t\tif 'engUnitId' in config: config['engUnitId'] = resolveEngUnitId(config.get('engUnitId'))\n\t\tpickListInfo = config.get('pickListInfo')\n\t\tif pickListInfo is not None and 'pickListId' in pickListInfo: pickListInfo['pickListId'] = resolvePickListId(pickListInfo.get('pickListId'))\n\t\treturn system.util.jsonEncode(config)\n\t\n\tcategoryIdByPath = system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getProcedureCategory({}), 'procedureCategoryPath', 'procedureCategoryId')\n\t\n\timportedCount = 0\n\t\n\tfor record in records:\n\t\tprocedureInfo = record['procedure'] if 'procedure' in record else None\n\t\tsteps = record['steps'] if 'steps' in record else []\n\t\t\n\t\tif procedureInfo is None:\n\t\t\terrorLog.append('A record had no procedure info and was skipped.')\n\t\t\tcontinue\n\t\t\n\t\t# resolve/create the procedure category chain from procedureCategoryPath\n\t\tcategoryPath = procedureInfo.get('procedureCategoryPath')\n\t\tprocedureCategoryId = None\n\t\tcategoryFailed = False\n\t\t\n\t\tif categoryPath:\n\t\t\tpathSections = [section.strip() for section in categoryPath.split('\\\\')]\n\t\t\tbuiltPath = None\n\t\t\tfor section in pathSections:\n\t\t\t\tbuiltPath = '%s\\\\%s'%(builtPath, section) if builtPath else section\n\t\t\t\tif builtPath in categoryIdByPath:\n\t\t\t\t\tprocedureCategoryId = categoryIdByPath[builtPath]\n\t\t\t\t\tcontinue\n\t\t\t\tnewCategoryInfo = {'procedureCategoryName': section, 'parentId': procedureCategoryId, 'enabled': True}\n\t\t\t\tprocedureCategoryId, msg = system.kanoa.cmms.addProcedureCategory(newCategoryInfo, userId)\n\t\t\t\tif msg:\n\t\t\t\t\terrorLog.append('Unable to create procedure category \"%s\". %s'%(builtPath, msg))\n\t\t\t\t\tcategoryFailed = True\n\t\t\t\t\tbreak\n\t\t\t\tcategoryIdByPath[builtPath] = procedureCategoryId\n\t\t\n\t\tif categoryFailed:\n\t\t\terrorLog.append('Procedure \"%s\" was not imported - could not resolve its category.'%procedureInfo.get('procedureName'))\n\t\t\tcontinue\n\t\t\n\t\t# de-dupe on name collision within the same category\n\t\tprocedureName = procedureInfo.get('procedureName')\n\t\texistingProcedures = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getProcedures({'procedureName': procedureName}))\n\t\texistingProcedureId = None\n\t\tfor existingProcedure in existingProcedures:\n\t\t\tif existingProcedure['procedureCategoryId'] == procedureCategoryId:\n\t\t\t\texistingProcedureId = existingProcedure['procedureId']\n\t\t\t\tbreak\n\t\tif existingProcedureId is not None:\n\t\t\tprocedureName = '%s (%s)'%(procedureName, system.date.format(system.date.now(), 'yyyy-MM-dd HH.mm.ss'))\n\t\t\n\t\tnewProcedureInfo = {\n\t\t\t'procedureName': procedureName,\n\t\t\t'procedureDescription': procedureInfo.get('procedureDescription'),\n\t\t\t'procedureCategoryId': procedureCategoryId,\n\t\t\t'enabled': procedureInfo.get('enabled', True)\n\t\t}\n\t\t\n\t\tprocedureId, msg = system.kanoa.cmms.addProcedure(newProcedureInfo, userId)\n\t\tif msg:\n\t\t\terrorLog.append('Procedure \"%s\" could not be imported. %s'%(procedureName, msg))\n\t\t\tcontinue\n\t\t\n\t\tfor step in sorted(steps, key=lambda x: x['sortOrder']):\n\t\t\tchecks = step['checks'] if 'checks' in step else []\n\t\t\t\n\t\t\ttry:\n\t\t\t\tnewStepInfo = {\n\t\t\t\t\t'procedureId': procedureId,\n\t\t\t\t\t'stepName': step['stepName'],\n\t\t\t\t\t'stepDescription': step['stepDescription'],\n\t\t\t\t\t'estimatedMinutes': step['estimatedMinutes'],\n\t\t\t\t\t'sortOrder': step['sortOrder'],\n\t\t\t\t\t'enabled': step['enabled'],\n\t\t\t\t\t'required': step['required'],\n\t\t\t\t\t'stepConfig': remapConfig(step['stepConfig'])\n\t\t\t\t}\n\t\t\texcept java.lang.Exception, e:\n\t\t\t\terrorLog.append('Step \"%s\" for procedure \"%s\" could not resolve its data type/engineering unit references. %s'%(step['stepName'], procedureName, e.cause if e.cause else str(e)))\n\t\t\t\tcontinue\n\t\t\texcept Exception, e:\n\t\t\t\terrorLog.append('Step \"%s\" for procedure \"%s\" could not resolve its data type/engineering unit references. %s'%(step['stepName'], procedureName, str(e)))\n\t\t\t\tcontinue\n\t\t\t\n\t\t\tprocedureStepId, msg = system.kanoa.cmms.addProcedureStep(newStepInfo, userId)\n\t\t\tif msg:\n\t\t\t\terrorLog.append('Step \"%s\" for procedure \"%s\" could not be imported. %s'%(step['stepName'], procedureName, msg))\n\t\t\t\tcontinue\n\t\t\t\n\t\t\tfor check in sorted(checks, key=lambda x: x['sortOrder']):\n\t\t\t\ttry:\n\t\t\t\t\tnewCheckInfo = {\n\t\t\t\t\t\t'procedureStepId': procedureStepId,\n\t\t\t\t\t\t'checkName': check['checkName'],\n\t\t\t\t\t\t'checkDescription': check['checkDescription'],\n\t\t\t\t\t\t'checkConfig': remapConfig(check['checkConfig']),\n\t\t\t\t\t\t'enabled': check['enabled'],\n\t\t\t\t\t\t'required': check['required'],\n\t\t\t\t\t\t'sortOrder': check['sortOrder']\n\t\t\t\t\t}\n\t\t\t\texcept java.lang.Exception, e:\n\t\t\t\t\terrorLog.append('Check \"%s\" for step \"%s\" could not resolve its data type/engineering unit references. %s'%(check['checkName'], step['stepName'], e.cause if e.cause else str(e)))\n\t\t\t\t\tcontinue\n\t\t\t\texcept Exception, e:\n\t\t\t\t\terrorLog.append('Check \"%s\" for step \"%s\" could not resolve its data type/engineering unit references. %s'%(check['checkName'], step['stepName'], str(e)))\n\t\t\t\t\tcontinue\n\t\t\t\t\n\t\t\t\tprocedureStepCheckId, msg = system.kanoa.cmms.addProcedureStepCheck(newCheckInfo, userId)\n\t\t\t\tif msg: errorLog.append('Check \"%s\" for step \"%s\" could not be imported. %s'%(check['checkName'], step['stepName'], msg))\n\t\t\n\t\timportedCount += 1\n\t\n\tif importedCount == 0: return {'passed': False, 'message': 'No procedures were imported', 'errorLog': errorLog}\n\t\n\treturn {'passed': True, 'message': '%s procedure(s) imported'%importedCount, 'errorLog': errorLog}"
+          "script": "\n\timport java.lang\n\t\n\tlog = system.util.getLogger('kanoa_cmms')\n\tlog.info('Calling importProcedures()')\n\t\n\terrorLog = []\n\t\n\t# round-trip through JSON to normalize Java/PyDictionary types to plain python dict/list\n\tdata = system.util.jsonDecode(system.util.jsonEncode(data))\n\t\n\trecords = data.get('procedures', []) if data else []\n\t\n\tif not records: return {'passed': False, 'message': 'No procedures to import', 'errorLog': errorLog}\n\t\n\tdef toInt(value):\n\t\tif value is None: return None\n\t\ttry: return int(value)\n\t\texcept: return None\n\t\n\t# index the exported dataType/engUnit dumps by their old id, and cache\n\t# old-id -> resolved-new-id lookups as they're worked out below\n\tdataTypeRows = data.get('dataTypes', []) if data else []\n\tengUnitRows = data.get('engUnits', []) if data else []\n\tpickListRows = data.get('pickLists', []) if data else []\n\t\n\tdataTypeById = {}\n\tfor row in dataTypeRows:\n\t\trowId = toInt(row.get('dataTypeId'))\n\t\tif rowId is not None: dataTypeById[rowId] = row\n\t\n\tengUnitById = {}\n\tfor row in engUnitRows:\n\t\trowId = toInt(row.get('engUnitId'))\n\t\tif rowId is not None: engUnitById[rowId] = row\n\t\n\tpickListById = {}\n\tfor row in pickListRows:\n\t\trowId = toInt(row.get('pickListId'))\n\t\tif rowId is not None: pickListById[rowId] = row\n\t\n\tresolvedDataTypeIds = {}\n\tresolvedEngUnitIds = {}\n\tresolvedPickListIds = {}\n\t\n\tdef resolveDataTypeId(oldId):\n\t\toldId = toInt(oldId)\n\t\tif oldId is None: return None\n\t\tif oldId in resolvedDataTypeIds: return resolvedDataTypeIds[oldId]\n\t\t\n\t\toldRow = dataTypeById.get(oldId)\n\t\tname = oldRow.get('dataTypeName') if oldRow else None\n\t\tif not name: return None\n\t\t\n\t\tnewId = system.kanoa.utilities.getFieldValue('dataTypeId', system.kanoa.quality.config.getDataTypes({'dataTypeName': name}))\n\t\tif newId is None:\n\t\t\tnewDataTypeInfo = {\n\t\t\t\t'dataTypeName': name,\n\t\t\t\t'enabled': oldRow.get('enabled', True),\n\t\t\t\t'isNumeric': oldRow.get('isNumeric', False),\n\t\t\t\t'pickListEnabled': oldRow.get('pickListEnabled', False)\n\t\t\t}\n\t\t\tnewId = system.kanoa.quality.config.addDataType(newDataTypeInfo, userId)\n\t\t\n\t\tresolvedDataTypeIds[oldId] = newId\n\t\treturn newId\n\t\n\tdef resolveEngUnitId(oldId):\n\t\toldId = toInt(oldId)\n\t\tif oldId is None: return None\n\t\tif oldId in resolvedEngUnitIds: return resolvedEngUnitIds[oldId]\n\t\t\n\t\toldRow = engUnitById.get(oldId)\n\t\tname = oldRow.get('engUnitName') if oldRow else None\n\t\tif not name: return None\n\t\t\n\t\tnewId = system.kanoa.utilities.getFieldValue('engUnitId', system.kanoa.quality.config.getUnits({'engUnitName': name}))\n\t\tif newId is None:\n\t\t\tnewUnitInfo = {'engUnitName': name, 'enabled': oldRow.get('enabled', True)}\n\t\t\tnewId, msg = system.kanoa.quality.config.addUnit(newUnitInfo, userId)\n\t\t\tif msg: return None\n\t\t\n\t\tresolvedEngUnitIds[oldId] = newId\n\t\treturn newId\n\t\n\tdef resolvePickListId(oldId):\n\t\toldId = toInt(oldId)\n\t\tif oldId is None: return None\n\t\tif oldId in resolvedPickListIds: return resolvedPickListIds[oldId]\n\t\t\n\t\toldRow = pickListById.get(oldId)\n\t\tname = oldRow.get('pickListName') if oldRow else None\n\t\tif not name: return None\n\t\t\n\t\tnewId = system.kanoa.utilities.getFieldValue('pickListId', system.kanoa.quality.config.getPickList({'pickListName': name}))\n\t\tif newId is None:\n\t\t\tnewPickListInfo = {\n\t\t\t\t'pickListName': name,\n\t\t\t\t'description': oldRow.get('description'),\n\t\t\t\t'enabled': oldRow.get('enabled', True),\n\t\t\t\t'isNumeric': oldRow.get('isNumeric', False),\n\t\t\t\t'dataTypeId': resolveDataTypeId(oldRow.get('dataTypeId')),\n\t\t\t\t'example': oldRow.get('example')\n\t\t\t}\n\t\t\tnewId, msg = system.kanoa.quality.config.addPickList(newPickListInfo, userId)\n\t\t\tif msg: return None\n\t\t\n\t\tresolvedPickListIds[oldId] = newId\n\t\treturn newId\n\t\n\tdef remapConfig(configStr):\n\t\t# rewrites dataTypeId/engUnitId/pickListInfo.pickListId to the target system's equivalent\n\t\t# record, resolved by name (created if missing)\n\t\tif not configStr: return configStr\n\t\tconfig = system.util.jsonDecode(configStr)\n\t\tif config is None: return configStr\n\t\tif 'dataTypeId' in config: config['dataTypeId'] = resolveDataTypeId(config.get('dataTypeId'))\n\t\tif 'engUnitId' in config: config['engUnitId'] = resolveEngUnitId(config.get('engUnitId'))\n\t\tpickListInfo = config.get('pickListInfo')\n\t\tif pickListInfo is not None and 'pickListId' in pickListInfo: pickListInfo['pickListId'] = resolvePickListId(pickListInfo.get('pickListId'))\n\t\treturn system.util.jsonEncode(config)\n\t\n\tcategoryIdByPath = system.kanoa.utilities.convertDatasetToDict(system.kanoa.cmms.getProcedureCategory({}), 'procedureCategoryPath', 'procedureCategoryId')\n\t\n\timportedCount = 0\n\t\n\tfor record in records:\n\t\tprocedureInfo = record['procedure'] if 'procedure' in record else None\n\t\tsteps = record['steps'] if 'steps' in record else []\n\t\t\n\t\tif procedureInfo is None:\n\t\t\terrorLog.append('A record had no procedure info and was skipped.')\n\t\t\tcontinue\n\t\t\n\t\t# resolve/create the procedure category chain from procedureCategoryPath\n\t\tcategoryPath = procedureInfo.get('procedureCategoryPath')\n\t\tprocedureCategoryId = None\n\t\tcategoryFailed = False\n\t\t\n\t\tif categoryPath:\n\t\t\tpathSections = [section.strip() for section in categoryPath.split('\\\\')]\n\t\t\tbuiltPath = None\n\t\t\tfor section in pathSections:\n\t\t\t\tbuiltPath = '%s\\\\%s'%(builtPath, section) if builtPath else section\n\t\t\t\tif builtPath in categoryIdByPath:\n\t\t\t\t\tprocedureCategoryId = categoryIdByPath[builtPath]\n\t\t\t\t\tcontinue\n\t\t\t\tnewCategoryInfo = {'procedureCategoryName': section, 'parentId': procedureCategoryId, 'enabled': True}\n\t\t\t\tprocedureCategoryId, msg = system.kanoa.cmms.addProcedureCategory(newCategoryInfo, userId)\n\t\t\t\tif msg:\n\t\t\t\t\terrorLog.append('Unable to create procedure category \"%s\". %s'%(builtPath, msg))\n\t\t\t\t\tcategoryFailed = True\n\t\t\t\t\tbreak\n\t\t\t\tcategoryIdByPath[builtPath] = procedureCategoryId\n\t\t\n\t\tif categoryFailed:\n\t\t\terrorLog.append('Procedure \"%s\" was not imported - could not resolve its category.'%procedureInfo.get('procedureName'))\n\t\t\tcontinue\n\t\t\n\t\t# de-dupe on name collision within the same category\n\t\tprocedureName = procedureInfo.get('procedureName')\n\t\texistingProcedures = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getProcedures({'procedureName': procedureName}))\n\t\texistingProcedureId = None\n\t\tfor existingProcedure in existingProcedures:\n\t\t\tif existingProcedure['procedureCategoryId'] == procedureCategoryId:\n\t\t\t\texistingProcedureId = existingProcedure['procedureId']\n\t\t\t\tbreak\n\t\tif existingProcedureId is not None:\n\t\t\tprocedureName = '%s (%s)'%(procedureName, system.date.format(system.date.now(), 'yyyy-MM-dd HH.mm.ss'))\n\t\t\n\t\tnewProcedureInfo = {\n\t\t\t'procedureName': procedureName,\n\t\t\t'procedureDescription': procedureInfo.get('procedureDescription'),\n\t\t\t'procedureCategoryId': procedureCategoryId,\n\t\t\t'enabled': procedureInfo.get('enabled', True)\n\t\t}\n\t\t\n\t\tprocedureId, msg = system.kanoa.cmms.addProcedure(newProcedureInfo, userId)\n\t\tif msg:\n\t\t\terrorLog.append('Procedure \"%s\" could not be imported. %s'%(procedureName, msg))\n\t\t\tcontinue\n\t\t\n\t\tfor step in sorted(steps, key=lambda x: x['sortOrder']):\n\t\t\tchecks = step['checks'] if 'checks' in step else []\n\t\t\t\n\t\t\ttry:\n\t\t\t\tnewStepInfo = {\n\t\t\t\t\t'procedureId': procedureId,\n\t\t\t\t\t'stepName': step['stepName'],\n\t\t\t\t\t'stepDescription': step['stepDescription'],\n\t\t\t\t\t'estimatedMinutes': step['estimatedMinutes'],\n\t\t\t\t\t'sortOrder': step['sortOrder'],\n\t\t\t\t\t'enabled': step['enabled'],\n\t\t\t\t\t'required': step['required'],\n\t\t\t\t\t'stepConfig': remapConfig(step['stepConfig'])\n\t\t\t\t}\n\t\t\texcept java.lang.Exception, e:\n\t\t\t\terrorLog.append('Step \"%s\" for procedure \"%s\" could not resolve its data type/engineering unit references. %s'%(step['stepName'], procedureName, (getattr(e, 'cause', None) or e)))\n\t\t\t\tcontinue\n\t\t\texcept (Exception, java.lang.Exception), e:\n\t\t\t\terrorLog.append('Step \"%s\" for procedure \"%s\" could not resolve its data type/engineering unit references. %s'%(step['stepName'], procedureName, str(e)))\n\t\t\t\tcontinue\n\t\t\t\n\t\t\tprocedureStepId, msg = system.kanoa.cmms.addProcedureStep(newStepInfo, userId)\n\t\t\tif msg:\n\t\t\t\terrorLog.append('Step \"%s\" for procedure \"%s\" could not be imported. %s'%(step['stepName'], procedureName, msg))\n\t\t\t\tcontinue\n\t\t\t\n\t\t\tfor check in sorted(checks, key=lambda x: x['sortOrder']):\n\t\t\t\ttry:\n\t\t\t\t\tnewCheckInfo = {\n\t\t\t\t\t\t'procedureStepId': procedureStepId,\n\t\t\t\t\t\t'checkName': check['checkName'],\n\t\t\t\t\t\t'checkDescription': check['checkDescription'],\n\t\t\t\t\t\t'checkConfig': remapConfig(check['checkConfig']),\n\t\t\t\t\t\t'enabled': check['enabled'],\n\t\t\t\t\t\t'required': check['required'],\n\t\t\t\t\t\t'sortOrder': check['sortOrder']\n\t\t\t\t\t}\n\t\t\t\texcept java.lang.Exception, e:\n\t\t\t\t\terrorLog.append('Check \"%s\" for step \"%s\" could not resolve its data type/engineering unit references. %s'%(check['checkName'], step['stepName'], (getattr(e, 'cause', None) or e)))\n\t\t\t\t\tcontinue\n\t\t\t\texcept (Exception, java.lang.Exception), e:\n\t\t\t\t\terrorLog.append('Check \"%s\" for step \"%s\" could not resolve its data type/engineering unit references. %s'%(check['checkName'], step['stepName'], str(e)))\n\t\t\t\t\tcontinue\n\t\t\t\t\n\t\t\t\tprocedureStepCheckId, msg = system.kanoa.cmms.addProcedureStepCheck(newCheckInfo, userId)\n\t\t\t\tif msg: errorLog.append('Check \"%s\" for step \"%s\" could not be imported. %s'%(check['checkName'], step['stepName'], msg))\n\t\t\n\t\timportedCount += 1\n\t\n\tif importedCount == 0: return {'passed': False, 'message': 'No procedures were imported', 'errorLog': errorLog}\n\t\n\treturn {'passed': True, 'message': '%s procedure(s) imported'%importedCount, 'errorLog': errorLog}"
         }
       ],
       "extensionFunctions": null,

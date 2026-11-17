@@ -321,7 +321,8 @@
       "canDelete": false,
       "canRead": true,
       "canUpdate": false
-    }
+    },
+    "toastId": null
   },
   "params": {
     "value": {
@@ -530,7 +531,7 @@
                               "component": {
                                 "onActionPerformed": {
                                   "config": {
-                                    "script": "\ttry:\n\t\tdata \u003d self.parent.parent.getChild(\"Table\").props.data\n\t\theaders \u003d self.view.params.dataColumnList\n\t\tfileName \u003d \u0027Export_\u0027+str(self.view.params.parentViewName)\n\t\t\n\t\t#headers \u003d []\n\t\tvalues \u003d []\n\t\t\n#\t\tfor col in columndata:\n#\t\t\theaders.append(str(col[\u0027field\u0027]))\n\t\t\t\n\t\tfor item in data:\n\t\t\tvals \u003d []\n\t\t\tfor colName in headers:\n\t\t\t\tvals.append(item[colName][\u0027value\u0027])\n\t\t\tvalues.append(vals)\n\t\t\n\t\tdataset \u003d system.dataset.toDataSet(headers, values)\n\t\texportDatasetT \u003d system.dataset.toExcel(1, dataset)\n\t\tsystem.perspective.download(\u0027%s_%s.xlsx\u0027 %(fileName, str(system.date.now())), exportDatasetT)\n\texcept Exception, errorMessage:\n\t\tsystem.perspective.print(\u0027Error on btnExport : \u0027+str(errorMessage)) \t"
+                                    "script": "\timport java.lang\n\ttry:\n\t\tdata \u003d self.parent.parent.getChild(\"Table\").props.data\n\t\theaders \u003d self.view.params.dataColumnList\n\t\tfileName \u003d \u0027Export_\u0027+str(self.view.params.parentViewName)\n\t\t\n\t\t#headers \u003d []\n\t\tvalues \u003d []\n\t\t\n#\t\tfor col in columndata:\n#\t\t\theaders.append(str(col[\u0027field\u0027]))\n\t\t\t\n\t\tfor item in data:\n\t\t\tvals \u003d []\n\t\t\tfor colName in headers:\n\t\t\t\tvals.append(item[colName][\u0027value\u0027])\n\t\t\tvalues.append(vals)\n\t\t\n\t\tdataset \u003d system.dataset.toDataSet(headers, values)\n\t\texportDatasetT \u003d system.dataset.toExcel(1, dataset)\n\t\tsystem.perspective.download(\u0027%s_%s.xlsx\u0027 %(fileName, str(system.date.now())), exportDatasetT)\n\texcept (Exception, java.lang.Exception), errorMessage:\n\t\tsystem.perspective.print(\u0027Error on btnExport : \u0027+str(errorMessage)) \t"
                                   },
                                   "scope": "G",
                                   "type": "script"
@@ -2836,12 +2837,19 @@
         {
           "name": "saveDataSource",
           "params": [],
-          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tattrAssetInfo \u003d dict(self.view.custom.dataSource.info)\n\t\n\tif attrAssetInfo[\u0027attributeAssetLinkId\u0027] is None:\n\t\tattributeDataSourceId, msg \u003d system.kanoa.attribute.addAttributeAssetLink(attrAssetInfo, userId)\n\t\tif msg is None: \n\t\t\tself.view.custom.dataSource.info.attrAssetInfo \u003d attrAssetInfo\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute link has been added\"})\t\t\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\t\t\n\telse:\n\t\tretVal, msg \u003d system.kanoa.attribute.updateAttributeAssetLink(attrAssetInfo, userId)\n\t\tif msg is None:\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute asset link has been updated\"})\t\t\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\t\t\t\t\n\t\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\n\tself.view.custom.dataSource.create \u003d False\n\n\treturn"
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tattrAssetInfo \u003d dict(self.view.custom.dataSource.info)\n\t\n\tif attrAssetInfo[\u0027attributeAssetLinkId\u0027] is None:\n\t\tattributeDataSourceId, msg \u003d system.kanoa.attribute.addAttributeAssetLink(attrAssetInfo, userId)\n\t\tif msg is None: \n\t\t\tself.view.custom.dataSource.info.attrAssetInfo \u003d attrAssetInfo\n\t\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute link has been added\"})\t\t\n\t\telse: self.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\t\t\n\telse:\n\t\tretVal, msg \u003d system.kanoa.attribute.updateAttributeAssetLink(attrAssetInfo, userId)\n\t\tif msg is None:\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute asset link has been updated\"})\t\t\n\t\telse: self.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\t\t\t\t\n\t\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\n\tself.view.custom.dataSource.create \u003d False\n\n\treturn"
         },
         {
           "name": "deleteDataSource",
           "params": [],
-          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tfor row in self.view.custom.dataSource.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.attribute.deleteAttributeAssetLink(row[\u0027attributeAssetLinkId\u0027], userId)\n\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute asset link has been deleted\"})\t\n\t\telse: system.perspective.openPopup(\u0027msg\u0027, \u0027kanoa/core/templates/displays/messagePopup\u0027, params \u003d {\u0027text\u0027:msg}, showCloseIcon\u003dTrue, draggable\u003dTrue, resizeable\u003dTrue)\n\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\t\n\n\treturn"
+          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdeleted \u003d 0\n\tfor row in self.view.custom.dataSource.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.attribute.deleteAttributeAssetLink(row[\u0027attributeAssetLinkId\u0027], userId)\n\t\tif retVal: deleted +\u003d 1\n\t\telse: system.perspective.openPopup(\u0027msg\u0027, \u0027kanoa/core/templates/displays/messagePopup\u0027, params \u003d {\u0027text\u0027:msg}, showCloseIcon\u003dTrue, draggable\u003dTrue, resizeable\u003dTrue)\n\t#One toast for the whole selection (868mvvzbz)\n\tif deleted: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Deleted %d attribute asset link%s\u0027 % (deleted, \u0027\u0027 if deleted \u003d\u003d 1 else \u0027s\u0027)})\n\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\t\n\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)\n"
         }
       ],
       "extensionFunctions": null,

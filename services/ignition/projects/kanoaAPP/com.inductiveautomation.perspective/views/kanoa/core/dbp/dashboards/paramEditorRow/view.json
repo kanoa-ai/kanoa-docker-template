@@ -192,7 +192,7 @@
                     },
                     "onChange": {
                       "enabled": null,
-                      "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tvalueInfo \u003d dict(self.view.params.values)\n\t\tsystem.perspective.print(\u0027valueInfo %s\u0027%valueInfo)\n\t\tvalueInfo[\u0027value\u0027] \u003d currentValue.value\n\t\tvalueType \u003d self.view.params.values[\u0027type\u0027]\n\t\tif valueType \u003d\u003d \u0027Integer\u0027: valueInfo[\u0027value\u0027] \u003d int(valueInfo[\u0027value\u0027])\n\t\tself.view.getChild(\"root\").updateParam(valueInfo)\n\treturn"
+                      "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tvalueInfo \u003d dict(self.view.params.values)\n\t\tsystem.perspective.print(\u0027valueInfo %s\u0027%valueInfo)\n\t\tvalueInfo[\u0027value\u0027] \u003d currentValue.value\n\t\tvalueType \u003d self.view.params.values[\u0027type\u0027]\n\t\tif valueType in (\u0027Integer\u0027, \u0027Float\u0027):\n\t\t\t#A number row takes whole numbers and fractions (a fontSizeMultiplier of 1.5); whole numbers stay whole\n\t\t\ttry:\n\t\t\t\tnumber \u003d float(valueInfo[\u0027value\u0027])\n\t\t\texcept (TypeError, ValueError):\n\t\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027%s must be a number\u0027 % valueInfo[\u0027key\u0027]})\n\t\t\t\treturn\n\t\t\tvalueInfo[\u0027value\u0027] \u003d int(number) if number \u003d\u003d int(number) else number\n\t\tself.view.getChild(\"root\").updateParam(valueInfo)\n\treturn"
                     }
                   }
                 },
@@ -260,6 +260,14 @@
                       "enabled": null,
                       "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tvalueInfo \u003d dict(self.view.params.values)\n\t\tvalueInfo[\u0027value\u0027] \u003d currentValue.value\n\t\tself.view.getChild(\"root\").updateParam(valueInfo)\n\treturn"
                     }
+                  }
+                },
+                "props": {
+                  "dropdownOptionStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "style": {
+                    "classes": "kanoa/font/default"
                   }
                 },
                 "type": "ia.input.dropdown"

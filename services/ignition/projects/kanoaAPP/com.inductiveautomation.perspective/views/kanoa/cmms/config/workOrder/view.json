@@ -127,7 +127,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\t\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Recurring\u0027: return \u0027Recurring scheduled work order\u0027\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027One Time\u0027: return \u0027One time work order scheduled by %s\u0027%value[\u0027requestedByUser\u0027]\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027: return \u0027Condition based work order\u0027\n\treturn \u0027\u0027",
+                              "code": "\t\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Recurring\u0027: return \u0027Recurring scheduled work order\u0027\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027One Time\u0027: return system.util.translate(\u0027One time work order scheduled by %s\u0027, self.session.props.locale)%value[\u0027requestedByUser\u0027]\n\tif value[\u0027scheduleTypeName\u0027] \u003d\u003d \u0027Condition\u0027: return \u0027Condition based work order\u0027\n\treturn \u0027\u0027",
                               "type": "script"
                             }
                           ],
@@ -677,7 +677,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif value is None: return \u0027\u0027\n\tclientOffsetMins \u003d system.kanoa.date.getClientOffsetMinsFromGateway(self.session.props.device.timezone.id, value)\n\tdateFormat \u003d system.kanoa.date.localizeDateFormat(\"MM/dd/yy E hh:mma\", self.session.props.locale)\n\treturn \"Due on %s\"%system.date.format(system.date.addMinutes(value, clientOffsetMins), dateFormat)",
+                      "code": "\t\n\tif value is None: return \u0027\u0027\n\tclientOffsetMins \u003d system.kanoa.date.getClientOffsetMinsFromGateway(self.session.props.device.timezone.id, value)\n\tdateFormat \u003d system.kanoa.date.localizeDateFormat(\"MM/dd/yy E hh:mma\", self.session.props.locale)\n\treturn \"%s %s\" % (system.util.translate(\"Due on\", self.session.props.locale), system.date.format(system.date.addMinutes(value, clientOffsetMins), dateFormat))",
                       "type": "script"
                     }
                   ],

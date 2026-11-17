@@ -1,6 +1,7 @@
 {
   "custom": {
-    "display": {}
+    "display": {},
+    "stripHover": false
   },
   "params": {
     "value": {
@@ -38,6 +39,61 @@
   },
   "root": {
     "children": [
+      {
+        "children": [
+          {
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\n\t#Collapse the info panel to its icon strip: a session-wide setting, kept across assets and pages (main reads it to\n\t#size the split). Resting the pointer on the strip expands it again (root onMouseEnter) (868mw9nd7)\n\tself.session.custom.kanoa.infoPanelCollapsed \u003d True\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "icoCollapse",
+              "tooltip": {
+                "enabled": true,
+                "text": "Collapse the panel"
+              }
+            },
+            "position": {
+              "basis": "24px",
+              "shrink": 0
+            },
+            "props": {
+              "color": "var(--kcOnSurfaceVariant)",
+              "path": "material/double_arrow",
+              "style": {
+                "classes": "kanoa/panelSectionLink",
+                "height": "24px",
+                "transform": "scaleX(-1)",
+                "width": "24px"
+              }
+            },
+            "type": "ia.display.icon"
+          }
+        ],
+        "meta": {
+          "name": "flxPanelTop"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "justify": "flex-start",
+          "style": {
+            "classes": "kanoa/stripHide",
+            "paddingLeft": "8px",
+            "paddingRight": "3px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
       {
         "children": [
           {
@@ -156,9 +212,32 @@
             }
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "props": {
+          "style": {
+            "classes": "kanoa/stripHide"
+          }
+        }
       }
     ],
+    "events": {
+      "dom": {
+        "onMouseEnter": {
+          "config": {
+            "script": "\n\t#Collapsed: resting the pointer on the strip for 0.3 s expands the panel in place, and it stays (as pressing the chevron\n\t#does), so passing over the strip on the way to the dashboard leaves it collapsed. The wait runs on its own thread, so\n\t#onMouseLeave can clear stripHover meanwhile (868mw9nd7)\n\tfrom java.lang import Thread\n\tsession \u003d self.session\n\tview \u003d self.view\n\ttry:\n\t\tcollapsed \u003d bool(session.custom.kanoa.infoPanelCollapsed)\n\texcept:\n\t\tcollapsed \u003d False\n\tif not collapsed: return\n\tview.custom.stripHover \u003d True\n\n\tdef expand():\n\t\tThread.sleep(300)\n\t\ttry:\n\t\t\tif view.custom.stripHover:\n\t\t\t\tsession.custom.kanoa.infoPanelCollapsed \u003d False\n\t\texcept:\n\t\t\tpass\n\n\tsystem.util.invokeAsynchronous(expand)\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        },
+        "onMouseLeave": {
+          "config": {
+            "script": "\n\tself.view.custom.stripHover \u003d False\n\treturn"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
     "meta": {
       "domId": "root",
       "name": "root"

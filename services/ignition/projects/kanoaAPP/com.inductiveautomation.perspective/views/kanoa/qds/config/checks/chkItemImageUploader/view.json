@@ -37,6 +37,7 @@
       "persistent": true
     },
     "custom.imageData": {
+      "access": "PRIVATE",
       "persistent": true
     },
     "params.value": {
@@ -63,7 +64,7 @@
               "component": {
                 "onFileReceived": {
                   "config": {
-                    "script": "\n\tlog \u003d system.util.getLogger(\"kanoaImage\")\n\tlog.info(\"onFileReceived event\")\n\n\tself.view.custom.gettingImage \u003d True\n\t\n\tfrom java.io import File\n\timport base64\n\t\n\tdirPath \u003d \"C:\\\\kanoaImages\"\n\tdirectory \u003d File(dirPath)\n\tif not directory.exists(): directory.mkdirs()\n\t\n\tfilePath \u003d \"%s\\\\%s\" % (dirPath, event.file.name)\t\n\t\n\tself.view.custom.imageData.image \u003d base64.b64encode(event.file.getBytes())\n\tself.view.custom.imageData.imageName \u003d event.file.name\n\n\tsystem.kanoa.file.deleteFile(filePath)\n\tevent.file.copyTo(filePath) #We\u0027ll store this file on the gateway so we can convert and create thumbnails\n\tself.view.custom.imageData.filePath \u003d filePath\t\t\n\tself.view.custom.gettingImage \u003d False\n\t\n\treturn\n"
+                    "script": "\n\tlog \u003d system.util.getLogger(\"kanoaImage\")\n\tlog.info(\"onFileReceived event\")\n\n\tself.view.custom.gettingImage \u003d True\n\t\n\timport base64\n\t\n\t#A new upload replaces the previous one, so remove the previous one\u0027s gateway copy\n\tif (self.view.custom.imageData.filePath or None) is not None: system.kanoa.file.deleteFile(self.view.custom.imageData.filePath)\n\t\n\t#Name the gateway copy ourselves: the uploaded file\u0027s name comes from the browser, so it can\u0027t go in a path\n\tfilePath \u003d system.kanoa.file.getGatewayFilePath(\u0027upload_%s\u0027 % system.kanoa.utilities.getUUID())\n\t\n\tself.view.custom.imageData.image \u003d base64.b64encode(event.file.getBytes())\n\tself.view.custom.imageData.imageName \u003d event.file.name\n\n\tevent.file.copyTo(filePath) #We\u0027ll store this file on the gateway so we can convert and create thumbnails\n\tself.view.custom.imageData.filePath \u003d filePath\t\t\n\tself.view.custom.gettingImage \u003d False\n\t\n\treturn\n"
                   },
                   "scope": "G",
                   "type": "script"

@@ -128,13 +128,6 @@
           }
         }
       }
-    ],
-    "tagInfo": [
-      null,
-      null,
-      null,
-      null,
-      null
     ]
   },
   "params": {
@@ -294,17 +287,48 @@
     }
   },
   "propConfig": {
+    "custom.assets": {
+      "binding": {
+        "config": {
+          "path": "view.custom.sortedAssets"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#Only enabled OEE assets have status tags, in the kanoaMES provider at their asset path\n\tassetInfos \u003d [row[\u0027value\u0027][\u0027assetInfo\u0027] for row in value]\n\treturn [{\u0027assetId\u0027: info[\u0027assetId\u0027], \u0027name\u0027: info[\u0027assetName\u0027], \u0027eqPath\u0027: info[\u0027assetPath\u0027],\n\t\t\t\u0027statusPath\u0027: \u0027[kanoaMES]\u0027 + info[\u0027assetPath\u0027].replace(\u0027\\\\\u0027, \u0027/\u0027) + \u0027/OEE/Status\u0027}\n\t\t\tfor info in assetInfos if info.get(\u0027oeeEnabled\u0027) and info.get(\u0027enabled\u0027)]",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
     "custom.data": {
       "persistent": true
     },
     "custom.data.stateData": {
       "binding": {
         "config": {
-          "path": "view.custom.tagInfo"
+          "path": "view.custom.live"
         },
         "transforms": [
           {
-            "code": "\t\n\tif len(value) \u003e 0:\n\t\tstateNameList \u003d []\n\t\tstateData \u003d []\n\t\tfor asset in value:\n\t\t\tif asset is not None: \n\t\t\t\toeeVals \u003d asset[\u0027OEE\u0027]\n\t\t\t\tif oeeVals[\u0027modeName\u0027] \u003d\u003d \"Production\":\n\t\t\t\t\t if oeeVals[\u0027stateName\u0027] not in stateNameList:\n\t\t\t\t\t \tstateNameList.append(oeeVals[\u0027stateName\u0027])\n\t\t\t\t\t \tstateData.append({\u0027stateName\u0027: oeeVals[\u0027stateName\u0027], \u0027count\u0027: 1, \u0027stateColor\u0027: oeeVals[\u0027stateColor\u0027], \u0027stateTypeColor\u0027: oeeVals[\u0027stateTypeColor\u0027]})\n\t\t\t\t\t else:\n\t\t\t\t\t \tfor state in stateData:\n\t\t\t\t\t \t\tif state[\u0027stateName\u0027] \u003d\u003d oeeVals[\u0027stateName\u0027]:\n\t\t\t\t\t \t\t\tstate[\u0027count\u0027] +\u003d 1\n\t\treturn stateData\n\telse:\n\t\treturn []",
+            "code": "\n\tstateData \u003d []\n\tfor asset in value:\n\t\tif asset[\u0027modeName\u0027] !\u003d \u0027Production\u0027: continue\n\t\t#A Production asset with no state yet is \"Unknown\" (868mvwg9e): a None name showed as the chart\u0027s \"series-3\"\n\t\tstateName \u003d asset[\u0027stateName\u0027] or \u0027Unknown\u0027\n\t\tstate \u003d next((state for state in stateData if state[\u0027stateName\u0027] \u003d\u003d stateName), None)\n\t\tif state is None:\n\t\t\tstateData.append({\u0027stateName\u0027: stateName, \u0027count\u0027: 1, \u0027stateColor\u0027: asset[\u0027stateColor\u0027], \u0027stateTypeColor\u0027: asset[\u0027stateTypeColor\u0027] or \u0027#9E9E9E\u0027})\n\t\telse:\n\t\t\tstate[\u0027count\u0027] +\u003d 1\n\treturn stateData",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.live": {
+      "binding": {
+        "config": {
+          "path": "/root/flxSummary/flxModes/flxRptModes.props.instances"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\treturn [dict(instance[\u0027live\u0027]) for instance in value if instance[\u0027live\u0027] and instance[\u0027live\u0027][\u0027assetId\u0027] is not None]",
             "type": "script"
           }
         ],
@@ -315,15 +339,16 @@
       "binding": {
         "config": {
           "struct": {
-            "period": "{view.custom.selector.period}",
-            "tagInfo": "{view.custom.tagInfo}"
+            "live": "{view.custom.live}",
+            "minute": "now(60000)",
+            "period": "{view.custom.selector.period}"
           },
           "waitOnAll": true
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n#\tsystem.perspective.print(\"OEE Summary binding change\")\n\t\n\truntimeSecs \u003d 0\n\tunplannedDowntimeSecs \u003d 0\n\ttargetCount \u003d 0.0\n\tinfeedCount \u003d 0.0\n\toutfeedCount \u003d 0.0\n\twasteCount \u003d 0.0\n\t\n\timport java.lang\n\t\n\tif value[\u0027period\u0027] \u003d\u003d \u0027Current Run\u0027:\n\t\ttagInfo \u003d (value or {}).get(\u0027tagInfo\u0027) or []\n\t\tfor tagValue in tagInfo:\n\t\t\ttry:\n\t\t\t\tif not tagValue: continue\n\t\t\n\t\t\t\toee \u003d tagValue.get(\u0027OEE\u0027) if hasattr(tagValue, \u0027get\u0027) else None\n\t\t\t\tif not oee:\n\t\t\t\t\tsystem.perspective.print(\"Missing OEE for %s\" % (tagValue.get(\u0027eqPath\u0027) if hasattr(tagValue, \u0027get\u0027) else \"unknown\"))\n\t\t\t\t\tcontinue\n\t\t\n\t\t\t\tif oee.get(\u0027modeName\u0027) \u003d\u003d \u0027Production\u0027:\n\t\t\t\t\truntimeSecs +\u003d oee.get(\u0027runtimeSecs\u0027) or 0\n\t\t\t\t\tunplannedDowntimeSecs +\u003d oee.get(\u0027unplannedDowntimeSecs\u0027) or 0\n\t\t\t\t\ttargetCount +\u003d oee.get(\u0027targetCount\u0027) or 0.0\n\t\t\t\t\tinfeedCount +\u003d oee.get(\u0027infeedCount\u0027) or 0.0\n\t\t\t\t\toutfeedCount +\u003d oee.get(\u0027outfeedCount\u0027) or 0.0\n\t\t\t\t\twasteCount +\u003d oee.get(\u0027wasteCount\u0027) or 0.0\n\t\t\texcept java.lang.Exception, e:\n\t\t\t\tsystem.perspective.print(\"Java Error %s\" % (e.getMessage() or e))\n\t\t\t\treturn self.props.params.value\n\t\t\texcept Exception as e:\n\t\t\t\tsystem.perspective.print(\"Error %s\" % e)\n\t\t\t\treturn self.props.params.value\n\t\n\telif value[\u0027period\u0027] \u003d\u003d \u0027Current Shift\u0027 and self.view.custom.selector.lastSelection !\u003d value[\u0027period\u0027]:\n\t\ttry:\n\t\t\tstartDate \u003d system.date.addDays(system.date.now(), -1)\n#\t\t\tendDate \u003d system.date.now()\n\t\t\tendDate \u003d None\t#jfc 4/9/26\n\t\t\tprodEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsByShift({\u0027assetPath\u0027: self.view.params.value.assetInfo.assetPath + \u0027%\u0027, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}))\n\t\t\t\n\t\t\tlatestRecords \u003d list({r[\"assetPath\"]: r for r in sorted(prodEvents, key\u003dlambda r: (r[\"assetPath\"], r[\"shiftStart\"].getTime()))}.values())\n\t\t\tfor item in latestRecords:\n\t\t\t\tif item[\u0027modeName\u0027] !\u003d \u0027Production\u0027: continue\n\t\t\t\truntimeSecs +\u003d item[\u0027runtimeSecs\u0027] or 0\n\t\t\t\tunplannedDowntimeSecs +\u003d item[\u0027unplannedDowntimeSecs\u0027] or 0\n\t\t\t\ttargetCount +\u003d item[\u0027targetCount\u0027] or 0.0\n\t\t\t\tinfeedCount +\u003d item[\u0027infeedCount\u0027] or 0.0\n\t\t\t\toutfeedCount +\u003d item[\u0027outfeedCount\u0027] or 0.0\n\t\t\t\twasteCount +\u003d item[\u0027wasteCount\u0027] or 0.0\n\t\texcept java.lang.Exception, e:\n\t\t\tsystem.perspective.print(\"Error %s\"%e.cause)\n\t\t\treturn {\u0027value\u0027: {\"name\": self.view.params.value.assetName, \"oee\": 0, \"a\": 0, \"p\": 0, \"q\": 0, \"assetPath\": self.view.params.value.assetInfo.assetPath}}\n\t\texcept Exception as e:\n\t\t\tsystem.perspective.print(\"Error %s\"%e)\n\t\t\treturn {\u0027value\u0027: {\"name\": self.view.params.value.assetName, \"oee\": 0, \"a\": 0, \"p\": 0, \"q\": 0, \"assetPath\": self.view.params.value.assetInfo.assetPath}}\n\telse:\n\t\treturn self.custom.oeeSummary\n\n\ttotalSecs \u003d runtimeSecs + unplannedDowntimeSecs\n\ta \u003d float(runtimeSecs) / totalSecs if totalSecs \u003e 0 else 0\n\tp \u003d infeedCount / targetCount if targetCount \u003e 0.0 else 1.0\n\tq \u003d (infeedCount - wasteCount) / infeedCount if infeedCount \u003e 0.0 else 1.0\n\toee \u003d a * min(p,1) * q\n\t\n\tself.view.custom.selector.lastSelection \u003d value[\u0027period\u0027]\n\n\treturn {\u0027value\u0027: {\"name\": self.view.params.value.assetName, \"oee\": oee, \"a\": a, \"p\": p, \"q\": q, \"assetPath\": self.view.params.value.assetInfo.assetPath}}",
+            "code": "\n\timport java.lang\n\n\tperiod \u003d value[\u0027period\u0027]\n\tif period not in (\u0027Current Run\u0027, \u0027Current Shift\u0027):\n\t\treturn self.custom.oeeSummary\n\n\t#Each asset\u0027s current run (assets in Production) or current shift so far, from its kanoaMES OEE tags\n\tfields \u003d [\u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027targetCount\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027, \u0027wasteCount\u0027]\n\tpaths \u003d []\n\tfor asset in value[\u0027live\u0027] or []:\n\t\tif period \u003d\u003d \u0027Current Run\u0027 and asset[\u0027modeName\u0027] !\u003d \u0027Production\u0027: continue\n\t\tfolder \u003d \u0027[kanoaMES]\u0027 + asset[\u0027eqPath\u0027].replace(\u0027\\\\\u0027, \u0027/\u0027) + \u0027/OEE/\u0027 + period + \u0027/\u0027\n\t\tpaths +\u003d [folder + field for field in fields]\n\ttry:\n\t\tvalues \u003d [qv.value for qv in system.tag.readBlocking(paths)] if paths else []\n\texcept java.lang.Exception, e:\n\t\tsystem.perspective.print(\"Java Error %s\" % (e.getMessage() or e))\n\t\treturn self.custom.oeeSummary\n\n\ttotals \u003d [0.0] * len(fields)\n\tfor i in range(len(values)):\n\t\ttotals[i % len(fields)] +\u003d values[i] or 0\n\truntimeSecs, unplannedDowntimeSecs, targetCount, infeedCount, outfeedCount, wasteCount \u003d totals\n\n\ttotalSecs \u003d runtimeSecs + unplannedDowntimeSecs\n\ta \u003d float(runtimeSecs) / totalSecs if totalSecs \u003e 0 else 0\n\t#As the gateway\u0027s OEE tags: no target is no performance\n\tp \u003d infeedCount / targetCount if targetCount \u003e 0.0 else 0.0\n\tq \u003d (infeedCount - wasteCount) / infeedCount if infeedCount \u003e 0.0 else 1.0\n\toee \u003d a * min(p,1) * q\n\t\n\tself.view.custom.selector.lastSelection \u003d value[\u0027period\u0027]\n\n\treturn {\u0027value\u0027: {\"name\": self.view.params.value.assetName, \"oee\": oee, \"a\": a, \"p\": p, \"q\": q, \"assetPath\": self.view.params.value.assetInfo.assetPath}}",
             "type": "script"
           }
         ],
@@ -380,22 +405,6 @@
       },
       "persistent": true
     },
-    "custom.tagInfo": {
-      "binding": {
-        "config": {
-          "path": "view.custom.sortedAssets"
-        },
-        "overlayOptOut": true,
-        "transforms": [
-          {
-            "code": "\n\ttagInfoPathList \u003d []\n\tfor asset in value:\n\t\ttagPath \u003d asset[\u0027value\u0027][\u0027assetInfo\u0027][\u0027tagPath\u0027]\n\t\tif tagPath is not None:\ttagInfoPathList.append(tagPath +\u0027/Line\u0027)\n\n\tif len(tagInfoPathList) \u003d\u003d 0: return []\n\n\treturn system.tag.readBlocking(tagInfoPathList)",
-            "type": "script"
-          }
-        ],
-        "type": "property"
-      },
-      "persistent": true
-    },
     "params.value": {
       "paramDirection": "input",
       "persistent": true
@@ -444,7 +453,8 @@
           "name": "flxHeader"
         },
         "position": {
-          "shrink": 0
+          "shrink": 0,
+          "display": false
         },
         "type": "ia.container.flex"
       },
@@ -485,11 +495,12 @@
                           "props.text": {
                             "binding": {
                               "config": {
-                                "path": "view.custom.tagInfo"
+                                "path": "view.custom.live"
                               },
+                              "overlayOptOut": true,
                               "transforms": [
                                 {
-                                  "code": "\treturn sum(asset[\u0027OEE\u0027][\u0027modeName\u0027] \u003d\u003d \"Production\" for asset in value if asset is not None)",
+                                  "code": "\n\t#Blank until the live data arrives, never null (868mvwg9e)\n\tif not value: return \u0027\u0027\n\treturn sum(1 for asset in value if asset[\u0027modeName\u0027] \u003d\u003d \"Production\")",
                                   "type": "script"
                                 }
                               ],
@@ -505,7 +516,8 @@
                             "classes": "kanoa/font/displayLarge",
                             "fontSize": "120px",
                             "fontWeight": "bold"
-                          }
+                          },
+                          "text": ""
                         },
                         "type": "ia.display.label"
                       },
@@ -521,11 +533,12 @@
                           "props.text": {
                             "binding": {
                               "config": {
-                                "path": "view.custom.tagInfo"
+                                "path": "view.custom.assets"
                               },
+                              "overlayOptOut": true,
                               "transforms": [
                                 {
-                                  "code": "\treturn \"of {}\".format(len(value))",
+                                  "code": "\n\tif not value: return \u0027\u0027\n\treturn \"of {}\".format(len(value))",
                                   "type": "script"
                                 }
                               ],
@@ -540,7 +553,8 @@
                           },
                           "textStyle": {
                             "classes": "kanoa/font/displayMedium"
-                          }
+                          },
+                          "text": ""
                         },
                         "type": "ia.display.label"
                       }
@@ -627,8 +641,9 @@
                   "direction": "column",
                   "justify": "center",
                   "style": {
-                    "classes": "kanoa/border",
-                    "overflow": "hidden"
+                    "overflow": "hidden",
+                    "backgroundColor": "var(--kcSurface)",
+                    "borderRadius": "var(--borderRadius)"
                   }
                 },
                 "type": "ia.container.flex"
@@ -645,12 +660,12 @@
                   "props.instances": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.tagInfo"
+                        "path": "view.custom.assets"
                       },
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\t\n\treturn [{\"value\": {\"color\": asset[\u0027OEE\u0027][\u0027modeColor\u0027], \"mode\": asset[\u0027OEE\u0027][\u0027modeName\u0027], \"source\": asset[\u0027OEE\u0027][\u0027modeSourceName\u0027], \"name\": asset[\u0027eqPath\u0027].split(\"\\\\\")[-1], \"eqPath\": asset[\u0027eqPath\u0027]}} for asset in value if asset is not None]",
+                          "code": "\n\treturn [{\"value\": dict(asset), \"live\": {}} for asset in value]",
                           "type": "script"
                         }
                       ],
@@ -832,7 +847,7 @@
                       },
                       "type": "donut"
                     },
-                    "type": "kyvislabs.display.apexchart"
+                    "type": "kanoa.ops.apexchart"
                   }
                 ],
                 "meta": {
@@ -846,8 +861,9 @@
                 "props": {
                   "direction": "column",
                   "style": {
-                    "classes": "kanoa/border",
-                    "overflow": "hidden"
+                    "overflow": "hidden",
+                    "backgroundColor": "var(--kcSurface)",
+                    "borderRadius": "var(--borderRadius)"
                   }
                 },
                 "type": "ia.container.flex"
@@ -864,12 +880,12 @@
                   "props.instances": {
                     "binding": {
                       "config": {
-                        "path": "view.custom.tagInfo"
+                        "path": "view.custom.live"
                       },
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\t\n\treturn [{\"value\": {\"color\": asset[\u0027OEE\u0027][\u0027stateColor\u0027] or asset[\u0027OEE\u0027][\u0027stateTypeColor\u0027], \"state\": asset[\u0027OEE\u0027][\u0027stateName\u0027], \"name\": asset[\u0027eqPath\u0027].split(\"\\\\\")[-1], \"eqPath\": asset[\u0027eqPath\u0027]}} for asset in value if asset is not None and asset[\u0027OEE\u0027][\u0027modeName\u0027] \u003d\u003d \"Production\" ]",
+                          "code": "\n\treturn [{\"value\": {\"color\": asset[\u0027stateColor\u0027] or asset[\u0027stateTypeColor\u0027], \"state\": asset[\u0027stateName\u0027], \"name\": asset[\u0027name\u0027], \"eqPath\": asset[\u0027eqPath\u0027]}}\n\t\t\tfor asset in value if asset[\u0027modeName\u0027] \u003d\u003d \"Production\"]",
                           "type": "script"
                         }
                       ],
@@ -1079,7 +1095,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\tinstances \u003d []\n\tfor asset in value[\u0027assets\u0027]:\n\t\tasset \u003d dict(asset)\n\t\tassetValue \u003d dict(asset[\u0027value\u0027])   # 👈 important\n\t\tassetValue[\u0027period\u0027] \u003d value[\u0027period\u0027]\n\t\tasset[\u0027value\u0027] \u003d assetValue\n\t\tinstances.append(asset)\n\t\n\treturn instances",
+                          "code": "\t\n\t#Only enabled OEE assets have OEE tags\n\tinstances \u003d []\n\tfor asset in value[\u0027assets\u0027]:\n\t\tinfo \u003d asset[\u0027value\u0027][\u0027assetInfo\u0027]\n\t\tif not (info.get(\u0027oeeEnabled\u0027) and info.get(\u0027enabled\u0027)): continue\n\t\tasset \u003d dict(asset)\n\t\tassetValue \u003d dict(asset[\u0027value\u0027])   # 👈 important\n\t\tassetValue[\u0027period\u0027] \u003d value[\u0027period\u0027]\n\t\tasset[\u0027value\u0027] \u003d assetValue\n\t\tinstances.append(asset)\n\t\n\treturn instances",
                           "type": "script"
                         }
                       ],
@@ -1142,10 +1158,11 @@
     "props": {
       "direction": "column",
       "style": {
-        "classes": "kanoa/border kanoa/container",
         "gap": "5px",
-        "margin": "5px",
-        "padding": "5px"
+        "margin": "0px",
+        "padding": "8px",
+        "backgroundColor": "color-mix(in srgb, var(--kcSurfaceVariant) 45%, var(--kcSurface))",
+        "borderRadius": "var(--borderRadius)"
       }
     },
     "type": "ia.container.flex"

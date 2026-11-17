@@ -1,0 +1,818 @@
+{
+  "custom": {
+    "info": {},
+    "security": {}
+  },
+  "params": {
+    "value": {
+      "itemAssetToolingId": null,
+      "itemId": null
+    }
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.security": {
+      "binding": {
+        "config": {
+          "struct": {
+            "user": "{session.props.auth.user}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tsecConfig = system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), 'configName', 'configValue')\n\tuserId = system.kanoa.security.getIDPUserId(value['user'])\t\n\tuserCRUD = system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.info": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#The requirement being edited, or a new one for the list's item\n\tvalue = value or {}\n\tinfo = {'itemAssetToolingId': None, 'itemId': value.get('itemId'), 'assetId': -1, 'kind': 'tool', 'toolingAssetId': None,\n\t\t'toolingAssetTypeId': None, 'required': True, 'sortOrder': None, 'enabled': True}\n\tif value.get('itemAssetToolingId') is None: return info\n\tfor r in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getRequiredTooling({})):\n\t\tif r['itemAssetToolingId'] == value['itemAssetToolingId']:\n\t\t\tinfo.update({'itemAssetToolingId': r['itemAssetToolingId'], 'itemId': r['itemId'], 'assetId': r['assetId'] if r['assetId'] is not None else -1,\n\t\t\t\t'kind': 'tool' if r['toolingAssetId'] is not None else 'type', 'toolingAssetId': r['toolingAssetId'],\n\t\t\t\t'toolingAssetTypeId': r['toolingAssetTypeId'], 'required': bool(r['required']), 'sortOrder': r['sortOrder'], 'enabled': bool(r['enabled'])})\n\treturn info",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 360,
+      "width": 520
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "flxItemLbl"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Item"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "evItem"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn system.kanoa.item.getItems({'enabled': True})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.params.values.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.itemId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t#The selected item's tree path (the item this tooling is for), so the selector shows it\n\tif value is None: return ''\n\treturn system.kanoa.utilities.getFieldValue('path', system.kanoa.item.getItems({'itemId': value})) or ''",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "requiredToolingEditorItemSelected",
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": false,
+                    "showSelectedPath": false
+                  },
+                  "selection": [],
+                  "style": {
+                    "iconColor": "",
+                    "iconPath": "material/qr_code",
+                    "tooltip": "Pick an item"
+                  },
+                  "treePath": null
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          }
+        ],
+        "meta": {
+          "name": "flxItem"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "flxMachineLbl"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Machine"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddMachine"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t#Machines that use tooling; -1 is any machine\n\toptions = [{'value': -1, 'label': 'Any machine'}]\n\tdata = system.kanoa.asset.getAssets({'usesTooling': True})\n\tif hasattr(data, 'getRowCount'):\n\t\toptions += [{'value': r['assetId'], 'label': r['assetPath']} for r in system.kanoa.utilities.convertDatasetToJSON(data)]\n\treturn options",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                },
+                "onChange": {
+                  "enabled": null,
+                  "script": "\n\t#A tool that doesn't fit the machine picked would be a requirement that can never be met, so clear it\n\tif origin != 'Browser' or self.view.custom.info.toolingAssetId is None: return\n\tparams = {'enabled': True}\n\tif currentValue.value is not None and currentValue.value != -1: params['mountableOn'] = currentValue.value\n\tdata = system.kanoa.tooling.getTools(params)\n\tfits = hasattr(data, 'getRowCount') and self.view.custom.info.toolingAssetId in [data.getValueAt(r, 'toolingAssetId') for r in range(data.getRowCount())]\n\tif not fits: self.view.custom.info.toolingAssetId = None"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Any machine"
+              },
+              "showClearIcon": false,
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "name": "flxMachine"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "flxKindLbl"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Needs"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddKind"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.kind"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": ""
+              },
+              "showClearIcon": false,
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              },
+              "options": [
+                {
+                  "value": "tool",
+                  "label": "A specific tool"
+                },
+                {
+                  "value": "type",
+                  "label": "Any tool of a type"
+                }
+              ]
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "name": "flxKind"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "flxToolLbl"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Tool"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddTool"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.assetId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t#The tools that fit the machine (every tool for any machine)\n\tparams = {'enabled': True}\n\tif value is not None and value != -1: params['mountableOn'] = value\n\tdata = system.kanoa.tooling.getTools(params)\n\tif not hasattr(data, 'getRowCount'): return []\n\treturn [{'value': r['toolingAssetId'], 'label': r['assetPath']} for r in system.kanoa.utilities.convertDatasetToJSON(data)]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.toolingAssetId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Pick a tool"
+              },
+              "showClearIcon": false,
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "name": "flxTool"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.info.kind"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn value == 'tool'",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "lblToolCheck"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "kind": "{view.custom.info.kind}",
+                  "itemId": "{view.custom.info.itemId}",
+                  "toolingAssetId": "{view.custom.info.toolingAssetId}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t#A tool whose output positions are all set to other items can't make this item (positions with no item make whatever runs)\n\tif value['kind'] != 'tool' or value['itemId'] is None or value['toolingAssetId'] is None: return ''\n\tdata = system.kanoa.tooling.getPositions({'toolingAssetId': value['toolingAssetId']})\n\tif not hasattr(data, 'getRowCount'): return ''\n\toutputs = [r for r in system.kanoa.utilities.convertDatasetToJSON(data) if r['positionType'] != 'pocket' and (r['outputQty'] or 0) > 0 and not r['isRetired']]\n\tif not outputs or [r for r in outputs if r['itemId'] in (None, value['itemId'])]: return ''\n\treturn \"Can't make this item: the tool's positions are all set to other items. Set a position to this item on the tool's Positions tab (Configuration > Ops > Tooling), or pick another tool.\"",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "this.props.text"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn bool(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/bodySmall",
+            "color": "--kcError",
+            "marginLeft": "115px",
+            "whiteSpace": "normal"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "flxTypeLbl"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Tooling type"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddType"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\tdata = system.kanoa.tooling.getToolTypes({})\n\tif not hasattr(data, 'getRowCount'): return []\n\treturn [{'value': r['assetTypeId'], 'label': r['assetTypeName']} for r in system.kanoa.utilities.convertDatasetToJSON(data)]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.toolingAssetTypeId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Pick a tooling type"
+              },
+              "showClearIcon": false,
+              "style": {
+                "classes": "kanoa/border kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          }
+        ],
+        "meta": {
+          "name": "flxType"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.info.kind"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn value == 'type'",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        }
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "flxOrderLbl"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Sort order"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "numSort"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.sortOrder"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "spinner": {
+                "enabled": false
+              },
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.numeric-entry-field"
+          }
+        ],
+        "meta": {
+          "name": "flxOrder"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "chkRequired"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.required"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Required: warn when it isn\u2019t mounted"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "name": "chkEnabled"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.selected": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.info.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Enabled"
+            },
+            "type": "ia.input.checkbox"
+          }
+        ],
+        "meta": {
+          "name": "flxFlags"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "15px",
+            "paddingLeft": "115px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "meta": {
+          "name": "spacer"
+        },
+        "position": {
+          "grow": 1
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tsystem.perspective.closePopup('requiredToolingEditor')\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnCancel"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Cancel"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tinfo = self.view.custom.info\n\tisType = info['kind'] == 'type'\n\ttoolingInfo = {'itemAssetToolingId': info['itemAssetToolingId'], 'itemId': info['itemId'],\n\t\t'assetId': None if info['assetId'] in (None, -1) else info['assetId'],\n\t\t'toolingAssetId': None if isType else info['toolingAssetId'], 'toolingAssetTypeId': info['toolingAssetTypeId'] if isType else None,\n\t\t'required': info['required'], 'sortOrder': info['sortOrder'], 'enabled': info['enabled']}\n\tresult, msg = system.kanoa.tooling.saveRequiredTooling(toolingInfo, self.view.custom.security.userId)\n\tif msg:\n\t\tsystem.kanoa.toast.show({'type': 'error', 'message': msg})\n\t\treturn\n\tsystem.kanoa.toast.show({'type': 'success', 'message': 'Required tooling saved'})\n\tsystem.perspective.sendMessage('requiredToolingChanged', {})\n\tsystem.perspective.closePopup('requiredToolingEditor')\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnSave"
+            },
+            "position": {
+              "basis": "90px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Save"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxButtons"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "justify": "flex-end",
+          "alignItems": "center",
+          "style": {
+            "gap": "10px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "padding": 10
+      }
+    },
+    "type": "ia.container.flex",
+    "scripts": {
+      "messageHandlers": [
+        {
+          "messageType": "requiredToolingEditorItemSelected",
+          "pageScope": true,
+          "script": "\n\t#The item selector (868mvu236): its first selection's item, none when it's cleared\n\tselection = payload['selection'] if payload.has_key('selection') else []\n\tself.view.custom.info.itemId = selection[0]['value']['itemId'] if len(selection) else None\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

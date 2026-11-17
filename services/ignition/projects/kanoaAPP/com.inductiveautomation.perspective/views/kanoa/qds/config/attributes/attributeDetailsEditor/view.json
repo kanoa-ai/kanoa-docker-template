@@ -530,7 +530,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tattributeToleranceId \u003d value.selection[0][\u0027attributeToleranceId\u0027] if len(value.selection) \u003e 0 else None\n\n\tattrInfo \u003d {\u0027attributeId\u0027: value.attributeId, \u0027attributeToleranceId\u0027:attributeToleranceId or -1}\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getTolerances(attrInfo), 0)\n\tinfo[\u0027attributeId\u0027] \u003d value.attributeId\n\treturn info",
+            "code": "\n\tattributeToleranceId \u003d value.selection[0][\u0027attributeToleranceId\u0027] if len(value.selection) \u003e 0 else None\n\n\tattrInfo \u003d {\u0027attributeId\u0027: value.attributeId, \u0027attributeToleranceId\u0027:attributeToleranceId or -1}\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getTolerances(attrInfo), 0)\n\tinfo[\u0027attributeId\u0027] \u003d value.attributeId\n\t#A new tolerance starts enabled (868mu3m12)\n\tif info[\u0027attributeToleranceId\u0027] is None: info[\u0027enabled\u0027] \u003d True\n\treturn info",
             "type": "script"
           }
         ],
@@ -689,7 +689,7 @@
                               "component": {
                                 "onActionPerformed": {
                                   "config": {
-                                    "script": "\ttry:\n\t\tdata \u003d self.parent.parent.getChild(\"Table\").props.data\n\t\theaders \u003d self.view.params.dataColumnList\n\t\tfileName \u003d \u0027Export_\u0027+str(self.view.params.parentViewName)\n\t\t\n\t\t#headers \u003d []\n\t\tvalues \u003d []\n\t\t\n#\t\tfor col in columndata:\n#\t\t\theaders.append(str(col[\u0027field\u0027]))\n\t\t\t\n\t\tfor item in data:\n\t\t\tvals \u003d []\n\t\t\tfor colName in headers:\n\t\t\t\tvals.append(item[colName][\u0027value\u0027])\n\t\t\tvalues.append(vals)\n\t\t\n\t\tdataset \u003d system.dataset.toDataSet(headers, values)\n\t\texportDatasetT \u003d system.dataset.toExcel(1, dataset)\n\t\tsystem.perspective.download(\u0027%s_%s.xlsx\u0027 %(fileName, str(system.date.now())), exportDatasetT)\n\texcept Exception, errorMessage:\n\t\tsystem.perspective.print(\u0027Error on btnExport : \u0027+str(errorMessage)) \t"
+                                    "script": "\timport java.lang\n\ttry:\n\t\tdata \u003d self.parent.parent.getChild(\"Table\").props.data\n\t\theaders \u003d self.view.params.dataColumnList\n\t\tfileName \u003d \u0027Export_\u0027+str(self.view.params.parentViewName)\n\t\t\n\t\t#headers \u003d []\n\t\tvalues \u003d []\n\t\t\n#\t\tfor col in columndata:\n#\t\t\theaders.append(str(col[\u0027field\u0027]))\n\t\t\t\n\t\tfor item in data:\n\t\t\tvals \u003d []\n\t\t\tfor colName in headers:\n\t\t\t\tvals.append(item[colName][\u0027value\u0027])\n\t\t\tvalues.append(vals)\n\t\t\n\t\tdataset \u003d system.dataset.toDataSet(headers, values)\n\t\texportDatasetT \u003d system.dataset.toExcel(1, dataset)\n\t\tsystem.perspective.download(\u0027%s_%s.xlsx\u0027 %(fileName, str(system.date.now())), exportDatasetT)\n\texcept (Exception, java.lang.Exception), errorMessage:\n\t\tsystem.perspective.print(\u0027Error on btnExport : \u0027+str(errorMessage)) \t"
                                   },
                                   "scope": "G",
                                   "type": "script"
@@ -2940,7 +2940,7 @@
                               "component": {
                                 "onActionPerformed": {
                                   "config": {
-                                    "script": "\ttry:\n\t\tdata \u003d self.parent.parent.getChild(\"Table\").props.data\n\t\theaders \u003d self.view.params.dataColumnList\n\t\tfileName \u003d \u0027Export_\u0027+str(self.view.params.parentViewName)\n\t\t\n\t\t#headers \u003d []\n\t\tvalues \u003d []\n\t\t\n#\t\tfor col in columndata:\n#\t\t\theaders.append(str(col[\u0027field\u0027]))\n\t\t\t\n\t\tfor item in data:\n\t\t\tvals \u003d []\n\t\t\tfor colName in headers:\n\t\t\t\tvals.append(item[colName][\u0027value\u0027])\n\t\t\tvalues.append(vals)\n\t\t\n\t\tdataset \u003d system.dataset.toDataSet(headers, values)\n\t\texportDatasetT \u003d system.dataset.toExcel(1, dataset)\n\t\tsystem.perspective.download(\u0027%s_%s.xlsx\u0027 %(fileName, str(system.date.now())), exportDatasetT)\n\texcept Exception, errorMessage:\n\t\tsystem.perspective.print(\u0027Error on btnExport : \u0027+str(errorMessage)) \t"
+                                    "script": "\timport java.lang\n\ttry:\n\t\tdata \u003d self.parent.parent.getChild(\"Table\").props.data\n\t\theaders \u003d self.view.params.dataColumnList\n\t\tfileName \u003d \u0027Export_\u0027+str(self.view.params.parentViewName)\n\t\t\n\t\t#headers \u003d []\n\t\tvalues \u003d []\n\t\t\n#\t\tfor col in columndata:\n#\t\t\theaders.append(str(col[\u0027field\u0027]))\n\t\t\t\n\t\tfor item in data:\n\t\t\tvals \u003d []\n\t\t\tfor colName in headers:\n\t\t\t\tvals.append(item[colName][\u0027value\u0027])\n\t\t\tvalues.append(vals)\n\t\t\n\t\tdataset \u003d system.dataset.toDataSet(headers, values)\n\t\texportDatasetT \u003d system.dataset.toExcel(1, dataset)\n\t\tsystem.perspective.download(\u0027%s_%s.xlsx\u0027 %(fileName, str(system.date.now())), exportDatasetT)\n\texcept (Exception, java.lang.Exception), errorMessage:\n\t\tsystem.perspective.print(\u0027Error on btnExport : \u0027+str(errorMessage)) \t"
                                   },
                                   "scope": "G",
                                   "type": "script"
@@ -3541,7 +3541,7 @@
                               "viewParams": {},
                               "viewPath": "",
                               "visible": true,
-                              "width": 180
+                              "width": 320
                             },
                             {
                               "align": "center",
@@ -4560,6 +4560,98 @@
                               "viewPath": "",
                               "visible": true,
                               "width": 60
+                            },
+                            {
+                              "align": "center",
+                              "boolean": "checkbox",
+                              "dateFormat": "ddd MM/DD/YY HH:mm",
+                              "editable": false,
+                              "field": "enabled",
+                              "filter": {
+                                "boolean": {
+                                  "condition": ""
+                                },
+                                "date": {
+                                  "condition": "",
+                                  "value": ""
+                                },
+                                "enabled": false,
+                                "number": {
+                                  "condition": "",
+                                  "value": ""
+                                },
+                                "string": {
+                                  "condition": "",
+                                  "value": ""
+                                },
+                                "visible": "on-hover"
+                              },
+                              "footer": {
+                                "align": "center",
+                                "justify": "left",
+                                "style": {
+                                  "classes": ""
+                                },
+                                "title": ""
+                              },
+                              "header": {
+                                "align": "center",
+                                "justify": "center",
+                                "style": {
+                                  "classes": ""
+                                },
+                                "title": "Enabled"
+                              },
+                              "justify": "center",
+                              "nullFormat": {
+                                "includeNullStrings": true,
+                                "nullFormatValue": "",
+                                "strict": false
+                              },
+                              "number": "value",
+                              "numberFormat": "0,0.##",
+                              "progressBar": {
+                                "bar": {
+                                  "color": "",
+                                  "style": {
+                                    "classes": ""
+                                  }
+                                },
+                                "max": 100,
+                                "min": 0,
+                                "track": {
+                                  "color": "",
+                                  "style": {
+                                    "classes": ""
+                                  }
+                                },
+                                "value": {
+                                  "enabled": true,
+                                  "format": "0,0.##",
+                                  "justify": "center",
+                                  "style": {
+                                    "classes": ""
+                                  }
+                                }
+                              },
+                              "render": "auto",
+                              "resizable": true,
+                              "sort": "none",
+                              "sortable": false,
+                              "strictWidth": true,
+                              "style": {
+                                "classes": ""
+                              },
+                              "toggleSwitch": {
+                                "color": {
+                                  "selected": "",
+                                  "unselected": ""
+                                }
+                              },
+                              "viewParams": {},
+                              "viewPath": "",
+                              "visible": true,
+                              "width": 60
                             }
                           ],
                           "headerStyle": {
@@ -4982,6 +5074,88 @@
                             "overflow": "hidden"
                           },
                           "wrap": "wrap"
+                        },
+                        "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "name": "lblEnabled"
+                            },
+                            "position": {
+                              "basis": "60px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "style": {
+                                "classes": "kanoa/font/default",
+                                "textAlign": "right"
+                              },
+                              "text": ""
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "domId": "chkTolEnabled",
+                              "name": "chkEnabled"
+                            },
+                            "position": {
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.enabled": {
+                                "binding": {
+                                  "config": {
+                                    "struct": {
+                                      "action": "{view.custom.userAction}"
+                                    },
+                                    "waitOnAll": true
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\treturn value.action.canCreate or value.action.canUpdate",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "expr-struct"
+                                }
+                              },
+                              "props.selected": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.tolerances.info.enabled"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "style": {
+                                "classes": "kanoa/font/default"
+                              },
+                              "text": "Enabled"
+                            },
+                            "type": "ia.input.checkbox"
+                          }
+                        ],
+                        "meta": {
+                          "name": "flxEnabled"
+                        },
+                        "position": {
+                          "basis": "30px",
+                          "shrink": 0
+                        },
+                        "props": {
+                          "alignItems": "center",
+                          "style": {
+                            "gap": 5,
+                            "overflow": "hidden"
+                          }
                         },
                         "type": "ia.container.flex"
                       },
@@ -5949,7 +6123,7 @@
                                     "binding": {
                                       "config": {
                                         "bidirectional": true,
-                                        "path": "view.custom.tolerances.info.usl"
+                                        "path": "view.custom.tolerances.info.udl"
                                       },
                                       "overlayOptOut": true,
                                       "type": "property"
@@ -6453,22 +6627,22 @@
         {
           "name": "saveDataSource",
           "params": [],
-          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tattrInfo \u003d dict(self.view.custom.dataSource.info)\n\t\n\tif attrInfo[\u0027attributeDataSourceId\u0027] is None:\n\t\tattributeDataSourceId, msg \u003d system.kanoa.quality.config.addDataSource(attrInfo, userId)\n\t\tif msg is None: \n\t\t\tself.view.custom.dataSource.info.attributeDataSourceId \u003d attributeDataSourceId\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute datasource has been added\"})\t\t\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\t\t\n\telse:\n\t\tretVal, msg \u003d system.kanoa.quality.config.updateDataSource(attrInfo, userId)\n\t\tif msg is None:\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute datasource has been updated\"})\t\t\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\t\t\t\t\n\t\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\n\n\treturn"
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tattrInfo \u003d dict(self.view.custom.dataSource.info)\n\t\n\t#One toast for the save; the success one has an id, so saving again while it shows doesn\u0027t stack another\n\tif attrInfo[\u0027attributeDataSourceId\u0027] is None:\n\t\tattributeDataSourceId, msg \u003d system.kanoa.quality.config.addDataSource(attrInfo, userId)\n\t\tif msg is None:\n\t\t\tself.view.custom.dataSource.info.attributeDataSourceId \u003d attributeDataSourceId\n\t\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027data-source-saved\u0027, \u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Data source added\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027autoClose\u0027: 0, \u0027message\u0027: \"Couldn\u0027t add data source: %s\" % msg})\n\telse:\n\t\tretVal, msg \u003d system.kanoa.quality.config.updateDataSource(attrInfo, userId)\n\t\tif msg is None: system.kanoa.toast.show({\u0027id\u0027: \u0027data-source-saved\u0027, \u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Data source saved\u0027})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027autoClose\u0027: 0, \u0027message\u0027: \"Couldn\u0027t save data source: %s\" % msg})\n\t\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\n\n\treturn"
         },
         {
           "name": "saveTolerance",
           "params": [],
-          "script": "\t\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tattrInfo \u003d dict(self.view.custom.tolerances.info)\n\tif attrInfo[\u0027itemSetId\u0027]:\n\t\tattrInfo[\u0027itemId\u0027] \u003d None\n\t\tattrInfo[\u0027itemClassId\u0027] \u003d None\n\t\n\tif attrInfo[\u0027attributeToleranceId\u0027] is None:\n\t\tself.view.custom.tolerances.info.attributeToleranceId \u003d system.kanoa.quality.config.addTolerance(attrInfo, userId)\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute tolerance has been added\"})\t\t\n\telse:\n\t\tsystem.kanoa.quality.config.updateTolerance(attrInfo, userId)\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Attribute tolerance has been updated\"})\n\t\n\tself.view.refreshBinding(\"custom.tolerances.table.data\")\n\n\treturn"
+          "script": "\t\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tattrInfo \u003d dict(self.view.custom.tolerances.info)\n\tif attrInfo[\u0027itemSetId\u0027]:\n\t\tattrInfo[\u0027itemId\u0027] \u003d None\n\t\tattrInfo[\u0027itemClassId\u0027] \u003d None\n\t\n\t#One toast for the save; the success one has an id, so saving again while it shows doesn\u0027t stack another.\n\t#Each returns None (logged), or a license message, when it failed\n\tif attrInfo[\u0027attributeToleranceId\u0027] is None:\n\t\tresult \u003d system.kanoa.quality.config.addTolerance(attrInfo, userId)\n\t\tif result is None or isinstance(result, basestring):\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027autoClose\u0027: 0, \u0027message\u0027: \"Couldn\u0027t add tolerance: %s\" % (result or \u0027see the gateway log\u0027)})\n\t\telse:\n\t\t\tself.view.custom.tolerances.info.attributeToleranceId \u003d result\n\t\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027tolerance-saved\u0027, \u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Tolerance added\u0027})\n\telse:\n\t\tresult \u003d system.kanoa.quality.config.updateTolerance(attrInfo, userId)\n\t\tif result is None or isinstance(result, basestring):\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027autoClose\u0027: 0, \u0027message\u0027: \"Couldn\u0027t save tolerance: %s\" % (result or \u0027see the gateway log\u0027)})\n\t\telse: system.kanoa.toast.show({\u0027id\u0027: \u0027tolerance-saved\u0027, \u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Tolerance saved\u0027})\n\t\n\tself.view.refreshBinding(\"custom.tolerances.table.data\")\n\n\treturn"
         },
         {
           "name": "deleteDataSource",
           "params": [],
-          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tfor row in self.view.custom.dataSource.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteDataSource(row[\u0027attributeDataSourceId\u0027], userId)\n\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Data source has been deleted\"})\t\n\t\telse: system.perspective.openPopup(\u0027msg\u0027, \u0027kanoa/core/templates/displays/messagePopup\u0027, params \u003d {\u0027text\u0027:msg}, showCloseIcon\u003dTrue, draggable\u003dTrue, resizeable\u003dTrue)\n\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\t\n\n\treturn"
+          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t#The rows disappear, so only failures get a toast: one for the whole action\n\trows \u003d self.view.custom.dataSource.table.selection.data\n\tfailed \u003d []\n\tfor row in rows:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteDataSource(row[\u0027attributeDataSourceId\u0027], userId)\n\t\tif not retVal: failed.append(msg)\n\tif failed:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027 if len(failed) \u003d\u003d len(rows) else \u0027warning\u0027, \u0027autoClose\u0027: 0,\n\t\t\t\u0027message\u0027: \"Couldn\u0027t delete %d of %d data sources: %s\" % (len(failed), len(rows), failed[0])})\n\n\tself.view.refreshBinding(\"custom.dataSource.table.data\")\n\n\treturn"
         },
         {
           "name": "deleteTolerance",
           "params": [],
-          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\t\n\tfor row in self.view.custom.tolerances.table.selection.data:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteTolerance(row[\u0027attributeToleranceId\u0027], userId)\n\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Data source has been deleted\"})\t\n\t\telse: system.perspective.openPopup(\u0027msg\u0027, \u0027kanoa/core/templates/displays/messagePopup\u0027, params \u003d {\u0027text\u0027:msg}, showCloseIcon\u003dTrue, draggable\u003dTrue, resizeable\u003dTrue)\n\n\tself.view.refreshBinding(\"custom.tolerances.table.data\")\t\n\n\treturn"
+          "script": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t#The rows disappear, so only failures get a toast: one for the whole action\n\trows \u003d self.view.custom.tolerances.table.selection.data\n\tfailed \u003d []\n\tfor row in rows:\n\t\tretVal, msg \u003d system.kanoa.quality.config.deleteTolerance(row[\u0027attributeToleranceId\u0027], userId)\n\t\tif not retVal: failed.append(msg)\n\tif failed:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027 if len(failed) \u003d\u003d len(rows) else \u0027warning\u0027, \u0027autoClose\u0027: 0,\n\t\t\t\u0027message\u0027: \"Couldn\u0027t delete %d of %d tolerances: %s\" % (len(failed), len(rows), failed[0])})\n\n\tself.view.refreshBinding(\"custom.tolerances.table.data\")\n\n\treturn"
         }
       ],
       "extensionFunctions": null,

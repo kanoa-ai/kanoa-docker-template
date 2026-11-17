@@ -534,6 +534,14 @@
           "grow": 1
         },
         "propConfig": {
+          "props.path": {
+            "binding": {
+              "config": {
+                "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+              },
+              "type": "expr"
+            }
+          },
           "position.display": {
             "binding": {
               "config": {
@@ -560,7 +568,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tpickListValues \u003d value[\u0027pickListInfo\u0027].get(\u0027pickListValues\u0027)\n\tif value[\u0027pickListInfo\u0027][\u0027data\u0027][\u0027pickListName\u0027] !\u003d \u0027Tree\u0027 or pickListValues is None: return system.dataset.toDataSet([],[])\n\tpickListValues \u003d pickListValues if pickListValues[0] \u003d\u003d \u0027[\u0027 and pickListValues[-1] \u003d\u003d \u0027]\u0027 else \u0027[\u0027 + pickListValues + \u0027]\u0027\n\ttreeList \u003d system.util.jsonDecode(pickListValues)\n\treturn system.dataset.toDataSet([\u0027path\u0027, \u0027sortOrder\u0027], [[item.replace(\u0027/\u0027,\u0027\\\\\u0027), i] for i, item in enumerate(treeList)])",
+                  "code": "\n\tpickListValues \u003d value[\u0027pickListInfo\u0027].get(\u0027pickListValues\u0027)\n\tif value[\u0027pickListInfo\u0027][\u0027data\u0027][\u0027pickListName\u0027] !\u003d \u0027Tree\u0027 or pickListValues is None: return system.dataset.toDataSet([],[])\n\ttreeList \u003d system.kanoa.utilities.parseTreeOptions(pickListValues)\n\treturn system.dataset.toDataSet([\u0027path\u0027, \u0027sortOrder\u0027], [[item.replace(\u0027/\u0027,\u0027\\\\\u0027), i] for i, item in enumerate(treeList)])",
                   "type": "script"
                 }
               ],

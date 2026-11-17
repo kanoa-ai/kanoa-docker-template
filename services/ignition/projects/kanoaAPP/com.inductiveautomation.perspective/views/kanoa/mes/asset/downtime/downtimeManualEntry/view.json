@@ -12,6 +12,7 @@
       "startDate": null,
       "stateCode": null,
       "stateName": null,
+      "statePath": null,
       "stateTypeColor": null
     },
     "validationCheck": "State not set"
@@ -64,7 +65,7 @@
         },
         "transforms": [
           {
-            "code": "\t\n\treturn {\"assetId\": value[\u0027assetId\u0027], \"assetStateId\": value[\u0027assetId\u0027], \"stateCode\": None, \"stateName\": None, \"stateTypeColor\": None, \"startDate\": None, \u0027endDate\u0027: None, \u0027note\u0027: \u0027\u0027}",
+            "code": "\t\n\treturn {\"assetId\": value[\u0027assetId\u0027], \"assetStateId\": value[\u0027assetId\u0027], \"stateCode\": None, \"stateName\": None, \"statePath\": None, \"stateTypeColor\": None, \"startDate\": None, \u0027endDate\u0027: None, \u0027note\u0027: \u0027\u0027}",
             "type": "script"
           }
         ],
@@ -406,10 +407,19 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif value is None: return system.dataset.toDataset([],[])\n\treturn system.kanoa.asset.getAssetStates({\u0027assetId\u0027: value, \u0027enabled\u0027: True, \u0027selectable\u0027: True})",
+                      "code": "\t\n\tif value is None: return system.dataset.toDataSet([],[])\n\treturn system.kanoa.asset.getAssetStates({\u0027assetId\u0027: value, \u0027enabled\u0027: True, \u0027selectable\u0027: True})",
                       "type": "script"
                     }
                   ],
+                  "type": "property"
+                }
+              },
+              "props.params.values.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.stateInfo.statePath"
+                  },
+                  "overlayOptOut": true,
                   "type": "property"
                 }
               }
@@ -417,7 +427,7 @@
             "props": {
               "params": {
                 "values": {
-                  "msgHandler": "",
+                  "msgHandler": "downtimeManualEntryStateSelected",
                   "options": {
                     "dragDrop": false,
                     "expand": false,
@@ -639,7 +649,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\tgatewayOffsetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffSetMin \u003d int(self.session.props.device.timezone.utcOffset * 60.0)\n\t\n\toffsetMins \u003d clientOffSetMin - gatewayOffsetMins\n\t\n\tstart \u003d system.date.format(system.date.addMinutes(value[\u0027startDate\u0027], offsetMins), \u0027MM/dd/YY HH:mm\u0027)\n\tend \u003d system.date.format(system.date.addMinutes(value[\u0027endDate\u0027], offsetMins), \u0027MM/dd/YY HH:mm\u0027)\n\n\treturn \"Valid range from %s to %s\"%(start, end)",
+                  "code": "\t\n\tgatewayOffsetMins \u003d system.kanoa.date.getGatewayTimeZoneOffsetMins()\n\tclientOffSetMin \u003d int(self.session.props.device.timezone.utcOffset * 60.0)\n\t\n\toffsetMins \u003d clientOffSetMin - gatewayOffsetMins\n\t\n\tstart \u003d system.date.format(system.date.addMinutes(value[\u0027startDate\u0027], offsetMins), \u0027MM/dd/YY HH:mm\u0027)\n\tend \u003d system.date.format(system.date.addMinutes(value[\u0027endDate\u0027], offsetMins), \u0027MM/dd/YY HH:mm\u0027)\n\n\treturn system.util.translate(\"Valid range from %s to %s\", self.session.props.locale)%(start, end)",
                   "type": "script"
                 }
               ],
@@ -953,15 +963,15 @@
         {
           "name": "addStateEvent",
           "params": [],
-          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tstateInfo \u003d dict(self.view.custom.stateInfo)\n\tlastStateEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getPreviousStateEvent(stateInfo[\u0027assetId\u0027], stateInfo[\u0027endDate\u0027]),0)\n\n\t#Number of things have to happen here\n\t#1. We delete all state events that occurred between the start and upto the end date (but not including)\n\tsystem.kanoa.event.deleteStateEvents({\u0027assetId\u0027: stateInfo[\u0027assetId\u0027], \u0027startDate\u0027: stateInfo[\u0027startDate\u0027], \u0027endDate\u0027: stateInfo[\u0027endDate\u0027]}, userId)\n\n\t#2. We add or update the stateEvent at the start time\n\tstateInfo[\u0027tStamp\u0027] \u003d stateInfo[\u0027startDate\u0027]\n\tsystem.perspective.print(\"adding new state event %s\"%(stateInfo))\n\tsystem.kanoa.event.addStateEvent(stateInfo, userId)\n\t\n\t#2. We change the tStamp of the last event that falls within the start and end of this new stateEvent to be the end date\n\tif lastStateEventInfo[\u0027stateEventId\u0027]:\n\t\tlastStateEventInfo[\u0027stateEventId\u0027] \u003d None\n\t\tlastStateEventInfo[\u0027tStamp\u0027] \u003d stateInfo[\u0027endDate\u0027]\n\t\t\n\tsystem.perspective.print(\"adding last state event %s\"%(lastStateEventInfo))\n\tsystem.kanoa.event.addStateEvent(lastStateEventInfo, userId)\n\t\n\tsystem.perspective.sendMessage(\"DTUpdated\", {})\n\tself.view.refreshBinding(\"custom.stateEvents\")\n\tself.view.custom.validationCheck \u003d \u0027State has been added\u0027\n\tself.getChild(\"flxStateNew\").getChild(\"stateRibbonNew\").props.params.values \u003d []\n\t\n\treturn"
+          "script": "\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tstateInfo \u003d dict(self.view.custom.stateInfo)\n\tlastStateEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getPreviousStateEvent(stateInfo[\u0027assetId\u0027], stateInfo[\u0027endDate\u0027]),0)\n\n\t#Number of things have to happen here\n\t#1. We delete all state events that occurred between the start and upto the end date (but not including)\n\tsystem.kanoa.event.deleteStateEvents({\u0027assetId\u0027: stateInfo[\u0027assetId\u0027], \u0027startDate\u0027: stateInfo[\u0027startDate\u0027], \u0027endDate\u0027: stateInfo[\u0027endDate\u0027]}, userId)\n\n\t#2. We add or update the stateEvent at the start time\n\tstateInfo[\u0027tStamp\u0027] \u003d stateInfo[\u0027startDate\u0027]\n\tsystem.perspective.print(\"adding new state event %s\"%(stateInfo))\n\tsystem.kanoa.event.addStateEvent(stateInfo, userId)\n\t\n\t#2. We change the tStamp of the last event that falls within the start and end of this new stateEvent to be the end date\n\t#   Skipped when there\u0027s no prior event to restore (convertDatasetRowToJSON returns all-None keys)\n\tif lastStateEventInfo[\u0027stateEventId\u0027]:\n\t\tlastStateEventInfo[\u0027stateEventId\u0027] \u003d None\n\t\tlastStateEventInfo[\u0027tStamp\u0027] \u003d stateInfo[\u0027endDate\u0027]\n\t\t\n\t\tsystem.perspective.print(\"adding last state event %s\"%(lastStateEventInfo))\n\t\tsystem.kanoa.event.addStateEvent(lastStateEventInfo, userId)\n\t\n\tsystem.perspective.sendMessage(\"DTUpdated\", {})\n\tself.view.refreshBinding(\"custom.stateEvents\")\n\tself.view.custom.validationCheck \u003d \u0027State has been added\u0027\n\tself.getChild(\"flxStateNew\").getChild(\"stateRibbonNew\").props.params.values \u003d []\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,
       "messageHandlers": [
         {
-          "messageType": "assetStateSelected",
+          "messageType": "downtimeManualEntryStateSelected",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"assetStateSelected() msg rcvd with %s\"%payload)\n\t\n\tif len(payload[\u0027selection\u0027]) \u003e 0: \n\t\tself.view.custom.stateInfo[\u0027stateName\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027]\n\t\tself.view.custom.stateInfo[\u0027stateCode\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027stateCode\u0027]\n\t\tself.view.custom.stateInfo[\u0027stateTypeColor\u0027] \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027stateTypeColor\u0027]\n\t\n\treturn",
+          "script": "\n\tsystem.perspective.print(\"downtimeManualEntryStateSelected() msg rcvd with %s\"%payload)\n\t\n\tselection \u003d payload[\u0027selection\u0027]\n\tvalue \u003d selection[0][\u0027value\u0027] if len(selection) \u003e 0 else {}\n\tself.view.custom.stateInfo[\u0027stateName\u0027] \u003d value.get(\u0027stateName\u0027)\n\tself.view.custom.stateInfo[\u0027statePath\u0027] \u003d value.get(\u0027statePath\u0027)\n\tself.view.custom.stateInfo[\u0027stateCode\u0027] \u003d value.get(\u0027stateCode\u0027)\n\tself.view.custom.stateInfo[\u0027stateTypeColor\u0027] \u003d value.get(\u0027stateTypeColor\u0027)\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

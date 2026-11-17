@@ -136,8 +136,9 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
+    "countKey": null,
     "tagInfo": null,
     "timer": {
       "$": [
@@ -215,7 +216,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\t\n\tassetId \u003d value[\u0027asset\u0027][\u0027assetInfo\u0027][\u0027assetId\u0027]\n\tif assetId is None: return []\n\t\n\trateInfo \u003d self.custom.rateInfo\n\n\tparamsDict \u003d {\u0027assetId\u0027: assetId, \u0027startDate\u0027: value[\u0027filter\u0027][\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: (value[\u0027filter\u0027][\u0027dateRange\u0027][\u0027endDate\u0027] or system.date.now())}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tmodeItemId \u003d None\n\tparamsDict[\u0027modeId\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027modeId\u0027, system.kanoa.asset.getAssetModes({\u0027assetId\u0027: assetId, \u0027modeName\u0027: \u0027Production\u0027}))\n\tmodeEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEvents(paramsDict))\n\tfor modeEvent in modeEvents:\n\t\tif modeEvent[\u0027itemId\u0027]:\n\t\t\tmodeItemId \u003d modeEvent[\u0027itemId\u0027]\n\t\t\tbreak\n\n\tvalues \u003d []\n\tfailedUnits \u003d {}\n\tfor row in data:\n\t\trow \u003d dict(row)\n\t\tif row[\u0027value\u0027] \u003d\u003d 0: continue\n\t\trow[\u0027itemUnitName\u0027] \u003d \u0027units\u0027\t\t\n\t\tassetPath \u003d row[\u0027assetPath\u0027]\n\t\tassetName \u003d row[\u0027assetName\u0027]\n\t\titemPath \u003d  row[\u0027itemPath\u0027]\n\t\titemId \u003d row[\u0027itemId\u0027] or modeItemId\n\t\tif rateInfo.has_key(itemId):\n\t\t\ttry:\n\t\t\t\ttaktTime \u003d 60.0 / rateInfo[\u0027standardRate\u0027] if rateInfo[\u0027itemPeriodName\u0027] \u003d\u003d \u0027Hour\u0027 else rateInfo[\u0027standardRate\u0027] \n\t\t\texcept:\n\t\t\t\tpass\n\t\t\n\t\t\tif row[\u0027counterName\u0027] \u003d\u003d \u0027infeed\u0027:\trow[\u0027itemUnitName\u0027] \u003d rateInfo[itemId][\u0027infeedUnits\u0027]\n\t\t\telif row[\u0027counterName\u0027] \u003d\u003d \u0027outfeed\u0027:\trow[\u0027itemUnitName\u0027] \u003d rateInfo[itemId][\u0027outfeedUnits\u0027]\n\t\t\telif row[\u0027counterName\u0027] \u003d\u003d \u0027waste\u0027:\trow[\u0027itemUnitName\u0027] \u003d rateInfo[itemId][\u0027wasteUnits\u0027]\n\n\t\tfailedName \u003d \"%s - %s\"%(assetName, itemPath)\n\t\tif row[\u0027counterName\u0027] !\u003d \u0027waste\u0027: values.append(row)\n\t\telif not failedUnits.has_key(failedName): failedUnits[failedName] \u003d row\n\t\telse: failedUnits[failedName][\u0027value\u0027] +\u003d row[\u0027value\u0027]\t\t\n\n\tfor k,v in failedUnits.items(): values.append(v)\n\t\n\treturn sorted(values, key\u003dlambda x: x[\u0027itemPath\u0027])\t\t\t",
+            "code": "\t\t\n\tassetId \u003d value[\u0027asset\u0027][\u0027assetInfo\u0027][\u0027assetId\u0027]\n\tif assetId is None: return []\n\t\n\trateInfo \u003d self.custom.rateInfo\n\n\tparamsDict \u003d {\u0027assetId\u0027: assetId, \u0027startDate\u0027: value[\u0027filter\u0027][\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: (value[\u0027filter\u0027][\u0027dateRange\u0027][\u0027endDate\u0027] or system.date.now()), \u0027isCoProduct\u0027: False}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tmodeItemId \u003d None\n\tparamsDict[\u0027modeId\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027modeId\u0027, system.kanoa.asset.getAssetModes({\u0027assetId\u0027: assetId, \u0027modeName\u0027: \u0027Production\u0027}))\n\tmodeEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEvents(paramsDict))\n\tfor modeEvent in modeEvents:\n\t\tif modeEvent[\u0027itemId\u0027]:\n\t\t\tmodeItemId \u003d modeEvent[\u0027itemId\u0027]\n\t\t\tbreak\n\n\tvalues \u003d []\n\tfailedUnits \u003d {}\n\tfor row in data:\n\t\trow \u003d dict(row)\n\t\tif row[\u0027value\u0027] \u003d\u003d 0: continue\n\t\trow[\u0027itemUnitName\u0027] \u003d \u0027units\u0027\t\t\n\t\tassetPath \u003d row[\u0027assetPath\u0027]\n\t\tassetName \u003d row[\u0027assetName\u0027]\n\t\titemPath \u003d  row[\u0027itemPath\u0027]\n\t\titemId \u003d row[\u0027itemId\u0027] or modeItemId\n\t\tif rateInfo.has_key(itemId):\n\t\t\ttry:\n\t\t\t\ttaktTime \u003d 60.0 / rateInfo[\u0027standardRate\u0027] if rateInfo[\u0027itemPeriodName\u0027] \u003d\u003d \u0027Hour\u0027 else rateInfo[\u0027standardRate\u0027] \n\t\t\texcept:\n\t\t\t\tpass\n\t\t\n\t\t\tif row[\u0027counterName\u0027] \u003d\u003d \u0027infeed\u0027:\trow[\u0027itemUnitName\u0027] \u003d rateInfo[itemId][\u0027infeedUnits\u0027]\n\t\t\telif row[\u0027counterName\u0027] \u003d\u003d \u0027outfeed\u0027:\trow[\u0027itemUnitName\u0027] \u003d rateInfo[itemId][\u0027outfeedUnits\u0027]\n\t\t\telif row[\u0027counterName\u0027] \u003d\u003d \u0027waste\u0027:\trow[\u0027itemUnitName\u0027] \u003d rateInfo[itemId][\u0027wasteUnits\u0027]\n\n\t\tfailedName \u003d \"%s - %s\"%(assetName, itemPath)\n\t\tif row[\u0027counterName\u0027] !\u003d \u0027waste\u0027: values.append(row)\n\t\telif not failedUnits.has_key(failedName): failedUnits[failedName] \u003d row\n\t\telse: failedUnits[failedName][\u0027value\u0027] +\u003d row[\u0027value\u0027]\t\t\n\n\tfor k,v in failedUnits.items(): values.append(v)\n\t\n\treturn sorted(values, key\u003dlambda x: x[\u0027itemPath\u0027])\t\t\t",
             "type": "script"
           }
         ],
@@ -340,16 +341,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.custom.asset.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.custom.asset.assetInfo.tagPath}, indexOf({view.custom.asset.assetInfo.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value.OEE",
+            "code": "\n\t#The asset\u0027s OEE/info tag: its kanoaMES OEE tags (which the module keeps for every OEE asset; the [Kanoa] Line UDT\n\t#isn\u0027t always there) in one document that changes whenever any of them does. Flattened to the names the Line UDT\u0027s\n\t#OEE folder had; dates are in milliseconds, as that binding gave them. None without an asset\n\tif value is None: return None\n\tdef folder(name):\n\t\ttry: return value[name]\n\t\texcept: return None\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\tstatus, run \u003d folder(\u0027Status\u0027), folder(\u0027Current Run\u0027)\n\tinfo \u003d {}\n\tfor name in [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027modeSourceName\u0027, \u0027userName\u0027, \u0027iconPath\u0027, \u0027workOrderId\u0027,\n\t\t\t\u0027workOrderName\u0027, \u0027workOrderTitle\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027,\n\t\t\t\u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027packageCount\u0027, \u0027woRemainingMinutes\u0027, \u0027shiftId\u0027, \u0027shiftNameId\u0027, \u0027shiftName\u0027, \u0027shiftStart\u0027,\n\t\t\t\u0027shiftEnd\u0027, \u0027scheduleBlockId\u0027, \u0027scheduleStart\u0027, \u0027scheduleEnd\u0027, \u0027stateName\u0027, \u0027stateStart\u0027, \u0027stateTypeName\u0027, \u0027stateColor\u0027,\n\t\t\t\u0027stateTypeColor\u0027, \u0027stateIconPath\u0027, \u0027assetId\u0027]:\n\t\tinfo[name] \u003d field(status, name)\n\tfor name in [\u0027startDate\u0027, \u0027durationSecs\u0027, \u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027targetCount\u0027,\n\t\t\t\u0027standardRate\u0027, \u0027period\u0027, \u0027infeedRateSecs\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027,\n\t\t\t\u0027wasteCount\u0027]:\n\t\tinfo[name] \u003d field(run, name)\n\t#As the module works it out for the Line tags: the run\u0027s outfeed per minute, in production only\n\tduration, outfeed \u003d info[\u0027durationSecs\u0027], info[\u0027outfeedCount\u0027]\n\tinfo[\u0027outfeedRatePerMinute\u0027] \u003d outfeed / (duration / 60.0) if info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and duration and outfeed is not None else None\n\tinfo[\u0027endDate\u0027] \u003d None\n\treturn info",
             "type": "script"
           }
         ],
@@ -364,12 +362,12 @@
     "custom.timer": {
       "binding": {
         "config": {
-          "expression": "now(5000)"
+          "expression": "now(15000)"
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tif self.params.value.has_key(\u0027options\u0027) and self.params.value[\u0027options\u0027][\u0027useFilterDate\u0027]: return value\n\t\n\tself.refreshBinding(\"custom.countInfo\")\n\t\n\treturn value\n\t\n\t\n\t\n\t\n\t",
+            "code": "\n\tif self.params.value.has_key(\u0027options\u0027) and self.params.value[\u0027options\u0027][\u0027useFilterDate\u0027]: return value\n\n\t#Refresh at once when the run, item, work order, mode or date filter changes; when only the run\u0027s counts have (on a busy\n\t#line, between nearly every two ticks), at most once a minute; and every 5 minutes for edits to older counts. Each refresh\n\t#totals the run\u0027s counts from the database: refreshing on every count change read them about 4 times a minute per open\n\t#widget on a line counting every 10 s, the Operation view\u0027s heaviest SQL (868mub5yy). A count added in the widget itself\n\t#refreshes it at once (refreshProductionData). A blind refresh every 5 s was 12 times a minute (868mq4tv5)\n\tinfo \u003d self.custom.tagInfo\n\tfilters \u003d self.custom.filter\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\ttry:\n\t\tdateRange \u003d filters[\u0027dateRange\u0027]\n\t\tdates \u003d (str(dateRange[\u0027startDate\u0027]), str(dateRange[\u0027endDate\u0027]))\n\texcept:\n\t\tdates \u003d None\n\ttry:\n\t\tassetId \u003d self.custom.asset[\u0027assetInfo\u0027][\u0027assetId\u0027]\n\texcept:\n\t\tassetId \u003d None\n\tmillis \u003d system.date.toMillis(value)\n\tkey \u003d str((assetId, dates, field(info, \u0027startDate\u0027), field(info, \u0027itemId\u0027), field(info, \u0027workOrderId\u0027), field(info, \u0027modeId\u0027), millis // 300000))\n\tcounts \u003d str((field(info, \u0027infeedCount\u0027), field(info, \u0027outfeedCount\u0027), field(info, \u0027wasteCount\u0027)))\n\tminute \u003d millis // 60000\n\ttry:\n\t\tlast \u003d system.util.jsonDecode(self.custom.countKey) if self.custom.countKey else {}\n\texcept:\n\t\tlast \u003d {}\n\tif not isinstance(last, dict): last \u003d {}\n\tif key \u003d\u003d last.get(\u0027key\u0027) and (counts \u003d\u003d last.get(\u0027counts\u0027) or minute \u003d\u003d last.get(\u0027minute\u0027)): return value\n\tself.custom.countKey \u003d system.util.jsonEncode({\u0027key\u0027: key, \u0027counts\u0027: counts, \u0027minute\u0027: minute})\n\tself.refreshBinding(\"custom.countInfo\")\n\n\treturn value\n",
             "type": "script"
           }
         ],
@@ -566,7 +564,7 @@
                 },
                 "onChange": {
                   "enabled": null,
-                  "script": "\n#\tif origin \u003d\u003d \u0027Browser\u0027:\n\tselectedRange \u003d self.props.value\n\n\tif selectedRange !\u003d \u0027Custom\u0027:\n\t\tassetPath \u003d self.view.custom.filter.assetPath\n\t\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027selectedDateRange\u0027: selectedRange, \u0027clientTZ\u0027: self.session.props.device.timezone.id}\n\t\tsystem.perspective.print(\"setRange() called with %s\" %(paramsDict))\t\t\t\n\t\tstartDate, endDate \u003d system.kanoa.date.getDateRange(paramsDict)\n\t\tself.view.custom.filter.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: selectedRange}\n\t\n\treturn"
+                  "script": "\n#\tif origin \u003d\u003d \u0027Browser\u0027:\n\t#The widget\u0027s filter comes from a binding that may not have run yet, and can change while this runs: read it once\n\tfilterInfo \u003d self.view.custom.filter\n\tif filterInfo is None or not filterInfo.assetPath: return\n\tselectedRange \u003d self.props.value\n\n\tif selectedRange !\u003d \u0027Custom\u0027:\n\t\tassetPath \u003d filterInfo.assetPath\n\t\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027selectedDateRange\u0027: selectedRange, \u0027clientTZ\u0027: self.session.props.device.timezone.id}\n\t\tsystem.perspective.print(\"setRange() called with %s\" %(paramsDict))\t\t\t\n\t\tstartDate, endDate \u003d system.kanoa.date.getDateRange(paramsDict)\n\t\tfilterInfo.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: selectedRange}\n\t\n\treturn"
                 }
               }
             },
@@ -635,7 +633,7 @@
               },
               "showClearIcon": true,
               "style": {
-                "borderColor": "--kcGray-20",
+                "borderColor": "var(--border)",
                 "classes": "kanoa/font/default",
                 "height": "25px",
                 "minWidth": 145,

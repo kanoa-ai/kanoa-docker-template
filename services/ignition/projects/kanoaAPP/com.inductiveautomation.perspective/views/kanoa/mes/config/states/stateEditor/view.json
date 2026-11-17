@@ -4,7 +4,7 @@
       "$": [
         "ds",
         192,
-        1791212044423
+        1793204658215
       ],
       "$columns": [
         {
@@ -13,7 +13,10 @@
             2,
             3,
             4,
+            8,
+            9,
             5,
+            10,
             6
           ],
           "name": "stateCategoryId",
@@ -24,6 +27,9 @@
             null,
             null,
             null,
+            null,
+            4,
+            4,
             null,
             null,
             null
@@ -37,7 +43,10 @@
             "Equipment",
             "Maintenance",
             "Mechanical",
+            "Nozzle",
+            "Pump",
             "Operations",
+            "Process Failure",
             "Quality"
           ],
           "name": "stateCategoryName",
@@ -49,7 +58,10 @@
             "Equipment",
             "Maintenance",
             "Mechanical",
+            "Mechanical\\Nozzle",
+            "Mechanical\\Pump",
             "Operations",
+            "Process Failure",
             "Quality"
           ],
           "name": "stateCategoryPath",
@@ -57,6 +69,9 @@
         },
         {
           "data": [
+            true,
+            true,
+            true,
             true,
             true,
             true,
@@ -73,7 +88,10 @@
             1,
             1,
             1,
+            4,
+            4,
             1,
+            4,
             1
           ],
           "name": "createdBy",
@@ -85,7 +103,10 @@
             1787102384177,
             1787102384177,
             1787102384177,
+            1791995833770,
+            1791995840003,
             1787102384177,
+            1791995854180,
             1787102384177
           ],
           "name": "createdDate",
@@ -96,6 +117,9 @@
             null,
             null,
             null,
+            null,
+            null,
+            4,
             null,
             null,
             null
@@ -110,6 +134,9 @@
             null,
             null,
             null,
+            1791995843473,
+            null,
+            null,
             null
           ],
           "name": "changedDate",
@@ -118,7 +145,7 @@
       ]
     },
     "stateInfo": {
-      "assetGroupId": "fgfg",
+      "assetGroupId": null,
       "assetGroupName": null,
       "changedBy": null,
       "changedDate": null,
@@ -313,7 +340,11 @@
             },
             "meta": {
               "domId": "TextField",
-              "name": "txtStateName"
+              "name": "txtStateName",
+              "tooltip": {
+                "location": "top",
+                "text": "A system state: its name can\u0027t be changed (Kanoa finds it by name). Use translations to show it in another language."
+              }
             },
             "position": {
               "basis": "150px",
@@ -329,6 +360,22 @@
                   },
                   "overlayOptOut": true,
                   "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "!toBoolean({view.custom.stateInfo.reservedBySystem}, false)"
+                  },
+                  "type": "expr"
+                }
+              },
+              "meta.tooltip.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "toBoolean({view.custom.stateInfo.reservedBySystem}, false)"
+                  },
+                  "type": "expr"
                 }
               }
             },
@@ -392,6 +439,92 @@
         "type": "ia.container.flex"
       },
       {
+        "type": "ia.container.flex",
+        "meta": {
+          "name": "flxReserved",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "tail": true,
+            "text": "A system state Kanoa relies on by name and type: it can\u0027t be deleted, renamed or given another type. Use translations to show it in another language."
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.stateInfo.reservedBySystem"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t#Only for a state the system relies on (e.g. Running, Unknown State)\n\treturn bool(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "8px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "name": "lblReserved"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "textAlign": "right"
+              },
+              "text": "Reserved"
+            }
+          },
+          {
+            "type": "ia.display.icon",
+            "meta": {
+              "name": "icnReserved"
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "props": {
+              "color": "var(--kcOnSurfaceVariant)",
+              "path": "material/lock"
+            }
+          },
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "name": "lblReservedText"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Reserved by the system: it can\u0027t be deleted, renamed or given another type"
+            }
+          }
+        ]
+      },
+      {
         "children": [
           {
             "meta": {
@@ -414,7 +547,11 @@
           {
             "meta": {
               "domId": "dropdown",
-              "name": "ddStateType"
+              "name": "ddStateType",
+              "tooltip": {
+                "location": "top",
+                "text": "A system state: its state type can\u0027t be changed (Kanoa counts its time by it)."
+              }
             },
             "position": {
               "basis": "150px",
@@ -445,6 +582,22 @@
                   },
                   "overlayOptOut": true,
                   "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "!toBoolean({view.custom.stateInfo.reservedBySystem}, false)"
+                  },
+                  "type": "expr"
+                }
+              },
+              "meta.tooltip.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "toBoolean({view.custom.stateInfo.reservedBySystem}, false)"
+                  },
+                  "type": "expr"
                 }
               }
             },
@@ -789,7 +942,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\n\tstateInfo \u003d dict(self.view.custom.stateInfo)\n\tstateId \u003d stateInfo[\u0027stateId\u0027]\n\tstateCategoryId \u003d stateInfo[\u0027stateCategoryId\u0027]\n\tassetGroupId \u003d stateInfo[\u0027assetGroupId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif stateInfo[\u0027assetGroupId\u0027] is not None:\n\t\ttry:\n\t\t\tint(stateInfo[\u0027assetGroupId\u0027])\n\t\texcept:\n\t\t\tnewAssetGroupId \u003d system.kanoa.asset.addAssetGroup(stateInfo[\u0027assetGroupId\u0027], userId)\n\t\t\tstateInfo[\u0027assetGroupId\u0027] \u003d newAssetGroupId\n\t\t\tsystem.perspective.sendMessage(\"refresh-ddAssetGroup-options\")\n\t\t\tself.view.custom.stateInfo.assetGroupId \u003d newAssetGroupId\n\t\n\tif stateId is not None: \t#If state name has changed, we need to check that it doesn\u0027t already exist\n\t\tcurrentStateId \u003d system.kanoa.utilities.getFieldValue(\u0027stateId\u0027, system.kanoa.asset.getStates({\u0027stateName\u0027: stateInfo[\u0027stateName\u0027], \u0027stateCategoryId\u0027 :stateInfo[\u0027stateCategoryId\u0027], \u0027assetGroupId\u0027: stateInfo[\u0027assetGroupId\u0027]}))\n\t\tif currentStateId is not None and currentStateId !\u003d stateId:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027This state already exists for this category\u0027})\n\t\t\treturn\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Updating state Id %i \u0027%stateId})\t\t\t\n\t\tretVal, msg \u003d system.kanoa.asset.updateState(stateInfo, userId)\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Adding state\u0027})\t\n\t\tstateId, msg \u003d system.kanoa.asset.addState(stateInfo, userId)\n\n\tsystem.perspective.sendMessage(\"updateStates\", {})\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t save state. %s\"%msg})\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027State has been saved.\u0027})\n\t\tself.view.params.values.stateId \u003d stateId\n\t\n\treturn"
+                    "script": "\n\tstateInfo \u003d dict(self.view.custom.stateInfo)\n\tstateId \u003d stateInfo[\u0027stateId\u0027]\n\tstateCategoryId \u003d stateInfo[\u0027stateCategoryId\u0027]\n\tassetGroupId \u003d stateInfo[\u0027assetGroupId\u0027]\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\n\tif stateInfo[\u0027assetGroupId\u0027] is not None:\n\t\ttry:\n\t\t\tint(stateInfo[\u0027assetGroupId\u0027])\n\t\texcept:\n\t\t\tnewAssetGroupId \u003d system.kanoa.asset.addAssetGroup(stateInfo[\u0027assetGroupId\u0027], userId)\n\t\t\tstateInfo[\u0027assetGroupId\u0027] \u003d newAssetGroupId\n\t\t\tsystem.perspective.sendMessage(\"refresh-ddAssetGroup-options\")\n\t\t\tself.view.custom.stateInfo.assetGroupId \u003d newAssetGroupId\n\t\n\tif stateId is not None: \t#If state name has changed, we need to check that it doesn\u0027t already exist\n\t\tcurrentStateId \u003d system.kanoa.utilities.getFieldValue(\u0027stateId\u0027, system.kanoa.asset.getStates({\u0027stateName\u0027: stateInfo[\u0027stateName\u0027], \u0027stateCategoryId\u0027 :stateInfo[\u0027stateCategoryId\u0027], \u0027assetGroupId\u0027: stateInfo[\u0027assetGroupId\u0027]}))\n\t\tif currentStateId is not None and currentStateId !\u003d stateId:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027This state already exists for this category\u0027})\n\t\t\treturn\n\t\t\n\t\tretVal, msg \u003d system.kanoa.asset.updateState(stateInfo, userId)\n\telse:\n\t\tstateId, msg \u003d system.kanoa.asset.addState(stateInfo, userId)\n\n\tsystem.perspective.sendMessage(\"updateStates\", {})\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Couldn\\\u0027t save state \"%s\": %s\u0027 % (stateInfo[\u0027stateName\u0027], msg)})\n\telse:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027State \"%s\" saved\u0027 % stateInfo[\u0027stateName\u0027]})\n\t\t#Clear the editor for the next state, keeping its category\n\t\tself.view.params.values \u003d {\u0027stateId\u0027: None, \u0027stateCategoryPath\u0027: stateInfo[\u0027stateCategoryPath\u0027]}\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -798,12 +951,7 @@
             },
             "meta": {
               "domId": "btnSave",
-              "name": "btnSave",
-              "tooltip": {
-                "enabled": true,
-                "location": "bottom-left",
-                "text": "Save"
-              }
+              "name": "btnSave"
             },
             "position": {
               "shrink": 0

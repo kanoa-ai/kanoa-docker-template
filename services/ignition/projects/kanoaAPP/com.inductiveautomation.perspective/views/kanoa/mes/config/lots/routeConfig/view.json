@@ -322,7 +322,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRoutes({}))",
+            "code": "\t\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRoutes({}))\n\t#lastUpdated comes from the database as text in its own zone (UTC): rebuild it in the device\u0027s time zone. This runs\n\t#on the gateway, which would otherwise format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MM/dd/yyyy h:mm a\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tfor row in rows:\n\t\tdate \u003d row.get(\u0027changedDate\u0027) or row.get(\u0027createdDate\u0027)\n\t\tif date is not None:\n\t\t\t#getRoutes has no user name columns: the name is the text before \u0027 on \u0027\n\t\t\tuser \u003d row.get(\u0027changedByUser\u0027) or row.get(\u0027createdByUser\u0027) or (row.get(\u0027lastUpdated\u0027) or \u0027\u0027).split(\u0027 on \u0027)[0]\n\t\t\trow[\u0027lastUpdated\u0027] \u003d \"%s on %s\" % (user, fmt.format(date))\n\treturn rows",
             "type": "script"
           }
         ],
@@ -968,33 +968,6 @@
                       "type": "property"
                     }
                   },
-                  "props.columns[1].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Route\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[4].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Item\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[6].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Item Class\u0027)"
-                      },
-                      "overlayOptOut": true,
-                      "type": "expr"
-                    }
-                  },
                   "props.data": {
                     "binding": {
                       "config": {
@@ -1066,7 +1039,7 @@
                       },
                       "justify": "center",
                       "number": "value",
-                      "numberFormat": "0,0.##",
+                      "numberFormat": "#",
                       "progressBar": {
                         "bar": {
                           "color": "",
@@ -1108,7 +1081,7 @@
                       "viewParams": {},
                       "viewPath": "",
                       "visible": true,
-                      "width": 40
+                      "width": 55
                     },
                     {
                       "align": "center",
@@ -1128,7 +1101,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Route"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1331,7 +1305,8 @@
                         "justify": "left",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Item"
                       },
                       "justify": "left",
                       "number": "value",
@@ -1466,7 +1441,8 @@
                         "justify": "left",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Item Class"
                       },
                       "justify": "left",
                       "number": "value",
@@ -1968,7 +1944,7 @@
                           }
                         }
                       },
-                      "render": "date",
+                      "render": "string",
                       "resizable": true,
                       "sort": "none",
                       "sortable": false,
@@ -2086,7 +2062,7 @@
         {
           "name": "exportRoutes",
           "params": [],
-          "script": "\t# implement your method here\t\t\n\t\u0027\u0027\u0027 \n \t\tExports lot route information and associated data such as route steps and items\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\trouteIds \u003d [row[\u0027routeId\u0027] for row in self.view.custom.routes.selectedData]\n \tlog.info(\"exportRoutes() called with %s\"%(routeIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\troutes \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRoutes({\u0027routeIdList\u0027: routeIds}))\n\t\tfor route in routes:\n\t\t\trouteItem \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getItems({\u0027itemId\u0027: route[\u0027itemId\u0027]}))\n\t\t\troute[\u0027itemInfo\u0027] \u003d routeItem[0] if len(routeItem) else None\n\t\trouteSteps \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRouteSteps({\u0027routeIdList\u0027: routeIds}))\n\t\tfor routeStep in routeSteps:\n\t\t\trouteStepLotOp \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperations({\u0027lotOperationId\u0027: routeStep[\u0027lotOperationId\u0027]}))\n\t\t\trouteStep[\u0027lotOperationInfo\u0027] \u003d routeStepLotOp[0] if len(routeStepLotOp) else None\n\t\t\n \t\texportInfo[\u0027routes\u0027] \u003d routes\n\t\texportInfo[\u0027routeSteps\u0027] \u003d routeSteps\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Routes Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027routesInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Routes exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportLotOperations() threw exception %s \"%(e.cause))\n \t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Routes failed to export: %s\u0027%e.cause})\n\t\n\treturn"
+          "script": "\t# implement your method here\t\t\n\t\u0027\u0027\u0027 \n \t\tExports lot route information and associated data such as route steps and items\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\trouteIds \u003d [row[\u0027routeId\u0027] for row in self.view.custom.routes.selectedData]\n \tlog.info(\"exportRoutes() called with %s\"%(routeIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\troutes \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRoutes({\u0027routeIdList\u0027: routeIds}))\n\t\tfor route in routes:\n\t\t\trouteItem \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getItems({\u0027itemId\u0027: route[\u0027itemId\u0027]}))\n\t\t\troute[\u0027itemInfo\u0027] \u003d routeItem[0] if len(routeItem) else None\n\t\trouteSteps \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getRouteSteps({\u0027routeIdList\u0027: routeIds}))\n\t\tfor routeStep in routeSteps:\n\t\t\trouteStepLotOp \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.lot.getLotOperations({\u0027lotOperationId\u0027: routeStep[\u0027lotOperationId\u0027]}))\n\t\t\trouteStep[\u0027lotOperationInfo\u0027] \u003d routeStepLotOp[0] if len(routeStepLotOp) else None\n\t\t\n \t\texportInfo[\u0027routes\u0027] \u003d routes\n\t\texportInfo[\u0027routeSteps\u0027] \u003d routeSteps\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Routes Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027routesInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Routes exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportLotOperations() threw exception %s \"%((getattr(e, \u0027cause\u0027, None) or e)))\n \t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Routes failed to export: %s\u0027%(getattr(e, \u0027cause\u0027, None) or e)})\n\t\n\treturn"
         },
         {
           "name": "importRoutes",

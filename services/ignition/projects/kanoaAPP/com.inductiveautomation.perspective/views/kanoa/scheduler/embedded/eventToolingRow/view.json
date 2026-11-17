@@ -1,0 +1,245 @@
+{
+  "custom": {},
+  "params": {
+    "editable": false,
+    "message": "",
+    "messages": "",
+    "options": [],
+    "requirement": "",
+    "severity": "",
+    "toolingAssetId": null,
+    "placeholder": "Any free tool",
+    "itemAssetToolingId": null,
+    "hint": ""
+  },
+  "propConfig": {
+    "params.editable": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.message": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.messages": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.options": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.requirement": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.severity": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.toolingAssetId": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.placeholder": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.itemAssetToolingId": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.hint": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 32,
+      "width": 450
+    }
+  },
+  "root": {
+    "type": "ia.container.flex",
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": "5px"
+      }
+    },
+    "children": [
+      {
+        "type": "ia.container.flex",
+        "meta": {
+          "name": "flxRequirement"
+        },
+        "position": {
+          "basis": "120px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center"
+        },
+        "children": [
+          {
+            "type": "ia.display.label",
+            "meta": {
+              "name": "lblRequirement",
+              "tooltip": {
+                "enabled": true,
+                "location": "center-right",
+                "tail": true
+              }
+            },
+            "position": {
+              "shrink": 1
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "type": "property",
+                  "config": {
+                    "path": "view.params.requirement"
+                  }
+                }
+              },
+              "meta.tooltip.text": {
+                "binding": {
+                  "type": "property",
+                  "config": {
+                    "path": "view.params.hint"
+                  }
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "backgroundColor": "--kcPrimaryContainer",
+                "color": "--kcOnPrimaryContainer",
+                "borderRadius": "12px",
+                "padding": "2px 10px",
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "nowrap",
+                "lineHeight": "18px",
+                "borderStyle": "solid",
+                "borderWidth": "1px",
+                "borderColor": "--kcPrimary"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "ia.input.dropdown",
+        "meta": {
+          "name": "ddTool"
+        },
+        "position": {
+          "basis": "170px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.options": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.params.options"
+              }
+            }
+          },
+          "props.value": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.params.toolingAssetId"
+              }
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\t#The planner's pick (or a clear: the scheduler picks a free tool), kept with the event and saved with it\n\tif origin != 'Browser' or self.view.params.itemAssetToolingId is None: return\n\tsystem.perspective.sendMessage('eventToolPicked', payload={'itemAssetToolingId': self.view.params.itemAssetToolingId, 'toolingAssetId': currentValue.value}, scope='page')\n"
+            }
+          },
+          "props.enabled": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.params.editable"
+              }
+            }
+          },
+          "props.placeholder.text": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.params.placeholder"
+              }
+            }
+          }
+        },
+        "props": {
+          "dropdownOptionStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "placeholder": {
+            "text": "No free tool"
+          },
+          "showClearIcon": true,
+          "style": {
+            "classes": "kanoa/border kanoa/font/default"
+          }
+        }
+      },
+      {
+        "type": "ia.display.icon",
+        "meta": {
+          "name": "icoConflict",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "tail": true
+          }
+        },
+        "position": {
+          "basis": "22px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "expr",
+              "config": {
+                "expression": "len({view.params.message}) > 0"
+              }
+            }
+          },
+          "props.color": {
+            "binding": {
+              "type": "expr",
+              "config": {
+                "expression": "if({view.params.severity} = 'hard', 'var(--kcRed)', 'var(--kcOrange)')"
+              }
+            }
+          },
+          "meta.tooltip.text": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.params.messages"
+              }
+            }
+          }
+        },
+        "props": {
+          "path": "material/warning"
+        }
+      }
+    ]
+  }
+}

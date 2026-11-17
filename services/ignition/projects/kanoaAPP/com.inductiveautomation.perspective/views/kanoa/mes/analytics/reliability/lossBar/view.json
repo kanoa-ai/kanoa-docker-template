@@ -1,0 +1,301 @@
+{
+  "custom": {},
+  "params": {
+    "color": "var(--kcBlue-60)",
+    "count": 0,
+    "countLabel": "",
+    "key": "",
+    "label": "",
+    "level": "",
+    "maxMins": 0,
+    "mins": 0,
+    "pct": 0,
+    "selected": false
+  },
+  "propConfig": {
+    "params.color": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.count": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.countLabel": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.key": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.label": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.level": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.maxMins": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.mins": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.pct": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.selected": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 38,
+      "width": 400
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "position": {
+      "shrink": 0
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "cursor": "pointer",
+        "borderRadius": "4px",
+        "padding": "2px 8px",
+        "overflow": "hidden"
+      },
+      "justify": "center"
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "flxText"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "row",
+          "style": {
+            "overflow": "hidden"
+          },
+          "alignItems": "center"
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "lblLabel",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom"
+              }
+            },
+            "position": {
+              "basis": "0px",
+              "grow": 1,
+              "shrink": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label",
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.label"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.label"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            }
+          },
+          {
+            "meta": {
+              "name": "lblValue",
+              "tooltip": {
+                "enabled": true,
+                "location": "bottom"
+              }
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "paddingLeft": "10px",
+                "textAlign": "right",
+                "whiteSpace": "nowrap"
+              }
+            },
+            "type": "ia.display.label",
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "mins": "{view.params.mins}",
+                      "pct": "{view.params.pct}",
+                      "count": "{view.params.count}",
+                      "countLabel": "{view.params.countLabel}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t# Time lost (days, hours and minutes), the share of the loss, and how many stops or runs\n\tmins \u003d value[\u0027mins\u0027] or 0\n\ttext \u003d system.kanoa.utilities.secondsToText(mins * 60, {\u0027showSecs\u0027: False}) or \u00270 mins\u0027\n\tif value[\u0027pct\u0027]: text +\u003d \u0027  {:.0f}%\u0027.format(value[\u0027pct\u0027])\n\tif value[\u0027count\u0027]:\n\t\tlabel \u003d value[\u0027countLabel\u0027] or \u0027\u0027\n\t\tif int(value[\u0027count\u0027]) \u003d\u003d 1 and label.endswith(\u0027s\u0027): label \u003d label[:-1]\n\t\ttext +\u003d \u0027  ({:,} {})\u0027.format(int(value[\u0027count\u0027]), label)\n\treturn text",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "meta.tooltip.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.mins"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property",
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027{:,.0f} minutes\u0027.format(value or 0)",
+                      "type": "script"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "flxTrack"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "direction": "row",
+          "style": {
+            "overflow": "hidden",
+            "marginTop": "3px"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "flxBar"
+            },
+            "position": {
+              "basis": "0%",
+              "shrink": 0
+            },
+            "props": {
+              "direction": "row",
+              "style": {
+                "borderRadius": "3px",
+                "height": "8px"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [],
+            "propConfig": {
+              "position.basis": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "mins": "{view.params.mins}",
+                      "maxMins": "{view.params.maxMins}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t# The bar\u0027s length: this row\u0027s minutes against the longest row\u0027s\n\tif not value[\u0027maxMins\u0027]: return \u00270%\u0027\n\treturn \u0027%.1f%%\u0027 % (100.0 * (value[\u0027mins\u0027] or 0) / value[\u0027maxMins\u0027])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.color"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "propConfig": {
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "expression": "if({view.params.selected}, \u0027var(--kcOutlineVariant)\u0027, \u0027transparent\u0027)"
+          },
+          "overlayOptOut": true,
+          "type": "expr"
+        }
+      },
+      "props.style.fontWeight": {
+        "binding": {
+          "config": {
+            "expression": "if({view.params.selected}, \u0027bold\u0027, \u0027normal\u0027)"
+          },
+          "overlayOptOut": true,
+          "type": "expr"
+        }
+      }
+    },
+    "events": {
+      "dom": {
+        "onClick": {
+          "config": {
+            "script": "\n\t# Drill into this row (or back out, when it\u0027s the one selected)\n\tsystem.perspective.sendMessage(\u0027reliabilityDrill\u0027, {\u0027level\u0027: self.view.params.level, \u0027key\u0027: self.view.params.key,\n\t\t\u0027selected\u0027: self.view.params.selected}, scope\u003d\u0027page\u0027)"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    }
+  }
+}

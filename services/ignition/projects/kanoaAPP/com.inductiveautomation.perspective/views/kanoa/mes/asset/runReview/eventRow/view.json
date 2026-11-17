@@ -139,7 +139,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027]}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tallCounts \u003d {\u0027outfeed\u0027: [], \u0027infeed\u0027: [], \u0027waste\u0027: []}\n\t\n\tfor row in data:\n\t\trow[\u0027startDate\u0027] \u003d value[\u0027startDate\u0027]\n\t\trow[\u0027endDate\u0027] \u003d value[\u0027endDate\u0027]\n\t\trow[\u0027assetId\u0027] \u003d value[\u0027assetId\u0027]\t\t\t\n\t\t\n\t\tif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027outfeed\u0027: allCounts[\u0027outfeed\u0027].append(row)\n\t\telif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027infeed\u0027: allCounts[\u0027infeed\u0027].append(row)\n\t\telif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027waste\u0027: allCounts[\u0027waste\u0027].append(row)\n\t\telse:\n\t\t\tif allCounts.has_key(row[\u0027counterName\u0027]): allCounts[row[\u0027counterName\u0027]].append(row)\n\t\t\telse: allCounts[row[\u0027counterName\u0027]] \u003d [row]\n\t\n\treturn allCounts",
+            "code": "\n\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027]}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tallCounts \u003d {\u0027outfeed\u0027: [], \u0027infeed\u0027: [], \u0027waste\u0027: [], \u0027coProducts\u0027: []}\n\t\n\tfor row in data:\n\t\t#A counter with no item and nothing counted (a family run\u0027s spare outfeed counter) would show an empty 0.0 box\n\t\tif row[\u0027itemName\u0027] is None and not row[\u0027value\u0027]: continue\n\t\trow[\u0027startDate\u0027] \u003d value[\u0027startDate\u0027]\n\t\trow[\u0027endDate\u0027] \u003d value[\u0027endDate\u0027]\n\t\trow[\u0027assetId\u0027] \u003d value[\u0027assetId\u0027]\t\t\t\n\t\t\n\t\t#A family tool\u0027s other items: made in the same cycles, but not this run\u0027s counts\n\t\tif row[\u0027isCoProduct\u0027]:\n\t\t\tif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027waste\u0027: row[\u0027itemStateName\u0027] \u003d row[\u0027itemStateName\u0027] or \u0027Scrap\u0027\n\t\t\tallCounts[\u0027coProducts\u0027].append(row)\n\t\telif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027outfeed\u0027: allCounts[\u0027outfeed\u0027].append(row)\n\t\telif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027infeed\u0027: allCounts[\u0027infeed\u0027].append(row)\n\t\telif row[\u0027counterTypeName\u0027] \u003d\u003d \u0027waste\u0027: allCounts[\u0027waste\u0027].append(row)\n\t\telse:\n\t\t\tif allCounts.has_key(row[\u0027counterName\u0027]): allCounts[row[\u0027counterName\u0027]].append(row)\n\t\t\telse: allCounts[row[\u0027counterName\u0027]] \u003d [row]\n\t\n\treturn allCounts",
             "type": "script"
           }
         ],
@@ -184,7 +184,7 @@
                       },
                       "transforms": [
                         {
-                          "code": "\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn \u0027Mode set by %s\u0027%name or \u0027\u0027",
+                          "code": "\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn system.util.translate(\u0027Mode set by %s\u0027, self.session.props.locale)%name or \u0027\u0027",
                           "type": "script"
                         }
                       ],
@@ -336,12 +336,8 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "formatType": "datetime",
-                          "formatValue": {
-                            "date": "short",
-                            "time": "short"
-                          },
-                          "type": "format"
+                          "code": "\t#In the device\u0027s time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027M/d/yy, h:mm a\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdef fmtDate(date):\n\t\tif date is None: return \u0027\u0027\n\t\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(long(date))\n\t\treturn fmt.format(date)\n\treturn fmtDate(value)",
+                          "type": "script"
                         }
                       ],
                       "type": "property"
@@ -385,12 +381,8 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "formatType": "datetime",
-                          "formatValue": {
-                            "date": "short",
-                            "time": "short"
-                          },
-                          "type": "format"
+                          "code": "\t#In the device\u0027s time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027M/d/yy, h:mm a\u0027, self.session.props.locale))\n\tdeviceZone \u003d self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdef fmtDate(date):\n\t\tif date is None: return \u0027\u0027\n\t\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(long(date))\n\t\treturn fmt.format(date)\n\treturn fmtDate(value)",
+                          "type": "script"
                         }
                       ],
                       "type": "property"
@@ -738,6 +730,96 @@
                     "binding": {
                       "config": {
                         "path": "view.custom.counts.waste"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn len(value) \u003e 0",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "alignContent": "flex-start",
+                  "alignItems": "flex-start",
+                  "style": {
+                    "classes": "kanoa/border",
+                    "overflow": "visible",
+                    "position": "relative"
+                  },
+                  "wrap": "wrap"
+                },
+                "type": "ia.container.flex"
+              },
+              {
+                "children": [
+                  {
+                    "meta": {
+                      "domId": "lblTitleCoProducts",
+                      "name": "lblTitle"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "backgroundColor": "--kcSurface",
+                        "left": 5,
+                        "padding": "5px",
+                        "position": "absolute",
+                        "top": -13
+                      },
+                      "text": "Co-products"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "domId": "flxRptCoProducts",
+                      "name": "flxRptCoProducts"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.instances": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.counts.coProducts"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\tinstances \u003d []\n\tfor row in value:\n\t\trow \u003d dict(row)\n\t\trow[\u0027units\u0027] \u003d self.view.params.value.wasteUnits if row[\u0027counterTypeName\u0027] \u003d\u003d \u0027waste\u0027 else self.view.params.value.outfeedUnits\n\t\tinstances.append({\u0027value\u0027: row})\n\t\n\treturn instances",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "path": "kanoa/mes/asset/runReview/eventCounts",
+                      "wrap": "wrap"
+                    },
+                    "type": "ia.display.flex-repeater"
+                  }
+                ],
+                "meta": {
+                  "domId": "flxCoProducts",
+                  "name": "flxCoProducts"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.counts.coProducts"
                       },
                       "overlayOptOut": true,
                       "transforms": [

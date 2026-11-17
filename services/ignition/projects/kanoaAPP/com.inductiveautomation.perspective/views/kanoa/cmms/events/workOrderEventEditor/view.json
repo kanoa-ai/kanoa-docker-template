@@ -67,7 +67,7 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
     "technicians": [
       {
@@ -90,6 +90,7 @@
         "userSource": "default"
       }
     ],
+    "toolPositions": [],
     "userAction": {
       "canCreate": true,
       "canDelete": true,
@@ -98,8 +99,13 @@
     },
     "workOrderEventCheckStatus": [],
     "workOrderEventInfo": null,
+    "workOrderEventLoaded": null,
     "workOrderEventStatus": null,
     "workOrderEventStatusChange": null,
+    "workOrderPositions": {
+      "isBlocking": true,
+      "positionIds": []
+    },
     "workOrderPriorities": null,
     "workOrderStates": null
   },
@@ -178,6 +184,22 @@
       },
       "persistent": true
     },
+    "custom.toolPositions": {
+      "binding": {
+        "config": {
+          "path": "view.custom.workOrderEventInfo.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\t#The tool\u0027s positions a repair can name; none when the work order isn\u0027t on a tool\n\tif value is None: return []\n\t#Blocked ones stay, so a position this repair blocked is still listed; retired ones go\n\tdata \u003d system.kanoa.tooling.getPositions({\u0027toolingAssetId\u0027: value})\n\tif not hasattr(data, \u0027getRowCount\u0027): return []\n\toptions \u003d []\n\tfor row in system.kanoa.utilities.convertDatasetToJSON(data):\n\t\tif row[\u0027isRetired\u0027]: continue\n\t\tlabel \u003d \u0027%s %s\u0027 % ((row[\u0027positionType\u0027] or \u0027position\u0027).title(), row[\u0027positionNumber\u0027])\n\t\tif row.get(\u0027itemName\u0027): label +\u003d \u0027 (%s)\u0027 % row[\u0027itemName\u0027]\n\t\toptions.append({\u0027value\u0027: row[\u0027toolingPositionId\u0027], \u0027label\u0027: label})\n\treturn options",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
     "custom.userAction": {
       "binding": {
         "config": {
@@ -213,7 +235,7 @@
       },
       "onChange": {
         "enabled": null,
-        "script": "\t\n\tif origin in (\u0027BindingWriteback\u0027, \u0027Script\u0027): self.getChild(\"root\").saveWorkOrderEvent()\n\t\n\treturn"
+        "script": "\t#Fields write their values back as the editor opens (the asset selector writes an empty asset, then the asset again), so\n\t#compare with the work order as it was loaded, not with the previous value: opening a work order used to save it, a toast\n\t#per field, and could clear its asset\n\tkeys \u003d [\u0027workOrderEventId\u0027, \u0027assetId\u0027, \u0027workOrderEventName\u0027, \u0027workOrderEventStatusId\u0027, \u0027workOrderPriorityId\u0027, \u0027maintenanceSubTypeId\u0027,\n\t\t\u0027requestedBy\u0027, \u0027requestedDate\u0027, \u0027assignedTo\u0027, \u0027dueDate\u0027]\n\tdef norm(x):\n\t\tif hasattr(x, \u0027getTime\u0027): return x.getTime()\n\t\tif x \u003d\u003d \u0027\u0027: return None\n\t\treturn x\n\tdef field(values, key):\n\t\ttry: return norm(values[key])\n\t\texcept: return None\n\tcur \u003d currentValue.value if currentValue is not None else None\n\tif cur is None: return\n\tif origin not in (\u0027BindingWriteback\u0027, \u0027Script\u0027):\n\t\t#Loaded (or reloaded after a save): remember it\n\t\tself.custom.workOrderEventLoaded \u003d dict((k, field(cur, k)) for k in keys)\n\t\treturn\n\tloaded \u003d self.custom.workOrderEventLoaded\n\tif loaded is None or loaded[\u0027workOrderEventId\u0027] !\u003d field(cur, \u0027workOrderEventId\u0027): return\n\t#The asset can\u0027t be cleared here: an empty asset is the selector loading\n\tchanged \u003d [k for k in keys if field(cur, k) !\u003d loaded[k] and not (k \u003d\u003d \u0027assetId\u0027 and field(cur, k) is None)]\n\tif not changed: return\n\tself.getChild(\"root\").saveWorkOrderEvent()\n\t\n\treturn"
       },
       "persistent": true
     },
@@ -246,6 +268,26 @@
           }
         ],
         "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.workOrderPositions": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\t#The positions this work order repairs and still holds\n\tdefault \u003d {\u0027positionIds\u0027: [], \u0027isBlocking\u0027: True}\n\tif not value or value.get(\u0027workOrderEventId\u0027) is None: return default\n\tdata \u003d system.kanoa.cmms.getWorkOrderPositions({\u0027workOrderEventId\u0027: value[\u0027workOrderEventId\u0027]})\n\tif not hasattr(data, \u0027getRowCount\u0027): return default\n\trows \u003d [row for row in system.kanoa.utilities.convertDatasetToJSON(data) if row[\u0027releasedAt\u0027] is None]\n\tif rows: default \u003d {\u0027positionIds\u0027: [row[\u0027toolingPositionId\u0027] for row in rows], \u0027isBlocking\u0027: any(row[\u0027isBlocking\u0027] for row in rows)}\n\treturn default",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\tif origin !\u003d \u0027BindingWriteback\u0027: return\n\tworkOrderEventId \u003d self.custom.workOrderEventInfo[\u0027workOrderEventId\u0027]\n\tif workOrderEventId is None: return\n\tpositions \u003d self.custom.workOrderPositions\n\tchanged, msg \u003d system.kanoa.cmms.setWorkOrderPositions(workOrderEventId, list(positions[\u0027positionIds\u0027] or []), positions[\u0027isBlocking\u0027], self.custom.security.userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t save the positions. %s\" % msg})\n\tself.refreshBinding(\u0027custom.workOrderPositions\u0027)\n\treturn"
       },
       "persistent": true
     },
@@ -1736,7 +1778,8 @@
                       },
                       "parentPathList": [],
                       "persistent": false,
-                      "useSessionValue": false
+                      "useSessionValue": false,
+                      "includeTooling": true
                     }
                   },
                   "path": "kanoa/core/templates/selectors/assetSelector"
@@ -2084,7 +2127,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\tci \u003d system.util.jsonDecode(value[\u0027conditionInfo\u0027])\n\tif value[\u0027conditionName\u0027] \u003d\u003d \u0027counter\u0027:\n\t\tcounterName \u003d system.kanoa.utilities.getFieldValue(\u0027counterName\u0027, system.kanoa.asset.getCounter({\u0027counterId\u0027: ci[\u0027counterId\u0027]}))\n\t\tlastGeneratedDate \u003d system.date.format(value[\u0027lastGeneratedDate\u0027], \u0027YYMMdd\u0027) if value[\u0027lastGeneratedDate\u0027] else \u0027\u0027\n\t\treturn \"%s counter every %s counts. Last work order generated on %s at %s counts\"%(counterName.title(), ci[\u0027valueThreshold\u0027], value[\u0027lastGeneratedDate\u0027], value[\u0027lastGeneratedValue\u0027] or \u0027\u0027)\n\telif value[\u0027conditionName\u0027] \u003d\u003d \u0027runHour\u0027:\n\t\tlastGeneratedDate \u003d system.date.format(value[\u0027lastGeneratedDate\u0027], \u0027YYMMdd\u0027) if value[\u0027lastGeneratedDate\u0027] else value[\u0027createdDate\u0027]\n\n\t\trunDict \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.event.getAssetStateEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: lastGeneratedDate, \u0027endDate\u0027: system.date.now(), \u0027durationSecs\u0027: 0, \u0027showChanged\u0027: None, \u0027showDowntimeOnly\u0027: False}), \u0027stateName\u0027, \u0027durationSecs\u0027)\n\t\trunHours \u003d (runDict.get(\u0027Running\u0027) or 0.0) / 3600.0\n\t\treturn \"Triggered every %s run hours. Last work order generated on %s at %s hours\"%(ci[\u0027valueThreshold\u0027], lastGeneratedDate, round(runHours,1))\n\t\n\treturn value[\u0027conditionName\u0027]",
+                          "code": "\t\n\tci \u003d system.util.jsonDecode(value[\u0027conditionInfo\u0027])\n\tif value[\u0027conditionName\u0027] \u003d\u003d \u0027counter\u0027:\n\t\tcounterName \u003d system.kanoa.utilities.getFieldValue(\u0027counterName\u0027, system.kanoa.asset.getCounter({\u0027counterId\u0027: ci[\u0027counterId\u0027]}))\n\t\tlastGeneratedDate \u003d system.date.format(value[\u0027lastGeneratedDate\u0027], \u0027YYMMdd\u0027) if value[\u0027lastGeneratedDate\u0027] else \u0027\u0027\n\t\treturn \"%s counter every %s counts. Last work order generated on %s at %s counts\"%(counterName.title(), ci[\u0027valueThreshold\u0027], value[\u0027lastGeneratedDate\u0027], value[\u0027lastGeneratedValue\u0027] or \u0027\u0027)\n\telif value[\u0027conditionName\u0027] \u003d\u003d \u0027runHour\u0027:\n\t\tlastGeneratedDate \u003d system.date.format(value[\u0027lastGeneratedDate\u0027], \u0027YYMMdd\u0027) if value[\u0027lastGeneratedDate\u0027] else value[\u0027createdDate\u0027]\n\n\t\trunDict \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.event.getAssetStateEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027startDate\u0027: lastGeneratedDate, \u0027endDate\u0027: system.date.now(), \u0027durationSecs\u0027: 0, \u0027showChanged\u0027: None, \u0027showDowntimeOnly\u0027: False}), \u0027stateName\u0027, \u0027durationSecs\u0027)\n\t\trunHours \u003d (runDict.get(\u0027Running\u0027) or 0.0) / 3600.0\n\t\treturn \"Triggered every %s run hours. Last work order generated on %s at %s hours\"%(ci[\u0027valueThreshold\u0027], lastGeneratedDate, round(runHours,1))\n\telif value[\u0027conditionName\u0027] \u003d\u003d \u0027toolLife\u0027:\n\t\tlimits \u003d {\u0027pm\u0027: \u0027PM\u0027, \u0027refurb\u0027: \u0027refurbishment\u0027, \u0027calibration\u0027: \u0027calibration\u0027}\n\t\tlimit \u003d limits.get((ci or {}).get(\u0027counter\u0027), (ci or {}).get(\u0027counter\u0027))\n\t\treturn \"Generated when the tool reaches its warning %% for %s. Completing this work order resets its %s count.\"%(limit, limit)\n\t\n\treturn value[\u0027conditionName\u0027]",
                           "type": "script"
                         }
                       ],
@@ -2111,6 +2154,181 @@
                   "transforms": [
                     {
                       "code": "\treturn value \u003d\u003d \u0027Condition\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "alignItems": "flex-start",
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "marginTop": "5px",
+                "overflow": "visible",
+                "padding": "12px 5px 5px 5px",
+                "position": "relative"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "lblTitle"
+                },
+                "position": {
+                  "basis": "50px"
+                },
+                "props": {
+                  "style": {
+                    "backgroundColor": "--kcSurface",
+                    "color": "--kcOnPrimaryContainer",
+                    "marginLeft": "3px",
+                    "paddingLeft": "5px",
+                    "paddingRight": "5px",
+                    "position": "absolute",
+                    "textAlign": "center",
+                    "top": -8,
+                    "width": "auto"
+                  },
+                  "text": "Cavities",
+                  "textStyle": {
+                    "fontSize": 10
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "ddPositions"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.enabled": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "active": "{view.custom.workOrderEventInfo.isActive}",
+                          "canUpdate": "{view.custom.userAction.canUpdate}"
+                        },
+                        "waitOnAll": false
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn bool(value[\u0027active\u0027]) and bool(value[\u0027canUpdate\u0027])",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.options": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.toolPositions"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.value": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.workOrderPositions.positionIds"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "dropdownOptionStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "multiSelect": true,
+                  "placeholder": {
+                    "text": "The cavities this repairs..."
+                  },
+                  "showClearIcon": true,
+                  "style": {
+                    "classes": "kanoa/border kanoa/font/default",
+                    "minWidth": "250px"
+                  }
+                },
+                "type": "ia.input.dropdown"
+              },
+              {
+                "meta": {
+                  "name": "cbBlocking"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.enabled": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "active": "{view.custom.workOrderEventInfo.isActive}",
+                          "canUpdate": "{view.custom.userAction.canUpdate}"
+                        },
+                        "waitOnAll": false
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn bool(value[\u0027active\u0027]) and bool(value[\u0027canUpdate\u0027])",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  },
+                  "props.selected": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.workOrderPositions.isBlocking"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "text": "Block until closed"
+                },
+                "type": "ia.input.checkbox"
+              }
+            ],
+            "meta": {
+              "name": "flxPositions"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.toolPositions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn len(value or []) \u003e 0",
                       "type": "script"
                     }
                   ],
@@ -3222,7 +3440,7 @@
         {
           "name": "saveWorkOrderEvent",
           "params": [],
-          "script": "\n\tinfo \u003d dict(self.view.custom.workOrderEventInfo)\n\tkeysToKeep \u003d {\"workOrderEventId\", \"workOrderId\", \"assetId\", \"workOrderEventName\", \"workOrderEventStatusId\", \"workOrderPriorityId\", \"maintenanceSubTypeId\", \"requestedBy\", \"requestedDate\", \"assignedTo\", \"dueDate\"}\n\tworkOrderEventInfo \u003d {k: info[k] for k in keysToKeep if k in info}\n\n\tif info[\u0027workOrderEventStatusName\u0027] \u003d\u003d \u0027Open\u0027 and info[\u0027assignedTo\u0027] is not None:\n\t\tworkOrderEventInfo[\u0027workOrderEventStatusId\u0027] \u003d next((v[\u0027workOrderEventStatusId\u0027] for v in self.view.custom.workOrderEventStatus.values() if v.get(\u0027workOrderEventStatusName\u0027) \u003d\u003d \u0027Assigned\u0027), None)\n\t\n\tretVal, msg \u003d system.kanoa.cmms.updateWorkOrderEvent(workOrderEventInfo, self.view.custom.security.userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t update work order. %s\"%msg})\n\telse: \n\t\ttry:\n\t\t\tworkOrderEventStatusName \u003d self.view.custom.workOrderEventStatus[str(workOrderEventInfo[\u0027workOrderEventStatusId\u0027])][\u0027workOrderEventStatusName\u0027]\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order has been updated\u0027})\n\t\t\tself.view.refreshBinding(\"custom.workOrderEventInfo\")\n\t\t\tself.view.refreshBinding(\"custom.workOrderEventStatusChange\")\t\t\n\t\t\t\n\t\t\tsystem.perspective.sendMessage(\u0027refreshWorkOrders\u0027, {\u0027workOrderEventStatusName\u0027: workOrderEventStatusName})\t\n\t\texcept:\n\t\t\tpass\n\t\n\treturn"
+          "script": "\n\tinfo \u003d dict(self.view.custom.workOrderEventInfo)\n\tkeysToKeep \u003d {\"workOrderEventId\", \"workOrderId\", \"assetId\", \"workOrderEventName\", \"workOrderEventStatusId\", \"workOrderPriorityId\", \"maintenanceSubTypeId\", \"requestedBy\", \"requestedDate\", \"assignedTo\", \"dueDate\"}\n\tworkOrderEventInfo \u003d {k: info[k] for k in keysToKeep if k in info}\n\t#The update writes every field: never clear the work order\u0027s asset because the form\u0027s asset selector hasn\u0027t loaded it\n\tif workOrderEventInfo.get(\u0027assetId\u0027) is None:\n\t\tsaved \u003d system.kanoa.cmms.getWorkOrderEvents({\u0027workOrderEventId\u0027: workOrderEventInfo.get(\u0027workOrderEventId\u0027)})\n\t\tif saved is not None and saved.getRowCount() \u003e 0: workOrderEventInfo[\u0027assetId\u0027] \u003d saved.getValueAt(0, \u0027assetId\u0027)\n\n\tif info[\u0027workOrderEventStatusName\u0027] \u003d\u003d \u0027Open\u0027 and info[\u0027assignedTo\u0027] is not None:\n\t\tworkOrderEventInfo[\u0027workOrderEventStatusId\u0027] \u003d next((v[\u0027workOrderEventStatusId\u0027] for v in self.view.custom.workOrderEventStatus.values() if v.get(\u0027workOrderEventStatusName\u0027) \u003d\u003d \u0027Assigned\u0027), None)\n\t\n\tretVal, msg \u003d system.kanoa.cmms.updateWorkOrderEvent(workOrderEventInfo, self.view.custom.security.userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t update work order. %s\"%msg})\n\telse: \n\t\ttry:\n\t\t\tworkOrderEventStatusName \u003d self.view.custom.workOrderEventStatus[str(workOrderEventInfo[\u0027workOrderEventStatusId\u0027])][\u0027workOrderEventStatusName\u0027]\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order has been updated\u0027})\n\t\t\tself.view.refreshBinding(\"custom.workOrderEventInfo\")\n\t\t\tself.view.refreshBinding(\"custom.workOrderEventStatusChange\")\t\t\n\t\t\t\n\t\t\tsystem.perspective.sendMessage(\u0027refreshWorkOrders\u0027, {\u0027workOrderEventStatusName\u0027: workOrderEventStatusName})\t\n\t\texcept:\n\t\t\tpass\n\t\n\treturn"
         },
         {
           "name": "getWorkOrderEventCheckStatus",

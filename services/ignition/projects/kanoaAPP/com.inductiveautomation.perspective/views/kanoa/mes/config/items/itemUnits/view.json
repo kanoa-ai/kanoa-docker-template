@@ -215,7 +215,8 @@
       "showBar": true, 
       "type": "INFO", 
       "text": "Formatting items..."
-    }
+    }, 
+    "toastId": null
   }, 
   "params": {}, 
   "props": {
@@ -283,7 +284,7 @@
                   "type": "script", 
                   "scope": "G", 
                   "config": {
-                    "script": "\t\n\tself.view.refreshBinding(\"custom.itemTable.data\")\n\t\n\treturn"
+                    "script": "\t\n\tself.view.refreshBinding(\"custom.itemUnits.data\")\n\t\n\treturn"
                   }
                 }
               }
@@ -342,7 +343,7 @@
                   "type": "property", 
                   "overlayOptOut": true, 
                   "config": {
-                    "path": "view.custom.itemTable.data"
+                    "path": "view.custom.itemUnits.data"
                   }
                 }
               }
@@ -381,7 +382,7 @@
                   "type": "script", 
                   "scope": "G", 
                   "config": {
-                    "script": "\t\n\tself.view.custom.itemTable.selection.col = None\n\tself.view.custom.itemTable.selection.row = None\n\t\n\treturn"
+                    "script": "\t\n\tself.view.custom.itemUnits.selection.col = None\n\tself.view.custom.itemUnits.selection.row = None\n\t\n\treturn"
                   }
                 }
               }
@@ -398,7 +399,7 @@
                   "type": "property", 
                   "overlayOptOut": true, 
                   "config": {
-                    "path": "view.custom.itemTable.selection.row"
+                    "path": "view.custom.itemUnits.selection.row"
                   }
                 }
               }
@@ -454,7 +455,7 @@
                   "type": "property", 
                   "overlayOptOut": true, 
                   "config": {
-                    "path": "view.custom.itemClasses.userAction"
+                    "path": "view.custom.userAction"
                   }
                 }
               }
@@ -553,7 +554,7 @@
                   "type": "script", 
                   "scope": "G", 
                   "config": {
-                    "script": "\t\n\tmsg = \"Are you sure you want to delete the selected items?\"\n\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\",  {'text':msg, 'messageHandler':'userResponseDelete'}, title='Delete Items', modal=True, overlayDismiss=True, draggable=True)\n#\tself.view.getChild(\"root\").deleteItems()\n\t\n\treturn\t"
+                    "script": "\t\n\tmsg = \"Are you sure you want to delete the selected item units?\"\n\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\",  {'text':msg, 'messageHandler':'userResponseDelete'}, title='Delete Item Units', modal=True, overlayDismiss=True, draggable=True)\n#\tself.view.getChild(\"root\").deleteItems()\n\t\n\treturn\t"
                   }
                 }
               }
@@ -1404,7 +1405,7 @@
                   "type": "script", 
                   "scope": "G", 
                   "config": {
-                    "script": "\n\titemId = self.view.custom.itemTable.selection.data[0].itemId\n\titemClassId = None\n\tif self.view.custom.userAction.canUpdate: self.view.getChild(\"root\").openEditor(itemId, itemClassId)\n\telse: system.kanoa.toast.show({'type': 'error', 'message': 'No permissions to update configure this item.'})\n\t\n\treturn"
+                    "script": "\n\t#The unit editor for the double-clicked unit: this read the Items view's itemTable and opened the item editor with an itemId\n\tdata = self.view.custom.itemUnits.selection.data\n\tif not data: return\n\tif self.view.custom.userAction.canUpdate: self.view.getChild(\"root\").openEditor(data[0].itemUnitId)\n\telse: self.view.rootContainer.toast({'type': 'error', 'message': \"Couldn't open the item unit: you don't have permission to configure items\"})\n\t\n\treturn"
                   }
                 }
               }
@@ -1554,8 +1555,15 @@
         }, 
         {
           "params": [], 
-          "script": "\t\n\tfor row in self.view.custom.itemUnits.selection.data:\n\t\tretVal, msg = system.kanoa.item.deleteItemUnit(row['itemUnitId'], self.view.custom.security.userId)\n\t\tif msg: system.kanoa.toast.show({'type': 'warning', 'message': 'This item unit cannot be deleted. %s'%msg})\n\t\telse: system.kanoa.toast.show({'type': 'success', 'message': 'This item unit has been deleted.'})\n\t\t\t\n\tself.view.refreshBinding(\"custom.itemUnits.data\")\n\t\n\treturn", 
+          "script": "\t\n\tdeleted, failed = [], []\n\tfor row in self.view.custom.itemUnits.selection.data:\n\t\tretVal, msg = system.kanoa.item.deleteItemUnit(row['itemUnitId'], self.view.custom.security.userId)\n\t\tif msg: failed.append('%s (%s)' % (row['itemUnitName'], msg))\n\t\telse: deleted.append(row['itemUnitName'])\n\t\t\t\n\tself.view.refreshBinding(\"custom.itemUnits.data\")\n\t\n\t#One toast for the whole selection (868mvvzbz)\n\tif failed:\n\t\tif deleted: message = \"Deleted %d of %d item units; %d couldn't be deleted: %s\" % (len(deleted), len(deleted) + len(failed), len(failed), ', '.join(failed))\n\t\telse: message = \"Couldn't delete %s\" % ', '.join(failed)\n\t\tself.toast({'type': 'warning' if deleted else 'error', 'message': message})\n\telif deleted:\n\t\tself.toast({'type': 'success', 'message': 'Item unit \"%s\" deleted' % deleted[0] if len(deleted) == 1 else 'Deleted %d item units' % len(deleted)})\n\t\n\treturn", 
           "name": "deleteItemUnits"
+        }, 
+        {
+          "params": [
+            "params"
+          ], 
+          "script": "\t'''One toast at a time on this view. The first one's id is kept; every later toast updates it while it's showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).'''\n\tparams = dict(params)\n\ttoastId = self.view.custom.toastId\n\tif toastId:\n\t\tparams['id'] = toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId = system.kanoa.toast.show(params)\n", 
+          "name": "toast"
         }
       ], 
       "extensionFunctions": null

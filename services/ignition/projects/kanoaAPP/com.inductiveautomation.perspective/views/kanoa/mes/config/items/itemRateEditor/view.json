@@ -92,7 +92,8 @@
         "label": "wafers",
         "value": 53
       }
-    ]
+    ],
+    "toastId": null
   },
   "params": {
     "values": {
@@ -103,16 +104,21 @@
     "custom.info": {
       "binding": {
         "config": {
-          "path": "view.params.values"
+          "struct": {
+            "values": "{view.params.values}",
+            "ctx": "{view.custom.ctx}",
+            "tool": "{view.custom.tool}"
+          },
+          "waitOnAll": true
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\titemAssetRateIds \u003d self.view.params.values.itemAssetRateIds\n\tif len(itemAssetRateIds) \u003e 0:\n\t\tdata \u003d system.kanoa.item.getAssetItems({\u0027itemAssetRateIdList\u0027:itemAssetRateIds})\n\t\t\n\t\t#The selected rates may be all the same or different. We\u0027ll check. If they are the same we will populate the fields.\n\t\t#If they are different we will indicate they are mixed.\n\n\t\tstdRates \u003d [row[\u0027standardRate\u0027] for row in data]\n\t\tschRates \u003d [row[\u0027scheduleRate\u0027] for row in data]\n\t\tperiods \u003d [row[\u0027itemPeriodId\u0027] for row in data]\n\t\tinfeedUnits \u003d [row[\u0027infeedUnitId\u0027] for row in data]\t\t\n\t\toutfeedUnits \u003d [row[\u0027outfeedUnitId\u0027] for row in data]\t\t\n\t\twasteUnits \u003d [row[\u0027wasteUnitId\u0027] for row in data]\t\t\n\t\tpackageCounts \u003d [row[\u0027packageCount\u0027] for row in data]\t\t\n\t\tenablers \u003d [row[\u0027assetRateEnabled\u0027] for row in data]\n\t\tsources \u003d [row[\u0027itemSourceId\u0027] for row in data]\t\n\n\t\treturn {\n\t\t\t\t\t\u0027standardRate\u0027: stdRates[0] if len(set(stdRates)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027scheduleRate\u0027: schRates[0] if len(set(schRates)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027itemPeriodId\u0027: periods[0] if len(set(periods)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027packageCount\u0027: packageCounts[0] if len(set(packageCounts)) \u003d\u003d 1 else 1.0,\n\t\t\t\t\t\u0027infeedUnitId\u0027: infeedUnits[0] if len(set(infeedUnits)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027outfeedUnitId\u0027: outfeedUnits[0] if len(set(outfeedUnits)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027wasteUnitId\u0027: wasteUnits[0] if len(set(wasteUnits)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027enabled\u0027: enablers[0] if len(set(enablers)) \u003d\u003d 1 else None,\n\t\t\t\t\t\u0027itemSourceId\u0027: sources[0] if len(set(sources)) \u003d\u003d 1 else None\n\t\t\t\t}\n\telse:\n\t\treturn {\n\t\t\t\t\t\u0027standardRate\u0027: None,\n\t\t\t\t\t\u0027scheduleRate\u0027: None,\n\t\t\t\t\t\u0027wasteUnitId\u0027: None,\n\t\t\t\t\t\u0027infeedUnitId\u0027: None,\n\t\t\t\t\t\u0027packageCount\u0027: 1.0,\n\t\t\t\t\t\u0027itemPeriodId\u0027: None,\n\t\t\t\t\t\u0027outfeedUnitId\u0027: None,\n\t\t\t\t\t\u0027enabled\u0027:False,\n\t\t\t\t\t\u0027sources\u0027:None\n\t\t\t\t}\t",
+            "code": "\n\tdef summarize(rows, isNew=False):\n\t\t#The selected rates may be all the same or different. If they are the same we populate the fields, if not they're left blank (mixed)\n\t\tdef same(key, default=None):\n\t\t\tvalues = [row[key] for row in rows]\n\t\t\treturn values[0] if len(set(values)) == 1 else default\n\t\ttools = [row['toolingAssetId'] for row in rows]\n\t\treturn {\n\t\t\t\t\t'isNew': isNew,\n\t\t\t\t\t'itemAssetRateIds': [] if isNew else [row['itemAssetRateId'] for row in rows],\n\t\t\t\t\t'assetId': same('assetId'),\n\t\t\t\t\t'itemId': same('itemId'),\n\t\t\t\t\t'toolingAssetId': same('toolingAssetId'),\n\t\t\t\t\t'toolingName': (same('toolingName', 'Mixed')) if any(tools) else None,\n\t\t\t\t\t'standardRate': None if isNew else same('standardRate'),\n\t\t\t\t\t'scheduleRate': None if isNew else same('scheduleRate'),\n\t\t\t\t\t'itemPeriodId': same('itemPeriodId'),\n\t\t\t\t\t'packageCount': same('packageCount', 1.0),\n\t\t\t\t\t'infeedUnitId': same('infeedUnitId'),\n\t\t\t\t\t'outfeedUnitId': same('outfeedUnitId'),\n\t\t\t\t\t'wasteUnitId': same('wasteUnitId'),\n\t\t\t\t\t'enabled': True if isNew else same('assetRateEnabled'),\n\t\t\t\t\t'itemSourceId': same('itemSourceId')\n\t\t\t\t}\n\n\tctx = value['ctx']\n\tif ctx['single'] and ctx['usesTooling'] and value['tool'] is not None:\n\t\t#One machine and item: edit the rate for the picked tool (0: the machine's own rate), or start a new one from the machine's rate\n\t\ttoolId = value['tool'] or None\n\t\trows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getAssetItems({'assetId': ctx['assetId'], 'itemId': ctx['itemId'], 'includeTooling': True}))\n\t\tmatch = [row for row in rows if row['toolingAssetId'] == toolId]\n\t\tif match: return summarize(match)\n\t\tbase = [row for row in rows if row['toolingAssetId'] is None] or rows\n\t\tinfo = summarize(base[:1], True)\n\t\tinfo['toolingAssetId'] = toolId\n\t\tinfo['toolingName'] = None\n\t\treturn info\n\n\ttry:\n\t\tids = list(value['values']['itemAssetRateIds'] or [])\n\texcept:\n\t\tids = []\n\tif ids:\n\t\treturn summarize(system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getAssetItems({'itemAssetRateIdList': ids, 'includeTooling': True})))\n\treturn {'isNew': False, 'itemAssetRateIds': [], 'assetId': None, 'itemId': None, 'toolingAssetId': None, 'toolingName': None,\n\t\t\t'standardRate': None, 'scheduleRate': None, 'wasteUnitId': None, 'infeedUnitId': None, 'packageCount': 1.0,\n\t\t\t'itemPeriodId': None, 'outfeedUnitId': None, 'enabled': False, 'itemSourceId': None}",
             "type": "script"
           }
         ],
-        "type": "property"
+        "type": "expr-struct"
       },
       "persistent": true
     },
@@ -123,7 +129,7 @@
         },
         "transforms": [
           {
-            "code": "\n\treturn [{\u0027value\u0027: row[\u0027itemUnitId\u0027], \u0027label\u0027:row[\u0027itemUnitName\u0027]} for row in system.kanoa.item.getItemUnits({\u0027enabled\u0027: True})]",
+            "code": "\n\treturn [{'value': row['itemUnitId'], 'label':row['itemUnitName']} for row in system.kanoa.item.getItemUnits({'enabled': True})]",
             "type": "script"
           }
         ],
@@ -142,12 +148,81 @@
     "params.values": {
       "paramDirection": "input",
       "persistent": true
+    },
+    "custom.toolOptions": {
+      "binding": {
+        "config": {
+          "path": "view.custom.ctx"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif not (value['single'] and value['usesTooling']): return []\n\trated = dict((row['toolingAssetId'], row['toolingName']) for row in system.kanoa.utilities.convertDatasetToJSON(\n\t\tsystem.kanoa.item.getAssetItems({'assetId': value['assetId'], 'itemId': value['itemId'], 'includeTooling': True})) if row['toolingAssetId'])\n\ttools = [(row['toolingAssetId'], row['assetName']) for row in system.kanoa.utilities.convertDatasetToJSON(\n\t\tsystem.kanoa.tooling.getTools({'mountableOn': value['assetId'], 'enabled': True}))]\n\ttools += [(toolId, name) for toolId, name in rated.items() if toolId not in [t[0] for t in tools]]\n\toptions = [{'value': 0, 'label': \"None (the machine's own rate)\"}]\n\tfor toolId, name in sorted(tools, key=lambda t: t[1]):\n\t\toptions.append({'value': toolId, 'label': name + (' (has a rate)' if toolId in rated else '')})\n\treturn options",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.toolHint": {
+      "binding": {
+        "config": {
+          "struct": {
+            "toolingAssetId": "{view.custom.info.toolingAssetId}",
+            "assetId": "{view.custom.info.assetId}",
+            "itemId": "{view.custom.info.itemId}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif value['toolingAssetId'] is None or value['assetId'] is None or value['itemId'] is None: return ''\n\tcycles = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getCycleRates({'assetId': value['assetId'], 'toolingAssetId': value['toolingAssetId'], 'enabled': True}))\n\t#Positions set to this item, or to no item (they make whatever item is running); blocked ones count toward the standard\n\tparts = sum(row['standardPartsPerCycle'] or 0 for row in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getPartsPerCycle({'toolingAssetId': value['toolingAssetId']}))\n\t\t\t\tif row['itemId'] in (value['itemId'], None))\n\tif not cycles:\n\t\treturn \"This tool has no cycle rate on this machine, so without a rate here the machine's own rate for the item is used.\"\n\tif not parts:\n\t\treturn \"None of this tool's positions makes this item (all are set to other items), so without a rate here the machine's own rate for the item is used.\"\n\tcycle = cycles[0]\n\t#Parts are outfeed units; the machine's own rate for the item converts them to its infeed units (none means 1)\n\town = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getAssetItems({'assetId': value['assetId'], 'itemId': value['itemId']}))\n\tpackageCount = (own[0]['packageCount'] if own else None) or 1\n\tfmt = lambda v: system.kanoa.utilities.formatNumber('#,##0.###', v)\n\thow = '%s cycles x %s parts per cycle' % (fmt(cycle['cycleRate']), fmt(parts))\n\tif packageCount != 1:\n\t\thow += ' x %s package count' % fmt(packageCount)\n\treturn \"Without a rate here, the tool's cycle rate gives %s/%s (%s). This rate replaces that for this item.\" % (\n\t\tfmt(float(cycle['cycleRate']) * parts * packageCount), cycle['itemPeriodName'], how)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.ctx": {
+      "binding": {
+        "config": {
+          "path": "view.params.values"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\ttry:\n\t\tids = list(value['itemAssetRateIds'] or [])\n\texcept:\n\t\tids = []\n\tif not ids: return {'single': False, 'usesTooling': False}\n\trows = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getAssetItems({'itemAssetRateIdList': ids, 'includeTooling': True}))\n\tpairs = set((row['assetId'], row['itemId']) for row in rows)\n\tif len(pairs) != 1: return {'single': False, 'usesTooling': False}\n\trow = rows[0]\n\tusesTooling = system.kanoa.utilities.getFieldValue('usesTooling', system.kanoa.asset.getAssets({'assetId': row['assetId']}))\n\ttools = set(r['toolingAssetId'] for r in rows)\n\treturn {'single': True, 'usesTooling': bool(usesTooling), 'assetId': row['assetId'], 'itemId': row['itemId'],\n\t\t\t'assetPath': row['assetPath'], 'itemName': row['itemName'], 'tool': (list(tools)[0] or 0) if len(tools) == 1 else None}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.tool": {
+      "binding": {
+        "config": {
+          "path": "view.custom.ctx"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\treturn value['tool'] if value['single'] and value['usesTooling'] else None",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
     }
   },
   "props": {
     "defaultSize": {
-      "height": 369,
-      "width": 300
+      "height": 460,
+      "width": 600
     }
   },
   "root": {
@@ -168,7 +243,7 @@
                 "classes": "kanoa/font/default",
                 "textAlign": "right"
               },
-              "text": "Selected Ids"
+              "text": "Rate"
             },
             "type": "ia.display.label"
           },
@@ -178,29 +253,36 @@
               "name": "lblIds"
             },
             "position": {
-              "shrink": 0
+              "basis": "0px",
+              "grow": 1
             },
             "propConfig": {
               "props.text": {
                 "binding": {
                   "config": {
-                    "path": "view.params.values"
+                    "struct": {
+                      "ctx": "{view.custom.ctx}",
+                      "info": "{view.custom.info}"
+                    },
+                    "waitOnAll": true
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\treturn str(value[\u0027itemAssetRateIds\u0027]) if value.has_key(\u0027itemAssetRateIds\u0027) else \u0027\u0027",
+                      "code": "\n\tctx, info = value['ctx'], value['info']\n\tif ctx['single']:\n\t\ttext = '%s on %s' % (ctx['itemName'], system.kanoa.utilities.formatPath(ctx['assetPath'], {}))\n\t\treturn text + (' (new rate)' if info['isNew'] else '')\n\treturn '%s rates: %s' % (len(info['itemAssetRateIds']), list(info['itemAssetRateIds']))",
                       "type": "script"
                     }
                   ],
-                  "type": "property"
+                  "type": "expr-struct"
                 }
               }
             },
             "props": {
               "style": {
                 "classes": "kanoa/font/default",
-                "textAlign": "right"
+                "overflow": "hidden",
+                "textOverflow": "ellipsis",
+                "whiteSpace": "nowrap"
               }
             },
             "type": "ia.display.label"
@@ -221,6 +303,221 @@
           }
         },
         "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "meta": {
+              "domId": "lblTool",
+              "name": "lblTool"
+            },
+            "position": {
+              "basis": "80px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "textAlign": "right"
+              },
+              "text": "Tool"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "domId": "ddTool",
+              "name": "ddTool"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.ctx"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value['single'] and value['usesTooling']",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.toolOptions"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.tool"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "placeholder": {
+                "text": "Pick a tool"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "domId": "lblToolName",
+              "name": "lblToolName"
+            },
+            "position": {
+              "basis": "150px",
+              "grow": 1,
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "ctx": "{view.custom.ctx}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn not (value['ctx']['single'] and value['ctx']['usesTooling'])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.info.toolingName"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn value or \"None (the machine's own rate)\"",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "domId": "flxTool",
+          "name": "flxTool",
+          "tooltip": {
+            "enabled": true,
+            "location": "center-right",
+            "text": "The tool this rate is for: it applies while the tool is mounted on the machine. None is the machine's own rate for the item. Shown when one machine and item are selected and the machine uses tooling."
+          }
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "ctx": "{view.custom.ctx}",
+                  "name": "{view.custom.info.toolingName}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t#a machine that uses tooling picks the tool; otherwise only a rate that already has a tool shows it\n\treturn (value['ctx']['single'] and value['ctx']['usesTooling']) or bool(value['name'])",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "domId": "lblToolHint",
+          "name": "lblToolHint"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.toolHint"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn bool(value)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          },
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.toolHint"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontStyle": "italic",
+            "paddingLeft": "85px",
+            "whiteSpace": "normal"
+          }
+        },
+        "type": "ia.display.label"
       },
       {
         "children": [
@@ -413,7 +710,7 @@
                   },
                   "transforms": [
                     {
-                      "code": "\n\treturn [{\u0027value\u0027: row[\u0027itemPeriodId\u0027], \u0027label\u0027:row[\u0027itemPeriodName\u0027]} for row in system.kanoa.item.getItemPeriod({})]",
+                      "code": "\n\treturn [{'value': row['itemPeriodId'], 'label':row['itemPeriodName']} for row in system.kanoa.item.getItemPeriod({})]",
                       "type": "script"
                     }
                   ],
@@ -516,7 +813,7 @@
                 },
                 "onChange": {
                   "enabled": null,
-                  "script": "\n\timport time\n\tvalue \u003d currentValue.value or \u0027\u0027\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tif value !\u003d \u0027\u0027 and next((d for d in self.props.options if d.get(\u0027value\u0027) \u003d\u003d value), None) is None:\t#Doesn\u0027t exist, we\u0027ll create this entry\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value \u003d itemUnitId\n\t\n\treturn"
+                  "script": "\n\timport time\n\tvalue = currentValue.value or ''\n\tif origin == 'Browser':\n\t\tif value != '' and next((d for d in self.props.options if d.get('value') == value), None) is None:\t#Doesn't exist, we'll create this entry\n\t\t\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg = system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value = itemUnitId\n\t\n\treturn"
                 }
               }
             },
@@ -601,7 +898,7 @@
                 },
                 "onChange": {
                   "enabled": null,
-                  "script": "\t\t\n\timport time\n\tvalue \u003d currentValue.value or \u0027\u0027\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tif value !\u003d \u0027\u0027 and next((d for d in self.props.options if d.get(\u0027value\u0027) \u003d\u003d value), None) is None:\t#Doesn\u0027t exist, we\u0027ll create this entry\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value \u003d itemUnitId\n\t\n\treturn"
+                  "script": "\t\t\n\timport time\n\tvalue = currentValue.value or ''\n\tif origin == 'Browser':\n\t\tif value != '' and next((d for d in self.props.options if d.get('value') == value), None) is None:\t#Doesn't exist, we'll create this entry\n\t\t\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg = system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value = itemUnitId\n\t\n\treturn"
                 }
               }
             },
@@ -686,7 +983,7 @@
                 },
                 "onChange": {
                   "enabled": null,
-                  "script": "\t\n\timport time\n\tvalue \u003d currentValue.value or \u0027\u0027\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tif value !\u003d \u0027\u0027 and next((d for d in self.props.options if d.get(\u0027value\u0027) \u003d\u003d value), None) is None:\t#Doesn\u0027t exist, we\u0027ll create this entry\n\t\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value \u003d itemUnitId\n\t\n\treturn"
+                  "script": "\t\n\timport time\n\tvalue = currentValue.value or ''\n\tif origin == 'Browser':\n\t\tif value != '' and next((d for d in self.props.options if d.get('value') == value), None) is None:\t#Doesn't exist, we'll create this entry\n\t\t\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\titemUnitId, msg = system.kanoa.item.addItemUnit(value, userId)\n\t\t\tself.view.refreshBinding(\"custom.units\")\n\t\t\ttime.sleep(0.1)\n\t\t\tself.props.value = itemUnitId\n\t\n\treturn"
                 }
               }
             },
@@ -890,12 +1187,12 @@
               "props.enabled": {
                 "binding": {
                   "config": {
-                    "path": "view.params.values"
+                    "path": "view.custom.info"
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n\treturn True if value.has_key(\u0027itemAssetRateIds\u0027) and len(value[\u0027itemAssetRateIds\u0027]) \u003e 0 else False",
+                      "code": "\n\treturn bool(value['isNew']) or len(value['itemAssetRateIds']) > 0",
                       "type": "script"
                     }
                   ],
@@ -921,7 +1218,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\n\tsystem.perspective.closePopup(\u0027\u0027)\n\t\n\treturn"
+                    "script": "\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -989,14 +1286,31 @@
         {
           "name": "save",
           "params": [],
-          "script": "\t\n\tsystem.perspective.print(\u0027save() called\u0027)\n\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdata \u003d system.kanoa.item.getAssetItems({\u0027itemAssetRateIdList\u0027:self.view.params.values.itemAssetRateIds})\n\tinfo \u003d self.view.custom.info\n\t\n\t#We have turned on the ability for the user to create a new unit, if they do this, the value in the value.infeedUnitId will likely be a string\n\t#If we detect a string, then we will add this to the units table\n\tinfeedUnitId \u003d info.infeedUnitId\n\toutfeedUnitId \u003d info.outfeedUnitId\n\twasteUnitId \u003d info.wasteUnitId\n\t\n\tif type(infeedUnitId) in (type(\u0027\u0027), type(u\u0027\u0027)): infeedUnitId \u003d system.kanoa.item.addItemUnit(infeedUnitId)\n\tif type(outfeedUnitId) in (type(\u0027\u0027), type(u\u0027\u0027)): outfeedUnitId \u003d system.kanoa.item.addItemUnit(outfeedUnitId)\n\tif type(wasteUnitId) in (type(\u0027\u0027), type(u\u0027\u0027)): wasteUnitId \u003d system.kanoa.item.addItemUnit(wasteUnitId)\n\n\tself.view.refreshBinding(\"custom.units\")\t#If we added any units, we\u0027ll refresh the dropdown options\n\t\n\t#If the user has not selected a value for a field, we will use the value that was previously stored for this item\n\tfor row in data:\n\t\titemAssetRateId \u003d row[\u0027itemAssetRateId\u0027]\n\t\titemId \u003d row[\u0027itemId\u0027]\n\t\tassetId \u003d row[\u0027assetId\u0027]\n\t\trateInfo \u003d {\n\t\t\t\t\t\t\u0027itemAssetRateId\u0027: row[\u0027itemAssetRateId\u0027],\n\t\t\t\t\t\t\u0027itemId\u0027: row[\u0027itemId\u0027],\n\t\t\t\t\t\t\u0027assetId\u0027: row[\u0027assetId\u0027],\n\t\t\t\t\t\t\u0027standardRate\u0027: info.standardRate or row[\u0027standardRate\u0027],\n\t\t\t\t\t\t\u0027scheduleRate\u0027: info.scheduleRate or row[\u0027scheduleRate\u0027],\n\t\t\t\t\t\t\u0027itemPeriodId\u0027: info.itemPeriodId or row[\u0027itemPeriodId\u0027],\n\t\t\t\t\t\t\u0027infeedUnitId\u0027: infeedUnitId or row[\u0027infeedUnitId\u0027],\n\t\t\t\t\t\t\u0027outfeedUnitId\u0027: outfeedUnitId or row[\u0027outfeedUnitId\u0027],\n\t\t\t\t\t\t\u0027wasteUnitId\u0027: wasteUnitId or row[\u0027wasteUnitId\u0027],\n\t\t\t\t\t\t\u0027packageCount\u0027: info.packageCount or row[\u0027packageCount\u0027],\n\t\t\t\t\t\t\u0027enabled\u0027: info.enabled,\n\t\t\t\t\t\t\u0027itemSourceId\u0027: info.itemSourceId or row[\u0027itemSourceId\u0027]\n\t\t\t\t\t}\n\n\t\tsystem.kanoa.item.updateItemAssetRate(rateInfo, userId)\n\t\t\n\tsystem.perspective.sendMessage(\"refreshItems\", {})\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Rates saved\u0027})\n\tself.view.refreshBinding(\"custom.info\")\t#update the info values with any changes to the units\n\n\treturn\t"
+          "script": "\t\n\tsystem.perspective.print('save() called')\n\t\n\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tinfo = self.view.custom.info\n\t\n\t#We have turned on the ability for the user to create a new unit, if they do this, the value in the value.infeedUnitId will likely be a string\n\t#If we detect a string, then we will add this to the units table\n\tinfeedUnitId = info.infeedUnitId\n\toutfeedUnitId = info.outfeedUnitId\n\twasteUnitId = info.wasteUnitId\n\t\n\tadded = {}\n\tunitsFailed = []\n\tdef unitId(value):\n\t\t#A unit typed into the dropdown: add it, once per name (the same new unit can be in infeed, outfeed and waste). addItemUnit returns (itemUnitId, msg)\n\t\tif type(value) not in (type(''), type(u'')): return value\n\t\tif value not in added:\n\t\t\titemUnitId, msg = system.kanoa.item.addItemUnit(value, userId)\n\t\t\tadded[value] = itemUnitId\n\t\t\tif itemUnitId is None: unitsFailed.append('\"%s\": %s' % (value, msg))\n\t\treturn added[value]\n\tunits = [unitId(value) for value in (infeedUnitId, outfeedUnitId, wasteUnitId)]\n\tif unitsFailed:\n\t\t#One toast for every unit that couldn't be added (868mvvzbz)\n\t\tself.toast({'type': 'error', 'message': \"Couldn't add unit%s %s\" % ('' if len(unitsFailed) == 1 else 's', '; '.join(unitsFailed))})\n\t\treturn\n\tinfeedUnitId, outfeedUnitId, wasteUnitId = units\n\n\tself.view.refreshBinding(\"custom.units\")\t#If we added any units, we'll refresh the dropdown options\n\t\n\tif info.isNew:\n\t\tself.addToolRate(userId, infeedUnitId, outfeedUnitId, wasteUnitId)\n\t\treturn\n\n\tdata = system.kanoa.item.getAssetItems({'itemAssetRateIdList': list(info.itemAssetRateIds), 'includeTooling': True})\n\t\n\t#If the user has not selected a value for a field, we will use the value that was previously stored for this item\n\tsaved = 0\n\tfailed = 0\n\tfor row in data:\n\t\titemAssetRateId = row['itemAssetRateId']\n\t\titemId = row['itemId']\n\t\tassetId = row['assetId']\n\t\trateInfo = {\n\t\t\t\t\t\t'itemAssetRateId': row['itemAssetRateId'],\n\t\t\t\t\t\t'itemId': row['itemId'],\n\t\t\t\t\t\t'assetId': row['assetId'],\n\t\t\t\t\t\t'standardRate': info.standardRate or row['standardRate'],\n\t\t\t\t\t\t'scheduleRate': info.scheduleRate or row['scheduleRate'],\n\t\t\t\t\t\t'itemPeriodId': info.itemPeriodId or row['itemPeriodId'],\n\t\t\t\t\t\t'infeedUnitId': infeedUnitId or row['infeedUnitId'],\n\t\t\t\t\t\t'outfeedUnitId': outfeedUnitId or row['outfeedUnitId'],\n\t\t\t\t\t\t'wasteUnitId': wasteUnitId or row['wasteUnitId'],\n\t\t\t\t\t\t'packageCount': info.packageCount or row['packageCount'],\n\t\t\t\t\t\t'enabled': info.enabled,\n\t\t\t\t\t\t'itemSourceId': info.itemSourceId or row['itemSourceId']\n\t\t\t\t\t}\n\n\t\t#Rows updated; None (logged) or a license message when it failed\n\t\tresult = system.kanoa.item.updateItemAssetRate(rateInfo, userId)\n\t\tif result is None or isinstance(result, basestring): failed += 1\n\t\telse: saved += 1\n\t\t\n\tsystem.perspective.sendMessage(\"refreshItems\", {})\n\t#One toast for the save. The editor stays open, so the success toast has an id: saving again while it shows doesn't stack another\n\tif failed:\n\t\tself.toast({'type': 'error' if not saved else 'warning', 'autoClose': 0,\n\t\t\t'message': \"Couldn't save %d of %d rates: see the gateway log\" % (failed, failed + saved)})\n\telse:\n\t\tsystem.kanoa.toast.show({'id': 'item-rates-saved', 'type': 'success', 'message': 'Saved %d rate%s' % (saved, '' if saved == 1 else 's')})\n\tself.view.refreshBinding(\"custom.info\")\t#update the info values with any changes to the units\n\n\treturn\t"
         },
         {
           "name": "checkUnit",
           "params": [
             "unitName"
           ],
-          "script": "\t\n\titemUnitId \u003d None\n\tif unitName and unitName not in [unit[\u0027label\u0027] for unit in self.view.custom.units]:\n\t\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\titemUnitId, msg \u003d system.kanoa.item.addItemUnit(unitName, userId)\n\n\tself.view.refreshBinding(\"custom.units\")\n\t\n\treturn itemUnitId"
+          "script": "\t\n\titemUnitId = None\n\tif unitName and unitName not in [unit['label'] for unit in self.view.custom.units]:\n\t\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\titemUnitId, msg = system.kanoa.item.addItemUnit(unitName, userId)\n\n\tself.view.refreshBinding(\"custom.units\")\n\t\n\treturn itemUnitId"
+        },
+        {
+          "name": "addToolRate",
+          "params": [
+            "userId",
+            "infeedUnitId",
+            "outfeedUnitId",
+            "wasteUnitId"
+          ],
+          "script": "\n\tinfo = self.view.custom.info\n\tif info.toolingAssetId is None:\n\t\tself.toast({'type': 'warning', 'message': 'Pick the tool this rate is for'})\n\t\treturn\n\tif not info.standardRate:\n\t\tself.toast({'type': 'warning', 'message': 'Enter a standard rate'})\n\t\treturn\n\trateInfo = {\n\t\t\t\t\t'assetId': info.assetId,\n\t\t\t\t\t'itemId': info.itemId,\n\t\t\t\t\t'toolingAssetId': info.toolingAssetId,\n\t\t\t\t\t'standardRate': info.standardRate,\n\t\t\t\t\t'scheduleRate': info.scheduleRate or info.standardRate,\n\t\t\t\t\t'itemPeriodId': info.itemPeriodId,\n\t\t\t\t\t'infeedUnitId': infeedUnitId,\n\t\t\t\t\t'outfeedUnitId': outfeedUnitId,\n\t\t\t\t\t'wasteUnitId': wasteUnitId,\n\t\t\t\t\t'packageCount': info.packageCount or 1,\n\t\t\t\t\t'enabled': info.enabled,\n\t\t\t\t\t'itemSourceId': info.itemSourceId\n\t\t\t\t}\n\tresult = system.kanoa.item.addItemAssetRate(rateInfo, userId)\n\tif not result:\n\t\tself.toast({'type': 'error', 'message': \"Couldn't add the tool rate. The machine must use tooling and the tool can't belong to another site; see the gateway log.\"})\n\t\treturn\n\tsystem.perspective.sendMessage(\"refreshItems\", {})\n\tself.toast({'type': 'success', 'message': 'Tool rate added'})\n\tself.view.refreshBinding(\"custom.info\")\t#now editing the new rate\n\tself.view.refreshBinding(\"custom.toolOptions\")\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t'''One toast at a time on this view. The first one's id is kept; every later toast updates it while it's showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).'''\n\tparams = dict(params)\n\ttoastId = self.view.custom.toastId\n\tif toastId:\n\t\tparams['id'] = toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId = system.kanoa.toast.show(params)\n"
         }
       ],
       "extensionFunctions": null,
@@ -1004,7 +1318,7 @@
         {
           "messageType": "assetItemRatesSelected",
           "pageScope": true,
-          "script": "\t\n\tsystem.perspective.print(\"assetItemRatesSelected() msg rcvd with %s\"%payload)\n\t\n\tself.view.params.values.itemAssetRateIds \u003d payload[\u0027itemAssetRateIds\u0027]\n\t\n\treturn",
+          "script": "\t\n\tsystem.perspective.print(\"assetItemRatesSelected() msg rcvd with %s\"%payload)\n\t\n\tself.view.params.values.itemAssetRateIds = payload['itemAssetRateIds']\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

@@ -1,221 +1,441 @@
 {
-  "custom": {}, 
+  "custom": {
+    "tagIndex": {
+      "hidden": [],
+      "folders": []
+    }
+  },
   "params": {
-    "inputTagPath": "", 
-    "popupId": "value", 
+    "inputTagPath": "",
+    "popupId": "value",
     "selectedTagPath": ""
-  }, 
+  },
   "props": {
     "defaultSize": {
-      "width": 392, 
-      "height": 368
+      "width": 420,
+      "height": 520
     }
-  }, 
+  },
   "root": {
-    "type": "ia.container.flex", 
+    "type": "ia.container.flex",
     "props": {
       "style": {
-        "padding": "5px", 
-        "backgroundColor": "--kcContainer", 
-        "overflow": "hidden", 
+        "padding": "5px",
+        "backgroundColor": "--kcContainer",
+        "overflow": "hidden",
         "gap": "5px"
-      }, 
+      },
       "direction": "column"
-    }, 
+    },
     "children": [
       {
-        "type": "ia.display.tree", 
-        "props": {
-          "appearance": {
-            "defaultNodeIcons": {
-              "collapsed": {
-                "path": "material/folder"
-              }, 
-              "empty": {
-                "path": "material/stop"
-              }, 
-              "expanded": {
-                "path": "material/folder_open"
-              }
-            }, 
-            "expandIcons": {
-              "collapsed": {
-                "path": "material/arrow_right"
-              }, 
-              "expanded": {
-                "path": "material/arrow_drop_down"
-              }
-            }
-          }, 
-          "selection": [
-            "0/2"
-          ], 
-          "style": {
-            "classes": "kanoa/border"
-          }, 
-          "selectionData": [
-            {
-              "itemPath": "0/2", 
-              "value": "[Kanoa]Kanoa Industries/Adelaide Hills/Packaging/Line 1/Line/eqPath"
-            }
-          ]
-        }, 
-        "meta": {
-          "domId": "treeTags", 
-          "name": "treeTags"
-        }, 
-        "position": {
-          "basis": "476px"
-        }, 
-        "propConfig": {
-          "props.selectionData": {
-            "onChange": {
-              "enabled": null, 
-              "script": "\n\tif len(currentValue.value) > 0:\t\n\t\titem = currentValue.value[0].value\n\t\tvalue = item.get(\"value\").value\t\t\n\telse:\t\t\t\n\t\t value = None\n\n\tself.view.params.selectedTagPath = value\n\n\treturn\t"
-            }
-          }, 
-          "props.items": {
-            "binding": {
-              "transforms": [
-                {
-                  "code": "\n\tdef tagTree(path):\t# Recursively builds a tag tree, starting from the specified path\n\t\ttagTreeList = []\n\n\t\tresults = system.tag.browse(path, filter = {\"maxResults\":100}) # Browse the curent path.\t\t\n\t\tif results.getResults() is None: return tagTreeList\n\t\t\n\t\t# Add each tag that was found to a new item.\n\t\tfor result in results.getResults():\n\t\t\tnewItem = {}\n#\t\t\tsystem.perspective.print(\"%s\"%result)\n\t\t\tnewItem['label'] = result['name']\n\t\t\tnewItem['data'] = result['fullPath']\n\t\t\t\n\t\t\t# If the tag has children, browse and add each of the children to the item.\n\t\t\tif result['hasChildren']: newItem['items'] = tagTree(result['fullPath'])\t\t\t\n\t\t\ttagTreeList.append(newItem.copy())\t# Once all children have been added to the item, add the new item to the list\n\n\t\treturn tagTreeList \t# After all items under the path have been added to the list, return the list.\t\n\t\t\n\tpath = value['tagPath'] or ''\n\treturn tagTree(path) if path != '' else []", 
-                  "type": "script"
-                }
-              ], 
-              "type": "expr-struct", 
-              "config": {
-                "struct": {
-                  "tagPath": "{view.params.inputTagPath}"
-                }, 
-                "waitOnAll": true
-              }
-            }
-          }
-        }
-      }, 
-      {
-        "type": "ia.container.flex", 
-        "props": {
-          "justify": "center", 
-          "style": {
-            "padding": "5px", 
-            "gap": "5px"
-          }
-        }, 
         "children": [
           {
-            "type": "ia.input.button", 
+            "meta": {
+              "name": "txtSearch"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "placeholder": "Filter tags by name...",
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "deferUpdates": false
+            },
+            "type": "ia.input.text-field"
+          },
+          {
+            "meta": {
+              "name": "lblMatches"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "../../treeSearch.props.items"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t# How many tags the search found (the leaves of its tree)\n\tdef count(nodes):\n\t\tn \u003d 0\n\t\tfor node in nodes or []:\n\t\t\tif node[\u0027children\u0027] is None: n +\u003d 1\n\t\t\telse: n +\u003d count(node[\u0027children\u0027])\n\t\treturn n\n\tn \u003d count(value)\n\tif n \u003d\u003d 0: return \u0027\u0027\n\treturn \u0027First 200 matches\u0027 if n \u003e\u003d 200 else \u0027%d match%s\u0027 % (n, \u0027\u0027 if n \u003d\u003d 1 else \u0027es\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/labelSmall",
+                "color": "var(--kcOnSurfaceVariant)"
+              }
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxSearch"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "8px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "events": {
+          "component": {
+            "onDoubleClick": {
+              "config": {
+                "script": "\t# A double-clicked tag is chosen straight away; a folder just opens\n\ttry: tagPath \u003d (event.data or {})[\u0027tagPath\u0027]\n\texcept: tagPath \u003d None\n\tif not tagPath: return\n\tsystem.perspective.sendMessage(\"TagSelected\", payload \u003d {\u0027tagPath\u0027: tagPath})\n\tsystem.perspective.closePopup(\u0027\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            },
+            "onSelect": {
+              "config": {
+                "script": "\t# A tag (not a folder) is the selection the Select button sends\n\ttagPath \u003d None\n\tif event.selectionData:\n\t\ttry: tagPath \u003d event.selectionData[0][\u0027tagPath\u0027]\n\t\texcept: tagPath \u003d None\n\tself.view.params.selectedTagPath \u003d tagPath or \u0027\u0027"
+              },
+              "scope": "G",
+              "type": "script"
+            },
+            "onToggle": {
+              "config": {
+                "script": "\t# Opening a folder for the first time reads its contents in place of the placeholder; only that level is read\n\tif not event.expanded: return\n\tdata \u003d event.data or {}\n\ttry:\n\t\tfolder, loaded \u003d data[\u0027folder\u0027], data[\u0027loaded\u0027]\n\texcept:\n\t\treturn\n\tif not folder or loaded: return\n\troot \u003d self.view.rootContainer\n\tchildren \u003d root.browseLevel(folder)\n\titems \u003d root.plain(self.props.items)\n\tdef find(nodes):\n\t\tfor n in nodes or []:\n\t\t\tif n.get(\u0027id\u0027) \u003d\u003d event.id: return n\n\t\t\tfound \u003d find(n.get(\u0027children\u0027))\n\t\t\tif found is not None: return found\n\t\treturn None\n\tnode \u003d find(items)\n\tif node is None: return\n\tnode[\u0027children\u0027] \u003d children\n\tnode[\u0027data\u0027][\u0027loaded\u0027] \u003d True\n\tnode[\u0027expanded\u0027] \u003d True\n\tself.props.items \u003d items"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "treeTags"
+        },
+        "position": {
+          "basis": "0px",
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "// The folder tree, unless a search is showing its results\r\nlen(trim(coalesce({../flxSearch/txtSearch.props.text}, \u0027\u0027))) \u003c 2"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          },
+          "props.items": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "path": "{view.params.inputTagPath}",
+                  "folders": "{view.custom.tagIndex.folders}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t# The providers, opened down to the starting tag (inputTagPath, e.g. the attribute\u0027s current tag) when there is one\n\timport re\n\troot \u003d self.view.rootContainer\n\t# (re-run when custom.tagIndex arrives, so only folders with tags show)\n\titems \u003d root.browseLevel(\u0027\u0027)\n\tm \u003d re.match(r\u0027^\\[([^\\]]+)\\](.*)$\u0027, (value[\u0027path\u0027] or \u0027\u0027).strip())\n\tif not m: return items\n\tprovider, rest \u003d \u0027[%s]\u0027 % m.group(1), [p for p in m.group(2).split(\u0027/\u0027) if p]\n\tlevel, path \u003d items, provider\n\tfor part in [None] + rest[:-1]:\n\t\tif part is not None: path \u003d path + (\u0027\u0027 if path.endswith(\u0027]\u0027) else \u0027/\u0027) + part\n\t\tnode \u003d None\n\t\tfor n in level:\n\t\t\tif n[\u0027id\u0027].lower() \u003d\u003d path.lower() and n[\u0027children\u0027] is not None: node \u003d n\n\t\tif node is None: break\n\t\tnode[\u0027children\u0027] \u003d root.browseLevel(node[\u0027id\u0027])\n\t\tnode[\u0027data\u0027][\u0027loaded\u0027] \u003d True\n\t\tnode[\u0027expanded\u0027] \u003d True\n\t\tlevel \u003d node[\u0027children\u0027]\n\treturn items",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.selection": {
+            "binding": {
+              "config": {
+                "path": "view.params.inputTagPath"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t# The starting tag selected (the tree drops an id it doesn\u0027t have)\n\treturn [value.strip()] if value and value.strip() else []",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "appearance": {
+            "selectedStyle": {
+              "backgroundColor": "var(--kcTertiaryContainer)",
+              "borderRadius": "12px",
+              "color": "var(--kcOnTertiaryContainer)",
+              "fontWeight": 700
+            },
+            "showGuideLines": false
+          },
+          "filter": {
+            "visible": false
+          },
+          "interaction": {
+            "branchNodeSelectable": false,
+            "multiSelect": false
+          }
+        },
+        "type": "kanoa.ops.tree"
+      },
+      {
+        "events": {
+          "component": {
+            "onDoubleClick": {
+              "config": {
+                "script": "\t# A double-clicked tag is chosen straight away; a folder just opens\n\ttry: tagPath \u003d (event.data or {})[\u0027tagPath\u0027]\n\texcept: tagPath \u003d None\n\tif not tagPath: return\n\tsystem.perspective.sendMessage(\"TagSelected\", payload \u003d {\u0027tagPath\u0027: tagPath})\n\tsystem.perspective.closePopup(\u0027\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            },
+            "onSelect": {
+              "config": {
+                "script": "\t# A tag (not a folder) is the selection the Select button sends\n\ttagPath \u003d None\n\tif event.selectionData:\n\t\ttry: tagPath \u003d event.selectionData[0][\u0027tagPath\u0027]\n\t\texcept: tagPath \u003d None\n\tself.view.params.selectedTagPath \u003d tagPath or \u0027\u0027"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "treeSearch"
+        },
+        "position": {
+          "basis": "0px",
+          "grow": 1
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "len(trim(coalesce({../flxSearch/txtSearch.props.text}, \u0027\u0027))) \u003e\u003d 2"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          },
+          "props.items": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "text": "{../flxSearch/txtSearch.props.text}",
+                  "hidden": "{view.custom.tagIndex.hidden}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t# Tags whose name contains the search text (as it\u0027s typed), across the providers the tree shows, first 200, shown as a tree\n\t# under their provider and folders, all open; nothing below 2 characters. UDT definitions (_types_) and our own assetOEE\n\t# instances\u0027 tags are left out\n\ttext \u003d (value[\u0027text\u0027] or \u0027\u0027).strip()\n\thidden \u003d list(value[\u0027hidden\u0027] or [])\n\tif len(text) \u003c 2: return []\n\texcluded \u003d [\u0027[system]\u0027, \u0027[kanoames]\u0027, \u0027[default]\u0027]\n\tpaths \u003d []\n\tfor p in system.tag.browse(\u0027\u0027, {}).getResults() or []:\n\t\tprovider \u003d \u0027[%s]\u0027 % str(p[\u0027name\u0027])\n\t\tif provider.lower() in excluded: continue\n\t\tfound \u003d system.tag.browse(provider, {\u0027name\u0027: \u0027*%s*\u0027 % text, \u0027recursive\u0027: True, \u0027tagType\u0027: \u0027AtomicTag\u0027, \u0027maxResults\u0027: 1000}).getResults() or []\n\t\tfor r in found:\n\t\t\tfull \u003d str(r[\u0027fullPath\u0027])\n\t\t\tlow \u003d full.lower()\n\t\t\tif \u0027_types_\u0027 in low.split(\u0027]\u0027, 1)[-1].split(\u0027/\u0027) or low.startswith(\u0027[kanoa]kanoa/\u0027) or [h for h in hidden if low.startswith(h)]: continue\n\t\t\tpaths.append(full)\n\t\t\tif len(paths) \u003e\u003d 200: break\n\t\tif len(paths) \u003e\u003d 200: break\n\t# The tree: a provider, then each folder on the way to a tag, open\n\ttop, nodes \u003d [], {}\n\tfor full in sorted(paths, key\u003dlambda x: x.lower()):\n\t\tprovider, rest \u003d full.split(\u0027]\u0027, 1)\n\t\tprovider +\u003d \u0027]\u0027\n\t\tparts \u003d [s for s in rest.split(\u0027/\u0027) if s]\n\t\tlevel, path \u003d top, provider\n\t\tfor depth, part in enumerate([provider] + parts[:-1]):\n\t\t\tif depth \u003e 0: path \u003d path + (\u0027\u0027 if path.endswith(\u0027]\u0027) else \u0027/\u0027) + part\n\t\t\tnode \u003d nodes.get(path.lower())\n\t\t\tif node is None:\n\t\t\t\tnode \u003d {\u0027id\u0027: path, \u0027label\u0027: part, \u0027expanded\u0027: True, \u0027children\u0027: [], \u0027data\u0027: {\u0027folder\u0027: path, \u0027loaded\u0027: True}}\n\t\t\t\tnodes[path.lower()] \u003d node\n\t\t\t\tlevel.append(node)\n\t\t\tlevel \u003d node[\u0027children\u0027]\n\t\tlevel.append({\u0027id\u0027: full, \u0027label\u0027: parts[-1] if parts else full, \u0027children\u0027: None, \u0027icon\u0027: {\u0027path\u0027: \u0027material/local_offer\u0027}, \u0027data\u0027: {\u0027tagPath\u0027: full}})\n\treturn top",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "appearance": {
+            "selectedStyle": {
+              "backgroundColor": "var(--kcTertiaryContainer)",
+              "borderRadius": "12px",
+              "color": "var(--kcOnTertiaryContainer)",
+              "fontWeight": 700
+            },
+            "showGuideLines": false
+          },
+          "filter": {
+            "visible": false
+          },
+          "interaction": {
+            "branchNodeSelectable": false,
+            "multiSelect": false
+          }
+        },
+        "type": "kanoa.ops.tree"
+      },
+      {
+        "type": "ia.container.flex",
+        "props": {
+          "justify": "center",
+          "style": {
+            "padding": "5px",
+            "gap": "5px"
+          }
+        },
+        "children": [
+          {
+            "type": "ia.input.button",
             "props": {
               "image": {
                 "icon": {
                   "path": "material/check_box"
                 }
-              }, 
+              },
               "style": {
                 "classes": "kanoa/button/filled"
-              }, 
+              },
               "text": "Select"
-            }, 
+            },
             "meta": {
               "tooltip": {
-                "tail": false, 
-                "enabled": true, 
-                "location": "top-left", 
+                "tail": false,
+                "enabled": true,
+                "location": "top-left",
                 "text": "Seelct Tag"
-              }, 
-              "domId": "btnSelect", 
+              },
+              "domId": "btnSelect",
               "name": "btnSelect"
-            }, 
+            },
             "position": {
               "shrink": 0
-            }, 
+            },
             "events": {
               "component": {
                 "onActionPerformed": {
-                  "type": "script", 
-                  "scope": "G", 
+                  "type": "script",
+                  "scope": "G",
                   "config": {
-                    "script": "\t\n\tsystem.perspective.sendMessage(\"TagSelected\", payload = {'tagPath':self.view.params.selectedTagPath})\n\tsystem.perspective.closePopup('')"
+                    "script": "\t\n\tsystem.perspective.sendMessage(\"TagSelected\", payload \u003d {\u0027tagPath\u0027:self.view.params.selectedTagPath})\n\tsystem.perspective.closePopup(\u0027\u0027)"
                   }
                 }
               }
-            }, 
+            },
             "propConfig": {
               "props.enabled": {
                 "binding": {
                   "transforms": [
                     {
-                      "code": "\treturn (value or None) is not None", 
+                      "code": "\treturn (value or None) is not None",
                       "type": "script"
                     }
-                  ], 
-                  "type": "property", 
+                  ],
+                  "type": "property",
                   "config": {
                     "path": "view.params.selectedTagPath"
                   }
                 }
               }
             }
-          }, 
+          },
           {
-            "type": "ia.input.button", 
+            "type": "ia.input.button",
             "props": {
               "image": {
                 "icon": {
                   "path": "material/exit_to_app"
                 }
-              }, 
+              },
               "style": {
                 "classes": "kanoa/button/outlined"
-              }, 
+              },
               "text": "Close"
-            }, 
+            },
             "meta": {
-              "domId": "btnClose", 
+              "domId": "btnClose",
               "name": "btnClose"
-            }, 
+            },
             "position": {
               "shrink": 0
-            }, 
+            },
             "events": {
               "component": {
                 "onActionPerformed": {
-                  "type": "script", 
-                  "scope": "G", 
+                  "type": "script",
+                  "scope": "G",
                   "config": {
-                    "script": "\t\n\tsystem.perspective.closePopup('')"
+                    "script": "\t\n\tsystem.perspective.closePopup(\u0027\u0027)"
                   }
                 }
               }
             }
           }
-        ], 
+        ],
         "meta": {
-          "domId": "flexButtons", 
+          "domId": "flexButtons",
           "name": "flexButtons"
-        }, 
+        },
         "position": {
           "shrink": 0
         }
       }
-    ], 
+    ],
     "meta": {
-      "domId": "root", 
+      "domId": "root",
       "name": "root"
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "browseLevel",
+          "params": [
+            "path"
+          ],
+          "script": "\t# One level of the tag tree: the folders (and UDT instances) under path, then its tags, each by name. A folder gets a\n\t# placeholder child, so it can be opened; opening it reads its contents (the tree\u0027s onToggle). path \u0027\u0027 lists the providers.\n\t# Only the levels opened are ever read: the selector used to read every tag in every provider up front, which on a big\n\t# gateway took gigabytes of the gateway\u0027s memory once the tree was expanded (ClickUp 868mw4ex6)\n\texcluded \u003d [\u0027[system]\u0027, \u0027[kanoames]\u0027, \u0027[default]\u0027, \u0027[kanoa]kanoa\u0027]\t# lower case\n\tresults \u003d system.tag.browse(path, {\u0027maxResults\u0027: 1000}).getResults() or []\n\t# The folders with a tag that can be picked below them (custom.tagIndex); others would open empty\n\twithTags \u003d set([str(f) for f in (self.view.custom.tagIndex.folders or [])])\n\tfolders, tags \u003d [], []\n\tfor r in results:\n\t\tname \u003d str(r[\u0027name\u0027])\n\t\tfull \u003d (\u0027[%s]\u0027 % name) if path \u003d\u003d \u0027\u0027 else str(r[\u0027fullPath\u0027])\n\t\tif name \u003d\u003d \u0027_types_\u0027 or full.lower() in excluded: continue\n\t\t# Our own assetOEE instances (each asset\u0027s Line) aren\u0027t for picking\n\t\tif str(r.get(\u0027typeId\u0027) or \u0027\u0027).lower() \u003d\u003d \u0027kanoa/assetoee\u0027: continue\n\t\t# Only atomic tags can be picked; folders and UDT instances open; anything else (an empty folder too, which the browse\n\t\t# reports with no children) is left out\n\t\ttagType \u003d str(r[\u0027tagType\u0027])\n\t\tif path \u003d\u003d \u0027\u0027 or tagType in (\u0027Folder\u0027, \u0027UdtInstance\u0027, \u0027Provider\u0027):\n\t\t\tif full.lower() not in withTags: continue\n\t\t\tfolders.append({\u0027id\u0027: full, \u0027label\u0027: name, \u0027expanded\u0027: False, \u0027data\u0027: {\u0027folder\u0027: full, \u0027loaded\u0027: False},\n\t\t\t\t\u0027children\u0027: [{\u0027id\u0027: full + \u0027/~loading\u0027, \u0027label\u0027: \u0027Loading...\u0027, \u0027disabled\u0027: True, \u0027children\u0027: None, \u0027data\u0027: {}}]})\n\t\telif tagType \u003d\u003d \u0027AtomicTag\u0027:\n\t\t\ttags.append({\u0027id\u0027: full, \u0027label\u0027: name, \u0027children\u0027: None, \u0027icon\u0027: {\u0027path\u0027: \u0027material/local_offer\u0027}, \u0027data\u0027: {\u0027tagPath\u0027: full}})\n\tkey \u003d lambda n: n[\u0027label\u0027].lower()\n\treturn sorted(folders, key\u003dkey) + sorted(tags, key\u003dkey)"
+        },
+        {
+          "name": "plain",
+          "params": [
+            "o"
+          ],
+          "script": "\t# The tree\u0027s items as plain dicts and lists (the property tree\u0027s wrappers can\u0027t be edited in place this way)\n\tif o is None or isinstance(o, (basestring, bool, int, long, float)): return o\n\tif hasattr(o, \u0027keys\u0027): return dict([(str(k), self.plain(o[k])) for k in o.keys()])\n\ttry: return [self.plain(x) for x in o]\n\texcept TypeError: return o"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "events": {
+      "system": {
+        "onStartup": {
+          "config": {
+            "script": "\t# The starting tag counts as the selection, so Select sends it back unchanged\n\tpath \u003d (self.view.params.inputTagPath or \u0027\u0027).strip()\n\tif path and system.tag.exists(path): self.view.params.selectedTagPath \u003d path"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
     }
-  }, 
+  },
   "propConfig": {
     "params.selectedTagPath": {
-      "paramDirection": "output", 
+      "paramDirection": "output",
       "persistent": true
-    }, 
+    },
     "params.popupId": {
-      "paramDirection": "input", 
+      "paramDirection": "input",
       "persistent": true
-    }, 
+    },
     "params.inputTagPath": {
-      "paramDirection": "input", 
+      "paramDirection": "input",
       "persistent": true
+    },
+    "custom.tagIndex": {
+      "binding": {
+        "config": {
+          "path": "view.params.popupId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t# Read once when the selector opens: our own assetOEE UDT instances (each asset\u0027s Line), whose tags aren\u0027t for picking, and\n\t# every folder with a tag that can be picked somewhere below it (lower-case paths), so the tree doesn\u0027t show folders that\n\t# would open empty. Only these folder paths are kept, not the tags themselves\n\thidden, folders \u003d [], set()\n\tfor p in system.tag.browse(\u0027\u0027, {}).getResults() or []:\n\t\tprovider \u003d \u0027[%s]\u0027 % str(p[\u0027name\u0027])\n\t\tif provider.lower() in [\u0027[system]\u0027, \u0027[kanoames]\u0027, \u0027[default]\u0027]: continue\n\t\tfor r in system.tag.browse(provider, {\u0027tagType\u0027: \u0027UdtInstance\u0027, \u0027recursive\u0027: True}).getResults() or []:\n\t\t\tif str(r.get(\u0027typeId\u0027) or \u0027\u0027).lower() \u003d\u003d \u0027kanoa/assetoee\u0027: hidden.append(str(r[\u0027fullPath\u0027]).lower() + \u0027/\u0027)\n\t\tfor r in system.tag.browse(provider, {\u0027tagType\u0027: \u0027AtomicTag\u0027, \u0027recursive\u0027: True}).getResults() or []:\n\t\t\tlow \u003d str(r[\u0027fullPath\u0027]).lower()\n\t\t\tprov, rest \u003d low.split(\u0027]\u0027, 1)\n\t\t\tparts \u003d [s for s in rest.split(\u0027/\u0027) if s]\n\t\t\tif \u0027_types_\u0027 in parts or low.startswith(\u0027[kanoa]kanoa/\u0027) or [h for h in hidden if low.startswith(h)]: continue\n\t\t\tpath \u003d prov + \u0027]\u0027\n\t\t\tfolders.add(path)\n\t\t\tfor part in parts[:-1]:\n\t\t\t\tpath \u003d path + (\u0027\u0027 if path.endswith(\u0027]\u0027) else \u0027/\u0027) + part\n\t\t\t\tfolders.add(path)\n\treturn {\u0027hidden\u0027: hidden, \u0027folders\u0027: sorted(folders)}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
     }
   }
 }

@@ -460,7 +460,8 @@
         "workOrderStatusName": "Archived"
       }
     ],
-    "workOrders": {}
+    "workOrders": {},
+    "toastId": null
   },
   "params": {},
   "propConfig": {
@@ -1129,7 +1130,8 @@
                           },
                           "parentPathList": [],
                           "persistent": false,
-                          "useSessionValue": false
+                          "useSessionValue": false,
+                          "includeTooling": true
                         }
                       },
                       "path": "kanoa/core/templates/selectors/assetSelector"
@@ -1299,7 +1301,17 @@
                       },
                       "text": ""
                     },
-                    "type": "ia.input.button"
+                    "type": "ia.input.button",
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "expression": "!isNull({view.custom.workOrders.selectedWorkOrderId}) || {view.custom.addMode}"
+                          },
+                          "type": "expr"
+                        }
+                      }
+                    }
                   },
                   {
                     "events": {
@@ -1426,7 +1438,7 @@
                       "component": {
                         "onActionPerformed": {
                           "config": {
-                            "script": "\t\n\tsystem.kanoa.utilities.exportToExcel(\u0027Work Orders\u0027, self.view.custom.table.data)\n\treturn"
+                            "script": "\n\tsystem.kanoa.utilities.exportToExcel(\u0027Work Orders\u0027, self.view.getChild(\"root\").getFilteredWorkOrders())\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -1440,29 +1452,12 @@
                         "delay": 0,
                         "enabled": true,
                         "location": "center-right",
-                        "text": "Export data"
+                        "text": "Export to Excel"
                       }
                     },
                     "position": {
                       "basis": "30px",
                       "shrink": 0
-                    },
-                    "propConfig": {
-                      "position.display": {
-                        "binding": {
-                          "config": {
-                            "path": "view.custom.workOrders.selectedWorkOrderEventId"
-                          },
-                          "overlayOptOut": true,
-                          "transforms": [
-                            {
-                              "code": "\t\n\treturn value is not None",
-                              "type": "script"
-                            }
-                          ],
-                          "type": "property"
-                        }
-                      }
                     },
                     "props": {
                       "image": {
@@ -1477,6 +1472,102 @@
                       "text": ""
                     },
                     "type": "ia.input.button"
+                  },
+                  {
+                    "events": {
+                      "component": {
+                        "onActionPerformed": {
+                          "config": {
+                            "script": "\n\tworkOrderId \u003d self.view.custom.workOrders.selectedWorkOrderId\n\tif workOrderId is None: return\n\t\n\tdata, msg \u003d system.kanoa.cmms.exportWorkOrderTemplates({\u0027workOrderIdList\u0027: [workOrderId]})\n\tif msg:\n\t\tself.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Export failed. %s\u0027 % msg})\n\t\treturn\n\t\n\ttemplates \u003d data[\u0027data\u0027][\u0027templates\u0027]\n\tlabel \u003d templates[0][\u0027title\u0027] if templates and templates[0][\u0027title\u0027] else \u0027Work Order Template\u0027\n\tfor character in \u0027\\\\/:*?\"\u003c\u003e|\u0027:\n\t\tlabel \u003d label.replace(character, \u0027-\u0027)\n\tfileName \u003d \u0027%s (%s).json\u0027 % (label, system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm:ss\u0027))\n\tsystem.perspective.download(fileName, system.util.jsonEncode(data))\n\t\n\tself.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order template exported\u0027})\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "name": "btnExportTemplates",
+                      "tooltip": {
+                        "delay": 0,
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Export the selected Work Order Template"
+                      }
+                    },
+                    "position": {
+                      "basis": "30px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "image": {
+                        "icon": {
+                          "color": "--kcBlue-30",
+                          "path": "material/publish"
+                        }
+                      },
+                      "style": {
+                        "classes": "kanoa/button/flatIcon",
+                        "width": "30px"
+                      },
+                      "text": ""
+                    },
+                    "type": "ia.input.button",
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "expression": "!isNull({view.custom.workOrders.selectedWorkOrderId})"
+                          },
+                          "type": "expr"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "meta": {
+                      "name": "evImportTemplates",
+                      "tooltip": {
+                        "delay": 0,
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Import Work Order Templates"
+                      }
+                    },
+                    "position": {
+                      "basis": "30px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "expression": "{view.custom.userAction.canCreate}"
+                          },
+                          "type": "expr"
+                        }
+                      },
+                      "props.params.data": {
+                        "onChange": {
+                          "enabled": null,
+                          "script": "\n\tdata \u003d self.props.params.data or None\n\tif data is None: return\n\tself.props.params.data \u003d None\n\t\n\t#preview (dry run) before anything is written\n\tdata \u003d system.util.jsonDecode(system.util.jsonEncode(data))\n\tsystem.perspective.openPopup(\u0027workOrderTemplateImport\u0027, \u0027kanoa/cmms/config/workOrderTemplateImport\u0027, params\u003d{\u0027data\u0027: data},\n\t\ttitle\u003d\u0027Import Work Order Templates\u0027, modal\u003dTrue, draggable\u003dTrue, resizable\u003dTrue, viewportBound\u003dTrue, showCloseIcon\u003dTrue)\n\t\n\treturn"
+                        }
+                      }
+                    },
+                    "props": {
+                      "params": {
+                        "clear": false,
+                        "data": null,
+                        "options": {
+                          "exportType": "workOrderTemplateData",
+                          "importerName": "Import Work Order Templates",
+                          "supportedFileTypes": [
+                            "json"
+                          ]
+                        }
+                      },
+                      "path": "kanoa/core/templates/file/importButton"
+                    },
+                    "type": "ia.display.view"
                   },
                   {
                     "events": {
@@ -1706,7 +1797,19 @@
         {
           "name": "deleteWorkOrder",
           "params": [],
-          "script": "\t\t\n\tuserId \u003d self.view.custom.security.userId\n\tworkOrderId \u003d self.view.custom.workOrders.selectedWorkOrderId\n\t\n\tif workOrderId is None: return\n\tsystem.perspective.print(\"deleteWorkOrder() called with %s\"%workOrderId)\n\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrder(workOrderId, userId)\n\t\t\n\tif msg: \n\t\tsystem.perspective.print(\"%s\"%msg)\n\t\tif \u0027REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \"There are actual work orders using this template. Deleting this template will also delete them. Do you still wish to delete?\"\n\t\t\t\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\",  {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027userResponseDeleteAll\u0027}, title\u003d\u0027Delete Work Order\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\telse:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete this work order. %s\"%msg})\n\telse: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order has been deleted\u0027})\n\t\tself.view.custom.workOrders.selectedWorkOrderId \u003d None\n\t\t\n\tsystem.perspective.sendMessage(\"refreshWorkOrders\", {})\n\t\n\treturn"
+          "script": "\t\t\n\tuserId \u003d self.view.custom.security.userId\n\tworkOrderId \u003d self.view.custom.workOrders.selectedWorkOrderId\n\t\n\tif workOrderId is None: return\n\tsystem.perspective.print(\"deleteWorkOrder() called with %s\"%workOrderId)\n\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrder(workOrderId, userId)\n\t\t\n\tif msg: \n\t\tsystem.perspective.print(\"%s\"%msg)\n\t\tif \u0027REFERENCE constraint\u0027 in str(msg):\n\t\t\t\tmsg \u003d \"There are actual work orders using this template. Deleting this template will also delete them. Do you still wish to delete?\"\n\t\t\t\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\",  {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027userResponseDeleteAll\u0027}, title\u003d\u0027Delete Work Order\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\t\telse:\n\t\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"Couldn\u0027t delete this work order. %s\"%msg})\n\telse: \n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Work order has been deleted\u0027})\n\t\tself.view.custom.workOrders.selectedWorkOrderId \u003d None\n\t\t\n\tsystem.perspective.sendMessage(\"refreshWorkOrders\", {})\n\t\n\treturn"
+        },
+        {
+          "name": "getFilteredWorkOrders",
+          "params": [],
+          "script": "\n\t#the same query the evWorkOrders table runs, so exports match what\u0027s on screen\n\tfilters \u003d dict(self.view.custom.filter)\n\tif filters.get(\u0027title\u0027): filters[\u0027title\u0027] \u003d \u0027%\u0027 + filters[\u0027title\u0027] + \u0027%\u0027\n\treturn system.kanoa.cmms.getWorkOrders(filters)\n"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)\n"
         }
       ],
       "extensionFunctions": null,
@@ -1728,7 +1831,7 @@
         {
           "messageType": "userResponseDeleteAll",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"userResponseDeleteAll() msg rcvd with %s\"%payload)\n\t\n\tif payload[\u0027userInput\u0027] \u003d\u003d \u0027OK\u0027: \n\t\tuserId \u003d self.view.custom.security.userId\n\t\tworkOrderId \u003d self.view.custom.workOrders.selectedWorkOrderId\n\t\tworkOrderEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getWorkOrderEvents({\u0027workOrderId\u0027: workOrderId}))\n\t\tdeletedCount \u003d 0\n\t\tfor workOrderEvent in workOrderEvents:\n\t\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderEvent(workOrderEvent[\u0027workOrderEventId\u0027], userId)\n\t\t\tdeletedCount +\u003d retVal\n\t\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s Work Order events deleted\u0027%deletedCount})\n\t\n\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrder(workOrderId, userId)\n\t\t\n\t\tself.deleteWorkOrder()\n\t\n\treturn",
+          "script": "\n\tsystem.perspective.print(\"userResponseDeleteAll() msg rcvd with %s\"%payload)\n\t\n\tif payload[\u0027userInput\u0027] \u003d\u003d \u0027OK\u0027: \n\t\tuserId \u003d self.view.custom.security.userId\n\t\tworkOrderId \u003d self.view.custom.workOrders.selectedWorkOrderId\n\t\tworkOrderEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.cmms.getWorkOrderEvents({\u0027workOrderId\u0027: workOrderId}))\n\t\tdeletedCount \u003d 0\n\t\tfor workOrderEvent in workOrderEvents:\n\t\t\tretVal, msg \u003d system.kanoa.cmms.deleteWorkOrderEvent(workOrderEvent[\u0027workOrderEventId\u0027], userId)\n\t\t\tdeletedCount +\u003d retVal\n\t\t\t\n\t\tsystem.perspective.print(\"userResponseDeleteAll() deleted %s work order events\" % deletedCount)\n\t\n\t\t#deleteWorkOrder() deletes the work order and shows the one toast for it (868mvvzbz: this used to delete it here first and toast the events too)\n\t\tself.deleteWorkOrder()\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

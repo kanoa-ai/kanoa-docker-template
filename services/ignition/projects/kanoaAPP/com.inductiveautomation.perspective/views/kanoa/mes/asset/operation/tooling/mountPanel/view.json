@@ -1,0 +1,2034 @@
+{
+  "custom": {
+    "asset": {},
+    "blockReason": "quality",
+    "mounted": [],
+    "mountInfo": {
+      "startDate": null,
+      "target": "",
+      "toolingAssetId": null
+    },
+    "positions": [],
+    "refresh": null,
+    "selectedData": [],
+    "selectedRow": null,
+    "shiftStart": null,
+    "userAction": {
+      "canConfigure": false,
+      "canOperate": false
+    }
+  },
+  "params": {
+    "value": {
+      "assetId": null
+    }
+  },
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.security"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.asset": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tassetId \u003d value.get(\u0027assetId\u0027) if value else None\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: assetId or -1}) or [])\n\treturn rows[0] if rows else {}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.mounted": {
+      "binding": {
+        "config": {
+          "struct": {
+            "asset": "{view.custom.asset}",
+            "refresh": "{view.custom.refresh}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tassetId \u003d value[\u0027asset\u0027].get(\u0027assetId\u0027) if value[\u0027asset\u0027] else None\n\tif assetId is None: return []\n\ttree \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTree({\u0027assetId\u0027: assetId}) or [])\n\tcounters \u003d dict((r[\u0027toolingAssetId\u0027], r) for r in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getCounters({\u0027assetId\u0027: assetId}) or []))\n\tparents \u003d set(r[\u0027parentToolingAssetId\u0027] for r in tree if r[\u0027parentToolingAssetId\u0027] is not None)\n\trows \u003d []\n\tfor r in tree:\n\t\tc \u003d counters.get(r[\u0027toolingAssetId\u0027], {})\n\t\trows.append({\u0027toolingAssetId\u0027: r[\u0027toolingAssetId\u0027], \u0027toolingAssignmentId\u0027: r[\u0027toolingAssignmentId\u0027],\n\t\t\t\t\t \u0027tool\u0027: (u\u0027\\u2003\u0027 * (r[\u0027depth\u0027] or 0)) + r[\u0027toolingName\u0027],\n\t\t\t\t\t \u0027where\u0027: (\u0027Pocket %s of %s\u0027 % (r[\u0027parentPositionNumber\u0027], r[\u0027parentToolingName\u0027])) if r[\u0027parentToolingAssetId\u0027] else \u0027On the machine\u0027,\n\t\t\t\t\t \u0027since\u0027: r[\u0027startDate\u0027], \u0027isFixed\u0027: bool(r[\u0027isFixed\u0027]), \u0027hasInserts\u0027: r[\u0027toolingAssetId\u0027] in parents,\n\t\t\t\t\t \u0027status\u0027: c.get(\u0027status\u0027), \u0027lifetimeCycles\u0027: c.get(\u0027lifetimeCycles\u0027), \u0027message\u0027: c.get(\u0027message\u0027) or \u0027\u0027})\n\treturn rows",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.selectedData": {
+      "binding": {
+        "config": {
+          "struct": {
+            "rows": "{view.custom.mounted}",
+            "row": "{view.custom.selectedRow}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\trows \u003d value[\u0027rows\u0027] or []\n\trow \u003d value[\u0027row\u0027]\n\tif row is None or row \u003c 0 or row \u003e\u003d len(rows): return []\n\treturn [dict(rows[row])]",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.shiftStart": {
+      "binding": {
+        "config": {
+          "struct": {
+            "asset": "{view.custom.asset}",
+            "now": "now(60000)"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tassetPath \u003d value[\u0027asset\u0027].get(\u0027assetPath\u0027) if value[\u0027asset\u0027] else None\n\tstart \u003d None\n\tif assetPath:\n\t\ttry:\n\t\t\tqv \u003d system.tag.readBlocking([\u0027[kanoaMES]\u0027 + assetPath.replace(\u0027\\\\\u0027, \u0027/\u0027) + \u0027/OEE/Status/shiftStart\u0027])[0]\n\t\t\tif qv.quality.isGood() and qv.value: start \u003d qv.value\n\t\texcept:\n\t\t\tstart \u003d None\n\treturn start or system.date.addHours(system.date.now(), -12)",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.positions": {
+      "binding": {
+        "config": {
+          "struct": {
+            "selected": "{view.custom.selectedData}",
+            "refresh": "{view.custom.refresh}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif len(value[\u0027selected\u0027]) !\u003d 1: return []\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getPositions({\u0027toolingAssetId\u0027: value[\u0027selected\u0027][0][\u0027toolingAssetId\u0027]}) or [])\n\treturn [{\u0027toolingPositionId\u0027: r[\u0027toolingPositionId\u0027], \u0027positionNumber\u0027: r[\u0027positionNumber\u0027], \u0027positionType\u0027: r[\u0027positionType\u0027],\n\t\t\t \u0027itemName\u0027: r[\u0027itemName\u0027] or \u0027\u0027, \u0027outputQty\u0027: r[\u0027outputQty\u0027], \u0027isBlocked\u0027: bool(r[\u0027isBlocked\u0027]), \u0027blockReason\u0027: r[\u0027blockReason\u0027] or \u0027\u0027}\n\t\t\tfor r in rows if r[\u0027outputQty\u0027] \u003e 0]",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.userAction": {
+      "binding": {
+        "config": {
+          "struct": {
+            "security": "{view.custom.security}",
+            "assetPath": "{view.custom.asset.assetPath}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tsecurity \u003d value[\u0027security\u0027]\n\tuserCRUD \u003d security[\u0027userCRUD\u0027] if security else {}\n\tassetPath \u003d value[\u0027assetPath\u0027] or \u0027\u0027\n\tdef allowed(right):\n\t\tentry \u003d userCRUD.get(right, {}) if userCRUD else {}\n\t\tif not entry.get(\u0027enabled\u0027): return False\n\t\tassets \u003d entry.get(\u0027assets\u0027) or []\n\t\treturn not assets or any(assetPath \u003d\u003d a or assetPath.startswith(a + \u0027\\\\\u0027) for a in assets)\n\tadmin \u003d bool(userCRUD) and userCRUD.get(\u0027isGatewayAdmin\u0027)\n\treturn {\u0027canOperate\u0027: bool(admin or allowed(\u0027operateAssets\u0027)), \u0027canConfigure\u0027: bool(admin or allowed(\u0027configureAssets\u0027))}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 680,
+      "width": 1100
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "lblHeader"
+        },
+        "position": {
+          "basis": "30px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.custom.asset"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif not value: return \u0027No asset\u0027\n\tif not value.get(\u0027usesTooling\u0027): return \"%s doesn\u0027t use tooling: turn on Uses tooling in the asset editor first.\" % value.get(\u0027assetName\u0027)\n\treturn \u0027Tooling on %s\u0027 % value.get(\u0027assetPath\u0027)",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "fontWeight": "bold",
+            "paddingLeft": "5px"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "meta": {
+          "name": "flxMounted"
+        },
+        "position": {
+          "basis": "220px",
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/border"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "tblMounted"
+            },
+            "position": {
+              "grow": 1
+            },
+            "propConfig": {
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.mounted"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.columns[2].dateFormat": {
+                "binding": {
+                  "config": {
+                    "path": "session.props.locale"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\treturn system.kanoa.date.localizeDateFormat(\"YYYY-MM-DD HH:mm\", value)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.selection.selectedRow": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selectedRow",
+                    "bidirectional": true
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "bodyStyle": {
+                "classes": "kanoa/font/default"
+              },
+              "dragOrderable": false,
+              "headerStyle": {
+                "classes": "kanoa/font/default",
+                "fontWeight": "bold"
+              },
+              "pager": {
+                "bottom": false
+              },
+              "rows": {
+                "striped": {
+                  "enabled": false
+                },
+                "style": {
+                  "gap": "2px",
+                  "padding": "2px"
+                }
+              },
+              "selection": {
+                "mode": "single"
+              },
+              "style": {
+                "borderStyle": "none"
+              },
+              "columns": [
+                {
+                  "align": "left",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "tool",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Tool"
+                  },
+                  "justify": "left",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 220
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "where",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Where"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 200
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "YYYY-MM-DD HH:mm",
+                  "editable": false,
+                  "field": "since",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Mounted since"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "date",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 150
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "status",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Status"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 130
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "lifetimeCycles",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Lifetime cycles"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "0,0",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 110
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "isFixed",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Fixed"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "boolean",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 60
+                },
+                {
+                  "align": "center",
+                  "boolean": "checkbox",
+                  "dateFormat": "MM/DD/YYYY",
+                  "editable": false,
+                  "field": "message",
+                  "footer": {
+                    "align": "center",
+                    "justify": "left",
+                    "style": {
+                      "classes": ""
+                    },
+                    "title": ""
+                  },
+                  "header": {
+                    "align": "center",
+                    "justify": "center",
+                    "style": {
+                      "classes": "kanoa/font/default"
+                    },
+                    "title": "Alert"
+                  },
+                  "justify": "center",
+                  "number": "value",
+                  "numberFormat": "#",
+                  "progressBar": {
+                    "bar": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "max": 100,
+                    "min": 0,
+                    "track": {
+                      "color": "",
+                      "style": {
+                        "classes": ""
+                      }
+                    },
+                    "value": {
+                      "enabled": true,
+                      "format": "0,0.##",
+                      "justify": "center",
+                      "style": {
+                        "classes": ""
+                      }
+                    }
+                  },
+                  "render": "auto",
+                  "resizable": true,
+                  "sort": "none",
+                  "sortable": true,
+                  "strictWidth": true,
+                  "style": {
+                    "classes": ""
+                  },
+                  "toggleSwitch": {
+                    "color": {
+                      "selected": "",
+                      "unselected": ""
+                    }
+                  },
+                  "viewParams": {},
+                  "viewPath": "",
+                  "visible": true,
+                  "width": 300
+                }
+              ],
+              "data": []
+            },
+            "type": "ia.display.table"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "name": "flxSelected"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "3px"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\ttool \u003d self.view.custom.selectedData[0]\n\tpayload \u003d {\u0027toolingAssetId\u0027: tool[\u0027toolingAssetId\u0027], \u0027name\u0027: tool[\u0027tool\u0027].strip(), \u0027all\u0027: False}\n\tself.view.rootContainer.askChangeover(\u0027unmount\u0027, payload, \u0027Unmount %s\u0027 % payload[\u0027name\u0027], \u0027Unmount only\u0027)\n\treturn\n"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnUnmount"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/eject"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Unmount"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\ttool \u003d self.view.custom.selectedData[0]\n\tpayload \u003d {\u0027toolingAssetId\u0027: tool[\u0027toolingAssetId\u0027], \u0027name\u0027: tool[\u0027tool\u0027].strip(), \u0027all\u0027: True}\n\tself.view.rootContainer.askChangeover(\u0027unmount\u0027, payload, \u0027Unmount %s and its inserts\u0027 % payload[\u0027name\u0027], \u0027Unmount only\u0027)\n\treturn\n"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnUnmountAll"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.selectedData"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn len(value) \u003d\u003d 1 and value[0][\u0027hasInserts\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/eject"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Unmount with its inserts"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\ttool \u003d self.view.custom.selectedData[0]\n\tsystem.perspective.openPopup(\u0027toolEditor\u0027, \u0027kanoa/mes/config/tooling/toolEditor\u0027, {\u0027value\u0027: {\u0027toolingAssetId\u0027: tool[\u0027toolingAssetId\u0027]}},\n\t\ttitle\u003d\u0027Tool\u0027, draggable\u003dTrue, resizable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnOpenTool"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.userAction"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn value[\u0027canConfigure\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/open_in_new"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Open tool"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "rows": "{view.custom.selectedData}",
+                  "action": "{view.custom.userAction}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn len(value[\u0027rows\u0027]) \u003d\u003d 1 and value[\u0027action\u0027][\u0027canOperate\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "flxBottom"
+        },
+        "position": {
+          "basis": "280px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex",
+        "children": [
+          {
+            "meta": {
+              "name": "flxMount"
+            },
+            "position": {
+              "basis": "50%",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden",
+                "classes": "kanoa/border",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "lblMount"
+                },
+                "position": {
+                  "basis": "24px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontWeight": "bold"
+                  },
+                  "text": "Mount a tool"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "flxTool"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxToolLbl"
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Tool"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "ddTool"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.mountInfo.toolingAssetId",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.options": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "refresh": "{view.custom.refresh}",
+                              "asset": "{view.custom.asset}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\t# Only the tools that can go on this machine: its site\u0027s, and those outside any site\n\tassetId \u003d value[\u0027asset\u0027].get(\u0027assetId\u0027) if value[\u0027asset\u0027] else None\n\tif assetId is None: return []\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027enabled\u0027: True, \u0027mountableOn\u0027: assetId}) or [])\n\treturn [{\u0027value\u0027: r[\u0027toolingAssetId\u0027], \u0027label\u0027: r[\u0027assetName\u0027]} for r in rows if not r[\u0027isMounted\u0027]]",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "placeholder": {
+                        "text": "A tool that is not mounted"
+                      },
+                      "showClearIcon": true,
+                      "search": {
+                        "noResultsText": "No unmounted tools at this site"
+                      }
+                    },
+                    "type": "ia.input.dropdown"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxTarget"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxTargetLbl"
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Into"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "ddTarget"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.mountInfo.target",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.options": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "mounted": "{view.custom.mounted}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\toptions \u003d []\n\tfor tool in value[\u0027mounted\u0027]:\n\t\tfor p in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getPositions({\u0027toolingAssetId\u0027: tool[\u0027toolingAssetId\u0027]}) or []):\n\t\t\tif p[\u0027positionType\u0027] \u003d\u003d \u0027pocket\u0027 and p[\u0027heldToolingAssetId\u0027] is None:\n\t\t\t\toptions.append({\u0027value\u0027: \u0027%s:%s\u0027 % (tool[\u0027toolingAssetId\u0027], p[\u0027toolingPositionId\u0027]),\n\t\t\t\t\t\t\t\t\u0027label\u0027: \u0027%s, pocket %s%s\u0027 % (tool[\u0027tool\u0027].strip(), p[\u0027positionNumber\u0027], (\u0027 (\u0027 + p[\u0027name\u0027] + \u0027)\u0027) if p[\u0027name\u0027] else \u0027\u0027)})\n\treturn [{\u0027value\u0027: \u0027\u0027, \u0027label\u0027: \u0027On the machine\u0027}] + options",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "placeholder": {
+                        "text": "On the machine"
+                      },
+                      "showClearIcon": true
+                    },
+                    "type": "ia.input.dropdown"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxStart"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxStartLbl"
+                    },
+                    "position": {
+                      "basis": "140px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Mounted at"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "dtStart"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.mountInfo.startDate",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.format": {
+                        "binding": {
+                          "config": {
+                            "path": "session.props.locale"
+                          },
+                          "transforms": [
+                            {
+                              "code": "\treturn system.kanoa.date.localizeDateFormat(\"YYYY-MM-DD HH:mm\", value)",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "format": "YYYY-MM-DD HH:mm"
+                    },
+                    "type": "ia.input.date-time-input"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "lblStartHint"
+                },
+                "position": {
+                  "basis": "20px",
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "props.text": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.shiftStart"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn \u0027Leave empty for now; it can go back to the start of this shift (%s).\u0027 % system.date.format(value, \u0027HH:mm\u0027) if value else \u0027\u0027",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontSize": "12px",
+                    "paddingLeft": "145px"
+                  }
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "flxMountActions"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "justify": "center",
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden",
+                    "padding": "5px"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "events": {
+                      "component": {
+                        "onActionPerformed": {
+                          "config": {
+                            "script": "\n\tinfo \u003d dict(self.view.custom.mountInfo)\n\tif info[\u0027toolingAssetId\u0027] is None:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Pick a tool to mount\u0027})\n\t\treturn\n\tstart \u003d info[\u0027startDate\u0027]\n\tif start is not None and system.date.isBefore(start, self.view.custom.shiftStart):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027A mount can only go back to the start of this shift\u0027})\n\t\treturn\n\tmountInfo \u003d {\u0027toolingAssetId\u0027: info[\u0027toolingAssetId\u0027], \u0027startDate\u0027: start}\n\ttarget \u003d info[\u0027target\u0027] or \u0027\u0027\n\tif target:\n\t\tparentId, positionId \u003d target.split(\u0027:\u0027)\n\t\tmountInfo[\u0027parentToolingAssetId\u0027] \u003d int(parentId)\n\t\tmountInfo[\u0027parentPositionId\u0027] \u003d int(positionId)\n\telse:\n\t\tmountInfo[\u0027assetId\u0027] \u003d self.view.custom.asset[\u0027assetId\u0027]\n\t#A tool with output positions replaces the machine\u0027s (868mvuy7u): the gateway unmounts it at the same moment, in the\n\t#same transaction, so a refused mount leaves it mounted\n\tmountInfo[\u0027replaceOutputTool\u0027] \u003d True\n\t#Every check first, writing nothing, so a mount that would be refused doesn\u0027t put the machine into Changeover\n\troot \u003d self.view.rootContainer\n\treplaced, msg \u003d system.kanoa.tooling.mount(dict(mountInfo, validateOnly\u003dTrue), self.view.custom.security.userId)\n\tif msg and not msg.startswith(\u0027Needs confirmation:\u0027):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t mount %s: %s\" % (root.toolName(info[\u0027toolingAssetId\u0027]), msg)})\n\t\treturn\n\tname \u003d root.toolName(info[\u0027toolingAssetId\u0027])\n\tif replaced:\n\t\tmountInfo[\u0027replacesName\u0027] \u003d root.toolName(replaced)\n\twhat \u003d (\u0027Replace %s with %s\u0027 % (mountInfo[\u0027replacesName\u0027], name)) if replaced else (\u0027Mount %s\u0027 % name)\n\tif msg:\n\t\t#Warnings are confirmed before the changeover question, so cancelling them leaves the machine as it was\n\t\troot.confirmMountWarnings(mountInfo, msg, what)\n\t\treturn\n\tif start is not None:\n\t\troot.mountTool(mountInfo)\n\t\treturn\n\troot.askChangeover(\u0027mount\u0027, mountInfo, what, \u0027Replace only\u0027 if replaced else \u0027Mount only\u0027)\n\treturn\n"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "name": "btnMount"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "props": {
+                      "image": {
+                        "icon": {
+                          "path": "material/build"
+                        }
+                      },
+                      "style": {
+                        "classes": "kanoa/button/filled"
+                      },
+                      "text": "Mount"
+                    },
+                    "type": "ia.input.button"
+                  }
+                ]
+              }
+            ],
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "asset": "{view.custom.asset}",
+                      "action": "{view.custom.userAction}"
+                    },
+                    "waitOnAll": true
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn bool(value[\u0027asset\u0027].get(\u0027usesTooling\u0027)) and value[\u0027action\u0027][\u0027canOperate\u0027]",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            }
+          },
+          {
+            "meta": {
+              "name": "flxPositions"
+            },
+            "position": {
+              "basis": "50%",
+              "grow": 1
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "gap": "5px",
+                "overflow": "hidden",
+                "classes": "kanoa/border",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex",
+            "children": [
+              {
+                "meta": {
+                  "name": "lblPositions"
+                },
+                "position": {
+                  "basis": "24px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/font/default",
+                    "fontWeight": "bold"
+                  },
+                  "text": "Positions of the selected tool (tick to block one from now on)"
+                },
+                "type": "ia.display.label"
+              },
+              {
+                "meta": {
+                  "name": "flxReason"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "meta": {
+                      "name": "flxReasonLbl"
+                    },
+                    "position": {
+                      "basis": "110px",
+                      "shrink": 0
+                    },
+                    "props": {
+                      "style": {
+                        "classes": "kanoa/font/default",
+                        "textAlign": "right"
+                      },
+                      "text": "Block reason"
+                    },
+                    "type": "ia.display.label"
+                  },
+                  {
+                    "meta": {
+                      "name": "ddReason"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.blockReason",
+                            "bidirectional": true
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      },
+                      "props.options": {
+                        "binding": {
+                          "config": {
+                            "expression": "now(0)"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\treturn [{\u0027value\u0027: \u0027quality\u0027, \u0027label\u0027: \u0027Quality\u0027}, {\u0027value\u0027: \u0027ratio\u0027, \u0027label\u0027: \u0027Ratio\u0027}, {\u0027value\u0027: \u0027other\u0027, \u0027label\u0027: \u0027Other\u0027}]",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr"
+                        }
+                      }
+                    },
+                    "props": {
+                      "placeholder": {
+                        "text": "Select..."
+                      },
+                      "showClearIcon": true
+                    },
+                    "type": "ia.input.dropdown"
+                  }
+                ]
+              },
+              {
+                "meta": {
+                  "name": "flxPosTable"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/border"
+                  }
+                },
+                "type": "ia.container.flex",
+                "children": [
+                  {
+                    "events": {
+                      "component": {
+                        "onEditCellCommit": {
+                          "config": {
+                            "script": "\n\tif event.column !\u003d \u0027isBlocked\u0027 or not self.view.custom.userAction.canOperate: return\n\tp \u003d self.props.data[event.row]\n\treason \u003d self.view.custom.blockReason if event.value else None\n\tresult, msg \u003d system.kanoa.tooling.setPositionBlocked(p[\u0027toolingPositionId\u0027], bool(event.value), reason, self.view.custom.security.userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Position %s %s\u0027 % (p[\u0027positionNumber\u0027], \u0027blocked\u0027 if event.value else \u0027unblocked\u0027)})\n\tself.view.custom.refresh \u003d system.date.now()\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "name": "tblPositions"
+                    },
+                    "position": {
+                      "grow": 1
+                    },
+                    "propConfig": {
+                      "props.data": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.positions"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "bodyStyle": {
+                        "classes": "kanoa/font/default"
+                      },
+                      "dragOrderable": false,
+                      "headerStyle": {
+                        "classes": "kanoa/font/default",
+                        "fontWeight": "bold"
+                      },
+                      "pager": {
+                        "bottom": false
+                      },
+                      "rows": {
+                        "striped": {
+                          "enabled": false
+                        },
+                        "style": {
+                          "gap": "2px",
+                          "padding": "2px"
+                        }
+                      },
+                      "selection": {
+                        "mode": "single"
+                      },
+                      "style": {
+                        "borderStyle": "none"
+                      },
+                      "columns": [
+                        {
+                          "align": "center",
+                          "boolean": "checkbox",
+                          "dateFormat": "MM/DD/YYYY",
+                          "editable": false,
+                          "field": "positionNumber",
+                          "footer": {
+                            "align": "center",
+                            "justify": "left",
+                            "style": {
+                              "classes": ""
+                            },
+                            "title": ""
+                          },
+                          "header": {
+                            "align": "center",
+                            "justify": "center",
+                            "style": {
+                              "classes": "kanoa/font/default"
+                            },
+                            "title": "Position"
+                          },
+                          "justify": "center",
+                          "number": "value",
+                          "numberFormat": "0",
+                          "progressBar": {
+                            "bar": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "max": 100,
+                            "min": 0,
+                            "track": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "value": {
+                              "enabled": true,
+                              "format": "0,0.##",
+                              "justify": "center",
+                              "style": {
+                                "classes": ""
+                              }
+                            }
+                          },
+                          "render": "auto",
+                          "resizable": true,
+                          "sort": "none",
+                          "sortable": true,
+                          "strictWidth": true,
+                          "style": {
+                            "classes": ""
+                          },
+                          "toggleSwitch": {
+                            "color": {
+                              "selected": "",
+                              "unselected": ""
+                            }
+                          },
+                          "viewParams": {},
+                          "viewPath": "",
+                          "visible": true,
+                          "width": 70
+                        },
+                        {
+                          "align": "center",
+                          "boolean": "checkbox",
+                          "dateFormat": "MM/DD/YYYY",
+                          "editable": false,
+                          "field": "positionType",
+                          "footer": {
+                            "align": "center",
+                            "justify": "left",
+                            "style": {
+                              "classes": ""
+                            },
+                            "title": ""
+                          },
+                          "header": {
+                            "align": "center",
+                            "justify": "center",
+                            "style": {
+                              "classes": "kanoa/font/default"
+                            },
+                            "title": "Type"
+                          },
+                          "justify": "center",
+                          "number": "value",
+                          "numberFormat": "#",
+                          "progressBar": {
+                            "bar": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "max": 100,
+                            "min": 0,
+                            "track": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "value": {
+                              "enabled": true,
+                              "format": "0,0.##",
+                              "justify": "center",
+                              "style": {
+                                "classes": ""
+                              }
+                            }
+                          },
+                          "render": "auto",
+                          "resizable": true,
+                          "sort": "none",
+                          "sortable": true,
+                          "strictWidth": true,
+                          "style": {
+                            "classes": ""
+                          },
+                          "toggleSwitch": {
+                            "color": {
+                              "selected": "",
+                              "unselected": ""
+                            }
+                          },
+                          "viewParams": {},
+                          "viewPath": "",
+                          "visible": true,
+                          "width": 80
+                        },
+                        {
+                          "align": "center",
+                          "boolean": "checkbox",
+                          "dateFormat": "MM/DD/YYYY",
+                          "editable": false,
+                          "field": "itemName",
+                          "footer": {
+                            "align": "center",
+                            "justify": "left",
+                            "style": {
+                              "classes": ""
+                            },
+                            "title": ""
+                          },
+                          "header": {
+                            "align": "center",
+                            "justify": "center",
+                            "style": {
+                              "classes": "kanoa/font/default"
+                            },
+                            "title": "Item"
+                          },
+                          "justify": "center",
+                          "number": "value",
+                          "numberFormat": "#",
+                          "progressBar": {
+                            "bar": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "max": 100,
+                            "min": 0,
+                            "track": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "value": {
+                              "enabled": true,
+                              "format": "0,0.##",
+                              "justify": "center",
+                              "style": {
+                                "classes": ""
+                              }
+                            }
+                          },
+                          "render": "auto",
+                          "resizable": true,
+                          "sort": "none",
+                          "sortable": true,
+                          "strictWidth": true,
+                          "style": {
+                            "classes": ""
+                          },
+                          "toggleSwitch": {
+                            "color": {
+                              "selected": "",
+                              "unselected": ""
+                            }
+                          },
+                          "viewParams": {},
+                          "viewPath": "",
+                          "visible": true,
+                          "width": 180
+                        },
+                        {
+                          "align": "center",
+                          "boolean": "checkbox",
+                          "dateFormat": "MM/DD/YYYY",
+                          "editable": false,
+                          "field": "outputQty",
+                          "footer": {
+                            "align": "center",
+                            "justify": "left",
+                            "style": {
+                              "classes": ""
+                            },
+                            "title": ""
+                          },
+                          "header": {
+                            "align": "center",
+                            "justify": "center",
+                            "style": {
+                              "classes": "kanoa/font/default"
+                            },
+                            "title": "Parts"
+                          },
+                          "justify": "center",
+                          "number": "value",
+                          "numberFormat": "0",
+                          "progressBar": {
+                            "bar": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "max": 100,
+                            "min": 0,
+                            "track": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "value": {
+                              "enabled": true,
+                              "format": "0,0.##",
+                              "justify": "center",
+                              "style": {
+                                "classes": ""
+                              }
+                            }
+                          },
+                          "render": "auto",
+                          "resizable": true,
+                          "sort": "none",
+                          "sortable": true,
+                          "strictWidth": true,
+                          "style": {
+                            "classes": ""
+                          },
+                          "toggleSwitch": {
+                            "color": {
+                              "selected": "",
+                              "unselected": ""
+                            }
+                          },
+                          "viewParams": {},
+                          "viewPath": "",
+                          "visible": true,
+                          "width": 60
+                        },
+                        {
+                          "align": "center",
+                          "boolean": "checkbox",
+                          "dateFormat": "MM/DD/YYYY",
+                          "editable": true,
+                          "field": "isBlocked",
+                          "footer": {
+                            "align": "center",
+                            "justify": "left",
+                            "style": {
+                              "classes": ""
+                            },
+                            "title": ""
+                          },
+                          "header": {
+                            "align": "center",
+                            "justify": "center",
+                            "style": {
+                              "classes": "kanoa/font/default"
+                            },
+                            "title": "Blocked"
+                          },
+                          "justify": "center",
+                          "number": "value",
+                          "numberFormat": "#",
+                          "progressBar": {
+                            "bar": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "max": 100,
+                            "min": 0,
+                            "track": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "value": {
+                              "enabled": true,
+                              "format": "0,0.##",
+                              "justify": "center",
+                              "style": {
+                                "classes": ""
+                              }
+                            }
+                          },
+                          "render": "boolean",
+                          "resizable": true,
+                          "sort": "none",
+                          "sortable": true,
+                          "strictWidth": true,
+                          "style": {
+                            "classes": ""
+                          },
+                          "toggleSwitch": {
+                            "color": {
+                              "selected": "",
+                              "unselected": ""
+                            }
+                          },
+                          "viewParams": {},
+                          "viewPath": "",
+                          "visible": true,
+                          "width": 70
+                        },
+                        {
+                          "align": "center",
+                          "boolean": "checkbox",
+                          "dateFormat": "MM/DD/YYYY",
+                          "editable": false,
+                          "field": "blockReason",
+                          "footer": {
+                            "align": "center",
+                            "justify": "left",
+                            "style": {
+                              "classes": ""
+                            },
+                            "title": ""
+                          },
+                          "header": {
+                            "align": "center",
+                            "justify": "center",
+                            "style": {
+                              "classes": "kanoa/font/default"
+                            },
+                            "title": "Reason"
+                          },
+                          "justify": "center",
+                          "number": "value",
+                          "numberFormat": "#",
+                          "progressBar": {
+                            "bar": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "max": 100,
+                            "min": 0,
+                            "track": {
+                              "color": "",
+                              "style": {
+                                "classes": ""
+                              }
+                            },
+                            "value": {
+                              "enabled": true,
+                              "format": "0,0.##",
+                              "justify": "center",
+                              "style": {
+                                "classes": ""
+                              }
+                            }
+                          },
+                          "render": "auto",
+                          "resizable": true,
+                          "sort": "none",
+                          "sortable": true,
+                          "strictWidth": true,
+                          "style": {
+                            "classes": ""
+                          },
+                          "toggleSwitch": {
+                            "color": {
+                              "selected": "",
+                              "unselected": ""
+                            }
+                          },
+                          "viewParams": {},
+                          "viewPath": "",
+                          "visible": true,
+                          "width": 90
+                        }
+                      ],
+                      "data": []
+                    },
+                    "type": "ia.display.table"
+                  }
+                ]
+              }
+            ],
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.positions"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn len(value) \u003e 0",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "mountTool",
+          "params": [
+            "mountInfo"
+          ],
+          "script": "\n\t# A warning (a tool over a limit, or the site\u0027s tooling check) comes back as \"Needs confirmation: ...\"; accepting it\n\t# mounts again with acceptWarnings, and the mount records what was accepted\n\t# changeoverAsset: the asset the Changeover prompt just set to Changeover, named in this toast (not passed to mount)\n\tchanged \u003d mountInfo.pop(\u0027changeoverAsset\u0027, None)\n\tnote \u003d (\u0027; %s set to Changeover\u0027 % changed) if changed else \u0027\u0027\n\tassignmentId, msg \u003d system.kanoa.tooling.mount(mountInfo, self.view.custom.security.userId)\n\tif msg and msg.startswith(\u0027Needs confirmation:\u0027) and not mountInfo.get(\u0027acceptWarnings\u0027):\n\t\tif changed: mountInfo[\u0027changeoverAsset\u0027] \u003d changed\n\t\tself.confirmMountWarnings(mountInfo, msg, None)\n\t\treturn\n\tif msg:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg + ((\u0027 (%s is in Changeover)\u0027 % changed) if changed else \u0027\u0027)})\n\t\treturn\n\tif mountInfo.get(\u0027replacesName\u0027): system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s mounted, replacing %s%s\u0027 % (self.toolName(mountInfo[\u0027toolingAssetId\u0027]), mountInfo[\u0027replacesName\u0027], note)})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Tool mounted\u0027 + note})\n\tself.view.custom.mountInfo \u003d {\u0027toolingAssetId\u0027: None, \u0027target\u0027: \u0027\u0027, \u0027startDate\u0027: None}\n\tself.view.custom.refresh \u003d system.date.now()\n\tsystem.perspective.sendMessage(\u0027toolingChanged\u0027, {})\n\treturn"
+        },
+        {
+          "name": "toolName",
+          "params": [
+            "toolingAssetId"
+          ],
+          "script": "\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: toolingAssetId}) or [])\n\treturn rows[0][\u0027assetName\u0027] if rows else \u0027the tool\u0027"
+        },
+        {
+          "name": "askChangeover",
+          "params": [
+            "action",
+            "payload",
+            "what",
+            "continueText"
+          ],
+          "script": "\n\t# A tool change is changeover, not production: offer to put the machine into its Changeover mode first, unless it\u0027s\n\t# already in it or has no Changeover mode\n\tasset \u003d self.view.custom.asset\n\tmodeName \u003d None\n\ttry:\n\t\tmodeName \u003d system.tag.readBlocking([\u0027[kanoaMES]\u0027 + asset[\u0027assetPath\u0027].replace(\u0027\\\\\u0027, \u0027/\u0027) + \u0027/OEE/Status/modeName\u0027])[0].value\n\texcept:\n\t\tpass\n\tmodes \u003d system.kanoa.asset.getAssetModes({\u0027assetId\u0027: asset[\u0027assetId\u0027], \u0027modeName\u0027: \u0027Changeover\u0027, \u0027enabled\u0027: True})\n\tif modeName \u003d\u003d \u0027Changeover\u0027 or modes is None or modes.getRowCount() \u003d\u003d 0:\n\t\tself.runAction(action, payload)\n\t\treturn\n\tpayload \u003d dict(payload)\n\tif payload.get(\u0027startDate\u0027) is not None:\n\t\tpayload[\u0027startDate\u0027] \u003d system.date.toMillis(payload[\u0027startDate\u0027])\n\ttext \u003d \u0027%s. Put %s into Changeover first? It is in %s.\u0027 % (what, asset[\u0027assetName\u0027], modeName or \u0027no mode\u0027)\n\tsystem.perspective.openPopup(\u0027toolingChangeover\u0027, \u0027kanoa/mes/asset/operation/tooling/changeoverPrompt\u0027,\n\t\t{\u0027text\u0027: text, \u0027continueText\u0027: continueText, \u0027payload\u0027: {\u0027action\u0027: action, \u0027info\u0027: payload}},\n\t\ttitle\u003d\u0027Changeover\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\treturn"
+        },
+        {
+          "name": "setChangeover",
+          "params": [],
+          "script": "\n\t# The same mode change as the Run Control\u0027s Mode tab: no item or order, from the operator. No toast when it works: the\n\t# mount\u0027s or unmount\u0027s own toast says it, so there\u0027s one toast, not two\n\tasset \u003d self.view.custom.asset\n\tmodeCode \u003d system.kanoa.utilities.getFieldValue(\u0027modeCode\u0027, system.kanoa.asset.getAssetModes({\u0027assetId\u0027: asset[\u0027assetId\u0027], \u0027modeName\u0027: \u0027Changeover\u0027, \u0027enabled\u0027: True}))\n\tinfo \u003d {\u0027assetId\u0027: asset[\u0027assetId\u0027], \u0027modeCode\u0027: modeCode, \u0027workOrderId\u0027: None, \u0027itemId\u0027: None, \u0027standardRate\u0027: None,\n\t\t\t\u0027modeSourceId\u0027: system.kanoa.asset.getModeSourceId(\u0027Operator\u0027), \u0027tStamp\u0027: system.date.now(), \u0027includeChildren\u0027: True}\n\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(info, self.view.custom.security.userId)\n\tif msg or modeEventId is None:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Could not set %s to Changeover. %s\u0027 % (asset[\u0027assetName\u0027], msg or \u0027\u0027)})\n\t\treturn False\n\treturn True"
+        },
+        {
+          "name": "runAction",
+          "params": [
+            "action",
+            "payload"
+          ],
+          "script": "\n\tif action \u003d\u003d \u0027mount\u0027:\n\t\tself.mountTool(dict(payload))\n\t\treturn\n\tchanged \u003d payload.get(\u0027changeoverAsset\u0027)\n\tnote \u003d (\u0027; %s set to Changeover\u0027 % changed) if changed else \u0027\u0027\n\tresult, msg \u003d system.kanoa.tooling.unmount(payload[\u0027toolingAssetId\u0027], payload[\u0027all\u0027], None, self.view.custom.security.userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg + ((\u0027 (%s is in Changeover)\u0027 % changed) if changed else \u0027\u0027)})\n\telif payload[\u0027all\u0027]: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s and its inserts unmounted (fixed inserts stay)%s\u0027 % (payload[\u0027name\u0027], note)})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027%s unmounted%s\u0027 % (payload[\u0027name\u0027], note)})\n\tself.view.custom.refresh \u003d system.date.now()\n\tsystem.perspective.sendMessage(\u0027toolingChanged\u0027, {})\n\treturn"
+        },
+        {
+          "name": "confirmMountWarnings",
+          "params": [
+            "mountInfo",
+            "msg",
+            "what"
+          ],
+          "script": "\n\t#The mount\u0027s warnings (a tool over a limit, or the site\u0027s tooling check: \"Needs confirmation: ...\"), to accept before it\n\t#goes ahead. what: the action\u0027s text, to ask about Changeover after (None: mount straight away)\n\tpayload \u003d dict(mountInfo)\n\tif payload.get(\u0027startDate\u0027) is not None:\n\t\tpayload[\u0027startDate\u0027] \u003d system.date.toMillis(payload[\u0027startDate\u0027])\n\tpayload[\u0027what\u0027] \u003d what\n\ttext \u003d msg[len(\u0027Needs confirmation:\u0027):].strip().replace(\u0027 | \u0027, \u0027. \u0027) + \u0027. Mount anyway?\u0027\n\tsystem.perspective.openPopup(\u0027toolingMountConfirm\u0027, \u0027kanoa/core/templates/inputs/confirm\u0027,\n\t\t{\u0027text\u0027: text, \u0027messageHandler\u0027: \u0027toolingMountConfirm\u0027, \u0027inputPayload\u0027: payload},\n\t\ttitle\u003d\u0027Mount warnings\u0027, modal\u003dTrue, overlayDismiss\u003dTrue)\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "toolingChanged",
+          "pageScope": true,
+          "script": "\n\tself.view.custom.refresh \u003d system.date.now()\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "toolingMountConfirm",
+          "pageScope": true,
+          "script": "\n\tif payload[\u0027userInput\u0027] !\u003d \u0027OK\u0027:\n\t\treturn\n\tmountInfo \u003d dict(payload[\u0027inputPayload\u0027])\n\tif mountInfo.get(\u0027startDate\u0027) is not None:\n\t\tmountInfo[\u0027startDate\u0027] \u003d system.date.fromMillis(long(mountInfo[\u0027startDate\u0027]))\n\tmountInfo[\u0027acceptWarnings\u0027] \u003d True\n\twhat \u003d mountInfo.pop(\u0027what\u0027, None)\n\t#From the Mount button (what given, no start date): ask about Changeover now the warnings are accepted\n\tif what and mountInfo.get(\u0027startDate\u0027) is None:\n\t\tself.askChangeover(\u0027mount\u0027, mountInfo, what, \u0027Replace only\u0027 if mountInfo.get(\u0027replacesName\u0027) else \u0027Mount only\u0027)\n\t\treturn\n\tself.mountTool(mountInfo)\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "toolingChangeoverChoice",
+          "pageScope": true,
+          "script": "\n\t# From the changeoverPrompt popup: \u0027changeover\u0027 sets the mode first (and stops if that fails), \u0027continue\u0027 doesn\u0027t\n\tif payload[\u0027choice\u0027] \u003d\u003d \u0027changeover\u0027 and not self.setChangeover():\n\t\treturn\n\taction \u003d payload[\u0027payload\u0027][\u0027action\u0027]\n\tinfo \u003d dict(payload[\u0027payload\u0027][\u0027info\u0027])\n\tif info.get(\u0027startDate\u0027) is not None:\n\t\tinfo[\u0027startDate\u0027] \u003d system.date.fromMillis(long(info[\u0027startDate\u0027]))\n\tif payload[\u0027choice\u0027] \u003d\u003d \u0027changeover\u0027:\n\t\tinfo[\u0027changeoverAsset\u0027] \u003d self.view.custom.asset[\u0027assetName\u0027]\n\tself.runAction(action, info)\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    }
+  }
+}

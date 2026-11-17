@@ -1,6 +1,6 @@
 {
   "custom": {
-    "option": "Custom",
+    "option": "All",
     "remainingQty": 5,
     "validation": {
       "msg": "Quantity scheduled is greater than what is required",
@@ -139,15 +139,15 @@
     "custom.option": {
       "binding": {
         "config": {
-          "expression": "now(0)"
+          "path": "view.custom.remainingQty"
         },
         "transforms": [
           {
-            "code": "\treturn \u0027All\u0027",
+            "code": "\t#All of what\u0027s left, or Partial when the required quantity is already scheduled or produced\n\treturn \u0027All\u0027 if (value or 0) \u003e 0 else \u0027Custom\u0027",
             "type": "script"
           }
         ],
-        "type": "expr"
+        "type": "property"
       },
       "persistent": true
     },
@@ -345,21 +345,39 @@
                   "overlayOptOut": true,
                   "type": "property"
                 }
+              },
+              "props.radios[0].selected": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.option} \u003d \u0027All\u0027"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.radios[1].selected": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.option} \u003d \u0027Custom\u0027"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
               }
             },
             "props": {
               "align": "start",
-              "index": 1,
+              "index": 0,
               "radioStyle": {
                 "fontSize": "12px"
               },
               "radios": [
                 {
-                  "selected": false,
+                  "selected": true,
                   "value": "All"
                 },
                 {
-                  "selected": true,
+                  "selected": false,
                   "text": "Partial",
                   "value": "Custom"
                 }

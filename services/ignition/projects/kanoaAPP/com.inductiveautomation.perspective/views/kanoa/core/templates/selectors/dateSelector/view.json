@@ -101,13 +101,15 @@
     "timer": {
       "autoRefresh": true,
       "intervalMin": 1
-    }
+    },
+    "zoomStack": [],
+    "zoomLast": 0
   },
   "events": {
     "system": {
       "onStartup": {
         "config": {
-          "script": "\n#\tsystem.perspective.print(\"Date Range Picker onStartup()\")\n\tpass\n\n#\tdateRange \u003d system.kanoa.utilities.getStoredDateRange(self)\n#\tselectedRange \u003d dateRange.selectedRange\n#\tstartDate \u003d dateRange.startDate\n#\tendDate \u003d dateRange.endDate\n#\n#\tsystem.perspective.print(\"dateSelector onStartup(). Got %s from session properties\"%(dateRange))\t\n#\t\t\t\n#\tif selectedRange not in (\u0027Custom\u0027, \u0027\u0027) and selectedRange is not None:\n##\t\tsystem.perspective.print(\"setting selectedRange to \" + str(selectedRange))\n#\t\tself.view.custom.selectedRange \u003d None\n#\t\tself.view.custom.selectedRange \u003d selectedRange\t\n#\telse:\n##\t\tsystem.perspective.print(\"setting dates to %s %s \"%(startDate, endDate))\n#\t\tself.view.custom.startDate \u003d startDate\n#\t\tself.view.custom.endDate \u003d endDate\t\n#\t\n#\treturn"
+          "script": "\n#\tsystem.perspective.print(\"Date Range Picker onStartup()\")\n\t# The step buttons\u0027 period from the instance\u0027s value.period (Day, Week, Month or Year); Day, as before, when it isn\u0027t set\n\ttry:\n\t\tperiod \u003d self.params.value[\u0027period\u0027]\n\texcept:\n\t\tperiod \u003d None\n\tif period in (\u0027Day\u0027, \u0027Week\u0027, \u0027Month\u0027, \u0027Year\u0027): self.custom.period \u003d period\n\n#\tdateRange \u003d system.kanoa.utilities.getStoredDateRange(self)\n#\tselectedRange \u003d dateRange.selectedRange\n#\tstartDate \u003d dateRange.startDate\n#\tendDate \u003d dateRange.endDate\n#\n#\tsystem.perspective.print(\"dateSelector onStartup(). Got %s from session properties\"%(dateRange))\t\n#\t\t\t\n#\tif selectedRange not in (\u0027Custom\u0027, \u0027\u0027) and selectedRange is not None:\n##\t\tsystem.perspective.print(\"setting selectedRange to \" + str(selectedRange))\n#\t\tself.view.custom.selectedRange \u003d None\n#\t\tself.view.custom.selectedRange \u003d selectedRange\t\n#\telse:\n##\t\tsystem.perspective.print(\"setting dates to %s %s \"%(startDate, endDate))\n#\t\tself.view.custom.startDate \u003d startDate\n#\t\tself.view.custom.endDate \u003d endDate\t\n#\t\n#\treturn"
         },
         "scope": "G",
         "type": "script"
@@ -240,7 +242,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\tinfo \u003d system.kanoa.dashboard.getWidgetFilters(value[\u0027page\u0027], value[\u0027viewParams\u0027], value[\u0027sessionCustomProps\u0027], self.session.props.device.timezone.id)\n\tinfo[\u0027oeeEnabled\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027oeeEnabled\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: info[\u0027assetPath\u0027]}))\n\t\n\treturn info",
+            "code": "\n\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\tinfo \u003d system.kanoa.dashboard.getWidgetFilters(value[\u0027page\u0027], value[\u0027viewParams\u0027], value[\u0027sessionCustomProps\u0027], self.session.props.device.timezone.id)\n\tinfo[\u0027oeeEnabled\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027oeeEnabled\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: info[\u0027assetPath\u0027]}))\n\t\n\t# Not persistent: the range is this selector\u0027s own (setRange keeps it on the view), so a re-run caused by another\n\t# change to session.custom.kanoa doesn\u0027t put the page\u0027s stored range back over it (868mwak13)\n\tdisplay \u003d value[\u0027viewParams\u0027].get(\u0027display\u0027) if value[\u0027viewParams\u0027] else None\n\tif display and display.get(\u0027persistent\u0027) is False:\n\t\tcurrent \u003d self.custom.session\n\t\t# Only a range this selector set itself (local): the view\u0027s saved default is a design-time date, not a choice\n\t\tif current and current.has_key(\u0027dateRange\u0027) and current[\u0027dateRange\u0027] and current[\u0027dateRange\u0027].has_key(\u0027local\u0027) and current[\u0027dateRange\u0027][\u0027local\u0027]:\n\t\t\tinfo[\u0027dateRange\u0027] \u003d {\u0027startDate\u0027: current[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: current[\u0027dateRange\u0027][\u0027endDate\u0027], \u0027selectedRange\u0027: current[\u0027dateRange\u0027][\u0027selectedRange\u0027], \u0027local\u0027: True}\n\t\n\treturn info",
             "type": "script"
           }
         ],
@@ -353,7 +355,7 @@
             },
             "onChange": {
               "enabled": null,
-              "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027: self.view.getChild(\"root\").setRange(currentValue.value, None, None)\n\t\n\treturn"
+              "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tself.view.custom.zoomStack \u003d []\n\t\tself.view.getChild(\"root\").setRange(currentValue.value, None, None)\n\t\n\treturn"
             }
           }
         },
@@ -372,7 +374,7 @@
           },
           "showClearIcon": true,
           "style": {
-            "borderColor": "--kcGray-20",
+            "borderColor": "var(--border)",
             "classes": "kanoa/font/default",
             "height": "25px",
             "minWidth": 145,
@@ -386,7 +388,7 @@
           "dom": {
             "onSelect": {
               "config": {
-                "script": "\t\n\tself.view.custom.dateRange \u003d \u0027Custom\u0027\n\treturn"
+                "script": "\t# A range picked by hand: nothing to zoom out to\n\tself.view.custom.zoomStack \u003d []\n\t\n\tself.view.custom.dateRange \u003d \u0027Custom\u0027\n\treturn"
               },
               "scope": "G",
               "type": "script"
@@ -454,7 +456,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\treturn \u0027--kcGray-20\u0027 if value else \u0027--kcRed-60\u0027",
+                  "code": "\n\treturn \u0027var(--border)\u0027 if value else \u0027var(--kcRed-60)\u0027",
                   "type": "script"
                 }
               ],
@@ -494,6 +496,7 @@
           "style": {
             "borderBottomLeftRadius": "5px",
             "borderBottomRightRadius": "5px",
+            "borderColor": "var(--border)",
             "borderStyle": "solid",
             "borderTopLeftRadius": "5px",
             "borderTopRightRadius": "5px",
@@ -510,7 +513,7 @@
           "dom": {
             "onSelect": {
               "config": {
-                "script": "\t\n\tself.view.custom.dateRange \u003d \u0027Custom\u0027\n\treturn"
+                "script": "\t# A range picked by hand: nothing to zoom out to\n\tself.view.custom.zoomStack \u003d []\n\t\n\tself.view.custom.dateRange \u003d \u0027Custom\u0027\n\treturn"
               },
               "scope": "G",
               "type": "script"
@@ -577,7 +580,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\treturn \u0027--kcGray-20\u0027 if value else \u0027--kcRed-60\u0027",
+                  "code": "\n\treturn \u0027var(--border)\u0027 if value else \u0027var(--kcRed-60)\u0027",
                   "type": "script"
                 }
               ],
@@ -617,6 +620,7 @@
           "style": {
             "borderBottomLeftRadius": "5px",
             "borderBottomRightRadius": "5px",
+            "borderColor": "var(--border)",
             "borderStyle": "solid",
             "borderTopLeftRadius": "5px",
             "borderTopRightRadius": "5px",
@@ -635,7 +639,7 @@
               "dom": {
                 "onClick": {
                   "config": {
-                    "script": "\t\n\tself.view.getChild(\"root\").incrementRange(-1)\n\t\n\treturn"
+                    "script": "\t# A range picked by hand: nothing to zoom out to\n\tself.view.custom.zoomStack \u003d []\n\t\n\tself.view.getChild(\"root\").incrementRange(-1)\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -728,7 +732,7 @@
                 "enabled": false
               },
               "style": {
-                "borderColor": "--kcGray-20",
+                "borderColor": "var(--border)",
                 "classes": "kanoa/font/default",
                 "height": 25,
                 "textAlign": "center"
@@ -741,7 +745,7 @@
               "dom": {
                 "onClick": {
                   "config": {
-                    "script": "\t\n\tself.view.getChild(\"root\").incrementRange(1)\n\t\n\treturn"
+                    "script": "\t# A range picked by hand: nothing to zoom out to\n\tself.view.custom.zoomStack \u003d []\n\t\n\tself.view.getChild(\"root\").incrementRange(1)\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -813,6 +817,55 @@
           }
         },
         "type": "ia.container.flex"
+      },
+      {
+        "events": {
+          "dom": {
+            "onClick": {
+              "config": {
+                "script": "\n\t# Back to the range before the last drag-to-zoom (setDateRange): a named range (Year To Date...) is worked out again\n\tstack \u003d list(self.view.custom.zoomStack or [])\n\tif not stack: return\n\tlast \u003d stack.pop()\n\tself.view.custom.zoomStack \u003d stack\n\tself.view.getChild(\"root\").setRange(last[\u0027selectedRange\u0027] or \u0027Custom\u0027, last[\u0027startDate\u0027], last[\u0027endDate\u0027])\n\ttry:\n\t\tmine \u003d self.view.params.value[\u0027id\u0027]\n\texcept:\n\t\tmine \u003d None\n\tif not mine: return\n\t# Tell the page the range a zoom set (the Production page loads its chart for it: dateRangeZoomed)\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tsystem.perspective.sendMessage(\u0027dateRangeZoomed\u0027, {\u0027id\u0027: mine, \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]}, scope\u003d\u0027page\u0027)"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "domId": "icoZoomOut",
+          "name": "icoZoomOut",
+          "tooltip": {
+            "delay": 0,
+            "enabled": true,
+            "location": "top",
+            "tail": false,
+            "text": "Zoom out"
+          }
+        },
+        "position": {
+          "basis": "30px"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.zoomStack"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn len(value or []) \u003e 0",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "color": "--kcGray-60",
+          "path": "material/zoom_out"
+        },
+        "type": "ia.display.icon"
       },
       {
         "children": [
@@ -975,14 +1028,14 @@
             "startDate",
             "endDate"
           ],
-          "script": "\n#\tsystem.perspective.print(\"setRange() called with %s %s %s\" %(selectedRange, startDate, endDate))\t\n\n\tif selectedRange !\u003d \u0027Custom\u0027:\n\t\tassetPath \u003d self.view.custom.session[\u0027assetPath\u0027] if self.view.custom.session.has_key(\u0027assetPath\u0027) else None\n\t\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027selectedDateRange\u0027: selectedRange, \u0027clientTZ\u0027: self.session.props.device.timezone.id}\n\t\tstartDate, endDate \u003d system.kanoa.date.getDateRange(paramsDict)\n#\t\tsystem.perspective.print(\"getDateRange() called with %s returned %s %s\"%(paramsDict, startDate, endDate))\n\t\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n#\t\tsystem.perspective.print(\"Setting local dates to %s %s as this is not persistent\"%(startDate, endDate))\n\t\tself.view.custom.session.dateRange.startDate \u003d startDate\n\t\tself.view.custom.session.dateRange.endDate \u003d endDate\n\telse:\n#\t\tsystem.perspective.print(\"storeDateRangeSelection() called with %s %s\"%(startDate, endDate))\n\t\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, selectedRange)\n\t\tself.view.refreshBinding(\"custom.session\")\n\t\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\tsystem.perspective.sendMessage(\u0027dateSelectorUpdate\u0027, {})\n\t\n\treturn"
+          "script": "\n#\tsystem.perspective.print(\"setRange() called with %s %s %s\" %(selectedRange, startDate, endDate))\t\n\n\tif selectedRange !\u003d \u0027Custom\u0027:\n\t\tassetPath \u003d self.view.custom.session[\u0027assetPath\u0027] if self.view.custom.session.has_key(\u0027assetPath\u0027) else None\n\t\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027selectedDateRange\u0027: selectedRange, \u0027clientTZ\u0027: self.session.props.device.timezone.id}\n\t\tstartDate, endDate \u003d system.kanoa.date.getDateRange(paramsDict)\n#\t\tsystem.perspective.print(\"getDateRange() called with %s returned %s %s\"%(paramsDict, startDate, endDate))\n\t\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n#\t\tsystem.perspective.print(\"Setting local dates to %s %s as this is not persistent\"%(startDate, endDate))\n\t\t# selectedRange too, so the dropdown shows Custom for a picked date (868mwak13)\n\t\tself.view.custom.session.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: selectedRange, \u0027local\u0027: True}\n\telse:\n#\t\tsystem.perspective.print(\"storeDateRangeSelection() called with %s %s\"%(startDate, endDate))\n\t\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, selectedRange)\n\t\tself.view.refreshBinding(\"custom.session\")\n\t\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\tsystem.perspective.sendMessage(\u0027dateSelectorUpdate\u0027, {})\n\t\n\treturn"
         },
         {
           "name": "incrementRange",
           "params": [
             "increment"
           ],
-          "script": "\n\tif increment !\u003d 0:\n\t\tperiod \u003d self.view.custom.period\n\t\tstartDate \u003d self.view.custom.session.dateRange.startDate\n\t\tendDate \u003d self.view.custom.session.dateRange.endDate\n\t\t\n\t\tif period \u003d\u003d \u0027Day\u0027:\n\t\t\tstartDate \u003d system.date.addDays(startDate, increment)\n\t\t\tendDate \u003d system.date.addDays(endDate, increment)\n\t\telif period \u003d\u003d \u0027Week\u0027:\n\t\t\tstartDate \u003d system.date.addWeeks(startDate, increment)\n\t\t\tendDate \u003d system.date.addWeeks(endDate, increment)\n\t\telif period \u003d\u003d \u0027Month\u0027:\n\t\t\tstartDate \u003d system.date.addMonths(startDate, increment)\n\t\t\tendDate \u003d system.date.addMonths(endDate, increment)\n\t\telif period \u003d\u003d \u0027Year\u0027:\n\t\t\tstartDate \u003d system.date.addYears(startDate, increment)\n\t\t\tendDate \u003d system.date.addYears(endDate, increment)\n\t\t\t\t\t\t\n#\tsystem.perspective.print(\"calling storeDateRangeSelection() with %s %s %s\"%(startDate, endDate, selectedRange))\n\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, \u0027Custom\u0027)\n\tself.view.refreshBinding(\"custom.session\")\n\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\t\n\treturn"
+          "script": "\n\tif increment !\u003d 0:\n\t\tperiod \u003d self.view.custom.period\n\t\tstartDate \u003d self.view.custom.session.dateRange.startDate\n\t\tendDate \u003d self.view.custom.session.dateRange.endDate\n\t\t\n\t\tif period \u003d\u003d \u0027Day\u0027:\n\t\t\tstartDate \u003d system.date.addDays(startDate, increment)\n\t\t\tendDate \u003d system.date.addDays(endDate, increment)\n\t\telif period \u003d\u003d \u0027Week\u0027:\n\t\t\tstartDate \u003d system.date.addWeeks(startDate, increment)\n\t\t\tendDate \u003d system.date.addWeeks(endDate, increment)\n\t\telif period \u003d\u003d \u0027Month\u0027:\n\t\t\tstartDate \u003d system.date.addMonths(startDate, increment)\n\t\t\tendDate \u003d system.date.addMonths(endDate, increment)\n\t\telif period \u003d\u003d \u0027Year\u0027:\n\t\t\tstartDate \u003d system.date.addYears(startDate, increment)\n\t\t\tendDate \u003d system.date.addYears(endDate, increment)\n\t\t\t\t\t\t\n\t# Not persistent: the range is this selector\u0027s own, as in setRange (868mwak13)\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n\t\tself.view.custom.session.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: \u0027Custom\u0027, \u0027local\u0027: True}\n\t\treturn\n\t\n#\tsystem.perspective.print(\"calling storeDateRangeSelection() with %s %s %s\"%(startDate, endDate, selectedRange))\n\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, \u0027Custom\u0027)\n\tself.view.refreshBinding(\"custom.session\")\n\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\t\n\treturn"
         }
       ],
       "extensionFunctions": null,
@@ -993,6 +1046,13 @@
           "script": "\n#\tsystem.perspective.print(\"updateDateSelector() msg rcvd with %s\"%payload)\n\tselectedRange \u003d payload[\u0027selectedRange\u0027] if payload.has_key(\u0027selectedRange\u0027) and payload[\u0027selectedRange\u0027] else self.view.params.dates.selectedRange\t\n\tself.setRange(selectedRange, None, None)\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
+        },
+        {
+          "messageType": "setDateRange",
+          "pageScope": true,
+          "sessionScope": false,
+          "viewScope": false,
+          "script": "\n\t# Another component sets a Custom range on this selector, e.g. a box dragged across a Production Counts chart: only the\n\t# selector whose id (params.value.id) the message names\n\ttry:\n\t\tmine \u003d self.view.params.value[\u0027id\u0027]\n\texcept:\n\t\tmine \u003d None\n\tif not mine or not payload or payload.get(\u0027id\u0027) !\u003d mine: return\n\tif payload.get(\u0027startDate\u0027) is None or payload.get(\u0027endDate\u0027) is None: return\n\t# The range it\u0027s already on, or a repeat of the last one (a chart can send its selection twice): nothing to do\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tsame \u003d lambda a, b: a is not None and b is not None and abs(system.date.toMillis(a) - system.date.toMillis(b)) \u003c 1000\n\tif dr is not None and same(dr[\u0027startDate\u0027], payload[\u0027startDate\u0027]) and same(dr[\u0027endDate\u0027], payload[\u0027endDate\u0027]): return\n\tnow \u003d system.date.toMillis(system.date.now())\n\tif now - (self.view.custom.zoomLast or 0) \u003c 2000: return\n\tself.view.custom.zoomLast \u003d now\n\t# The range this replaces, so Zoom out (icoZoomOut) can go back to it; each drag adds one\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tstack \u003d list(self.view.custom.zoomStack or [])\n\t\tstack.append({\u0027selectedRange\u0027: dr[\u0027selectedRange\u0027], \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]})\n\t\tself.view.custom.zoomStack \u003d stack\n\tself.setRange(\u0027Custom\u0027, payload[\u0027startDate\u0027], payload[\u0027endDate\u0027])\n\t# Tell the page the range a zoom set (the Production page loads its chart for it: dateRangeZoomed)\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tsystem.perspective.sendMessage(\u0027dateRangeZoomed\u0027, {\u0027id\u0027: mine, \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]}, scope\u003d\u0027page\u0027)"
         }
       ]
     },

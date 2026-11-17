@@ -64,12 +64,11 @@ services:
     volumes:
       - ./services/ignition/config:/usr/local/bin/ignition/data/config
       - ./services/ignition/projects:/usr/local/bin/ignition/data/projects
-      - ./services/third-party-modules/Embr-Charts-6.0.1.modl:/usr/local/bin/ignition/user-lib/modules/Embr-Charts-Ignition.modl
-      - ./services/third-party-modules/KanoaMES_1.15.11.modl:/usr/local/bin/ignition/user-lib/modules/KanoaMES.modl
+      - ./services/third-party-modules/KanoaMES_1.16.0.modl:/usr/local/bin/ignition/user-lib/modules/KanoaMES.modl
 
       # Temporary volume to avoid commissioning
       - ./services/ignition/commissioning.json:/usr/local/bin/ignition/data/commissioning.json
-    command: ["-n", "kanoa-local-dev", "--", "-Dperspective.websocket.max-message-size=4096"]
+    command: ["-n", "kanoa-local-dev", "-m", "4096", "--", "-Dperspective.websocket.max-message-size=4096"]
     environment:
       IGNITION_EDITION: "standard"
       DISABLE_QUICKSTART: "true"
@@ -78,10 +77,12 @@ services:
         com.inductiveautomation.opcua,
         com.inductiveautomation.perspective,
         com.inductiveautomation.webdev,
-        com.mussonindustrial.embr.charts,
-        com.kanoacon.mes.kanoaMES,
-      ACCEPT_MODULE_LICENSES: com.mussonindustrial.embr.charts,com.kanoacon.mes.kanoaMES
-      ACCEPT_MODULE_CERTS: com.mussonindustrial.embr.charts,com.kanoacon.mes.kanoaMES
+        com.inductiveautomation.historian,
+        com.inductiveautomation.historian.sql,
+        com.inductiveautomation.eventstream,
+        com.kanoacon.mes.kanoaMES
+      ACCEPT_MODULE_LICENSES: com.kanoacon.mes.kanoaMES
+      ACCEPT_MODULE_CERTS: com.kanoacon.mes.kanoaMES
       IGNITION_UID: 1000
       IGNITION_GID: 1000
     # ---------------------------------------------------------------------------

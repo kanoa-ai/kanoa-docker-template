@@ -1,0 +1,211 @@
+{
+  "custom": {},
+  "params": {
+    "continueText": "Continue",
+    "payload": {},
+    "text": ""
+  },
+  "propConfig": {
+    "params.continueText": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.payload": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.text": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 167,
+      "width": 460
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "meta": {
+          "domId": "lblText",
+          "name": "lblText"
+        },
+        "position": {
+          "grow": 1,
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "path": "view.params.text"
+              },
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/default",
+            "textAlign": "center"
+          }
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "children": [
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.getChild(\"root\").choose(\u0027changeover\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnChangeover",
+              "name": "btnChangeover"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/swap_horiz"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/filled"
+              },
+              "text": "Changeover"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.getChild(\"root\").choose(\u0027continue\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnContinue",
+              "name": "btnContinue"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/build"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Continue"
+            },
+            "type": "ia.input.button",
+            "propConfig": {
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.continueText"
+                  },
+                  "type": "property"
+                }
+              }
+            }
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\tself.view.getChild(\"root\").choose(\u0027cancel\u0027)\n\treturn"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "domId": "btnCancel",
+              "name": "btnCancel"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "image": {
+                "icon": {
+                  "path": "material/close"
+                }
+              },
+              "style": {
+                "classes": "kanoa/button/outlined"
+              },
+              "text": "Cancel"
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "domId": "flxAction",
+          "name": "flxAction"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "justify": "center",
+          "style": {
+            "gap": "5px",
+            "padding": "5px"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "domId": "root",
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "justify": "flex-end",
+      "style": {
+        "backgroundColor": "--kcContainer",
+        "gap": 5,
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "choose",
+          "params": [
+            "choice"
+          ],
+          "script": "\n\t#The mount panel does the work: \u0027changeover\u0027 sets the asset\u0027s mode first, \u0027continue\u0027 doesn\u0027t, \u0027cancel\u0027 does nothing\n\tif choice !\u003d \u0027cancel\u0027:\n\t\tsystem.perspective.sendMessage(\u0027toolingChangeoverChoice\u0027, payload\u003d{\u0027choice\u0027: choice, \u0027payload\u0027: self.view.params.payload})\n\tsystem.perspective.closePopup(\u0027toolingChangeover\u0027)\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

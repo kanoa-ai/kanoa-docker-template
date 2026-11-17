@@ -151,15 +151,19 @@
       "binding": {
         "config": {
           "struct": {
-            "tagInfo": "{view.custom.tagInfo}"
+            "a": "{view.custom.tagInfo.availability}",
+            "p": "{view.custom.tagInfo.performance}",
+            "q": "{view.custom.tagInfo.quality}",
+            "assetId": "{view.custom.tagInfo.assetId}",
+            "thresholds": "{view.custom.oeeThresholds}"
           },
           "waitOnAll": false
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\ta \u003d value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0\n\tp \u003d value[\u0027tagInfo\u0027][\u0027performance\u0027]  or 0.0\n\tq \u003d value[\u0027tagInfo\u0027][\u0027quality\u0027]  or 0.0\n\toee \u003d a * p * q\t\n\n\tassetPath \u003d self.params.value.assetInfo.assetPath or \u0027none\u0027\n\toeeColors \u003d system.kanoa.event.getOEEColors({\u0027assetPath\u0027: assetPath}, oee, a, p, q)\n\n\treturn {\u0027availability\u0027: oeeColors[\u0027availability\u0027], \u0027performance\u0027: oeeColors[\u0027performance\u0027], \u0027quality\u0027: oeeColors[\u0027performance\u0027], \u0027oee\u0027: oeeColors[\u0027performance\u0027]}",
-            "type": "script"
+            "type": "script",
+            "code": "\n\t#OEE colours from the asset\u0027s A, P and Q against its thresholds from OEE/info: no database lookup, and it re-runs only\n\t#when those change, not on every count (868mu83yz)\n\tif value[\u0027a\u0027] is None and value[\u0027p\u0027] is None and value[\u0027q\u0027] is None: return {}\n\ta, p, q \u003d value[\u0027a\u0027] or 0.0, value[\u0027p\u0027] or 0.0, value[\u0027q\u0027] or 0.0\n\tparams \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027]}\n\tif value[\u0027thresholds\u0027]: params[\u0027oeeThresholds\u0027] \u003d value[\u0027thresholds\u0027]\n\treturn system.kanoa.event.getOEEColors(params, a * p * q, a, p, q)"
           }
         ],
         "type": "expr-struct"
@@ -170,16 +174,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.params.value.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.params.value.assetInfo.tagPath}, indexOf({view.params.value.assetInfo.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value[\u0027oeeThresholds\u0027]",
+            "code": "\n\t#The asset\u0027s OEE thresholds, from its OEE/info tag (its kanoaMES OEE tags in one document), under the Line UDT\u0027s\n\t#oeeThresholds names. None without an asset\n\tif value is None: return None\n\ttry: thresholds \u003d value[\u0027Thresholds\u0027]\n\texcept: thresholds \u003d None\n\tresult \u003d {}\n\tfor name in [\u0027oee\u0027, \u0027oeeTolerance\u0027, \u0027a\u0027, \u0027aTolerance\u0027, \u0027p\u0027, \u0027pTolerance\u0027, \u0027q\u0027, \u0027qTolerance\u0027]:\n\t\ttry: result[name] \u003d thresholds[name]\n\t\texcept: result[name] \u003d None\n\treturn result",
             "type": "script"
           }
         ],
@@ -207,16 +208,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.params.value.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.params.value.assetInfo.tagPath}, indexOf({view.params.value.assetInfo.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value[\u0027OEE\u0027]",
+            "code": "\n\t#The asset\u0027s OEE/info tag: its kanoaMES OEE tags (which the module keeps for every OEE asset; the [Kanoa] Line UDT\n\t#isn\u0027t always there) in one document that changes whenever any of them does. Flattened to the names the Line UDT\u0027s\n\t#OEE folder had; dates are in milliseconds, as that binding gave them. None without an asset\n\tif value is None: return None\n\tdef folder(name):\n\t\ttry: return value[name]\n\t\texcept: return None\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\tstatus, run \u003d folder(\u0027Status\u0027), folder(\u0027Current Run\u0027)\n\tinfo \u003d {}\n\tfor name in [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027modeSourceName\u0027, \u0027userName\u0027, \u0027iconPath\u0027, \u0027workOrderId\u0027,\n\t\t\t\u0027workOrderName\u0027, \u0027workOrderTitle\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027,\n\t\t\t\u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027packageCount\u0027, \u0027woRemainingMinutes\u0027, \u0027shiftId\u0027, \u0027shiftNameId\u0027, \u0027shiftName\u0027, \u0027shiftStart\u0027,\n\t\t\t\u0027shiftEnd\u0027, \u0027scheduleBlockId\u0027, \u0027scheduleStart\u0027, \u0027scheduleEnd\u0027, \u0027stateName\u0027, \u0027stateStart\u0027, \u0027stateTypeName\u0027, \u0027stateColor\u0027,\n\t\t\t\u0027stateTypeColor\u0027, \u0027stateIconPath\u0027, \u0027assetId\u0027]:\n\t\tinfo[name] \u003d field(status, name)\n\tfor name in [\u0027startDate\u0027, \u0027durationSecs\u0027, \u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027targetCount\u0027,\n\t\t\t\u0027standardRate\u0027, \u0027period\u0027, \u0027infeedRateSecs\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027,\n\t\t\t\u0027wasteCount\u0027]:\n\t\tinfo[name] \u003d field(run, name)\n\t#As the module works it out for the Line tags: the run\u0027s outfeed per minute, in production only\n\tduration, outfeed \u003d info[\u0027durationSecs\u0027], info[\u0027outfeedCount\u0027]\n\tinfo[\u0027outfeedRatePerMinute\u0027] \u003d outfeed / (duration / 60.0) if info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and duration and outfeed is not None else None\n\tinfo[\u0027endDate\u0027] \u003d None\n\treturn info",
             "type": "script"
           }
         ],
@@ -251,12 +249,12 @@
               "props.text": {
                 "binding": {
                   "config": {
-                    "path": "view.params.value.assetInfo.assetPath"
+                    "path": "view.params.value"
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\treturn system.kanoa.utilities.formatPath(value, {})",
+                      "code": "\t#Below the section\u0027s own path only: the section\u0027s title already names the group (868mvwg9e)\n\tpath \u003d value[\u0027assetInfo\u0027][\u0027assetPath\u0027]\n\tgroupPath \u003d value.get(\u0027groupPath\u0027)\n\tif path and groupPath and path.startswith(groupPath + \u0027\\\\\u0027):\n\t\treturn \u0027 \u003e \u0027.join(path[len(groupPath) + 1:].split(\u0027\\\\\u0027))\n\treturn system.kanoa.utilities.formatPath(path, {})",
                       "type": "script"
                     }
                   ],
@@ -284,7 +282,8 @@
                   "name": "lblLabel"
                 },
                 "position": {
-                  "shrink": 0
+                  "shrink": 0,
+                  "display": false
                 },
                 "props": {
                   "text": "Mode:",
@@ -568,7 +567,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn \u0027Set by %s\u0027%name or \u0027\u0027",
+                              "code": "\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn system.util.translate(\u0027Set by %s\u0027, self.session.props.locale)%name or \u0027\u0027",
                               "type": "script"
                             }
                           ],
@@ -985,7 +984,7 @@
                               "overlayOptOut": true,
                               "transforms": [
                                 {
-                                  "code": "\t\n#\treturn \"Start Time: %s\"%system.date.format((system.date.fromMillis(value[\u0027startDate\u0027])), \u0027YY-MM-dd HH:mm\u0027)\n\treturn value[\u0027startDate\u0027]",
+                                  "code": "\t\n#\treturn system.util.translate(\"Start Time\", self.session.props.locale) + \": %s\" %system.date.format((system.date.fromMillis(value[\u0027startDate\u0027])), \u0027YY-MM-dd HH:mm\u0027)\n\treturn value[\u0027startDate\u0027]",
                                   "type": "script"
                                 },
                                 {
@@ -1049,7 +1048,6 @@
             "props": {
               "direction": "column",
               "style": {
-                "classes": "kanoa/border",
                 "gap": "5px",
                 "height": "150px",
                 "minWidth": "250px",
@@ -1435,7 +1433,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn \"Target Rate: %s | Actual Rate: %s\"%(tgtRate, actualRate)",
+                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn system.util.translate(\"Target Rate\", self.session.props.locale) + \": %s | Actual Rate: %s\" %(tgtRate, actualRate)",
                               "type": "script"
                             }
                           ],
@@ -1485,7 +1483,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn \"Target Rate: %s | Actual Rate: %s\"%(tgtRate, actualRate)",
+                              "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn system.util.translate(\"Target Rate\", self.session.props.locale) + \": %s | Actual Rate: %s\" %(tgtRate, actualRate)",
                               "type": "script"
                             }
                           ],
@@ -1538,7 +1536,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn \"Target Rate: %s | Actual Rate: %s\"%(tgtRate, actualRate)",
+                          "code": "\n\ttgtRate \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027%s %s per %s\u0027%(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\tactualRate \u003d \u0027%s %s per %s\u0027%(round((value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60),1), infeedUnits, period)\n\n\treturn system.util.translate(\"Target Rate\", self.session.props.locale) + \": %s | Actual Rate: %s\" %(tgtRate, actualRate)",
                           "type": "script"
                         }
                       ],
@@ -1699,7 +1697,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\tcolor \u003d \u0027--kcOnSurfaceVariant\u0027\n\t\n\ttgtRate \u003d value.standardRate or 0.0\n\ttgtRateLabel \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027{:,} {} per {}\u0027.format(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\t\n\tactualRate \u003d (value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60)\n\tactualRateLabel \u003d \u0027{:,} {} per {}\u0027.format(round((actualRate),1), infeedUnits, period)\n\t\n\tself.props.textStyle.color \u003d \u0027--kcOnSurfaceVariant\u0027 if actualRate \u003e\u003d (tgtRate * 0.1) else \u0027--kcError\u0027\n\treturn \"Infeed Target Rate: %s | Actual Infeed Rate: %s\"%(tgtRateLabel, actualRateLabel)",
+                              "code": "\n\tcolor \u003d \u0027--kcOnSurfaceVariant\u0027\n\t\n\ttgtRate \u003d value.standardRate or 0.0\n\ttgtRateLabel \u003d \u0027Not set\u0027 if value.standardRate is None or value.period is None else \u0027{:,} {} per {}\u0027.format(value.standardRate, value.infeedUnits or \u0027\u0027, value.period)\n\tinfeedUnits \u003d value.infeedUnits or \u0027\u0027\n\tperiod \u003d value.period or \u0027min\u0027\n\t\n\tactualRate \u003d (value.infeedRateSecs or 0.0) * (3600 if value.period \u003d\u003d \u0027Hour\u0027 else 60)\n\tactualRateLabel \u003d \u0027{:,} {} per {}\u0027.format(round((actualRate),1), infeedUnits, period)\n\t\n\tself.props.textStyle.color \u003d \u0027--kcOnSurfaceVariant\u0027 if actualRate \u003e\u003d (tgtRate * 0.1) else \u0027--kcError\u0027\n\treturn system.util.translate(\"Infeed Target Rate\", self.session.props.locale) + \": %s | Actual Infeed Rate: %s\" %(tgtRateLabel, actualRateLabel)",
                               "type": "script"
                             }
                           ],
@@ -1831,7 +1829,6 @@
             "props": {
               "direction": "column",
               "style": {
-                "classes": "kanoa/border",
                 "gap": "5px",
                 "height": "150px",
                 "minWidth": "250px",
@@ -2474,7 +2471,6 @@
             "props": {
               "direction": "column",
               "style": {
-                "classes": "kanoa/border",
                 "gap": "5px",
                 "height": "150px",
                 "minWidth": "250px",
@@ -2511,7 +2507,7 @@
         "props": {
           "alignItems": "flex-start",
           "style": {
-            "gap": "5px",
+            "gap": "16px",
             "overflow": "hidden"
           },
           "wrap": "wrap"
@@ -2526,11 +2522,12 @@
     "props": {
       "direction": "column",
       "style": {
-        "backgroundColor": "--kcSurface",
+        "backgroundColor": "var(--kcSurface)",
         "classes": "kanoa/font/default",
         "gap": "5px",
         "overflow": "hidden",
-        "padding": "5px"
+        "padding": "8px",
+        "borderRadius": "var(--borderRadius)"
       }
     },
     "type": "ia.container.flex"

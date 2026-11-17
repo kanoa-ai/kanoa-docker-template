@@ -379,7 +379,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif not value.has_key(\u0027infeedCount\u0027): return \u0027\u0027\n\tinfeedCount \u003d value[\u0027infeedCount\u0027] or 0.0\n\toutfeedCount \u003d value[\u0027outfeedCount\u0027] or 0.0\n\twasteCount \u003d value[\u0027wasteCount\u0027] or 0.0\n\tpkgCount \u003d value[\u0027packageCount\u0027] or 1.0\n\n\tif outfeedCount * pkgCount \u003e infeedCount: return \"More outfeed than is possible for amount of infeed\"\n\tif infeedCount \u003c 0: return \"Infeed count is negative\"\n\tif outfeedCount \u003c 0: return \"Outfeed count is negative\"\n\tif wasteCount \u003c 0: return \"Waste count is negative\"\n\tif value[\u0027rawInfeedCount\u0027] is None or value[\u0027rawOutfeedCount\u0027] is None or value[\u0027rawWasteCount\u0027] is None: return \u0027\u0027\t#We will auto-cacluate, no need for a warning\n\n\tdelta \u003d infeedCount - (outfeedCount * pkgCount + wasteCount)\n\tif delta !\u003d 0: return \"Counts do not add up. Off by \" + str(round(delta, 1))\n\t\n\treturn \u0027\u0027",
+            "code": "\n\tif not value.has_key(\u0027infeedCount\u0027): return \u0027\u0027\n\tinfeedCount \u003d value[\u0027infeedCount\u0027] or 0.0\n\toutfeedCount \u003d value[\u0027outfeedCount\u0027] or 0.0\n\twasteCount \u003d value[\u0027wasteCount\u0027] or 0.0\n\tpkgCount \u003d value[\u0027packageCount\u0027] or 1.0\n\n\tif outfeedCount * pkgCount \u003e infeedCount: return \"More outfeed than is possible for amount of infeed\"\n\tif infeedCount \u003c 0: return \"Infeed count is negative\"\n\tif outfeedCount \u003c 0: return \"Outfeed count is negative\"\n\tif wasteCount \u003c 0: return \"Waste count is negative\"\n\tif value[\u0027rawInfeedCount\u0027] is None or value[\u0027rawOutfeedCount\u0027] is None or value[\u0027rawWasteCount\u0027] is None: return \u0027\u0027\t#We will auto-cacluate, no need for a warning\n\n\tdelta \u003d infeedCount - (outfeedCount * pkgCount + wasteCount)\n\t# (translated here, as a number follows it; the other messages are whole translation terms)\n\tif delta !\u003d 0: return u\u0027%s %s\u0027 % (system.util.translate(\u0027Counts do not add up. Off by\u0027, self.session.props.locale), round(delta, 1))\n\t\n\treturn \u0027\u0027",
             "type": "script"
           }
         ],
@@ -400,7 +400,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n#\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027params\u0027][\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027params\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027params\u0027][\u0027endDate\u0027]}\n#\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n#\t\n#\tallCounts \u003d {k: [] for k,v in value[\u0027counters\u0027].items()}\n#\t\n#\tfor row in data:\n#\t\trow[\u0027startDate\u0027] \u003d value[\u0027params\u0027][\u0027startDate\u0027]\n#\t\trow[\u0027endDate\u0027] \u003d value[\u0027params\u0027][\u0027endDate\u0027]\n#\t\trow[\u0027assetId\u0027] \u003d value[\u0027params\u0027][\u0027assetId\u0027]\t\t\t\n#\t\n#\t\tif allCounts.has_key(row[\u0027counterName\u0027]): allCounts[row[\u0027counterName\u0027]].append(dict(row))\n#\t\telse: allCounts[row[\u0027counterName\u0027]] \u003d [dict(row)]\t\n#\t\n#\treturn allCounts\n\n\tparamsDict \u003d {\n\t\t\u0027assetId\u0027: value[\u0027params\u0027][\u0027assetId\u0027],\n\t\t\u0027startDate\u0027: value[\u0027params\u0027][\u0027startDate\u0027],\n\t\t\u0027endDate\u0027: value[\u0027params\u0027][\u0027endDate\u0027]\n\t}\n\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(\n\t\tsystem.kanoa.event.getCounterEventTotals(paramsDict)\n\t)\n\t\n\tallCounts \u003d {}\n\t\n\t# Build structure from configured counters first\n\tfor counterName, counterInfo in value[\u0027counters\u0027].items():\n\t\tcounterTypeName \u003d counterInfo[\u0027counterTypeName\u0027]\n\t\n\t\tif counterTypeName not in allCounts:\n\t\t\tallCounts[counterTypeName] \u003d {}\n\t\n\t\tallCounts[counterTypeName][counterName] \u003d {\n\t\t\t\u0027counterInfo\u0027: counterInfo,\n\t\t\t\u0027counterEvents\u0027: []\n\t\t}\n\t\n\t# Add actual counter event entries\n\tfor row in data:\n\t\trow[\u0027startDate\u0027] \u003d value[\u0027params\u0027][\u0027startDate\u0027]\n\t\trow[\u0027endDate\u0027] \u003d value[\u0027params\u0027][\u0027endDate\u0027]\n\t\trow[\u0027assetId\u0027] \u003d value[\u0027params\u0027][\u0027assetId\u0027]\n\t\n\t\tcounterTypeName \u003d row[\u0027counterTypeName\u0027]\n\t\tcounterName \u003d row[\u0027counterName\u0027]\n\t\n\t\tif counterTypeName not in allCounts:\n\t\t\tallCounts[counterTypeName] \u003d {}\n\t\n\t\tif counterName not in allCounts[counterTypeName]:\n\t\t\tallCounts[counterTypeName][counterName] \u003d {\n\t\t\t\t\u0027counterInfo\u0027: value[\u0027counters\u0027].get(counterName),\n\t\t\t\t\u0027counterEvents\u0027: []\n\t\t\t}\n\t\n\t\tallCounts[counterTypeName][counterName][\u0027counterEvents\u0027].append(dict(row))\n\t\n\treturn allCounts\n\t\n\treturn allCounts",
+            "code": "\n#\tparamsDict \u003d {\u0027assetId\u0027: value[\u0027params\u0027][\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027params\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027params\u0027][\u0027endDate\u0027]}\n#\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n#\t\n#\tallCounts \u003d {k: [] for k,v in value[\u0027counters\u0027].items()}\n#\t\n#\tfor row in data:\n#\t\trow[\u0027startDate\u0027] \u003d value[\u0027params\u0027][\u0027startDate\u0027]\n#\t\trow[\u0027endDate\u0027] \u003d value[\u0027params\u0027][\u0027endDate\u0027]\n#\t\trow[\u0027assetId\u0027] \u003d value[\u0027params\u0027][\u0027assetId\u0027]\t\t\t\n#\t\n#\t\tif allCounts.has_key(row[\u0027counterName\u0027]): allCounts[row[\u0027counterName\u0027]].append(dict(row))\n#\t\telse: allCounts[row[\u0027counterName\u0027]] \u003d [dict(row)]\t\n#\t\n#\treturn allCounts\n\n\tparamsDict \u003d {\n\t\t\u0027assetId\u0027: value[\u0027params\u0027][\u0027assetId\u0027],\n\t\t\u0027startDate\u0027: value[\u0027params\u0027][\u0027startDate\u0027],\n\t\t\u0027endDate\u0027: value[\u0027params\u0027][\u0027endDate\u0027]\n\t}\n\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(\n\t\tsystem.kanoa.event.getCounterEventTotals(paramsDict)\n\t)\n\t\n\tallCounts \u003d {}\n\t\n\t# Build structure from configured counters first\n\tfor counterName, counterInfo in value[\u0027counters\u0027].items():\n\t\tcounterTypeName \u003d counterInfo[\u0027counterTypeName\u0027]\n\t\n\t\tif counterTypeName not in allCounts:\n\t\t\tallCounts[counterTypeName] \u003d {}\n\t\n\t\tallCounts[counterTypeName][counterName] \u003d {\n\t\t\t\u0027counterInfo\u0027: counterInfo,\n\t\t\t\u0027counterEvents\u0027: []\n\t\t}\n\t\n\t# Add actual counter event entries\n\tfor row in data:\n\t\trow[\u0027startDate\u0027] \u003d value[\u0027params\u0027][\u0027startDate\u0027]\n\t\trow[\u0027endDate\u0027] \u003d value[\u0027params\u0027][\u0027endDate\u0027]\n\t\trow[\u0027assetId\u0027] \u003d value[\u0027params\u0027][\u0027assetId\u0027]\n\t\n\t\tcounterTypeName \u003d row[\u0027counterTypeName\u0027]\n\t\tcounterName \u003d row[\u0027counterName\u0027]\n\t\n\t\tif counterTypeName not in allCounts:\n\t\t\tallCounts[counterTypeName] \u003d {}\n\t\n\t\tif counterName not in allCounts[counterTypeName]:\n\t\t\tallCounts[counterTypeName][counterName] \u003d {\n\t\t\t\t\u0027counterInfo\u0027: value[\u0027counters\u0027].get(counterName),\n\t\t\t\t\u0027counterEvents\u0027: []\n\t\t\t}\n\t\n\t\tallCounts[counterTypeName][counterName][\u0027counterEvents\u0027].append(dict(row))\n\t\n\t#A counter with no events in the range still gets its value box, at 0, so it can be set like the others (868mu242y)\n\tfor counterName, counterInfo in value[\u0027counters\u0027].items():\n\t\tentry \u003d allCounts[counterInfo[\u0027counterTypeName\u0027]][counterName]\n\t\tif not entry[\u0027counterEvents\u0027]:\n\t\t\tentry[\u0027counterEvents\u0027].append({\n\t\t\t\t\u0027counterId\u0027: counterInfo[\u0027counterId\u0027], \u0027counterName\u0027: counterName, \u0027counterTypeName\u0027: counterInfo[\u0027counterTypeName\u0027], \u0027value\u0027: 0.0,\n\t\t\t\t\u0027assetId\u0027: value[\u0027params\u0027][\u0027assetId\u0027], \u0027startDate\u0027: value[\u0027params\u0027][\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027params\u0027][\u0027endDate\u0027],\n\t\t\t\t\u0027itemStateId\u0027: None, \u0027itemStateName\u0027: None, \u0027itemId\u0027: None, \u0027itemName\u0027: None, \u0027workOrderId\u0027: None, \u0027workOrderName\u0027: None,\n\t\t\t\t\u0027isCoProduct\u0027: False\n\t\t\t})\n\t\n\treturn allCounts\n\t\n\treturn allCounts",
             "type": "script"
           }
         ],
@@ -416,7 +416,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tdef addDefaultState(counterTypeId, counterId):\n\t\treturn {\n\t\t\t\t\t\"itemStateId\": None,\n\t\t  \t\t\t\"itemStateColor\": \"#D5D5D5\",\n\t\t\t\t\t\"counterTypeId\": counterTypeId,\n\t\t\t\t\t\"itemStateClassPath\": \"\",\n\t\t  \t\t\t\"counterId\": counterId,\n\t\t  \t\t\t\"enabled\": True,\n\t\t\t\t\t\"itemStateName\": \"Add\",\n\t\t\t\t\t\"itemStateClassId\": None\n\t\t}\n\n\tif not value[\u0027assetId\u0027]: return {}\n\n\tcounters \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getCounter({\u0027assetId\u0027: value[\u0027assetId\u0027]}), \u0027counterName\u0027, None)\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getAssetItemStates({\u0027assetId\u0027: value[\u0027assetId\u0027]}))\n\t\n\tself.custom.assetItemStates \u003d data\n\t\n\tfor k,v in counters.items(): counters[k][\u0027states\u0027] \u003d []\n\t\n\tfor row in data:\n\t\trow \u003d dict(row)\n\t\tcounter \u003d row[\u0027counterTypeName\u0027]\n\t\tif counter:\n\t\t\tfor k,v in counters.items():\n\t\t\t\tsystem.perspective.print(\"%s %s %s\"%(k, v[\u0027counterTypeName\u0027], counter))\n\t\t\t\t\n\t\t\t\tif v[\u0027counterTypeName\u0027] \u003d\u003d counter:\n\t\t\t\t\trow[\u0027counterId\u0027] \u003d v[\u0027counterId\u0027]\n\t\t\t\t\tcounterName \u003d v[\u0027counterName\u0027]\n\t\t\t\t\tsystem.perspective.print(\"Setting counter %s %s row to %s\"%(counterName, row[\u0027itemStateName\u0027], row[\u0027counterId\u0027]))\n\t\t\t\t\tcounters[counterName][\u0027states\u0027].append(dict(row))\n\t\telse:\n\t\t\tsystem.perspective.print(\"HAS NO COUNTER\")\n\t\t\tfor k,v in counters.items():\n\t\t\t\trow[\u0027counterId\u0027] \u003d counters[k][\u0027counterId\u0027]\n\t\t\t\tsystem.perspective.print(\"Setting counter %s %s row to %s\"%(k, row[\u0027itemStateName\u0027], row[\u0027counterId\u0027]))\n\t\t\t\tcounters[k][\u0027states\u0027].append(dict(row))\n\t\n\tfor k,v in counters.items():\n\t\tif len(counters[k][\u0027states\u0027]) \u003d\u003d 0: counters[k][\u0027states\u0027].append(addDefaultState(v[\u0027counterTypeId\u0027], v[\u0027counterId\u0027]))\n\t\n\treturn counters",
+            "code": "\n\tdef addDefaultState(counterTypeId, counterId):\n\t\treturn {\n\t\t\t\t\t\"itemStateId\": None,\n\t\t  \t\t\t\"itemStateColor\": \"#D5D5D5\",\n\t\t\t\t\t\"counterTypeId\": counterTypeId,\n\t\t\t\t\t\"itemStateClassPath\": \"\",\n\t\t  \t\t\t\"counterId\": counterId,\n\t\t  \t\t\t\"enabled\": True,\n\t\t\t\t\t\"itemStateName\": \"Add\",\n\t\t\t\t\t\"itemStateClassId\": None\n\t\t}\n\n\tif not value[\u0027assetId\u0027]: return {}\n\n\tcounters \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getCounter({\u0027assetId\u0027: value[\u0027assetId\u0027]}), \u0027counterName\u0027, None)\n\t#By the asset\u0027s path, so a state linked on an asset above it (its site, its enterprise) counts too; by assetId only the\n\t#states linked on the asset itself were found. A disabled state gets no button\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value[\u0027assetId\u0027]}))\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.item.getAssetItemStates({\u0027assetPath\u0027: assetPath, \u0027enabled\u0027: True})) if assetPath else []\n\t\n\tself.custom.assetItemStates \u003d data\n\t\n\tfor k,v in counters.items(): counters[k][\u0027states\u0027] \u003d []\n\t\n\tseen \u003d set()\t#A state linked on the asset and on an asset above it comes back once per link\n\tfor row in data:\n\t\trow \u003d dict(row)\n\t\tif row[\u0027itemStateId\u0027] in seen: continue\n\t\tseen.add(row[\u0027itemStateId\u0027])\n\t\tcounter \u003d row[\u0027counterTypeName\u0027]\n\t\tif counter:\n\t\t\tfor k,v in counters.items():\n\t\t\t\tsystem.perspective.print(\"%s %s %s\"%(k, v[\u0027counterTypeName\u0027], counter))\n\t\t\t\t\n\t\t\t\tif v[\u0027counterTypeName\u0027] \u003d\u003d counter:\n\t\t\t\t\trow[\u0027counterId\u0027] \u003d v[\u0027counterId\u0027]\n\t\t\t\t\tcounterName \u003d v[\u0027counterName\u0027]\n\t\t\t\t\tsystem.perspective.print(\"Setting counter %s %s row to %s\"%(counterName, row[\u0027itemStateName\u0027], row[\u0027counterId\u0027]))\n\t\t\t\t\tcounters[counterName][\u0027states\u0027].append(dict(row))\n\t\telse:\n\t\t\tsystem.perspective.print(\"HAS NO COUNTER\")\n\t\t\tfor k,v in counters.items():\n\t\t\t\trow[\u0027counterId\u0027] \u003d counters[k][\u0027counterId\u0027]\n\t\t\t\tsystem.perspective.print(\"Setting counter %s %s row to %s\"%(k, row[\u0027itemStateName\u0027], row[\u0027counterId\u0027]))\n\t\t\t\tcounters[k][\u0027states\u0027].append(dict(row))\n\t\n\t#Every counter keeps a plain Add, for a count with no item state, ahead of its item state buttons\n\tfor k,v in counters.items():\n\t\tcounters[k][\u0027states\u0027].insert(0, addDefaultState(v[\u0027counterTypeId\u0027], v[\u0027counterId\u0027]))\n\t\n\treturn counters",
             "type": "script"
           }
         ],
@@ -588,20 +588,21 @@
                   "props.text": {
                     "binding": {
                       "config": {
-                        "path": "view.params.value.startDate"
+                        "struct": {
+                          "date": "{view.params.value.startDate}",
+                          "shiftName": "{view.params.value.shiftName}",
+                          "timeZone": "{view.custom.assetInfo.timeZone}"
+                        },
+                        "waitOnAll": false
                       },
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "formatType": "datetime",
-                          "formatValue": {
-                            "date": "medium",
-                            "time": "medium"
-                          },
-                          "type": "format"
+                          "code": "\n\t#Opened from a shift (the info panel\u0027s Current Shift tab passes its shiftName), the range is the shift\u0027s, so it\u0027s in\n\t#the asset\u0027s time zone; otherwise the device\u0027s. Either way the zone is shown.\n\tdate \u003d value[\u0027date\u0027]\n\tif date is None: return \u0027\u0027\n\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(date)\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tzone \u003d self.session.props.device.timezone.id\n\tif value[\u0027shiftName\u0027] and value[\u0027timeZone\u0027]:\n\t\tzone \u003d dict((sql, iana) for iana, sql in system.kanoa.date.getIANATimeZoneToSQLDict().items()).get(value[\u0027timeZone\u0027], value[\u0027timeZone\u0027])\n\t# The session\u0027s language for the month and AM/PM, as for the pattern\n\tfrom java.util import Locale\n\tlocale \u003d self.session.props.locale or \u0027en-US\u0027\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MMM d, yyyy, h:mm:ss a z\u0027, locale), Locale.forLanguageTag(str(locale).replace(\u0027_\u0027, \u0027-\u0027)))\n\tif zone: fmt.setTimeZone(TimeZone.getTimeZone(zone))\n\treturn fmt.format(date)",
+                          "type": "script"
                         }
                       ],
-                      "type": "property"
+                      "type": "expr-struct"
                     }
                   }
                 },
@@ -641,20 +642,21 @@
                   "props.text": {
                     "binding": {
                       "config": {
-                        "path": "view.params.value.endDate"
+                        "struct": {
+                          "date": "{view.params.value.endDate}",
+                          "shiftName": "{view.params.value.shiftName}",
+                          "timeZone": "{view.custom.assetInfo.timeZone}"
+                        },
+                        "waitOnAll": false
                       },
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "formatType": "datetime",
-                          "formatValue": {
-                            "date": "medium",
-                            "time": "medium"
-                          },
-                          "type": "format"
+                          "code": "\n\t#Opened from a shift (the info panel\u0027s Current Shift tab passes its shiftName), the range is the shift\u0027s, so it\u0027s in\n\t#the asset\u0027s time zone; otherwise the device\u0027s. Either way the zone is shown.\n\tdate \u003d value[\u0027date\u0027]\n\tif date is None: return \u0027\u0027\n\tif not hasattr(date, \u0027getTime\u0027): date \u003d system.date.fromMillis(date)\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tzone \u003d self.session.props.device.timezone.id\n\tif value[\u0027shiftName\u0027] and value[\u0027timeZone\u0027]:\n\t\tzone \u003d dict((sql, iana) for iana, sql in system.kanoa.date.getIANATimeZoneToSQLDict().items()).get(value[\u0027timeZone\u0027], value[\u0027timeZone\u0027])\n\t# The session\u0027s language for the month and AM/PM, as for the pattern\n\tfrom java.util import Locale\n\tlocale \u003d self.session.props.locale or \u0027en-US\u0027\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\u0027MMM d, yyyy, h:mm:ss a z\u0027, locale), Locale.forLanguageTag(str(locale).replace(\u0027_\u0027, \u0027-\u0027)))\n\tif zone: fmt.setTimeZone(TimeZone.getTimeZone(zone))\n\treturn fmt.format(date)",
+                          "type": "script"
                         }
                       ],
-                      "type": "property"
+                      "type": "expr-struct"
                     }
                   }
                 },
@@ -761,7 +763,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn \"Infeed {:,} {}\".format(round(value[\u0027infeedCount\u0027] or 0.0,1), value[\u0027infeedUnits\u0027] or \u0027units\u0027)",
+                          "code": "\t# Translated here: a label with a number in it doesn\u0027t match a translation term\n\tlocale \u003d self.session.props.locale\n\treturn u\"%s {:,} {}\".format(round(value[\u0027infeedCount\u0027] or 0.0, 1), value[\u0027infeedUnits\u0027] or system.util.translate(\u0027units\u0027, locale)) % system.util.translate(\u0027Infeed\u0027, locale)",
                           "type": "script"
                         }
                       ],
@@ -852,7 +854,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn \"Outfeed {:,} {}\".format(round(value[\u0027outfeedCount\u0027] or 0.0,1), value[\u0027outfeedUnits\u0027] or \u0027units\u0027)",
+                          "code": "\t# Translated here: a label with a number in it doesn\u0027t match a translation term\n\tlocale \u003d self.session.props.locale\n\treturn u\"%s {:,} {}\".format(round(value[\u0027outfeedCount\u0027] or 0.0, 1), value[\u0027outfeedUnits\u0027] or system.util.translate(\u0027units\u0027, locale)) % system.util.translate(\u0027Outfeed\u0027, locale)",
                           "type": "script"
                         }
                       ],
@@ -943,7 +945,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn \"Waste {:,} {}\".format(round(value[\u0027wasteCount\u0027] or 0.0,1), value[\u0027wasteUnits\u0027] or \u0027units\u0027)",
+                          "code": "\t# Translated here: a label with a number in it doesn\u0027t match a translation term\n\tlocale \u003d self.session.props.locale\n\treturn u\"%s {:,} {}\".format(round(value[\u0027wasteCount\u0027] or 0.0, 1), value[\u0027wasteUnits\u0027] or system.util.translate(\u0027units\u0027, locale)) % system.util.translate(\u0027Waste\u0027, locale)",
                           "type": "script"
                         }
                       ],
@@ -1355,7 +1357,7 @@
                       "component": {
                         "onActionPerformed": {
                           "config": {
-                            "script": "\t\n\tpayload \u003d {\u0027value\u0027: {\n\t\t\t\t\t\t\t  \"assetId\": self.view.params.value.assetId,\n\t\t\t\t\t\t\t  \"counterId\": None,\n\t\t\t\t\t\t\t  \"counterName\": None,\n\t\t\t\t\t\t\t  \"itemId\": None,\n\t\t\t\t\t\t\t  \"itemPath\": None,\n\t\t\t\t\t\t\t  \"itemStateId\": None,\n\t\t\t\t\t\t\t  \"itemStatePath\": None,\n\t\t\t\t\t\t\t  \"value\": None,\n\t\t\t\t\t\t\t  \"workOrderId\": None,\n\t\t\t\t\t\t\t  \"workOrderName\": None\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\n\tsystem.perspective.openPopup(\u0027Count Value Editor\u0027, \u0027kanoa/mes/asset/counts/counterValueEditor\u0027, params \u003d payload, title \u003d \u0027Count Value Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\treturn"
+                            "script": "\t\n\tpayload \u003d {\u0027value\u0027: {\n\t\t\t\t\t\t\t  \"assetId\": self.view.params.value.assetId,\n\t\t\t\t\t\t\t  \"counterId\": None,\n\t\t\t\t\t\t\t  \"counterName\": None,\n\t\t\t\t\t\t\t  \"itemId\": None,\n\t\t\t\t\t\t\t  \"itemPath\": None,\n\t\t\t\t\t\t\t  \"itemStateId\": None,\n\t\t\t\t\t\t\t  \"itemStatePath\": None,\n\t\t\t\t\t\t\t  \"value\": None,\n\t\t\t\t\t\t\t  \"workOrderId\": None,\n\t\t\t\t\t\t\t  \"workOrderName\": None,\n\t\t\t\t\t\t\t  \"isCoProduct\": False\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t\t\t\n\t#The range\u0027s units by counter type, from its production summary, for the editor\u0027s units label\n\tcounts \u003d self.view.custom.counts.values\n\tdef unit(name):\n\t\ttry: return counts[name]\n\t\texcept: return None\n\tunits \u003d {\u0027infeed\u0027: unit(\u0027infeedUnits\u0027), \u0027outfeed\u0027: unit(\u0027outfeedUnits\u0027), \u0027waste\u0027: unit(\u0027wasteUnits\u0027)}\n\tpayload[\u0027units\u0027] \u003d units\n\tsystem.perspective.openPopup(\u0027Count Value Editor\u0027, \u0027kanoa/mes/asset/counts/counterValueEditor\u0027, params \u003d payload, title \u003d \u0027Count Value Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -1411,7 +1413,7 @@
                       "component": {
                         "onActionPerformed": {
                           "config": {
-                            "script": "\t\n\tpayload \u003d {\u0027value\u0027: self.view.custom.counts.table.selection[0]}\t\n\tsystem.perspective.openPopup(\u0027Count Value Editor\u0027, \u0027kanoa/mes/asset/counts/counterValueEditor\u0027, params \u003d payload, title \u003d \u0027Count Value Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\treturn"
+                            "script": "\t\n\tpayload \u003d {\u0027value\u0027: self.view.custom.counts.table.selection[0]}\t\n\t#The range\u0027s units by counter type, from its production summary, for the editor\u0027s units label\n\tcounts \u003d self.view.custom.counts.values\n\tdef unit(name):\n\t\ttry: return counts[name]\n\t\texcept: return None\n\tunits \u003d {\u0027infeed\u0027: unit(\u0027infeedUnits\u0027), \u0027outfeed\u0027: unit(\u0027outfeedUnits\u0027), \u0027waste\u0027: unit(\u0027wasteUnits\u0027)}\n\tpayload[\u0027units\u0027] \u003d units\n\tsystem.perspective.openPopup(\u0027Count Value Editor\u0027, \u0027kanoa/mes/asset/counts/counterValueEditor\u0027, params \u003d payload, title \u003d \u0027Count Value Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, showCloseIcon\u003dTrue, viewportBound\u003dTrue)\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -1587,16 +1589,6 @@
                   "basis": "35px",
                   "shrink": 0
                 },
-                "propConfig": {
-                  "custom.selected": {
-                    "binding": {
-                      "config": {
-                        "expression": "!isnull({../Table.props.selection.selectedRow})"
-                      },
-                      "type": "expr"
-                    }
-                  }
-                },
                 "props": {
                   "direction": "column",
                   "style": {
@@ -1646,33 +1638,6 @@
                             }
                           ],
                           "type": "property"
-                        }
-                      },
-                      "props.columns[5].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Item State\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[6].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\u0027Item\u0027)"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
-                        }
-                      },
-                      "props.columns[7].header.title": {
-                        "binding": {
-                          "config": {
-                            "expression": "translate(\"Order\")"
-                          },
-                          "overlayOptOut": true,
-                          "type": "expr"
                         }
                       },
                       "props.data": {
@@ -2237,7 +2202,8 @@
                             "justify": "center",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Item State"
                           },
                           "justify": "center",
                           "nullFormat": {
@@ -2328,7 +2294,8 @@
                             "justify": "center",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Item"
                           },
                           "justify": "center",
                           "nullFormat": {
@@ -2419,7 +2386,8 @@
                             "justify": "left",
                             "style": {
                               "classes": ""
-                            }
+                            },
+                            "title": "Order"
                           },
                           "justify": "auto",
                           "nullFormat": {
@@ -3152,7 +3120,7 @@
             "counterInfo",
             "oldCounterInfo"
           ],
-          "script": "\n\t#if we are editing counts, we will delete all specifc counts for the time range and then create a new single entry just before the end of the selected range.\n\t#if we are adding a count, we create a new entry just before the end of the selected range.\n\t\n\tuserId \u003d self.view.custom.security.userId\n\n\tsystem.perspective.print(\u0027oldCounterInfo is %s\u0027%oldCounterInfo)\n\tif oldCounterInfo:\n\t\tretVal, msg \u003d self.deleteCounts(oldCounterInfo)\n\t\tif msg:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: msg})\n\t\t\treturn\n\t\n\tself.updateCounts(counterInfo)\n\n\treturn"
+          "script": "\n\t#if we are editing counts, we will delete all specifc counts for the time range and then create a new single entry just before the end of the selected range.\n\t#if we are adding a count, we create a new entry just before the end of the selected range.\n\t\n\tuserId \u003d self.view.custom.security.userId\n\n\tsystem.perspective.print(\u0027oldCounterInfo is %s\u0027%oldCounterInfo)\n\tif oldCounterInfo:\n\t\tretVal, msg \u003d self.deleteCounts(oldCounterInfo)\n\t\tif msg: return\n\t\n\tself.updateCounts(counterInfo)\n\n\treturn"
         },
         {
           "name": "deleteCounts",
@@ -3164,14 +3132,19 @@
         {
           "name": "refreshCounts",
           "params": [],
-          "script": "\n\tself.view.refreshBinding(\"custom.counts.counterData\")\n\tself.view.refreshBinding(\"custom.counts.values\")\n\tself.view.refreshBinding(\"custom.countEvents\")\n\t\n\tsystem.perspective.sendMessage(\"refreshProductionData\", {\u0027inputPayload\u0027: self.view.params.value})\n\t\n\tsystem.tag.write(self.view.custom.assetInfo.tagPath + \u0027/Line/OEE/refresh\u0027, True)\n\t\n\treturn"
+          "script": "\n\tself.view.refreshBinding(\"custom.counts.counterData\")\n\tself.view.refreshBinding(\"custom.counts.values\")\n\tself.view.refreshBinding(\"custom.countEvents\")\n\t\n\tsystem.perspective.sendMessage(\"refreshProductionData\", {\u0027inputPayload\u0027: self.view.params.value})\n\t\n\t#The kanoaMES OEE tags recount on their own; the legacy [Kanoa] Line tags, where the asset still has them, are nudged\n\trefreshPath \u003d self.view.custom.assetInfo.tagPath + \u0027/Line/OEE/refresh\u0027\n\tif system.tag.exists(refreshPath): system.tag.writeBlocking([refreshPath], [True])\n\t\n\treturn"
         },
         {
           "name": "updateCounts",
           "params": [
             "counterInfo"
           ],
-          "script": "\n#\tsystem.perspective.print(\"updateCounts() called with %s\"%counterInfo)\n\n\tuserId \u003d self.view.custom.security.userId\n\ttStamp \u003d system.date.addSeconds(self.view.params.value.startDate, 1)\n\ttStamp \u003d system.date.fromMillis((system.date.toMillis(tStamp) // 1000) * 1000)\t\n\t\n\taddCounterInfo \u003d {\n\t\t\t\t\t\u0027counterId\u0027: counterInfo[\u0027counterId\u0027],\n\t\t\t\t\t\u0027tStamp\u0027: tStamp,\n\t\t\t\t\t\u0027deltaValue\u0027: counterInfo[\u0027value\u0027],\n\t\t\t\t\t\u0027itemStateId\u0027: counterInfo[\u0027itemStateId\u0027],\n\t\t\t\t\t\u0027itemId\u0027: counterInfo[\u0027itemId\u0027],\n\t\t\t\t\t\u0027workOrderId\u0027: counterInfo[\u0027workOrderId\u0027]\n\t\t\t\t}\n\t\n\tcounterEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getCounterEvents(addCounterInfo),0)\n\tif counterEventInfo[\u0027counterEventId\u0027]:\n\t\taddCounterInfo[\u0027deltaValue\u0027] \u003d addCounterInfo[\u0027deltaValue\u0027] + counterEventInfo[\u0027value\u0027]\n\t\taddCounterInfo[\u0027counterEventId\u0027] \u003d counterEventInfo[\u0027counterEventId\u0027]\n\t\tretVal, msg \u003d system.kanoa.event.updateCounterEvent(addCounterInfo, userId)\n\telse:\n\t\tcounterEventId, msg \u003d system.kanoa.event.addCounterEvent(addCounterInfo, userId)\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Counts have been updated\u0027})\n\n\tsystem.tag.writeBlocking([self.view.custom.assetInfo.tagPath + \u0027/Line/OEE/refresh\u0027], [True])\t#Refresh the tag values so that realtime displays update\n\t\n\treturn"
+          "script": "\n#\tsystem.perspective.print(\"updateCounts() called with %s\"%counterInfo)\n\n\tuserId \u003d self.view.custom.security.userId\n\ttStamp \u003d system.date.addSeconds(self.view.params.value.startDate, 1)\n\ttStamp \u003d system.date.fromMillis((system.date.toMillis(tStamp) // 1000) * 1000)\t\n\t\n\taddCounterInfo \u003d {\n\t\t\t\t\t\u0027counterId\u0027: counterInfo[\u0027counterId\u0027],\n\t\t\t\t\t\u0027tStamp\u0027: tStamp,\n\t\t\t\t\t\u0027deltaValue\u0027: counterInfo[\u0027value\u0027],\n\t\t\t\t\t\u0027itemStateId\u0027: counterInfo[\u0027itemStateId\u0027],\n\t\t\t\t\t\u0027itemId\u0027: counterInfo[\u0027itemId\u0027],\n\t\t\t\t\t\u0027workOrderId\u0027: counterInfo[\u0027workOrderId\u0027],\n\t\t\t\t\t# Read the key directly: jsonEncode recurses forever on the counter\u0027s nested Perspective wrappers\n\t\t\t\t\t\u0027isCoProduct\u0027: bool(counterInfo[\u0027isCoProduct\u0027]) if \u0027isCoProduct\u0027 in counterInfo.keys() else False\n\t\t\t\t}\n\t\n\tcounterEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getCounterEvents(addCounterInfo),0)\n\tif counterEventInfo[\u0027counterEventId\u0027]:\n\t\taddCounterInfo[\u0027deltaValue\u0027] \u003d addCounterInfo[\u0027deltaValue\u0027] + counterEventInfo[\u0027value\u0027]\n\t\taddCounterInfo[\u0027counterEventId\u0027] \u003d counterEventInfo[\u0027counterEventId\u0027]\n\t\tretVal, msg \u003d system.kanoa.event.updateCounterEvent(addCounterInfo, userId)\n\telse:\n\t\tcounterEventId, msg \u003d system.kanoa.event.addCounterEvent(addCounterInfo, userId)\n\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: msg})\n\t\n\treturn"
+        },
+        {
+          "name": "canChangeCounts",
+          "params": [],
+          "script": "\n\t# Whether the user can record count changes: a logged-in user with a Kanoa user id. A guest has none, so the write\n\t# failed on the counter event\u0027s createdBy with \"Something it refers to no longer exists\"; say so instead\n\tuserId \u003d self.view.custom.security.userId if self.view.custom.security is not None else None\n\tif userId is not None and userId \u003e 0:\n\t\treturn True\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Log in to change counts.\u0027})\n\treturn False"
         }
       ],
       "extensionFunctions": null,
@@ -3179,7 +3152,7 @@
         {
           "messageType": "countsEdited",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\"countsEdited() msg rcvd with %s\"%payload)\n\t\n\tself.saveCounts(payload[\u0027countInfo\u0027], payload[\u0027oldCountInfo\u0027])\n\tself.refreshCounts()\t\n\t\n\treturn",
+          "script": "\n\t# A guest can\u0027t change counts (canChangeCounts says why)\n\tif not self.canChangeCounts(): return\n\n\tsystem.perspective.print(\"countsEdited() msg rcvd with %s\"%payload)\n\t\n\tself.saveCounts(payload[\u0027countInfo\u0027], payload[\u0027oldCountInfo\u0027])\n\tself.refreshCounts()\t\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },
@@ -3193,7 +3166,7 @@
         {
           "messageType": "itemStateCountUpdated",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\u0027itemStateCountUpdated msg rcvd with %s\u0027%payload)\n\tcountInfo \u003d payload[\u0027value\u0027]\n\tif payload[\u0027change\u0027] \u003d\u003d \u0027delete\u0027: self.deleteCounts(countInfo )\n\telif payload[\u0027change\u0027] \u003d\u003d \u0027update\u0027: self.saveCounts(countInfo, countInfo)\n\telif payload[\u0027change\u0027] \u003d\u003d \u0027add\u0027: self.updateCounts(countInfo)\n\telse: return\n\t\t\n\tself.refreshCounts()\n\t\n\treturn",
+          "script": "\n\t# A guest can\u0027t change counts (canChangeCounts says why)\n\tif not self.canChangeCounts(): return\n\n\tsystem.perspective.print(\u0027itemStateCountUpdated msg rcvd with %s\u0027%payload)\n\tcountInfo \u003d payload[\u0027value\u0027]\n\tif payload[\u0027change\u0027] \u003d\u003d \u0027delete\u0027: self.deleteCounts(countInfo )\n\telif payload[\u0027change\u0027] \u003d\u003d \u0027update\u0027: self.saveCounts(countInfo, countInfo)\n\telif payload[\u0027change\u0027] \u003d\u003d \u0027add\u0027: self.updateCounts(countInfo)\n\telse: return\n\t\t\n\tself.refreshCounts()\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

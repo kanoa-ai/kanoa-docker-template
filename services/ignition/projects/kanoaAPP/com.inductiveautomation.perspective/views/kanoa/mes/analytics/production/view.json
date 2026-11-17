@@ -30,7 +30,13 @@
         "$ts": 1779433200000
       }
     },
-    "instances": []
+    "instances": [],
+    "searched": false,
+    "navAsset": null,
+    "autoLoad": null,
+    "overRange": false,
+    "zoomId": null,
+    "zoomLoad": null
   },
   "params": {},
   "propConfig": {
@@ -42,7 +48,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tsystem.perspective.print(\"assets() binding change\")\n\tif value is None: return system.dataset.toDataSet([],[])\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027:value}))\n\tdata \u003d system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027oeeEnabled\u0027: True, \u0027assetTypeName\u0027: \u0027line\u0027, \u0027enabled\u0027:True})\n\t\n\tif data.rowCount \u003d\u003d 0:\tdata \u003d system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027oeeEnabled\u0027: True, \u0027enabled\u0027:True})\n\t\n\treturn data",
+            "code": "\t# Every enabled OEE asset at or under the selected asset. A LIKE on the path alone also matches a sibling whose name starts\n\t# the same (Machine 1 would bring Machine 10), so the path is checked again\n\tif value is None: return system.dataset.toDataSet([], [])\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))\n\tif not assetPath: return system.dataset.toDataSet([], [])\n\tdata \u003d system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath + \u0027%\u0027, \u0027oeeEnabled\u0027: True, \u0027enabled\u0027: True})\n\tkeep \u003d [row for row in range(data.rowCount)\n\t\tif data.getValueAt(row, \u0027assetPath\u0027) \u003d\u003d assetPath or data.getValueAt(row, \u0027assetPath\u0027).startswith(assetPath + \u0027\\\\\u0027)]\n\treturn system.dataset.deleteRows(data, [row for row in range(data.rowCount) if row not in keep])",
             "type": "script"
           }
         ],
@@ -53,11 +59,50 @@
     "custom.filter": {
       "onChange": {
         "enabled": null,
-        "script": "\t\n\tself.custom.instances \u003d []\t#Clear the charts anytime a filter value changes\n\t\n\treturn"
+        "script": "\t\n\tself.custom.instances \u003d []\t#Clear the charts anytime a filter value changes\n\tself.custom.searched \u003d False\n\tself.custom.overRange \u003d False\n\t# An OEE asset picked from the asset cards loads its chart straight away (assetNavSelection, on the root)\n\t# (once the selector has passed on both its id and its path, which can arrive as separate changes)\n\twant \u003d self.custom.autoLoad\n\tif want and self.custom.filter.assetId \u003d\u003d want[\u0027assetId\u0027] and self.custom.filter.assetPath \u003d\u003d want[\u0027assetPath\u0027]:\n\t\tself.custom.autoLoad \u003d None\n\t\t# The selector has the asset now: let go of the assetPath param that set it, or the selector would keep returning to\n\t\t# it (it doesn\u0027t follow the session\u0027s selection) and clearing it in the breadcrumb would put it straight back\n\t\tself.getChild(\u0027root\u0027).getChild(\u0027flxHeader\u0027).getChild(\u0027evAssetSelector\u0027).props.params.value.assetPath \u003d None\n\t\tself.getChild(\u0027root\u0027).buildInstances()\n\t# A zoom on the date selector (dateRangeZoomed, on the root) loads the chart once the filter has its dates, within 5 seconds\n\tzoom \u003d self.custom.zoomLoad\n\tif zoom and system.date.toMillis(system.date.now()) - (zoom[\u0027at\u0027] or 0) \u003c 5000:\n\t\tsame \u003d lambda a, b: a is not None and b is not None and abs(system.date.toMillis(a) - system.date.toMillis(b)) \u003c 1000\n\t\tif same(self.custom.filter.startDate, zoom[\u0027startDate\u0027]) and same(self.custom.filter.endDate, zoom[\u0027endDate\u0027]):\n\t\t\tself.getChild(\u0027root\u0027).buildInstances()\n\t\n\treturn"
       },
       "persistent": true
     },
     "custom.instances": {
+      "persistent": true
+    },
+    "custom.searched": {
+      "persistent": true
+    },
+    "custom.navAsset": {
+      "binding": {
+        "type": "property",
+        "config": {
+          "path": "view.custom.filter.assetId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "type": "script",
+            "code": "\n\t# The asset picked in the selector; a card that drills into a site or area replaces it (assetNavSelection)\n\tif value is None: return None\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: value}), 0) or None"
+          }
+        ]
+      }
+    },
+    "custom.overRange": {
+      "persistent": true
+    },
+    "custom.zoomId": {
+      "binding": {
+        "config": {
+          "expression": "now(0)"
+        },
+        "transforms": [
+          {
+            "code": "\t# This widget\u0027s id: its charts name its date selector by it when a box is dragged across them (setDateRange)\n\treturn str(system.kanoa.utilities.getUUID())",
+            "type": "script"
+          }
+        ],
+        "type": "expr"
+      },
+      "persistent": true
+    },
+    "custom.zoomLoad": {
       "persistent": true
     }
   },
@@ -199,6 +244,15 @@
                   "overlayOptOut": true,
                   "type": "property"
                 }
+              },
+              "props.params.value.id": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.zoomId"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
               }
             },
             "props": {
@@ -244,15 +298,15 @@
                       "label": "Last Week"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "label": "This Month"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "label": "Last Month"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "label": "Year To Date"
                     },
                     {
@@ -264,14 +318,15 @@
                       "label": "Last 7 Days"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "label": "Last 14 Days"
                     },
                     {
                       "enabled": true,
                       "label": "Custom"
                     }
-                  ]
+                  ],
+                  "period": "Week"
                 }
               },
               "path": "kanoa/core/templates/selectors/dateSelector"
@@ -280,84 +335,10 @@
           },
           {
             "events": {
-              "system": {
-                "onStartup": {
-                  "config": {
-                    "script": "\t\n\tself.props.value \u003d None\n\t\n\treturn"
-                  },
-                  "scope": "G",
-                  "type": "script"
-                }
-              }
-            },
-            "meta": {
-              "domId": "ddInterval",
-              "name": "ddInterval",
-              "tooltip": {
-                "enabled": true,
-                "location": "top-left",
-                "text": "You can select the time interval or leave as auto-range. Auto range will show data by hour, by day or by week based on the selected date range"
-              }
-            },
-            "position": {
-              "basis": "160px",
-              "shrink": 0
-            },
-            "propConfig": {
-              "props.value": {
-                "binding": {
-                  "config": {
-                    "bidirectional": true,
-                    "path": "view.custom.filter.interval"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
-                },
-                "onChange": {
-                  "enabled": null,
-                  "script": "\t\n\tif origin \u003d\u003d \u0027Browser\u0027:\n\t\tfilter \u003d self.view.custom.filter\n\t\tself.view.custom.instances \u003d [{\u0027values\u0027: {\"assetId\": row[\u0027assetId\u0027], \"startDate\": filter[\u0027startDate\u0027],\"endDate\": filter[\u0027endDate\u0027], \"interval\": filter[\u0027interval\u0027]}} for row in self.view.custom.assets]\n\t\n\treturn"
-                }
-              }
-            },
-            "props": {
-              "dropdownOptionStyle": {
-                "classes": "kanoa/font/default"
-              },
-              "options": [
-                {
-                  "label": "Auto Range",
-                  "value": null
-                },
-                {
-                  "label": "By Hour",
-                  "value": "Hour"
-                },
-                {
-                  "label": "By Day",
-                  "value": "Day"
-                },
-                {
-                  "label": "By Week",
-                  "value": "Week"
-                }
-              ],
-              "placeholder": {
-                "text": "Group by..."
-              },
-              "showClearIcon": true,
-              "style": {
-                "classes": "kanoa/font/default",
-                "height": "30px"
-              }
-            },
-            "type": "ia.input.dropdown"
-          },
-          {
-            "events": {
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tfilter \u003d self.view.custom.filter\n\tself.view.custom.instances \u003d [\n\t\t{\u0027values\u0027: {\n\t\t\t\"assetId\": row[\u0027assetId\u0027], \n\t\t\t\"startDate\": filter[\u0027startDate\u0027],\n\t\t\t\"endDate\": filter[\u0027endDate\u0027],\n\t\t\t\"displayOptions\": {\"showInfeed\": True, \"showOutfeed\": True, \"showTarget\": True, \"showWaste\": True},\n\t\t\t\"interval\": filter[\u0027interval\u0027]\n\t\t\t}\n\t\t} for row in self.view.custom.assets]\n\t\n\treturn"
+                    "script": "\tself.view.rootContainer.buildInstances()"
                   },
                   "scope": "G",
                   "type": "script"
@@ -413,7 +394,7 @@
               "component": {
                 "onActionPerformed": {
                   "config": {
-                    "script": "\t\n\tself.view.custom.instances \u003d []\n\t\n\treturn"
+                    "script": "\t\n\tself.view.custom.instances \u003d []\n\tself.view.custom.searched \u003d False\n\t\n\treturn"
                   },
                   "scope": "G",
                   "type": "script"
@@ -471,16 +452,6 @@
               "text": "Clear"
             },
             "type": "ia.input.button"
-          },
-          {
-            "meta": {
-              "domId": "lblBlank",
-              "name": "lblBlank"
-            },
-            "position": {
-              "grow": 1
-            },
-            "type": "ia.display.label"
           }
         ],
         "meta": {
@@ -505,39 +476,147 @@
       },
       {
         "meta": {
-          "domId": "flxCountBars",
-          "name": "flxCountBars"
+          "name": "lblNoData"
         },
         "position": {
-          "grow": 1,
           "shrink": 0
         },
         "propConfig": {
-          "props.instances": {
+          "position.display": {
             "binding": {
+              "type": "expr-struct",
               "config": {
-                "path": "view.custom.instances"
+                "struct": {
+                  "nav": "{view.custom.navAsset}",
+                  "instances": "{view.custom.instances}",
+                  "over": "{view.custom.overRange}"
+                },
+                "waitOnAll": false
               },
               "overlayOptOut": true,
-              "type": "property"
-            },
-            "persistent": true
+              "transforms": [
+                {
+                  "type": "script",
+                  "code": "\n\t# No OEE asset to chart: nothing selected, or a site or an area (one asset at a time: buildInstances); or a range over 7 days\n\tinfo \u003d value[\u0027nav\u0027]\n\treturn bool(value[\u0027over\u0027]) or (not value[\u0027instances\u0027] and not (info and info.get(\u0027oeeEnabled\u0027)))"
+                }
+              ]
+            }
+          },
+          "props.text": {
+            "binding": {
+              "type": "expr",
+              "config": {
+                "expression": "if({view.custom.overRange}, \u0027Choose a range of up to 7 days\u0027, \u0027Select a production asset\u0027)"
+              },
+              "overlayOptOut": true
+            }
           }
         },
         "props": {
-          "direction": "column",
-          "elementPosition": {
-            "basis": "auto",
-            "shrink": 0
+          "style": {
+            "classes": "kanoa/font/bodyLarge",
+            "color": "var(--kcOnSurfaceVariant)",
+            "padding": "16px 16px 4px",
+            "textAlign": "center"
           },
+          "text": "Select a production asset"
+        },
+        "type": "ia.display.label"
+      },
+      {
+        "type": "ia.display.view",
+        "meta": {
+          "name": "evAssetNav"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "props": {
+          "path": "kanoa/mes/asset/operation/navigation/assetNavPanel"
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "expr-struct",
+              "config": {
+                "struct": {
+                  "nav": "{view.custom.navAsset}",
+                  "instances": "{view.custom.instances}",
+                  "over": "{view.custom.overRange}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "type": "script",
+                  "code": "\n\t# No OEE asset to chart: nothing selected, or a site or an area (one asset at a time: buildInstances)\n\tinfo \u003d value[\u0027nav\u0027]\n\treturn not value[\u0027over\u0027] and not value[\u0027instances\u0027] and not (info and info.get(\u0027oeeEnabled\u0027))"
+                }
+              ]
+            }
+          },
+          "props.params": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.custom.navAsset"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "type": "script",
+                  "code": "\n\t# The assets under the asset in custom.navAsset (every enterprise when there\u0027s none). A card doesn\u0027t open Asset Operation\n\t# here: the root\u0027s assetNavSelection handler selects it\n\tif not value: return {\u0027value\u0027: {\u0027assetId\u0027: None, \u0027assetName\u0027: \u0027\u0027, \u0027assetPath\u0027: \u0027\u0027, \u0027openOperation\u0027: False, \u0027showRoot\u0027: True}}\n\treturn {\u0027value\u0027: {\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027assetName\u0027: value[\u0027assetName\u0027], \u0027assetPath\u0027: value[\u0027assetPath\u0027], \u0027openOperation\u0027: False, \u0027showRoot\u0027: False}}"
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "type": "ia.display.view",
+        "meta": {
+          "name": "evChart"
+        },
+        "position": {
+          "grow": 1,
+          "basis": "0px",
+          "shrink": 0
+        },
+        "props": {
           "path": "kanoa/mes/analytics/widgets/productionCounts/countBarChart",
           "style": {
-            "gap": "5px"
+            "minHeight": "700px"
           },
           "useDefaultViewHeight": false,
           "useDefaultViewWidth": false
         },
-        "type": "ia.display.flex-repeater"
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "type": "expr",
+              "config": {
+                "expression": "len({view.custom.instances}) \u003e 0"
+              },
+              "overlayOptOut": true
+            }
+          },
+          "props.params.values": {
+            "binding": {
+              "type": "property",
+              "config": {
+                "path": "view.custom.instances"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "type": "script",
+                  "code": "\t# The selected asset\u0027s chart (buildInstances): one at most\n\treturn value[0][\u0027values\u0027] if value else None"
+                }
+              ]
+            }
+          }
+        }
       }
     ],
     "meta": {
@@ -558,10 +637,30 @@
           "name": "getExportData",
           "params": [],
           "script": "\n\tsystem.perspective.print(\"exportData() called\")\n\t\n\toeeData \u003d None\n\t\n\tfor instance in self.getChild(\"FlexRepeater\").props.instances:\n\t\tif oeeData is None: oeeData \u003d instance.oeeData\n\t\telse: oeeData \u003d system.dataset.appendDataset(oeeData, instance.oeeData)\n\t\t\t\n\treturn oeeData"
+        },
+        {
+          "name": "buildInstances",
+          "params": [],
+          "script": "\n\t# One asset at a time: a chart with its summary fills the screen, and a chart for every OEE asset under a site or area\n\t# started all their queries together, which tied up the database for minutes (868mwctaw). The selected asset must be an\n\t# OEE asset; anything else shows Select an asset (lblNoData)\n\tfilter \u003d self.view.custom.filter\n\tstart, end \u003d filter[\u0027startDate\u0027], filter[\u0027endDate\u0027]\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: filter[\u0027assetId\u0027] if filter[\u0027assetId\u0027] is not None else -1}), 0)\n\t# Up to 7 days: a longer range reads weeks of events and counts for the chart, which filled the gateway\u0027s memory on the\n\t# demo server (Year To Date, the months and Last 14 Days are off in the date selector; a custom range can still be longer)\n\tover \u003d start is not None and end is not None and system.date.daysBetween(start, end) \u003e 7\n\tself.view.custom.overRange \u003d bool(over and info and info.get(\u0027oeeEnabled\u0027))\n\tif self.view.custom.overRange:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027productionRangeCap\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Choose a range of up to 7 days\u0027, self.session.props.locale)})\n\tinstances \u003d []\n\tif info and info.get(\u0027oeeEnabled\u0027) and not over:\n\t\tinstances.append({\u0027values\u0027: {\n\t\t\t\u0027assetId\u0027: info[\u0027assetId\u0027],\n\t\t\t\u0027startDate\u0027: start,\n\t\t\t\u0027endDate\u0027: end,\n\t\t\t\u0027displayOptions\u0027: {\u0027showInfeed\u0027: True, \u0027showOutfeed\u0027: True, \u0027showTarget\u0027: True, \u0027showWaste\u0027: True, \u0027showModes\u0027: True},\n\t\t\t# Auto: the chart\u0027s table and export by hour, day or week from the range\n\t\t\t\u0027interval\u0027: None,\n\t\t\t# A box dragged across the chart sets the range on this page\u0027s date selector (setDateRange)\n\t\t\t\u0027zoomId\u0027: self.view.custom.zoomId}})\n\tself.view.custom.instances \u003d instances\n\tself.view.custom.searched \u003d True"
         }
       ],
       "extensionFunctions": null,
-      "messageHandlers": []
+      "messageHandlers": [
+        {
+          "messageType": "assetNavSelection",
+          "pageScope": true,
+          "sessionScope": false,
+          "viewScope": false,
+          "script": "\n\t# A card or Up in the asset cards (evAssetNav): an OEE asset is selected in the selector and its chart loads\n\t# (custom.filter\u0027s onChange, with autoLoad); a site or an area shows the assets under it; Up past the top shows every\n\t# enterprise\n\tvalue \u003d (payload or {}).get(\u0027value\u0027) or {}\n\tpath \u003d value.get(\u0027assetPath\u0027) or \u0027\u0027\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027: path}), 0) if path else None\n\tif info and info.get(\u0027oeeEnabled\u0027):\n\t\tself.view.custom.autoLoad \u003d {\u0027assetId\u0027: info[\u0027assetId\u0027], \u0027assetPath\u0027: path}\n\t\tself.getChild(\u0027flxHeader\u0027).getChild(\u0027evAssetSelector\u0027).props.params.value.assetPath \u003d path\n\telse:\n\t\tself.view.custom.navAsset \u003d info or None"
+        },
+        {
+          "messageType": "dateRangeZoomed",
+          "pageScope": true,
+          "sessionScope": false,
+          "viewScope": false,
+          "script": "\n\t# A zoom or Zoom out on this page\u0027s date selector: load the chart for the new range without waiting for Get Data. The\n\t# filter\u0027s onChange loads it once both dates have arrived (they can come as separate changes); if they already have, now\n\tif not payload or not self.view.custom.zoomId or payload.get(\u0027id\u0027) !\u003d self.view.custom.zoomId: return\n\tif payload.get(\u0027startDate\u0027) is None or payload.get(\u0027endDate\u0027) is None: return\n\tself.view.custom.zoomLoad \u003d {\u0027startDate\u0027: payload[\u0027startDate\u0027], \u0027endDate\u0027: payload[\u0027endDate\u0027], \u0027at\u0027: system.date.toMillis(system.date.now())}\n\tfilter \u003d self.view.custom.filter\n\tsame \u003d lambda a, b: a is not None and b is not None and abs(system.date.toMillis(a) - system.date.toMillis(b)) \u003c 1000\n\tif same(filter[\u0027startDate\u0027], payload[\u0027startDate\u0027]) and same(filter[\u0027endDate\u0027], payload[\u0027endDate\u0027]): self.buildInstances()"
+        }
+      ]
     },
     "type": "ia.container.flex"
   }

@@ -602,10 +602,20 @@
           "props.tabs": {
             "binding": {
               "config": {
-                "path": "view.custom.selection.tabs"
+                "struct": {
+                  "tabs": "{view.custom.selection.tabs}",
+                  "locale": "{session.props.locale}"
+                },
+                "waitOnAll": true
               },
               "overlayOptOut": true,
-              "type": "property"
+              "type": "expr-struct",
+              "transforms": [
+                {
+                  "code": "\t#custom.selection.tabs keeps the status names: refreshWorkOrders finds a tab by them\n\ttabs \u003d []\n\tfor tab in value[\u0027tabs\u0027] or []:\n\t\tname, separator, count \u003d tab.partition(\u0027 (\u0027)\n\t\ttabs.append(system.util.translate(name, value[\u0027locale\u0027]) + separator + count)\n\treturn tabs",
+                  "type": "script"
+                }
+              ]
             }
           }
         },

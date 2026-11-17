@@ -5,28 +5,7 @@
       "row": null,
       "selectedData": []
     },
-    "assetInfo": {
-      "assetGroupColor": null,
-      "assetGroupId": null,
-      "assetGroupName": null,
-      "assetId": 2558,
-      "assetName": "Resin Plant",
-      "assetPath": "Kanoa Box Co\\Resin Plant",
-      "assetTypeId": 6,
-      "assetTypeName": "site",
-      "assetTypePath": "enterprise\\site",
-      "displayPath": "Kanoa Box Co \u003e Resin Plant",
-      "enabled": true,
-      "iconPath": "kanoa/site",
-      "oeeEnabled": false,
-      "parentId": 899,
-      "path": "Kanoa Box Co\\Resin Plant",
-      "processTypeId": null,
-      "processTypeName": null,
-      "sortOrder": 88,
-      "tagPath": "[Kanoa]/Kanoa Box Co/Resin Plant",
-      "timeZone": "Mountain Standard Time"
-    },
+    "assetInfo": {},
     "info": {
       "showBar": false,
       "text": "",
@@ -233,12 +212,12 @@
           "enabled": true
         }
       },
-      "userId": 5
+      "userId": null
     }
   },
   "params": {
     "values": {
-      "assetPath": "Kanoa Box Co\\Resin Plant"
+      "assetPath": null
     }
   },
   "propConfig": {
@@ -253,7 +232,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value is None or not value.has_key(\u0027assetPath\u0027) or value[\u0027assetPath\u0027] is None: return []\n\tassetPath \u003d value[\u0027assetPath\u0027]\t\n\n\tcounters \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getCounter({\u0027assetPath\u0027: assetPath + \u0027%\u0027}))\n\ttagPath \u003d \u0027[Kanoa]\u0027 + assetPath.replace(\"\\\\\", \u0027/\u0027)\n\t\n\ttagSearchList \u003d [\n\t\t\t\t\t\t{\u0027tagPath\u0027: tagPath, \u0027filters\u0027: {\"tagType\":\"UdtInstance\", \"typeId\": \"[Kanoa]_types_/Kanoa/assetOEE\", \"recursive\":True}, \u0027tagNameList\u0027: [\u0027Configuration/infeedCounterId\u0027, \u0027Configuration/outfeedCounterId\u0027, \u0027Configuration/wasteCounterId\u0027]},\n\t\t\t\t\t\t{\u0027tagPath\u0027: tagPath, \u0027filters\u0027: {\"tagType\":\"UdtInstance\", \"typeId\": \"[Kanoa]_types_/Kanoa/counter\", \"recursive\":True}, \u0027tagNameList\u0027: []},\n\t\t\t\t\t\t{\u0027tagPath\u0027: tagPath, \u0027filters\u0027: {\"tagType\":\"UdtInstance\", \"typeId\": \"[Kanoa]_types_/Kanoa/generalCounter\", \"recursive\":True}, \u0027tagNameList\u0027: []},\n\t\t\t\t\t\t{\u0027tagPath\u0027: tagPath, \u0027filters\u0027: {\"tagType\":\"UdtInstance\", \"typeId\": \"[Kanoa]_types_/Kanoa/counters/counter\", \"recursive\":True}, \u0027tagNameList\u0027: [\u0027counterId\u0027]}\n\t\t\t\t\t]\n\t\n\ttagInfoList \u003d []\n\tfor ts in tagSearchList:\n\t\tresults \u003d system.tag.browse(path \u003d ts[\u0027tagPath\u0027], filter \u003d ts[\u0027filters\u0027]).results\n\t\tfor result in results:\n\t\t\tpath \u003d str(result[\u0027fullPath\u0027])\n\t\t\tfor tagName in ts[\u0027tagNameList\u0027]:\n\t\t\t\tparentPath \u003d path.rsplit(\u0027/\u0027, len(tagName.split(\"/\"))-1)[0]\n\t\t\t\ttagInfoList.append({\u0027tagName\u0027: tagName, \u0027tagPath\u0027: path + \u0027/\u0027 + tagName, \u0027parentPath\u0027: parentPath, \u0027udtType\u0027: ts[\u0027filters\u0027][\u0027typeId\u0027]})\n\t\t\n\ttagValues \u003d system.tag.readBlocking([item[\u0027tagPath\u0027] for item in tagInfoList])\n\t\n\ttags \u003d {}\n\tfor i, tagValue in enumerate(tagValues):\n\t\ttags[tagValue.value] \u003d tagInfoList[i]\n\t\n\tfor counter in counters:\n\t\tif tags.has_key(counter[\u0027counterId\u0027]):\n\t\t\ttagInfo \u003d tags[counter[\u0027counterId\u0027]]\n\t\t\ttagName \u003d tagInfo[\u0027tagName\u0027]\n\t\t\ttagPath \u003d tagInfo[\u0027tagPath\u0027].rsplit(\"/\", len(tagName.split(\"/\")))[0] if tagInfo[\u0027tagPath\u0027] else None\n\t\t\tudtType \u003d tagInfo[\u0027udtType\u0027]\n\t\telse: \n\t\t\ttagPath, udtType \u003d None, None\n\t\t\t\n\t\tcounter[\u0027tagPath\u0027] \u003d tagPath\n\t\tcounter[\u0027udtType\u0027] \u003d udtType\n\t\n\treturn counters",
+            "code": "\n\tif value is None or not value.has_key(\u0027assetPath\u0027) or value[\u0027assetPath\u0027] is None: return []\n\tassetPath \u003d value[\u0027assetPath\u0027]\t\n\n\tcounters \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getCounter({\u0027assetPath\u0027: assetPath + \u0027%\u0027}))\n\ttagPath \u003d \u0027[Kanoa]\u0027 + assetPath.replace(\"\\\\\", \u0027/\u0027)\n\t\n\t#Tags made since the Java ports have the short type (\u0027Kanoa/counters/counter\u0027, \u0027Kanoa/assetOEE\u0027); older ones the long\n\t#\u0027[Kanoa]_types_/...\u0027 form. Searching only for the long form found none of the new ones, so the list showed no tag path\n\t#(868mvubpz). udtType keeps the long form either way: the edit rights below compare it\n\ttagSearchList \u003d []\n\tfor udt, tagNameList in [(\u0027Kanoa/assetOEE\u0027, [\u0027Configuration/infeedCounterId\u0027, \u0027Configuration/outfeedCounterId\u0027, \u0027Configuration/wasteCounterId\u0027]),\n\t\t\t\t\t\t\t  (\u0027Kanoa/counter\u0027, []), (\u0027Kanoa/generalCounter\u0027, []), (\u0027Kanoa/counters/counter\u0027, [\u0027counterId\u0027])]:\n\t\tfor typeId in (udt, \u0027[Kanoa]_types_/\u0027 + udt):\n\t\t\ttagSearchList.append({\u0027tagPath\u0027: tagPath, \u0027filters\u0027: {\"tagType\": \"UdtInstance\", \"typeId\": typeId, \"recursive\": True},\n\t\t\t\t\t\t\t\t  \u0027tagNameList\u0027: tagNameList, \u0027udtType\u0027: \u0027[Kanoa]_types_/\u0027 + udt})\n\t\n\ttagInfoList \u003d []\n\tfor ts in tagSearchList:\n\t\tresults \u003d system.tag.browse(path \u003d ts[\u0027tagPath\u0027], filter \u003d ts[\u0027filters\u0027]).results\n\t\tfor result in results:\n\t\t\tpath \u003d str(result[\u0027fullPath\u0027])\n\t\t\tfor tagName in ts[\u0027tagNameList\u0027]:\n\t\t\t\tparentPath \u003d path.rsplit(\u0027/\u0027, len(tagName.split(\"/\"))-1)[0]\n\t\t\t\ttagInfoList.append({\u0027tagName\u0027: tagName, \u0027tagPath\u0027: path + \u0027/\u0027 + tagName, \u0027parentPath\u0027: parentPath, \u0027udtType\u0027: ts[\u0027udtType\u0027]})\n\t\t\n\t#An asset can have counters without counter tags; readBlocking refuses an empty list\n\ttags \u003d {}\n\tif len(tagInfoList) \u003e 0:\n\t\ttagValues \u003d system.tag.readBlocking([item[\u0027tagPath\u0027] for item in tagInfoList])\n\t\tfor i, tagValue in enumerate(tagValues):\n\t\t\tif tagValue.value is not None:\n\t\t\t\ttags[tagValue.value] \u003d tagInfoList[i]\n\t\n\tfor counter in counters:\n\t\tif tags.has_key(counter[\u0027counterId\u0027]):\n\t\t\ttagInfo \u003d tags[counter[\u0027counterId\u0027]]\n\t\t\ttagName \u003d tagInfo[\u0027tagName\u0027]\n\t\t\ttagPath \u003d tagInfo[\u0027tagPath\u0027].rsplit(\"/\", len(tagName.split(\"/\")))[0] if tagInfo[\u0027tagPath\u0027] else None\n\t\t\tudtType \u003d tagInfo[\u0027udtType\u0027]\n\t\telse: \n\t\t\ttagPath, udtType \u003d None, None\n\t\t\t\n\t\tcounter[\u0027tagPath\u0027] \u003d tagPath\n\t\tcounter[\u0027udtType\u0027] \u003d udtType\n\t\n\treturn counters",
             "type": "script"
           }
         ],
@@ -760,19 +739,8 @@
           {
             "children": [
               {
-                "events": {
-                  "component": {
-                    "onEditCellCommit": {
-                      "config": {
-                        "script": "\n\tmodeAssetLinkId \u003d self.props.data[event.row].modeAssetLinkId\n\tif modeAssetLinkId is None: return\n\n\tif self.view.custom.assetModes.userAction[\u0027canUpdate\u0027]:\n\t\tif event.column \u003d\u003d \u0027linkEnabled\u0027:\n\t\t\tretVal \u003d system.kanoa.asset.enableModeAssetLink(modeAssetLinkId, int(event.value))\n\t\t\tif retVal: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Asset Mode link has been updated\u0027})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Unable to update Asset Mode link\u0027})\n\t\tif event.column \u003d\u003d \u0027autoSchedule\u0027:\n\t\t\tretVal, msg \u003d system.kanoa.asset.updateAssetModeField(modeAssetLinkId, \u0027autoSchedule\u0027, event.value, self.view.custom.security.userId)\n\t\t\tif msg is not None: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Unable to update Asset Mode %s setting. %s\u0027%(event.column, msg)})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Asset Mode %s setting has been updated\u0027%event.column})\n\t\telif event.column \u003d\u003d \u0027modeCode\u0027:\n\t\t\tretVal, msg \u003d system.kanoa.asset.setAssetModeCode(modeAssetLinkId, int(event.value))\n\t\t\tif msg is not None: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Asset Mode %s setting has been updated\u0027%event.column})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing.\u0027})\t\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update modes.\u0027})\n\n\tself.view.refreshBinding(\"custom.assetModes.data\")\n\t\n\treturn\t"
-                      },
-                      "scope": "G",
-                      "type": "script"
-                    }
-                  }
-                },
                 "meta": {
-                  "domId": "tblModes",
+                  "domId": "tblCounters",
                   "name": "tblCounters"
                 },
                 "position": {
@@ -781,14 +749,6 @@
                   "shrink": 0
                 },
                 "propConfig": {
-                  "props.columns[4].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Counter\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
                   "props.data": {
                     "binding": {
                       "config": {
@@ -1125,7 +1085,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Counter"
                       },
                       "justify": "center",
                       "number": "value",

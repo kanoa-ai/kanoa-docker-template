@@ -3,7 +3,11 @@
     "clearView": false,
     "expand": true,
     "showInfolevel": "status",
-    "size": 24
+    "size": 24,
+    "leaf": false,
+    "stacked": false,
+    "mixed": false,
+    "hover": false
   },
   "params": {
     "value": {
@@ -93,6 +97,56 @@
     "params.value": {
       "paramDirection": "input",
       "persistent": true
+    },
+    "custom.leaf": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.childAssets"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#A group of assets with no groups under it (Mixing, Machining...): its name is a slim title over its cards, which get the\n\t#full width, instead of a 400px column beside them; the levels above keep their header and expand arrow\n\treturn len(value or []) \u003d\u003d 0",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.stacked": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#Title over full-width tiles whenever the group has lines of its own, even with groups under it too (868mvwg9e);\n\t#only a group of groups keeps its header in a row\n\tif not len(value.get(\u0027childAssets\u0027) or []): return True\n\treturn len(value.get(\u0027assets\u0027) or []) \u003e 0",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.mixed": {
+      "binding": {
+        "config": {
+          "path": "view.params.value"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#Lines and groups under one group (868mvwg9e): its own lines get the tinted panel, its groups follow below it\n\treturn len(value.get(\u0027childAssets\u0027) or []) \u003e 0 and len(value.get(\u0027assets\u0027) or []) \u003e 0",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.hover": {
+      "persistent": true
     }
   },
   "props": {
@@ -122,7 +176,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\tif value.get(\u0027assetInfo\u0027) is None: return False\n\treturn value[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]",
+                      "code": "\t#A section\u0027s header is its title (868mvwg9e): an OEE line with cells has its card among its area\u0027s tiles, so not again here\n\treturn False",
                       "type": "script"
                     }
                   ],
@@ -204,12 +258,12 @@
               "position.display": {
                 "binding": {
                   "config": {
-                    "path": "view.params.value.assetInfo.oeeEnabled"
+                    "path": "view.params.value"
                   },
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn False if value else True",
+                      "code": "\t#Only where there are child groups to expand (868mvwg9e): a hidden arrow still took its 30px and indented the areas\n\tif value.get(\u0027assetInfo\u0027) is None: return False\n\treturn len(value.get(\u0027childAssets\u0027) or []) \u003e 0",
                       "type": "script"
                     }
                   ],
@@ -335,6 +389,21 @@
                       "overlayOptOut": true,
                       "type": "property"
                     }
+                  },
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.leaf"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\treturn False if value else True",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
                   }
                 },
                 "props": {
@@ -351,8 +420,8 @@
                   "name": "lblAssetName"
                 },
                 "position": {
-                  "basis": "175px",
-                  "grow": 1,
+                  "basis": "auto",
+                  "grow": 0,
                   "shrink": 0
                 },
                 "propConfig": {
@@ -389,7 +458,7 @@
                 "props": {
                   "style": {
                     "color": "--kcOnSurface",
-                    "fontWeight": "normal"
+                    "fontWeight": "600"
                   }
                 },
                 "type": "ia.display.label"
@@ -401,7 +470,7 @@
                       "dom": {
                         "onClick": {
                           "config": {
-                            "script": "\t\n\tself.view.custom.showInfolevel \u003d \u0027detail\u0027 if self.view.custom.showInfolevel !\u003d \u0027detail\u0027 else \u0027status\u0027\n\t\n\treturn"
+                            "script": "\n\t#A tab: shows this view of the group\u0027s assets (868mvwg9e)\n\tself.view.custom.showInfolevel \u003d \u0027status\u0027\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -409,16 +478,16 @@
                       }
                     },
                     "meta": {
-                      "domId": "btnShowDetail",
-                      "name": "btnShowDetail",
+                      "name": "btnShowAssets",
                       "tooltip": {
                         "enabled": true,
-                        "location": "center-left",
-                        "text": "Show Details"
+                        "location": "center-right",
+                        "text": "Status",
+                        "tail": true
                       }
                     },
                     "position": {
-                      "basis": "60px",
+                      "basis": "30px",
                       "shrink": 0
                     },
                     "propConfig": {
@@ -449,7 +518,37 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\t\n\treturn \u0027kanoa/button/filled kanoa/font/default\u0027 if value \u003d\u003d \u0027detail\u0027 else \u0027kanoa/button/outlined kanoa/font/default\u0027",
+                              "code": "\treturn \u0027kanoa/font/default\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.borderBottomColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027var(--kcPrimary)\u0027 if value \u003d\u003d \u0027status\u0027 else \u0027transparent\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027var(--kcPrimary)\u0027 if value \u003d\u003d \u0027status\u0027 else \u0027var(--kcOnSurfaceVariant)\u0027",
                               "type": "script"
                             }
                           ],
@@ -459,12 +558,31 @@
                     },
                     "props": {
                       "image": {
-                        "position": "right"
+                        "icon": {
+                          "path": "material/apps",
+                          "color": "var(--kcOnSurfaceVariant)"
+                        },
+                        "position": "center",
+                        "width": 18,
+                        "height": 18
                       },
                       "style": {
-                        "height": "20px"
+                        "backgroundColor": "transparent",
+                        "borderTopStyle": "none",
+                        "borderLeftStyle": "none",
+                        "borderRightStyle": "none",
+                        "borderBottomStyle": "solid",
+                        "borderBottomWidth": "2px",
+                        "borderRadius": "0px",
+                        "height": "22px",
+                        "padding": "0px 4px",
+                        "borderLeftWidth": "0px",
+                        "borderRightWidth": "0px",
+                        "borderTopWidth": "0px",
+                        "boxShadow": "none",
+                        "outline": "none"
                       },
-                      "text": "Detail",
+                      "text": "",
                       "textStyle": {
                         "classes": "kanoa/font/labelSmall"
                       }
@@ -476,7 +594,132 @@
                       "dom": {
                         "onClick": {
                           "config": {
-                            "script": "\n\tself.view.custom.showInfolevel \u003d \u0027summary\u0027 if self.view.custom.showInfolevel !\u003d \u0027summary\u0027 else \u0027status\u0027\n\t\n\treturn"
+                            "script": "\n\t#A tab: shows this view of the group\u0027s assets (868mvwg9e)\n\tself.view.custom.showInfolevel \u003d \u0027detail\u0027\n\treturn"
+                          },
+                          "scope": "G",
+                          "type": "script"
+                        }
+                      }
+                    },
+                    "meta": {
+                      "domId": "btnShowDetail",
+                      "name": "btnShowDetail",
+                      "tooltip": {
+                        "enabled": true,
+                        "location": "center-right",
+                        "text": "Asset details",
+                        "tail": true
+                      }
+                    },
+                    "position": {
+                      "basis": "30px",
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "expand": "{view.custom.expand}",
+                              "level": "{view.params.value.level}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t\n\treturn value[\u0027level\u0027] \u003e 0 and value[\u0027expand\u0027] \u003d\u003d True",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      },
+                      "props.style.classes": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027kanoa/font/default\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.borderBottomColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027var(--kcPrimary)\u0027 if value \u003d\u003d \u0027detail\u0027 else \u0027transparent\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027var(--kcPrimary)\u0027 if value \u003d\u003d \u0027detail\u0027 else \u0027var(--kcOnSurfaceVariant)\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "image": {
+                        "icon": {
+                          "path": "material/view_list",
+                          "color": "var(--kcOnSurfaceVariant)"
+                        },
+                        "position": "center",
+                        "width": 18,
+                        "height": 18
+                      },
+                      "style": {
+                        "backgroundColor": "transparent",
+                        "borderTopStyle": "none",
+                        "borderLeftStyle": "none",
+                        "borderRightStyle": "none",
+                        "borderBottomStyle": "solid",
+                        "borderBottomWidth": "2px",
+                        "borderRadius": "0px",
+                        "height": "22px",
+                        "padding": "0px 4px",
+                        "borderLeftWidth": "0px",
+                        "borderRightWidth": "0px",
+                        "borderTopWidth": "0px",
+                        "boxShadow": "none",
+                        "outline": "none"
+                      },
+                      "text": "",
+                      "textStyle": {
+                        "classes": "kanoa/font/labelSmall"
+                      }
+                    },
+                    "type": "ia.input.button"
+                  },
+                  {
+                    "events": {
+                      "dom": {
+                        "onClick": {
+                          "config": {
+                            "script": "\n\t#A tab: shows this view of the group\u0027s assets (868mvwg9e)\n\tself.view.custom.showInfolevel \u003d \u0027summary\u0027\n\treturn"
                           },
                           "scope": "G",
                           "type": "script"
@@ -489,11 +732,12 @@
                       "tooltip": {
                         "enabled": true,
                         "location": "center-right",
-                        "text": "Show Summary"
+                        "text": "Summary",
+                        "tail": true
                       }
                     },
                     "position": {
-                      "basis": "60px",
+                      "basis": "30px",
                       "shrink": 0
                     },
                     "propConfig": {
@@ -524,7 +768,37 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\t\n\treturn \u0027kanoa/button/filled kanoa/font/default\u0027 if value \u003d\u003d \u0027summary\u0027 else \u0027kanoa/button/outlined kanoa/font/default\u0027",
+                              "code": "\treturn \u0027kanoa/font/default\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.borderBottomColor": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027var(--kcPrimary)\u0027 if value \u003d\u003d \u0027summary\u0027 else \u0027transparent\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.style.color": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.showInfolevel"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn \u0027var(--kcPrimary)\u0027 if value \u003d\u003d \u0027summary\u0027 else \u0027var(--kcOnSurfaceVariant)\u0027",
                               "type": "script"
                             }
                           ],
@@ -534,12 +808,31 @@
                     },
                     "props": {
                       "image": {
-                        "position": "right"
+                        "icon": {
+                          "path": "material/donut_small",
+                          "color": "var(--kcOnSurfaceVariant)"
+                        },
+                        "position": "center",
+                        "width": 18,
+                        "height": 18
                       },
                       "style": {
-                        "height": "20px"
+                        "backgroundColor": "transparent",
+                        "borderTopStyle": "none",
+                        "borderLeftStyle": "none",
+                        "borderRightStyle": "none",
+                        "borderBottomStyle": "solid",
+                        "borderBottomWidth": "2px",
+                        "borderRadius": "0px",
+                        "height": "22px",
+                        "padding": "0px 4px",
+                        "borderLeftWidth": "0px",
+                        "borderRightWidth": "0px",
+                        "borderTopWidth": "0px",
+                        "boxShadow": "none",
+                        "outline": "none"
                       },
-                      "text": "Summary",
+                      "text": "",
                       "textStyle": {
                         "classes": "kanoa/font/labelSmall"
                       }
@@ -552,7 +845,7 @@
                   "name": "flxButtons"
                 },
                 "position": {
-                  "basis": "200px"
+                  "basis": "auto"
                 },
                 "propConfig": {
                   "position.display": {
@@ -573,12 +866,32 @@
                       ],
                       "type": "expr-struct"
                     }
+                  },
+                  "props.style.opacity": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "hover": "{view.custom.hover}",
+                          "level": "{view.custom.showInfolevel}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t#Hidden until the pointer is on the section\u0027s name, so the page isn\u0027t full of tab icons (868mvwg9e);\n\t#a section on Asset details or Summary keeps them, to show which tab it\u0027s on\n\treturn 1 if value[\u0027hover\u0027] or value[\u0027level\u0027] !\u003d \u0027status\u0027 else 0",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
                   }
                 },
                 "props": {
                   "justify": "flex-end",
                   "style": {
-                    "gap": "3px"
+                    "gap": "2px",
+                    "transition": "opacity 0.15s"
                   }
                 },
                 "type": "ia.container.flex"
@@ -589,7 +902,7 @@
               "name": "flxTitle"
             },
             "position": {
-              "basis": "330px",
+              "basis": "auto",
               "shrink": 0
             },
             "propConfig": {
@@ -601,7 +914,37 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn False if value else True",
+                      "code": "\treturn True",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.height": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.leaf"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u002722px\u0027 if value else \u002740px\u0027",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.style.cursor": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value.assetInfo.oeeEnabled"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn \u0027pointer\u0027 if value else \u0027default\u0027",
                       "type": "script"
                     }
                   ],
@@ -617,7 +960,32 @@
                 "overflow": "hidden"
               }
             },
-            "type": "ia.container.flex"
+            "type": "ia.container.flex",
+            "events": {
+              "dom": {
+                "onClick": {
+                  "config": {
+                    "script": "\t#A line\u0027s section title opens the line, as its card does (868mvwg9e)\n\tif not self.view.params.value.assetInfo.oeeEnabled: return\n\tsystem.kanoa.utilities.storeAssetPath(self, self.view.params.value.assetInfo.assetPath)\n\tparams \u003d {\"path\": \"kanoa/mes/asset/operation/main\", \"name\": \"Asset Operation\", \"type\": \"view\", \"params\": {}}\n\tsystem.perspective.sendMessage(\"updateNavigation\", payload\u003dparams)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                },
+                "onMouseEnter": {
+                  "config": {
+                    "script": "\t#The tabs show while the pointer is on the section\u0027s name (868mvwg9e)\n\tself.view.custom.hover \u003d True"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                },
+                "onMouseLeave": {
+                  "config": {
+                    "script": "\t#The tabs show while the pointer is on the section\u0027s name (868mvwg9e)\n\tself.view.custom.hover \u003d False"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            }
           }
         ],
         "meta": {
@@ -625,20 +993,21 @@
           "name": "flxHeader"
         },
         "position": {
-          "basis": "400px",
+          "basis": "auto",
           "shrink": 0
         },
         "props": {
           "alignContent": "flex-start",
           "alignItems": "center",
           "style": {
-            "backgroundColor": "--kcSurface",
+            "backgroundColor": "transparent",
             "gap": "5px",
             "overflow": "hidden"
           },
           "wrap": "wrap"
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "propConfig": {}
       },
       {
         "children": [
@@ -689,7 +1058,7 @@
               },
               "path": "kanoa/mes/asset/overview/assetOEEState",
               "style": {
-                "gap": "5px",
+                "gap": "0px",
                 "overflow": "visible"
               },
               "useDefaultViewHeight": false,
@@ -715,7 +1084,24 @@
             "overflow": "hidden"
           }
         },
-        "type": "ia.container.flex"
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.basis": {
+            "binding": {
+              "config": {
+                "path": "view.custom.stacked"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn \u0027auto\u0027 if value else \u0027400px\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        }
       }
     ],
     "meta": {
@@ -725,12 +1111,60 @@
     "props": {
       "alignItems": "center",
       "style": {
-        "backgroundColor": "--kcSurface",
+        "backgroundColor": "transparent",
         "gap": 5,
-        "padding": "3px"
+        "padding": "3px",
+        "borderRadius": "var(--borderRadius)"
       },
       "wrap": "wrap"
     },
-    "type": "ia.container.flex"
+    "type": "ia.container.flex",
+    "propConfig": {
+      "props.direction": {
+        "binding": {
+          "config": {
+            "path": "view.custom.stacked"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn \u0027column\u0027 if value else \u0027row\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.alignItems": {
+        "binding": {
+          "config": {
+            "path": "view.custom.stacked"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn \u0027stretch\u0027 if value else \u0027center\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "view.custom.mixed"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\treturn \u0027color-mix(in srgb, var(--kcSurfaceVariant) 45%, var(--kcSurface))\u0027 if value else \u0027transparent\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    }
   }
 }

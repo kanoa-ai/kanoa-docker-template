@@ -405,7 +405,9 @@
       "canDelete": false,
       "canRead": true,
       "canUpdate": false
-    }
+    },
+    "toastId": null,
+    "lastOrderCount": null
   },
   "params": {
     "value": {
@@ -485,7 +487,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value[\u0027filter\u0027][\u0027assetId\u0027] is None: return []\n\t\n\tdata \u003d system.dataset.toPyDataSet(value[\u0027scheduledEvents\u0027])\n\tdeleteRows \u003d [i for i, row in enumerate(data) if row[\u0027assetId\u0027] !\u003d value[\u0027filter\u0027][\u0027assetId\u0027]]\n\tdata \u003d system.dataset.deleteRows(data, deleteRows)\n\tif \u0027en\u0027 not in value[\u0027locale\u0027]: data \u003d system.kanoa.utilities.translateData(data, [\u0027itemName\u0027, \u0027modeName\u0027, \u0027units\u0027, \u0027workOrderStatus\u0027], value[\u0027locale\u0027])\n\tdata \u003d system.dataset.sort(data, \u0027startDate\u0027, False)\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(data)\n\tfor row in data:\n\t\tif row[\u0027workOrderId\u0027]:\n\t\t\twoInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.order.getProductionOrders({\u0027workOrderId\u0027: row[\u0027workOrderId\u0027]}),0)\n#\t\t\treturn woInfo\n\t\t\trow[\u0027actualQty\u0027] \u003d woInfo[\u0027actualQty\u0027]\n\t\t\trow[\u0027reqdQty\u0027] \u003d woInfo[\u0027reqdQty\u0027]\n\t\t\trow[\u0027% Complete\u0027] \u003d woInfo[\u0027reqdQty\u0027] or 0 / woInfo[\u0027actualQty\u0027] if (woInfo[\u0027actualQty\u0027] or 0) \u003e 0 else None\n\t\t\trow[\u0027itemUnitName\u0027] \u003d woInfo[\u0027itemUnitName\u0027]\n\t\t\trow[\u0027itemColor\u0027] \u003d woInfo[\u0027itemColor\u0027] or woInfo[\u0027itemClassColor\u0027]\n\t\t\trow[\u0027workOrderSourceImagePath\u0027] \u003d woInfo[\u0027workOrderSourceImagePath\u0027] if row[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027 else \u0027No image\u0027\n\t\t\trow[\u0027itemUnitName\u0027] \u003d woInfo[\u0027itemUnitName\u0027]\n\t\t\trow[\u0027dueDate\u0027] \u003d woInfo[\u0027dueDate\u0027]\n\t\t\trow[\u0027workOrderStatusName\u0027] \u003d woInfo[\u0027workOrderStatusName\u0027]\n\t\t\trow[\u0027statusColor\u0027] \u003d woInfo[\u0027statusColor\u0027]\n\t\t\trow[\u0027note\u0027] \u003d woInfo[\u0027note\u0027]\n\t\t\t\n\t\telse:\n\t\t\trow[\u0027reqdQty\u0027] \u003d None\n\t\t\trow[\u0027actualQty\u0027] \u003d None\n\t\t\trow[\u0027% Complete\u0027] \u003d None\n\t\t\trow[\u0027itemUnitName\u0027] \u003d None\n\t\t\trow[\u0027workOrderSourceImagePath\u0027] \u003d None\n\t\t\trow[\u0027itemUnitName\u0027] \u003d None\n\t\t\trow[\u0027itemColor\u0027] \u003d None\n\t\t\trow[\u0027dueDate\u0027] \u003d None\n\t\t\trow[\u0027workOrderStatusName\u0027] \u003d None\n\t\t\trow[\u0027statusColor\u0027] \u003d None\n\t\t\trow[\u0027note\u0027] \u003d None\n\t\n\tsystem.kanoa.toast.show({\u0027type\u0027: \"info\", \u0027message\u0027: \u0027%s production orders found\u0027%len(data)})\t\t\n\treturn data",
+            "code": "\n\tif value[\u0027filter\u0027][\u0027assetId\u0027] is None: return []\n\t\n\tdata \u003d system.dataset.toPyDataSet(value[\u0027scheduledEvents\u0027])\n\tdeleteRows \u003d [i for i, row in enumerate(data) if row[\u0027assetId\u0027] !\u003d value[\u0027filter\u0027][\u0027assetId\u0027]]\n\tdata \u003d system.dataset.deleteRows(data, deleteRows)\n\tif \u0027en\u0027 not in value[\u0027locale\u0027]: data \u003d system.kanoa.utilities.translateData(data, [\u0027itemName\u0027, \u0027modeName\u0027, \u0027units\u0027, \u0027workOrderStatus\u0027], value[\u0027locale\u0027])\n\tdata \u003d system.dataset.sort(data, \u0027startDate\u0027, False)\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(data)\n\tfor row in data:\n\t\tif row[\u0027workOrderId\u0027]:\n\t\t\twoInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.order.getProductionOrders({\u0027workOrderId\u0027: row[\u0027workOrderId\u0027]}),0)\n#\t\t\treturn woInfo\n\t\t\trow[\u0027actualQty\u0027] \u003d woInfo[\u0027actualQty\u0027]\n\t\t\trow[\u0027reqdQty\u0027] \u003d woInfo[\u0027reqdQty\u0027]\n\t\t\trow[\u0027% Complete\u0027] \u003d woInfo[\u0027reqdQty\u0027] or 0 / woInfo[\u0027actualQty\u0027] if (woInfo[\u0027actualQty\u0027] or 0) \u003e 0 else None\n\t\t\trow[\u0027itemUnitName\u0027] \u003d woInfo[\u0027itemUnitName\u0027]\n\t\t\trow[\u0027itemColor\u0027] \u003d woInfo[\u0027itemColor\u0027] or woInfo[\u0027itemClassColor\u0027]\n\t\t\trow[\u0027workOrderSourceImagePath\u0027] \u003d woInfo[\u0027workOrderSourceImagePath\u0027] if row[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027 else \u0027No image\u0027\n\t\t\trow[\u0027itemUnitName\u0027] \u003d woInfo[\u0027itemUnitName\u0027]\n\t\t\trow[\u0027dueDate\u0027] \u003d woInfo[\u0027dueDate\u0027]\n\t\t\trow[\u0027workOrderStatusName\u0027] \u003d woInfo[\u0027workOrderStatusName\u0027]\n\t\t\trow[\u0027statusColor\u0027] \u003d woInfo[\u0027statusColor\u0027]\n\t\t\trow[\u0027note\u0027] \u003d woInfo[\u0027note\u0027]\n\t\t\t\n\t\telse:\n\t\t\trow[\u0027reqdQty\u0027] \u003d None\n\t\t\trow[\u0027actualQty\u0027] \u003d None\n\t\t\trow[\u0027% Complete\u0027] \u003d None\n\t\t\trow[\u0027itemUnitName\u0027] \u003d None\n\t\t\trow[\u0027workOrderSourceImagePath\u0027] \u003d None\n\t\t\trow[\u0027itemUnitName\u0027] \u003d None\n\t\t\trow[\u0027itemColor\u0027] \u003d None\n\t\t\trow[\u0027dueDate\u0027] \u003d None\n\t\t\trow[\u0027workOrderStatusName\u0027] \u003d None\n\t\t\trow[\u0027statusColor\u0027] \u003d None\n\t\t\trow[\u0027note\u0027] \u003d None\n\t\n\t#Through the view\u0027s one toast, and only when the count changes: this re-runs whenever the schedule tag or the filter changes, and each run showed another toast (868mvvzbz)\n\tif len(data) !\u003d self.custom.lastOrderCount:\n\t\tself.custom.lastOrderCount \u003d len(data)\n\t\tself.getChild(\"root\").toast({\u0027type\u0027: \"info\", \u0027message\u0027: \u0027%s production orders found\u0027%len(data)})\n\treturn data",
             "type": "script"
           }
         ],
@@ -534,7 +536,7 @@
                   "component": {
                     "onRowDoubleClick": {
                       "config": {
-                        "script": "\t\n\tif self.view.custom.security.action.canUpdate: self.view.getChild(\"root\").openEditor()\t"
+                        "script": "\t\n\tif self.view.custom.userAction.canUpdate: self.view.getChild(\"root\").openEditor()\t"
                       },
                       "scope": "G",
                       "type": "script"
@@ -1834,6 +1836,24 @@
         "gap": "2px",
         "padding": "3px"
       }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
+        },
+        {
+          "name": "openEditor",
+          "params": [],
+          "script": "\n\t\u0027\u0027\u0027Opens the production order editor (as woMain does) for the production orders of the selected events; an event without one has nothing to edit there.\u0027\u0027\u0027\n\tworkOrderIds \u003d []\n\tfor row in self.view.custom.table.selection.data or []:\n\t\tif row[\u0027workOrderId\u0027] and row[\u0027workOrderId\u0027] not in workOrderIds: workOrderIds.append(row[\u0027workOrderId\u0027])\n\tif not workOrderIds:\n\t\tself.toast({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027This event has no production order to edit\u0027})\n\t\treturn\n\tsystem.perspective.openPopup(\"Bulk Work Order Edit\", \"kanoa/mes/workOrders/woEditor\", {\u0027workOrders\u0027: workOrderIds}, title\u003d\u0027Production Order Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, overlayDismiss\u003dTrue)\n\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
     },
     "type": "ia.container.flex"
   }

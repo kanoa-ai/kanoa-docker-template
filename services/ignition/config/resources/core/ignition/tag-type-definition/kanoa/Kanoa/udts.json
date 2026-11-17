@@ -13,7 +13,6 @@
             "executionMode": "TagGroupRate",
             "expression": "{[~]Simulators/_GenSimulator_/Ramp/Ramp9} / 9",
             "name": "Infeed Count",
-            "tagGroup": "Every 30 seconds",
             "tagType": "AtomicTag",
             "value": 0.0,
             "valueSource": "expr"
@@ -33,7 +32,6 @@
             "executionMode": "TagGroupRate",
             "expression": "({[.]Infeed Count}/30) * 0.9",
             "name": "Outfeed Count",
-            "tagGroup": "Every 30 seconds",
             "tagType": "AtomicTag",
             "value": 0.0,
             "valueSource": "expr"
@@ -56,7 +54,6 @@
             "executionMode": "TagGroupRate",
             "expression": "if({[~]Simulators/_GenSimulator_/Random/RandomInteger1} \u003e 0 \u0026\u0026 {[~]Simulators/_GenSimulator_/Random/RandomInteger1}\u003c\u003d 100, 1,\r\n\tif({[~]]Simulators/_GenSimulator_/Random/RandomInteger1}, 3, 2))",
             "name": "State",
-            "tagGroup": "Every 30 seconds",
             "tagType": "AtomicTag",
             "value": 4,
             "valueSource": "expr"
@@ -70,7 +67,6 @@
           {
             "dataType": "Float4",
             "name": "Waste Count",
-            "tagGroup": "Every 30 seconds",
             "tagType": "AtomicTag",
             "valueSource": "memory"
           },
@@ -103,43 +99,13 @@
         "tagType": "Folder",
         "tags": [
           {
-            "expression": "runScript(\"system.kanoa.asset.addCounter\", 0 , {[.]../EquipID}, \u0027infeed\u0027, \u0027infeed\u0027, null)",
             "name": "infeedCounterId",
             "tagType": "AtomicTag",
-            "valueSource": "expr"
+            "valueSource": "memory"
           },
           {
-            "dataType": "DateTime",
-            "eventScripts": [
-              {
-                "eventid": "valueChanged",
-                "script": "\t\n\tsystem.tag.write(\"[.]refresh\", 1)\n\t\n\treturn"
-              }
-            ],
-            "expression": "now(0)",
-            "formatString": "yyyy-MM-dd h:mm:ss aa",
-            "name": "initializeTags",
-            "tagType": "AtomicTag",
-            "valueSource": "expr"
-          },
-          {
-            "expression": "runScript(\"system.kanoa.asset.addCounter\", 0 , {[.]../EquipID}, \u0027outfeed\u0027, \u0027outfeed\u0027, null)",
             "name": "outfeedCounterId",
             "tagType": "AtomicTag",
-            "valueSource": "expr"
-          },
-          {
-            "dataType": "Boolean",
-            "eventScripts": [
-              {
-                "eventid": "valueChanged",
-                "script": "\t\n\tif currentValue.value:\n\t\tuserId \u003d system.kanoa.utilities.getFieldValue(\u0027userId\u0027, system.kanoa.security.getUsers({\u0027userName\u0027: \u0027tagChange\u0027}))\n\t\tsystem.tag.write(\"[.]userId\", userId)\n\t\timport time\n\t\ttime.sleep(0.2)\n\t\t\n\t\tsystem.tag.write(tagPath, 0)\n\t\n\treturn"
-              }
-            ],
-            "expression": "now(0)",
-            "name": "refresh",
-            "tagType": "AtomicTag",
-            "value": false,
             "valueSource": "memory"
           },
           {
@@ -148,10 +114,9 @@
             "valueSource": "memory"
           },
           {
-            "expression": "runScript(\"system.kanoa.asset.addCounter\", 0 , {[.]../EquipID}, \u0027waste\u0027, \u0027waste\u0027, null)",
             "name": "wasteCounterId",
             "tagType": "AtomicTag",
-            "valueSource": "expr"
+            "valueSource": "memory"
           }
         ]
       },
@@ -187,7 +152,7 @@
             "eventScripts": [
               {
                 "eventid": "valueChanged",
-                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tif deltaValue !\u003d 0:\n\t\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/infeedCounterId\", \"[.]../Configuration/userId\"])\n\t\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027deltaValue\u0027: deltaValue, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t\tuserId \u003d tagValues[1].value\n\t\t\tsystem.kanoa.event.addCounterEvent(counterInfo, userId)\n\t\t\n\t\treturn"
+                "script": "\t\n\t#The tag\u0027s own value and time: addCounterValue counts the rise since the value before it in time, so a value that store\n\t#and forward sends late, again or out of order is counted once, at its time, and a value after bad quality or a\n\t#gateway restart counts what was missed (868muyaed)\n\t#Not the value at start-up (the functions may not be there yet): the first change after counts from the latest kept\n\tif not initialChange and currentValue.quality.isGood() and currentValue.value is not None:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/infeedCounterId\", \"[.]../Configuration/userId\"])\n\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027value\u0027: currentValue.value, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\tsystem.kanoa.event.addCounterValue(counterInfo, tagValues[1].value)\n\n\treturn\n"
               }
             ],
             "executionMode": "TagGroupRate",
@@ -197,7 +162,6 @@
               "bindType": "parameter",
               "binding": "{MQTTPath}/Inputs/{TagName}"
             },
-            "tagGroup": "Every 5 seconds",
             "tagType": "AtomicTag",
             "value": 0.0,
             "valueSource": "reference"
@@ -233,7 +197,7 @@
             "eventScripts": [
               {
                 "eventid": "valueChanged",
-                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tif deltaValue !\u003d 0:\n\t\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/outfeedCounterId\", \"[.]../Configuration/userId\"])\n\t\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027deltaValue\u0027: deltaValue, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t\tuserId \u003d tagValues[1].value\n\t\t\tsystem.kanoa.event.addCounterEvent(counterInfo, userId)\n\t\t\n\treturn"
+                "script": "\t\n\t#The tag\u0027s own value and time: addCounterValue counts the rise since the value before it in time, so a value that store\n\t#and forward sends late, again or out of order is counted once, at its time, and a value after bad quality or a\n\t#gateway restart counts what was missed (868muyaed)\n\t#Not the value at start-up (the functions may not be there yet): the first change after counts from the latest kept\n\tif not initialChange and currentValue.quality.isGood() and currentValue.value is not None:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/outfeedCounterId\", \"[.]../Configuration/userId\"])\n\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027value\u0027: currentValue.value, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\tsystem.kanoa.event.addCounterValue(counterInfo, tagValues[1].value)\n\n\treturn\n"
               }
             ],
             "executionMode": "TagGroupRate",
@@ -243,7 +207,6 @@
               "bindType": "parameter",
               "binding": "{MQTTPath}/Inputs/{TagName}"
             },
-            "tagGroup": "Every 5 seconds",
             "tagType": "AtomicTag",
             "value": 0.0,
             "valueSource": "reference"
@@ -280,7 +243,7 @@
             "eventScripts": [
               {
                 "eventid": "valueChanged",
-                "script": "\n\t###################################################################\n\t###################################################################\n\tdef stateChange(stateInfo, userId):\n\t\n\t\t\u0027\u0027\u0027\n\t\tThis function can be overridden to customize it based on a clients needs.\n\t\t\n\t\tThe example implementation here was specific for a client. \n\t\tChange state logic so that a new downtime code entered when state is already down will over-write current state rather than adding a new state change.\n\t\tClient has their operator code downtime events before they allow the line to start up. \n\t\tIf the current state is \u0027unplanned downtime\u0027, then update the current state record when it changes to a different state that is not \u0027Running\u0027 (or \u0027Idle\u0027?)\t\n\t\n\t\tExample stateInfo dictionary\n\t\tstateInfo \u003d {\u0027assetId\u0027: assetId, \u0027assetStateId\u0027: assetId, \u0027stateCode\u0027: stateCode, \u0027partReqd\u0027: tagValues[2].value, \u0027tStamp\u0027: currentValue.timestamp, \u0027assetPath\u0027: tagValues[3].value}\t\n\t\t\n\t\tUpdated:\n\t\t\tjfc: 1/27/24 Missing origStatecode param in updateStateEvent() call\n\t\t\tjfc: 8/18/25 Modified to check if a downtime event has been updated by a user before overriding the previous event if downtime events are contiguous\n\t\t\tjfc: 11/26/25 Fixed issue where updating a downtime event would also update its timestamp to current time\n\t\t\u0027\u0027\u0027\n\t\n\t\tdbName \u003d system.kanoa.config.getDBName(\u0027MES\u0027)\n\t\tmesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\n\t\tlog \u003d system.util.getLogger(\u0027kanoaTags\u0027)\n\t\n\t\tdebug \u003d system.tag.read(mesTagProvider + \u0027kanoa/debug/tags/debugFlag\u0027).value\n\t\tif debug: log.info(\u0027stateChange() called with %s\u0027%stateInfo)\n\t\t\n\t\tstateEventId \u003d None\t\n\t\tif stateInfo[\u0027assetId\u0027] is None or stateInfo[\u0027assetStateId\u0027] is None or stateInfo[\u0027stateCode\u0027] is None:\n\t\t \tlog.error(\"Invalid parameters passed to kanoaScripts.custom.ops.stateChange() - %s\"%stateInfo)\n\t\t\treturn None\n\t\t\n\t\tstateInfo[\u0027stateType\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027stateTypeName\u0027, system.kanoa.asset.getAssetStates({\u0027assetId\u0027: stateInfo[\u0027assetStateId\u0027], \u0027stateCode\u0027: stateInfo[\u0027stateCode\u0027]}))\n\t\tif stateInfo[\u0027stateType\u0027] is None: log.warn(\"No state information configured for this stateCode - %s\"%stateInfo)\n\t\telif debug: log.info(\"state information configured for this stateCode - %s\"%stateInfo)\n\t\t\t\n\t\tprevStateEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getPreviousStateEvent(stateInfo[\u0027assetId\u0027], stateInfo[\u0027tStamp\u0027]),0)\n\t\tif prevStateEventInfo[\u0027stateEventId\u0027]: #We have an entry prior to this timestamp\n\t\t\tif stateInfo[\u0027stateCode\u0027] \u003d\u003d prevStateEventInfo[\u0027stateCode\u0027] and stateInfo[\u0027assetStateId\u0027] \u003d\u003d prevStateEventInfo[\u0027assetStateId\u0027]: return None#\"State and assetId is the same as the last entry. Do nothing\n\t\t\telif stateInfo[\u0027stateType\u0027] \u003d\u003d \u0027Running\u0027: \n\t\t\t\tif debug: log.info(\u0027New state type is running.  Calling addState()\u0027)\n\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\t\telif prevStateEventInfo[\u0027stateTypeName\u0027] \u003d\u003d \u0027Running\u0027 and stateInfo[\u0027stateType\u0027] !\u003d prevStateEventInfo[\u0027stateTypeName\u0027]: \n\t\t\t\tif debug: log.info(\u0027Last state type is running.  Calling addState()\u0027)\n\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\t\telse: #If we are here, then old and new state must be downtime. #In this case we will update the last downtime event to what has just been passed in. This is the operator coding the downtime event before starting the line back up\n\t\t\t\tif prevStateEventInfo[\u0027changedBy\u0027] is not None: #User has already coded this downtime event, we will ignore the new downtime event and keep accruing time\n\t\t\t\t\tif debug: log.info(\u0027Previous and current events are downtime and user has already coded this downtime event. Doing nothing.\u0027)\n\t\t\t\t\treturn None\n\t\t\t\tif debug: log.info(\u0027Previous state and current state are both downtime.\u0027)\n\t\t\t\tif system.date.minutesBetween(prevStateEventInfo[\u0027tStamp\u0027], stateInfo[\u0027tStamp\u0027]) \u003e 300: \n\t\t\t\t\tif debug: log.info(\"It\u0027s been more than 300 minutes since the last state event. Adding a new state event\")\n\t\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId) #More than five hours, should we just add a new downtime state?\n\t\t\t\telse:\n\t\t\t\t\tif debug: log.info(\"Updating current state event\")\n\t\t\t\t\tstateInfo[\u0027stateEventId\u0027] \u003d prevStateEventInfo[\u0027stateEventId\u0027]\n\t\t\t\t\tstateInfo[\u0027origAssetId\u0027] \u003d prevStateEventInfo[\u0027assetStateId\u0027]\n\t\t\t\t\tstateInfo[\u0027origStateCode\u0027] \u003d prevStateEventInfo[\u0027stateCode\u0027]\n\t\t\t\t\tstateInfo[\u0027tStamp\u0027] \u003d prevStateEventInfo[\u0027tStamp\u0027]\n\t\t\t\t\tsystem.kanoa.event.updateStateEvent(stateInfo, None)\n\t\t\t\t\tstateEventId \u003d prevStateEventInfo[\u0027stateEventId\u0027]\n\t\telse: stateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId) #if debug: log.info(\u0027No data found for last state\u0027)\n\t\n\t\tif stateInfo[\u0027partReqd\u0027] and stateInfo[\u0027stateType\u0027] !\u003d \u0027Running\u0027: system.kanoa.event.updateStateEventInfo(stateEventId, \u0027partReqd\u0027, stateInfo[\u0027partReqd\u0027], userId)\n\t\t\n\t\treturn stateEventId\n\t\n\t###################################################################\n\t###################################################################\n\n\tif currentValue.value !\u003d previousValue.value and currentValue.value is not None:\n\t\t#State interface is entirely customizable. You can pass whatever values you want to the system.kanoa.asset.custom.stateChange() function\n\t\t#which can be overridden in the runable project to add any cunstomization required\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../EquipID\", \"[.]Machine ID\", \"[.]Part Required\", \"[.]../eqPath\"])\n\t\tassetId \u003d tagValues[0].value\n\t\tmachineId \u003d tagValues[1].value\n\t\tassetStateId \u003d machineId or assetId\t#The stateCode can come from a cell of the asset that has its own states defined. This tells us the lookup for the stateCode\n#\t\tuserId \u003d system.kanoa.utilities.getFieldValue(\u0027userId\u0027, system.kanoa.security.getUsers({\u0027userName\u0027: \u0027tagChange\u0027}))\n\t\tuserId \u003d system.tag.read(\"[.]../Configuration/userId\").value\n\t\t\n\t\tif currentValue.quality.isGood(): stateCode \u003d currentValue.value \n\t\telse: stateCode \u003d system.kanoa.utilities.getFieldValue(\u0027stateCode\u0027, system.kanoa.asset.getAssetStates({\u0027assetId\u0027: assetId, \u0027stateName\u0027: \u0027Off Line\u0027}))\n\t\t\n\t\tstateChange({\u0027assetId\u0027: assetId, \u0027assetStateId\u0027: assetStateId, \u0027stateCode\u0027: stateCode, \u0027partReqd\u0027: tagValues[2].value, \u0027tStamp\u0027: currentValue.timestamp, \u0027note\u0027:None, \u0027assetPath\u0027: tagValues[3].value}, userId)\n\n\t\t#We\u0027ll update the OEE state values for display purposes\n\t\tstateInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssetStates({\u0027assetId\u0027: assetStateId, \u0027stateCode\u0027:stateCode}),0)\n\t\tsystem.tag.write(\"[.]../OEE/stateName\", stateInfo[\u0027stateName\u0027] or str(currentValue.value))\n\t\tsystem.tag.write(\"[.]../OEE/stateTypeName\", stateInfo[\u0027stateTypeName\u0027] or \u0027\u0027)\n\t\tsystem.tag.write(\"[.]../OEE/stateTypeColor\", stateInfo[\u0027stateTypeColor\u0027] or \u0027\u0027)\n\t\tsystem.tag.write(\"[.]../OEE/stateColor\", stateInfo[\u0027stateColor\u0027] or stateInfo[\u0027stateTypeColor\u0027] or \u0027\u0027)\n\t\tsystem.tag.write(\"[.]../OEE/stateIconPath\", stateInfo[\u0027iconPath\u0027] or \u0027\u0027)\n\n\treturn"
+                "script": "\n\t###################################################################\n\t###################################################################\n\tdef stateChange(stateInfo, userId):\n\t\n\t\t\u0027\u0027\u0027\n\t\tThis function can be overridden to customize it based on a clients needs.\n\t\t\n\t\tThe example implementation here was specific for a client. \n\t\tChange state logic so that a new downtime code entered when state is already down will over-write current state rather than adding a new state change.\n\t\tClient has their operator code downtime events before they allow the line to start up. \n\t\tIf the current state is \u0027unplanned downtime\u0027, then update the current state record when it changes to a different state that is not \u0027Running\u0027 (or \u0027Idle\u0027?)\t\n\t\n\t\tExample stateInfo dictionary\n\t\tstateInfo \u003d {\u0027assetId\u0027: assetId, \u0027assetStateId\u0027: assetId, \u0027stateCode\u0027: stateCode, \u0027partReqd\u0027: tagValues[2].value, \u0027tStamp\u0027: currentValue.timestamp, \u0027assetPath\u0027: tagValues[3].value}\t\n\t\t\n\t\tUpdated:\n\t\t\tjfc: 1/27/24 Missing origStatecode param in updateStateEvent() call\n\t\t\tjfc: 8/18/25 Modified to check if a downtime event has been updated by a user before overriding the previous event if downtime events are contiguous\n\t\t\tjfc: 11/26/25 Fixed issue where updating a downtime event would also update its timestamp to current time\n\t\t\u0027\u0027\u0027\n\t\n\t\tdbName \u003d system.kanoa.config.getDBName(\u0027MES\u0027)\n\t\tmesTagProvider \u003d system.kanoa.config.getTagProvider(\u0027MES\u0027)\n\t\tlog \u003d system.util.getLogger(\u0027kanoaTags\u0027)\n\t\n\t\tdebug \u003d log.isDebugEnabled()\n\t\tif debug: log.debug(\u0027stateChange() called with %s\u0027%stateInfo)\n\t\t\n\t\tstateEventId \u003d None\t\n\t\tif stateInfo[\u0027assetId\u0027] is None or stateInfo[\u0027assetStateId\u0027] is None or stateInfo[\u0027stateCode\u0027] is None:\n\t\t \tlog.error(\"Invalid parameters passed to kanoaScripts.custom.ops.stateChange() - %s\"%stateInfo)\n\t\t\treturn None\n\t\t\n\t\tstateInfo[\u0027stateType\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027stateTypeName\u0027, system.kanoa.asset.getAssetStates({\u0027assetId\u0027: stateInfo[\u0027assetStateId\u0027], \u0027stateCode\u0027: stateInfo[\u0027stateCode\u0027]}))\n\t\tif stateInfo[\u0027stateType\u0027] is None: log.warn(\"No state information configured for this stateCode - %s\"%stateInfo)\n\t\telif debug: log.debug(\"state information configured for this stateCode - %s\"%stateInfo)\n\t\t\t\n\t\tprevStateEventInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getPreviousStateEvent(stateInfo[\u0027assetId\u0027], stateInfo[\u0027tStamp\u0027]),0)\n\t\tif prevStateEventInfo[\u0027stateEventId\u0027]: #We have an entry prior to this timestamp\n\t\t\tif stateInfo[\u0027stateCode\u0027] \u003d\u003d prevStateEventInfo[\u0027stateCode\u0027] and stateInfo[\u0027assetStateId\u0027] \u003d\u003d prevStateEventInfo[\u0027assetStateId\u0027]: return None#\"State and assetId is the same as the last entry. Do nothing\n\t\t\telif stateInfo[\u0027stateType\u0027] \u003d\u003d \u0027Running\u0027: \n\t\t\t\tif debug: log.debug(\u0027New state type is running.  Calling addState()\u0027)\n\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\t\telif prevStateEventInfo[\u0027stateTypeName\u0027] \u003d\u003d \u0027Running\u0027 and stateInfo[\u0027stateType\u0027] !\u003d prevStateEventInfo[\u0027stateTypeName\u0027]: \n\t\t\t\tif debug: log.debug(\u0027Last state type is running.  Calling addState()\u0027)\n\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId)\n\t\t\telse: #If we are here, then old and new state must be downtime. #In this case we will update the last downtime event to what has just been passed in. This is the operator coding the downtime event before starting the line back up\n\t\t\t\tif prevStateEventInfo[\u0027changedBy\u0027] is not None: #User has already coded this downtime event, we will ignore the new downtime event and keep accruing time\n\t\t\t\t\tif debug: log.debug(\u0027Previous and current events are downtime and user has already coded this downtime event. Doing nothing.\u0027)\n\t\t\t\t\treturn None\n\t\t\t\tif debug: log.debug(\u0027Previous state and current state are both downtime.\u0027)\n\t\t\t\tif system.date.minutesBetween(prevStateEventInfo[\u0027tStamp\u0027], stateInfo[\u0027tStamp\u0027]) \u003e 300: \n\t\t\t\t\tif debug: log.debug(\"It\u0027s been more than 300 minutes since the last state event. Adding a new state event\")\n\t\t\t\t\tstateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId) #More than five hours, should we just add a new downtime state?\n\t\t\t\telse:\n\t\t\t\t\tif debug: log.debug(\"Updating current state event\")\n\t\t\t\t\tstateInfo[\u0027stateEventId\u0027] \u003d prevStateEventInfo[\u0027stateEventId\u0027]\n\t\t\t\t\tstateInfo[\u0027origAssetId\u0027] \u003d prevStateEventInfo[\u0027assetStateId\u0027]\n\t\t\t\t\tstateInfo[\u0027origStateCode\u0027] \u003d prevStateEventInfo[\u0027stateCode\u0027]\n\t\t\t\t\tstateInfo[\u0027tStamp\u0027] \u003d prevStateEventInfo[\u0027tStamp\u0027]\n\t\t\t\t\tsystem.kanoa.event.updateStateEvent(stateInfo, None)\n\t\t\t\t\tstateEventId \u003d prevStateEventInfo[\u0027stateEventId\u0027]\n\t\telse: stateEventId \u003d system.kanoa.event.addStateEvent(stateInfo, userId) #if debug: log.debug(\u0027No data found for last state\u0027)\n\t\n\t\tif stateInfo[\u0027partReqd\u0027] and stateInfo[\u0027stateType\u0027] !\u003d \u0027Running\u0027: system.kanoa.event.updateStateEventInfo(stateEventId, \u0027partReqd\u0027, stateInfo[\u0027partReqd\u0027], userId)\n\t\t\n\t\treturn stateEventId\n\t\n\t###################################################################\n\t###################################################################\n\n\t#Without an Ops license the system.kanoa functions return a message, not data, and nothing can be recorded\n\tif not system.tag.readBlocking([\u0027[kanoaMES]licenseInfo/opsActive\u0027])[0].value: return\n\n\tif currentValue.value !\u003d previousValue.value and currentValue.value is not None:\n\t\t#State interface is entirely customizable. You can pass whatever values you want to the system.kanoa.asset.custom.stateChange() function\n\t\t#which can be overridden in the runable project to add any cunstomization required\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../EquipID\", \"[.]Machine ID\", \"[.]Part Required\", \"[.]../eqPath\"])\n\t\tassetId \u003d tagValues[0].value\n\t\tmachineId \u003d tagValues[1].value\n\t\tassetStateId \u003d machineId or assetId\t#The stateCode can come from a cell of the asset that has its own states defined. This tells us the lookup for the stateCode\n#\t\tuserId \u003d system.kanoa.utilities.getFieldValue(\u0027userId\u0027, system.kanoa.security.getUsers({\u0027userName\u0027: \u0027tagChange\u0027}))\n\t\tuserId \u003d system.tag.read(\"[.]../Configuration/userId\").value\n\t\t\n\t\tif currentValue.quality.isGood(): stateCode \u003d currentValue.value \n\t\telse: stateCode \u003d system.kanoa.utilities.getFieldValue(\u0027stateCode\u0027, system.kanoa.asset.getAssetStates({\u0027assetId\u0027: assetId, \u0027stateName\u0027: \u0027Off Line\u0027}))\n\t\t\n\t\tstateChange({\u0027assetId\u0027: assetId, \u0027assetStateId\u0027: assetStateId, \u0027stateCode\u0027: stateCode, \u0027partReqd\u0027: tagValues[2].value, \u0027tStamp\u0027: currentValue.timestamp, \u0027note\u0027:None, \u0027assetPath\u0027: tagValues[3].value}, userId)\n\n\t\t#The asset\u0027s OEE state tags (Line/OEE and the kanoaMES OEE/Status) follow its latest state event: the state event\n\t\t#functions above have the OEE tags service refresh them (ClickUp 868mrhrae)\n\n\treturn"
               }
             ],
             "executionMode": "TagGroupRate",
@@ -309,7 +272,7 @@
             "eventScripts": [
               {
                 "eventid": "valueChanged",
-                "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tif deltaValue !\u003d 0:\n\t\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/wasteCounterId\", \"[.]../Configuration/userId\"])\n\t\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027deltaValue\u0027: deltaValue, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t\tuserId \u003d tagValues[1].value\n\t\t\tsystem.kanoa.event.addCounterEvent(counterInfo, userId)\n\t\t\n\treturn"
+                "script": "\t\n\t#Without an Ops license the system.kanoa functions return a message, not data, and nothing can be recorded\n\tif not system.tag.readBlocking([\u0027[kanoaMES]licenseInfo/opsActive\u0027])[0].value: return\n\n\t#The tag\u0027s own value and time: addCounterValue counts the rise since the value before it in time, so a value that store\n\t#and forward sends late, again or out of order is counted once, at its time, and a value after bad quality or a\n\t#gateway restart counts what was missed (868muyaed)\n\t#Not the value at start-up (the functions may not be there yet): the first change after counts from the latest kept\n\tif not initialChange and currentValue.quality.isGood() and currentValue.value is not None:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../Configuration/wasteCounterId\", \"[.]../Configuration/userId\",\n\t\t\t\t\t\t\t\t\t\t\t \"[.]../../Tooling/Inputs/Cycle Count\", \"[.]../../Tooling/Configuration/assetId\"])\n\t\tcounterInfo \u003d {\u0027counterId\u0027: tagValues[0].value, \u0027value\u0027: currentValue.value, \u0027tStamp\u0027: currentValue.timestamp, \u0027itemStateId\u0027: None, \u0027itemId\u0027: None, \u0027workOrderId\u0027: None}\n\t\t#An asset that uses tooling counts its outfeed from the tool\u0027s cycles (system.kanoa.tooling): recordReject takes the\n\t\t#rejects off it and writes the waste, split across a family tool\u0027s items by their parts per cycle. The waste counter\n\t\t#only works the count out (record False)\n\t\tif tagValues[2].quality.isGood() and tagValues[3].value is not None:\n\t\t\tcounterInfo[\u0027record\u0027] \u003d False\n\t\t\tcount, msg \u003d system.kanoa.event.addCounterValue(counterInfo, tagValues[1].value)\n\t\t\tif msg:\n\t\t\t\tsystem.util.getLogger(\u0027kanoa_tooling\u0027).warn(\u0027%s on asset %s: %s\u0027 % (tagPath, tagValues[3].value, msg))\n\t\t\telif count:\n\t\t\t\tresult \u003d system.kanoa.tooling.recordReject(tagValues[3].value, float(count), currentValue.timestamp, None)\n\t\t\t\tif result[1]:\n\t\t\t\t\tsystem.util.getLogger(\u0027kanoa_tooling\u0027).warn(\u0027%s on asset %s: %s\u0027 % (tagPath, tagValues[3].value, result[1]))\n\t\t\treturn\n\t\tsystem.kanoa.event.addCounterValue(counterInfo, tagValues[1].value)\n\n\treturn\n"
               }
             ],
             "executionMode": "TagGroupRate",
@@ -319,7 +282,6 @@
               "bindType": "parameter",
               "binding": "{MQTTPath}/Inputs/{TagName}"
             },
-            "tagGroup": "Every 5 seconds",
             "tagType": "AtomicTag",
             "value": 0.0,
             "valueSource": "reference"
@@ -329,7 +291,7 @@
             "eventScripts": [
               {
                 "eventid": "valueChanged",
-                "script": "\n#\tlog \u003d system.util.getLogger(\u0027TAGS\u0027)\t\n\tassetId \u003d system.tag.read(\"[.]../EquipID\").value\t\n#\tlog.warn(\"assetOEE mode tag for equipId %s changed with initialChange %s currentValue \u003d %s previousValue \u003d %s\"%(assetId, initialChange, currentValue, previousValue))\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.value is not None and currentValue.value !\u003d previousValue.value:\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027tagChange\u0027})\n\t\tmodeSourceId \u003d system.kanoa.asset.getModeSourceId(\u0027PLC\u0027)\n\t\ttStamp \u003d currentValue.timestamp\n\t\tworkOrderName \u003d currentValue.value\n\t\tworkOrderId \u003d system.kanoa.utilities.getFieldValue(\"workOrderId\", system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: workOrderName})) if workOrderName else None\n\t\tmodeCode \u003d  system.tag.read(\"[.]Mode\").value\n\t\titemName \u003d system.tag.read(\"[.]Product Code\").value or None\n\t\tif itemName \u003d\u003d \u0027null\u0027: itemName \u003d None\t\t\n\t\titemId \u003d system.kanoa.utilities.getFieldValue(\"itemId\", system.kanoa.item.getItems({\u0027itemName\u0027: itemName})) if itemName else None\n\t\n\t\tassetOperationInfo \u003d {\u0027assetId\u0027: assetId, \u0027modeCode\u0027: modeCode, \u0027workOrderId\u0027: workOrderId, \u0027itemId\u0027: itemId, \u0027standardRate\u0027: None, \u0027modeSourceId\u0027: modeSourceId, \u0027tStamp\u0027: tStamp, \u0027includeChildren\u0027: True}\n\t\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\t\t\n\t\t\n\treturn"
+                "script": "\n#\tlog \u003d system.util.getLogger(\u0027TAGS\u0027)\t\n\t#Without an Ops license the system.kanoa functions return a message, not data, and nothing can be recorded\n\tif not system.tag.readBlocking([\u0027[kanoaMES]licenseInfo/opsActive\u0027])[0].value: return\n\n\tassetId \u003d system.tag.read(\"[.]../EquipID\").value\t\n#\tlog.warn(\"assetOEE mode tag for equipId %s changed with initialChange %s currentValue \u003d %s previousValue \u003d %s\"%(assetId, initialChange, currentValue, previousValue))\n\n\tif not initialChange and currentValue.quality.isGood() and previousValue.value is not None and currentValue.value !\u003d previousValue.value:\n\t\tuserId \u003d system.kanoa.security.getIDPUserId({\u0027userName\u0027: \u0027tagChange\u0027})\n\t\tmodeSourceId \u003d system.kanoa.asset.getModeSourceId(\u0027PLC\u0027)\n\t\ttStamp \u003d currentValue.timestamp\n\t\tworkOrderName \u003d currentValue.value\n\t\tworkOrderId \u003d system.kanoa.utilities.getFieldValue(\"workOrderId\", system.kanoa.order.getProductionOrders({\u0027workOrderName\u0027: workOrderName})) if workOrderName else None\n\t\tmodeCode \u003d  system.tag.read(\"[.]Mode\").value\n\t\titemName \u003d system.tag.read(\"[.]Product Code\").value or None\n\t\tif itemName \u003d\u003d \u0027null\u0027: itemName \u003d None\t\t\n\t\titemId \u003d system.kanoa.utilities.getFieldValue(\"itemId\", system.kanoa.item.getItems({\u0027itemName\u0027: itemName})) if itemName else None\n\t\n\t\tassetOperationInfo \u003d {\u0027assetId\u0027: assetId, \u0027modeCode\u0027: modeCode, \u0027workOrderId\u0027: workOrderId, \u0027itemId\u0027: itemId, \u0027standardRate\u0027: None, \u0027modeSourceId\u0027: modeSourceId, \u0027tStamp\u0027: tStamp, \u0027includeChildren\u0027: True}\n\t\tmodeEventId, msg \u003d system.kanoa.event.assetOperationChange(assetOperationInfo, userId)\t\t\n\t\t\n\treturn"
               }
             ],
             "name": "Work Order",
@@ -730,19 +692,6 @@
             "name": "qTolerance",
             "tagType": "AtomicTag",
             "valueSource": "memory"
-          },
-          {
-            "dataType": "Boolean",
-            "eventScripts": [
-              {
-                "eventid": "valueChanged",
-                "script": "\t\n\tif initialChange or currentValue.value:\n\t\tassetPath \u003d system.tag.read(\"[.]../eqPath\").value\n\t\tinfo \u003d system.kanoa.asset.getAssetOEEThresholds({\u0027assetPath\u0027: assetPath})\n\t\ttagPaths \u003d [\"[.]a\", \"[.]p\", \"[.]q\", \"[.]oee\", \"[.]oeeTolerance\", \"[.]aTolerance\", \"[.]pTolerance\", \"[.]qTolerance\"]\n\t\ttagValues \u003d [info[\u0027a\u0027], info[\u0027p\u0027], info[\u0027q\u0027], info[\u0027oee\u0027], info[\u0027oeeTolerance\u0027], info[\u0027aTolerance\u0027], info[\u0027pTolerance\u0027], info[\u0027qTolerance\u0027]]\n\t\t \n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\tsystem.tag.write(tagPath, False)\n\t\t\n\t\treturn"
-              }
-            ],
-            "name": "update",
-            "tagType": "AtomicTag",
-            "value": false,
-            "valueSource": "memory"
           }
         ]
       },
@@ -752,6 +701,224 @@
           {
             "eventid": "valueChanged",
             "script": "\t\n\tif currentValue.value:\n\t\tassetPath \u003d system.tag.read(\"[.]eqPath\").value\n\t\tcurrentAssetId \u003d system.tag.read(\"[.]equipID\").value #in case db connection is FAULTED, we\u0027ll re-use the persistent tag value\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath}))\n\t\tsystem.tag.write(\"[.]EquipID\", assetId or currentAssetId)\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\t\n\tsystem.tag.write(\"[.]refresh\", 0)\n\t\n\treturn"
+          }
+        ],
+        "name": "refresh",
+        "tagType": "AtomicTag",
+        "value": false,
+        "valueSource": "memory"
+      }
+    ]
+  },
+  {
+    "name": "assetTooling",
+    "parameters": {
+      "MQTTPath": {
+        "dataType": "String",
+        "value": ""
+      }
+    },
+    "tagType": "UdtType",
+    "typeColor": -7710720,
+    "tags": [
+      {
+        "name": "Alerts",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "dataType": "String",
+            "name": "message",
+            "tagType": "AtomicTag",
+            "value": "",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int4",
+            "name": "worstLevel",
+            "tagType": "AtomicTag",
+            "value": 0,
+            "valueSource": "memory"
+          }
+        ]
+      },
+      {
+        "name": "Configuration",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "dataType": "Int4",
+            "name": "assetId",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          }
+        ]
+      },
+      {
+        "name": "Inputs",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "dataType": "String",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t#The gateway does the work (system.kanoa.tooling); this only passes the input on\n\tif initialChange or currentValue.value is None or not currentValue.quality.isGood():\n\t\treturn\n\tassetId \u003d system.tag.readBlocking([\"[.]../Configuration/assetId\"])[0].value\n\tif assetId is None:\n\t\treturn\n\tresult \u003d system.kanoa.tooling.setBlockedPositions(assetId, currentValue.value)\n\tif result[1]:\n\t\tsystem.util.getLogger(\u0027kanoa_tooling\u0027).warn(\u0027%s on asset %s: %s\u0027 % (tagPath, assetId, result[1]))\n"
+              }
+            ],
+            "name": "Blocked Positions",
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "tagType": "AtomicTag",
+            "valueSource": "reference"
+          },
+          {
+            "dataType": "Int8",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t#The gateway does the work (system.kanoa.tooling); this only passes the cycles on\n\t#Without an Ops license recordProduction refuses every call: skip the cycles quietly rather than warn on each one\n\tif not system.tag.readBlocking([\u0027[kanoaMES]licenseInfo/opsActive\u0027])[0].value: return\n\tif initialChange or currentValue.value is None or not currentValue.quality.isGood() or not previousValue.quality.isGood():\n\t\treturn\n\tnewValue \u003d currentValue.value\n\tprevValue \u003d previousValue.value or 0\n\tif newValue \u003d\u003d prevValue:\n\t\treturn\n\t#A PLC counter that went back has been reset: everything since is new\n\tdelta \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\tif delta \u003c\u003d 0:\n\t\treturn\n\tassetId \u003d system.tag.readBlocking([\"[.]../Configuration/assetId\"])[0].value\n\tif assetId is None:\n\t\treturn\n\t#Counts the cycles on the mounted tools and writes them as the asset\u0027s outfeed, a family tool\u0027s other items included\n\tresult \u003d system.kanoa.tooling.recordProduction(assetId, int(delta), currentValue.timestamp)\n\tif result[1]:\n\t\tsystem.util.getLogger(\u0027kanoa_tooling\u0027).warn(\u0027%s on asset %s: %s\u0027 % (tagPath, assetId, result[1]))\n"
+              }
+            ],
+            "name": "Cycle Count",
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "tagType": "AtomicTag",
+            "valueSource": "reference"
+          },
+          {
+            "dataType": "Int8",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t#The gateway does the work (system.kanoa.tooling); this only passes the input on\n\tif initialChange or currentValue.value is None or not currentValue.quality.isGood():\n\t\treturn\n\tassetId \u003d system.tag.readBlocking([\"[.]../Configuration/assetId\"])[0].value\n\tif assetId is None:\n\t\treturn\n\tresult \u003d system.kanoa.tooling.recordShotCounter(assetId, int(currentValue.value), currentValue.timestamp)\n\tif result[1]:\n\t\tsystem.util.getLogger(\u0027kanoa_tooling\u0027).warn(\u0027%s on asset %s: %s\u0027 % (tagPath, assetId, result[1]))\n"
+              }
+            ],
+            "name": "Tool Shot Counter",
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "tagType": "AtomicTag",
+            "valueSource": "reference"
+          },
+          {
+            "dataType": "String",
+            "eventScripts": [
+              {
+                "eventid": "valueChanged",
+                "script": "\t#The gateway does the work (system.kanoa.tooling); this only passes the input on\n\tif initialChange or currentValue.value is None or not currentValue.quality.isGood():\n\t\treturn\n\tassetId \u003d system.tag.readBlocking([\"[.]../Configuration/assetId\"])[0].value\n\tif assetId is None:\n\t\treturn\n\tresult \u003d system.kanoa.tooling.mountByName(assetId, currentValue.value, currentValue.timestamp)\n\tif result[1]:\n\t\tsystem.util.getLogger(\u0027kanoa_tooling\u0027).warn(\u0027%s on asset %s: %s\u0027 % (tagPath, assetId, result[1]))\n"
+              }
+            ],
+            "name": "Tooling",
+            "sourceTagPath": {
+              "bindType": "parameter",
+              "binding": "{MQTTPath}/Inputs/{TagName}"
+            },
+            "tagType": "AtomicTag",
+            "valueSource": "reference"
+          }
+        ]
+      },
+      {
+        "dataType": "DataSet",
+        "name": "Mounted",
+        "tagType": "AtomicTag",
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "DataSet",
+        "name": "Positions",
+        "tagType": "AtomicTag",
+        "valueSource": "memory"
+      },
+      {
+        "name": "Primary",
+        "tagType": "Folder",
+        "tags": [
+          {
+            "dataType": "Int4",
+            "name": "activePositions",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Float8",
+            "name": "cycleRate",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int8",
+            "name": "cyclesSincePm",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int8",
+            "name": "cyclesSinceRefurb",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int8",
+            "name": "lifetimeCycles",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "DateTime",
+            "name": "mountedDate",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int4",
+            "name": "partsPerCycle",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int4",
+            "name": "toolingAssetId",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "String",
+            "name": "toolingName",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "String",
+            "name": "toolStatus",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Int4",
+            "name": "totalPositions",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          },
+          {
+            "dataType": "Float8",
+            "name": "worstPct",
+            "tagType": "AtomicTag",
+            "valueSource": "memory"
+          }
+        ]
+      },
+      {
+        "dataType": "Boolean",
+        "eventScripts": [
+          {
+            "eventid": "valueChanged",
+            "script": "\tif not initialChange and currentValue.value:\n\t\tassetId \u003d system.tag.readBlocking([\"[.]Configuration/assetId\"])[0].value\n\t\tif assetId is not None:\n\t\t\tsystem.kanoa.tooling.refreshTags(assetId)\n\t\tsystem.tag.writeBlocking([\"[.]refresh\"], [False])\n"
           }
         ],
         "name": "refresh",
@@ -776,7 +943,7 @@
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tcountInfo \u003d {\n\t\t\t\t\t\t\u0027counterId\u0027: system.tag.read(\"[.]counterId\").value,\n\t\t\t\t\t\t\u0027itemId\u0027: system.tag.read(\"itemId\").value,\n\t\t\t\t\t\t\u0027workOrderId\u0027: system.tag.read(\"workOrderId\").value,\n\t\t\t\t\t\t\u0027itemStateId\u0027: system.tag.read(\"itemStateId\").value,\n\t\t\t\t\t\t\u0027deltaValue\u0027: deltaValue,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t}\n\t\t\n\t\tuserId \u003d None\n\t\tsystem.kanoa.event.addCounterEvent(countInfo, userId)\n\t\t\n\t\treturn"
+            "script": "\n\t#The tag\u0027s own value and time: addCounterValue counts the rise since the value before it in time, so a value that store\n\t#and forward sends late, again or out of order is counted once, at its time, and a value after bad quality or a\n\t#gateway restart counts what was missed (868muyaed)\n\t#Not the value at start-up (the functions may not be there yet): the first change after counts from the latest kept\n\tif not initialChange and currentValue.quality.isGood() and currentValue.value is not None:\n\t\tcountInfo \u003d {\n\t\t\t\t\t\t\u0027counterId\u0027: system.tag.read(\"[.]counterId\").value,\n\t\t\t\t\t\t\u0027itemId\u0027: system.tag.read(\"itemId\").value,\n\t\t\t\t\t\t\u0027workOrderId\u0027: system.tag.read(\"workOrderId\").value,\n\t\t\t\t\t\t\u0027itemStateId\u0027: system.tag.read(\"itemStateId\").value,\n\t\t\t\t\t\t\u0027value\u0027: currentValue.value,\n\t\t\t\t\t\t\u0027tStamp\u0027: currentValue.timestamp,\n\t\t\t\t\t}\n\t\tsystem.kanoa.event.addCounterValue(countInfo, None)\n\n\treturn\n"
           }
         ],
         "name": "countValue",
@@ -842,7 +1009,7 @@
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\t\n\tif not initialChange and currentValue.quality.isGood() and previousValue.quality.isGood() and currentValue.value !\u003d previousValue.value and currentValue.value \u003e 0 and currentValue.value is not None:\n\t\tnewValue \u003d currentValue.value\n\t\tprevValue \u003d previousValue.value or 0.0\t\n\n\t\tif currentValue.timestamp \u003e previousValue.timestamp: deltaValue \u003d newValue - prevValue if newValue \u003e prevValue else newValue\n\t\telif currentValue.timestamp \u003c previousValue.timestamp: deltaValue \u003d prevValue - newValue if prevValue \u003e newValue else prevValue\n\t\telse: return\n\t\t\n\t\tcounterId \u003d system.tag.read(\"[.]counterId\").value\n\t\t\n\t\tif counterId and deltaValue !\u003d 0:\n\t\t\t\n\t\t\tsystem.kanoa.event.addCountEvent(counterId, deltaValue, currentValue.timestamp)\n\t\t\n\t\treturn\t\t"
+            "script": "\t\n\t#The tag\u0027s own value and time: addCounterValue counts the rise since the value before it in time, so a value that store\n\t#and forward sends late, again or out of order is counted once, at its time, and a value after bad quality or a\n\t#gateway restart counts what was missed (868muyaed)\n\t#Not the value at start-up (the functions may not be there yet): the first change after counts from the latest kept\n\tif not initialChange and currentValue.quality.isGood() and currentValue.value is not None:\n\t\tcounterId \u003d system.tag.read(\"[.]counterId\").value\n\t\tif counterId:\n\t\t\tsystem.kanoa.event.addCounterValue({\u0027counterId\u0027: counterId, \u0027value\u0027: currentValue.value, \u0027tStamp\u0027: currentValue.timestamp}, None)\n\n\treturn\n"
           }
         ],
         "name": "counterValue",
@@ -994,7 +1161,6 @@
           }
         ],
         "name": "sourceTag",
-        "tagGroup": "Every 30 seconds",
         "tagType": "AtomicTag",
         "valueSource": "reference"
       }
@@ -1139,7 +1305,6 @@
           }
         ],
         "name": "sourceTag",
-        "tagGroup": "Every 30 seconds",
         "tagType": "AtomicTag",
         "valueSource": "reference"
       }
@@ -1206,7 +1371,7 @@
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]data\", \"[.]maxSampleCount\", \"[.]maxSampleDurationSecs\", \"[.]spec/usl\", \"[.]spec/lsl\", \"[.]spcCheckEnabled\"])\n\t\tdata \u003d tagValues[0].value\n\t\tmaxSampleCount \u003d tagValues[1].value\n\t\tmaxSampleDurationSecs \u003d tagValues[2].value\n\t\tusl \u003d tagValues[3].value\n\t\tlsl \u003d tagValues[4].value\n\t\tspcCheckEnabled \u003d tagValues[5].value\n\t\n\t\tif spcCheckEnabled:\n\t\t\tvalues \u003d [row[\u0027value\u0027] for row in system.kanoa.utilities.convertDatasetToJSON(data)]\n\t\t\tsampleSizes \u003d None\n\t\t\tinfo \u003d system.kanoa.quality.spc.spcCheck(values, \"individuals\", \"both\", 5, usl, lsl, sampleSizes)\n\t\t\tlog \u003d system.util.getLogger(\u0027spcCheck\u0027)\n\t\t\tlog.trace(\"%s\" % info)\n\t\telse:\n\t\t\tinfo \u003d {\u0027outOfControl\u0027: False, \u0027violations\u0027: {}}\n\t\n\t\ttagPaths  \u003d [\"[.]outOfControl\", \"[.]ruleViolations\"]\n\t\ttagValues \u003d [info[\u0027outOfControl\u0027], list(info[\u0027violations\u0027].keys())]\n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\n\t\trowCount \u003d data.rowCount\n\t\tshouldTrigger \u003d False\n\t\n\t\tif maxSampleCount and rowCount \u003e\u003d maxSampleCount: shouldTrigger \u003d True\n\t\telif maxSampleDurationSecs and rowCount \u003e 1:\n\t\t\tfirstTStamp  \u003d data.getValueAt(0, \u0027tStamp\u0027)\n\t\t\tlastTStamp   \u003d data.getValueAt(rowCount - 1, \u0027tStamp\u0027)\n\t\t\tdurationSecs \u003d system.date.secondsBetween(firstTStamp, lastTStamp)\n\t\t\tif durationSecs \u003e\u003d maxSampleDurationSecs: \tshouldTrigger \u003d True\n\t\n\t\tif shouldTrigger: system.tag.writeBlocking([\"[.]update\"], [1])\n\n\treturn"
+            "script": "\tif currentValue.value:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]data\", \"[.]maxSampleCount\", \"[.]maxSampleDurationSecs\"])\n\t\tdata \u003d tagValues[0].value\n\t\tmaxSampleCount \u003d tagValues[1].value\n\t\tmaxSampleDurationSecs \u003d tagValues[2].value\n\t\t#No samples yet (e.g. just after the UDT is installed): nothing to count\n\t\tif data is None: return\n\n\t\t#The SPC check runs in the update script, on the recorded events, once each is recorded (868mtrbyg)\n\t\trowCount \u003d data.rowCount\n\t\tshouldTrigger \u003d False\n\t\n\t\tif maxSampleCount and rowCount \u003e\u003d maxSampleCount: shouldTrigger \u003d True\n\t\telif maxSampleDurationSecs and rowCount \u003e 1:\n\t\t\tfirstTStamp  \u003d data.getValueAt(0, \u0027tStamp\u0027)\n\t\t\tlastTStamp   \u003d data.getValueAt(rowCount - 1, \u0027tStamp\u0027)\n\t\t\tdurationSecs \u003d system.date.secondsBetween(firstTStamp, lastTStamp)\n\t\t\tif durationSecs \u003e\u003d maxSampleDurationSecs: \tshouldTrigger \u003d True\n\t\n\t\tif shouldTrigger: system.tag.writeBlocking([\"[.]update\"], [1])\n\n\treturn"
           }
         ],
         "name": "data",
@@ -1268,7 +1433,7 @@
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\t\n\tif currentValue.value:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]enabled\", \"[.]data\"])\n\t\tenabled \u003d tagValues[0].value\n\t\tif enabled:\n\t\t\tdata \u003d tagValues[1].value\n\t\t\tnewData \u003d system.dataset.addRow(data, [currentValue.timestamp, currentValue.value])\n\t\t\tsystem.tag.writeBlocking([\"[.]data\"], [newData])\n\t\t\n\t\treturn"
+            "script": "\t\n\t#Without an Ops license addMeasureEvent can\u0027t record the samples: don\u0027t collect them, or data grows and update fails on every one\n\tif not system.tag.readBlocking([\u0027[kanoaMES]licenseInfo/opsActive\u0027])[0].value: return\n\n\tif currentValue.value:\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]enabled\", \"[.]data\"])\n\t\tenabled \u003d tagValues[0].value\n\t\tif enabled:\n\t\t\tdata \u003d tagValues[1].value\n\t\t\tnewData \u003d system.dataset.addRow(data, [currentValue.timestamp, currentValue.value])\n\t\t\tsystem.tag.writeBlocking([\"[.]data\"], [newData])\n\t\t\n\t\treturn"
           }
         ],
         "historicalDeadbandStyle": "Discrete",
@@ -1297,6 +1462,13 @@
         "name": "spcCheckEnabled",
         "tagType": "AtomicTag",
         "value": false,
+        "valueSource": "memory"
+      },
+      {
+        "dataType": "Int4",
+        "name": "spcPoints",
+        "tagType": "AtomicTag",
+        "value": 30,
         "valueSource": "memory"
       },
       {
@@ -1337,7 +1509,7 @@
             "eventScripts": [
               {
                 "eventid": "valueChanged",
-                "script": "\t\n\tif currentValue.value:\n\t\t\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../measureId\", \"[.]attributeId\", \"[.]itemId\"])\n\t\tmeasureId \u003d tagValues[0].value\n\t\tattributeId \u003d tagValues[1].value\n\t\titemId \u003d tagValues[2].value\n\t\t\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.measures.getMeasures({\u0027measureId\u0027: measureId}))\n\t\t\n\t\ttolInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getToleranceData(attributeId, assetId, itemId),0)\n\t\t\n\t\timport time\n\t\ttime.sleep(0.1)\n\t\t\n\t\ttagPaths \u003d [\"[.]lsl\", \"[.]lcl\", \"[.]tgt\", \"[.]ucl\", \"[.]usl\", \"[.]refresh\"]\n\t\ttagValues \u003d [tolInfo[\u0027lsl\u0027], tolInfo[\u0027lcl\u0027], tolInfo[\u0027tgt\u0027], tolInfo[\u0027ucl\u0027], tolInfo[\u0027usl\u0027], False]\n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\t\t\n\treturn"
+                "script": "\t\n\tif currentValue.value:\n\t\t\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]../measureId\", \"[.]attributeId\", \"[.]itemId\", \"[.]../error\"])\n\t\tmeasureId \u003d tagValues[0].value\n\t\tattributeId \u003d tagValues[1].value\n\t\titemId \u003d tagValues[2].value\n\t\terror \u003d tagValues[3].value\n\t\t\n\t\tassetId \u003d system.kanoa.utilities.getFieldValue(\u0027assetId\u0027, system.kanoa.measures.getMeasures({\u0027measureId\u0027: measureId}))\n\t\t\n\t\t#No attribute linked, or no tolerance for it here: no limits, and the measure\u0027s error and the log say why, where they\n\t\t#were nulls with no word (868mvuh8f). A refresh that loads limits clears only an error it wrote itself\n\t\ttolerance \u003d system.kanoa.quality.config.getToleranceData(attributeId, assetId, itemId) if attributeId is not None else None\n\t\tif tolerance is None or tolerance.rowCount \u003d\u003d 0:\n\t\t\ttolInfo \u003d {\u0027lsl\u0027: None, \u0027lcl\u0027: None, \u0027tgt\u0027: None, \u0027ucl\u0027: None, \u0027usl\u0027: None}\n\t\t\tif attributeId is None: reason \u003d \u0027spec/refresh: no Quality attribute is linked to the measure; link one in Configuration \u003e Ops \u003e Measures\u0027\n\t\t\telse: reason \u003d \u0027spec/refresh: attribute %s has no tolerance for this asset and item\u0027 % attributeId\n\t\t\tsystem.util.getLogger(\u0027kanoa.measures\u0027).warn(\u0027%s (measureId %s, assetId %s, itemId %s)\u0027 % (reason, measureId, assetId, itemId))\n\t\t\terror \u003d reason\n\t\telse:\n\t\t\ttolInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(tolerance, 0)\n\t\t\tif error and str(error).startswith(\u0027spec/refresh:\u0027): error \u003d \u0027\u0027\n\t\t\n\t\timport time\n\t\ttime.sleep(0.1)\n\t\t\n\t\ttagPaths \u003d [\"[.]lsl\", \"[.]lcl\", \"[.]tgt\", \"[.]ucl\", \"[.]usl\", \"[.]../error\", \"[.]refresh\"]\n\t\ttagValues \u003d [tolInfo[\u0027lsl\u0027], tolInfo[\u0027lcl\u0027], tolInfo[\u0027tgt\u0027], tolInfo[\u0027ucl\u0027], tolInfo[\u0027usl\u0027], error, False]\n\t\tsystem.tag.writeBlocking(tagPaths, tagValues)\n\t\t\n\treturn"
               }
             ],
             "name": "refresh",
@@ -1370,7 +1542,7 @@
         "eventScripts": [
           {
             "eventid": "valueChanged",
-            "script": "\n\tif currentValue.value:\n\t\timport java.lang\n\t\timport math\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]measureId\", \"[.]data\"])\n\t\tdebug \u003d tagValues[0].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\tuserId \u003d None\n\t\n\t\ttry:\n\t\t\tdata \u003d tagValues[2].value\n\t\t\tsampleCount \u003d data.rowCount\n\t\n\t\t\tif sampleCount \u003d\u003d 0:\n\t\t\t\traise Exception(\"data tag is empty, nothing to record\")\n\t\n\t\t\tvalues     \u003d [data.getValueAt(i, \u0027value\u0027) for i in range(sampleCount)]\n\t\t\ttimestamps \u003d [data.getValueAt(i, \u0027tStamp\u0027) for i in range(sampleCount)]\n\t\n\t\t\tmeasureValue \u003d sum(values) / sampleCount\n\t\t\tminValue     \u003d min(values)\n\t\t\tmaxValue     \u003d max(values)\n\t\t\tvariance     \u003d sum((v - measureValue) ** 2 for v in values) / sampleCount\n\t\t\tstdDev       \u003d math.sqrt(variance)\n\t\t\tdurationSecs \u003d system.date.secondsBetween(timestamps[0], timestamps[-1])\n\t\n\t\t\tmeasureEventInfo \u003d {\n\t\t\t\t\u0027measureId\u0027:    tagValues[1].value,\n\t\t\t\t\u0027tStamp\u0027:       currentValue.timestamp,\n\t\t\t\t\u0027measureValue\u0027: measureValue,\n\t\t\t\t\u0027sampleCount\u0027:  sampleCount,\n\t\t\t\t\u0027minValue\u0027:     minValue,\n\t\t\t\t\u0027maxValue\u0027:     maxValue,\n\t\t\t\t\u0027stdDev\u0027:       stdDev,\n\t\t\t\t\u0027durationSecs\u0027: durationSecs\n\t\t\t}\n\t\n\t\t\tmeasureEventId, msg \u003d system.kanoa.measures.addMeasureEvent(measureEventInfo, userId)\n\t\t\tif msg:\n\t\t\t\tlog.error(\"addMeasureEvent() called with %s returned %s %s\" % (measureEventInfo, measureEventId, msg))\n\t\t\t\terrorMsg \u003d msg\n\t\t\telse:\n\t\t\t\tsystem.tag.writeBlocking([\"[.]data\"], system.dataset.clearDataset(data))\n\t\t\t\t\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept Exception, e:\n\t\t\terrorMsg \u003d str(e)\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\" % (tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [currentValue.timestamp, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\" % (tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\t\n\treturn"
+            "script": "\n\tif currentValue.value:\n\t\timport java.lang\n\t\timport math\n\t\tlog \u003d system.util.getLogger(\u0027kanoa_tag\u0027)\n\t\ttagValues \u003d system.tag.readBlocking([\"[.]debug\", \"[.]measureId\", \"[.]data\"])\n\t\tdebug \u003d tagValues[0].value\n\t\terrorMsg \u003d \u0027\u0027\n\t\ttimeNow \u003d system.date.now()\n\t\tuserId \u003d None\n\t\n\t\t#Without an Ops license addMeasureEvent can\u0027t record it: keep the samples for when it\u0027s back, and say why at most once an hour\n\t\tif not system.tag.readBlocking([\u0027[kanoaMES]licenseInfo/opsActive\u0027])[0].value:\n\t\t\terrorMsg \u003d \u0027Kanoa Ops License Expired\u0027\n\t\t\twarned \u003d system.util.getGlobals().setdefault(\u0027kanoaMeasureUpdateWarned\u0027, {})\n\t\t\tnow \u003d timeNow.getTime()\n\t\t\tif now - warned.get(\u0027at\u0027, 0) \u003e 3600000:\n\t\t\t\twarned[\u0027at\u0027] \u003d now\n\t\t\t\tlog.warn(\"%s didn\u0027t record a measure event: %s. Its samples are kept (logged at most once an hour)\" % (tagPath, errorMsg))\n\t\t\tsystem.tag.writeBlocking([\"[.]update\", \"[.]error\"], [0, errorMsg])\n\t\t\treturn\n\n\t\ttry:\n\t\t\tdata \u003d tagValues[2].value\n\t\t\tsampleCount \u003d data.rowCount\n\t\n\t\t\tif sampleCount \u003d\u003d 0:\n\t\t\t\traise Exception(\"data tag is empty, nothing to record\")\n\t\n\t\t\tvalues     \u003d [data.getValueAt(i, \u0027value\u0027) for i in range(sampleCount)]\n\t\t\ttimestamps \u003d [data.getValueAt(i, \u0027tStamp\u0027) for i in range(sampleCount)]\n\t\n\t\t\tmeasureValue \u003d sum(values) / sampleCount\n\t\t\tminValue     \u003d min(values)\n\t\t\tmaxValue     \u003d max(values)\n\t\t\tvariance     \u003d sum((v - measureValue) ** 2 for v in values) / sampleCount\n\t\t\tstdDev       \u003d math.sqrt(variance)\n\t\t\tdurationSecs \u003d system.date.secondsBetween(timestamps[0], timestamps[-1])\n\t\n\t\t\tmeasureEventInfo \u003d {\n\t\t\t\t\u0027measureId\u0027:    tagValues[1].value,\n\t\t\t\t\u0027tStamp\u0027:       currentValue.timestamp,\n\t\t\t\t\u0027measureValue\u0027: measureValue,\n\t\t\t\t\u0027sampleCount\u0027:  sampleCount,\n\t\t\t\t\u0027minValue\u0027:     minValue,\n\t\t\t\t\u0027maxValue\u0027:     maxValue,\n\t\t\t\t\u0027stdDev\u0027:       stdDev,\n\t\t\t\t\u0027durationSecs\u0027: durationSecs\n\t\t\t}\n\t\n\t\t\tresult \u003d system.kanoa.measures.addMeasureEvent(measureEventInfo, userId)\n\t\t\t#An expired license returns its message, not (measureEventId, msg): unpacking it failed with \u0027too many values to unpack\u0027\n\t\t\tif isinstance(result, basestring): raise Exception(result)\n\t\t\tmeasureEventId, msg \u003d result\n\t\t\tif msg:\n\t\t\t\tlog.error(\"addMeasureEvent() called with %s returned %s %s\" % (measureEventInfo, measureEventId, msg))\n\t\t\t\terrorMsg \u003d msg\n\t\t\telse:\n\t\t\t\tsystem.tag.writeBlocking([\"[.]data\"], system.dataset.clearDataset(data))\n\t\t\t\t\n\t\texcept java.lang.Exception, e:\n\t\t\terrorMsg \u003d e.cause\n\t\texcept Exception, e:\n\t\t\terrorMsg \u003d str(e)\n\t\texcept:\n\t\t\terrorMsg \u003d \u0027unknown error\u0027\n\t\n\t\timport time\n\t\ttime.sleep(0.5)\n\t\n\t\tif errorMsg: log.warn(\"%s timer script failed with %s\" % (tagPath, errorMsg))\n\t\tsystem.tag.writeBlocking([\"[.]lastUpdated\", \"[.]update\", \"[.]error\"], [currentValue.timestamp, 0, errorMsg])\n\t\tif debug: log.info(\"%s update took %sms\" % (tagPath, system.date.millisBetween(timeNow, system.date.now())))\n\n\t\t#SPC on the recorded events (each a minute or so of samples\u0027 average), the points the measure\u0027s SPC chart plots,\n\t\t#judged by its configured control limits. Run on the raw samples against limits computed from them, every rule\n\t\t#fired (868mtrbyg). Without configured limits spcCheck computes its own from these events\n\t\tif not errorMsg:\n\t\t\ttry:\n\t\t\t\tspcTags \u003d system.tag.readBlocking([\"[.]spcCheckEnabled\", \"[.]spcPoints\", \"[.]spec/usl\", \"[.]spec/lsl\", \"[.]spec/ucl\", \"[.]spec/lcl\", \"[.]spec/tgt\"])\n\t\t\t\tinfo \u003d {\u0027outOfControl\u0027: False, \u0027violations\u0027: {}}\n\t\t\t\tif spcTags[0].value:\n\t\t\t\t\tevents \u003d system.kanoa.measures.getMeasureEvents({\u0027measureId\u0027: tagValues[1].value, \u0027maxRows\u0027: spcTags[1].value or 30})\n\t\t\t\t\tpoints \u003d [events.getValueAt(i, \u0027measureValue\u0027) for i in range(events.rowCount)] if hasattr(events, \u0027getRowCount\u0027) else []\n\t\t\t\t\tpoints \u003d [p for p in points if p is not None]\n\t\t\t\t\tif len(points) \u003e\u003d 2:\n\t\t\t\t\t\tinfo \u003d system.kanoa.quality.spc.spcCheck(points, \"individuals\", \"both\", None, spcTags[2].value, spcTags[3].value, None,\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t  spcTags[4].value, spcTags[5].value, spcTags[6].value)\n\t\t\t\t#Without a QDS license (or trial) spcCheck returns \u0027Kanoa QDS License Expired\u0027, and None on an error, not its result:\n\t\t\t\t#leave outOfControl and ruleViolations as they are, and say why at most once an hour\n\t\t\t\tif isinstance(info, dict):\n\t\t\t\t\tsystem.tag.writeBlocking([\"[.]outOfControl\", \"[.]ruleViolations\"], [info[\u0027outOfControl\u0027], list(info[\u0027violations\u0027].keys())])\n\t\t\t\telse:\n\t\t\t\t\twarned \u003d system.util.getGlobals().setdefault(\u0027kanoaSpcCheckWarned\u0027, {})\n\t\t\t\t\tnow \u003d system.date.now().getTime()\n\t\t\t\t\tif now - warned.get(\u0027at\u0027, 0) \u003e 3600000:\n\t\t\t\t\t\twarned[\u0027at\u0027] \u003d now\n\t\t\t\t\t\tsystem.util.getLogger(\u0027spcCheck\u0027).warn(\"spcCheck() didn\u0027t run for %s: %s. Its SPC tags weren\u0027t updated (logged at most once an hour)\" % (tagPath, info))\n\t\t\texcept Exception, e:\n\t\t\t\tlog.warn(\"%s SPC check failed: %s\" % (tagPath, e))\n\t\n\treturn"
           }
         ],
         "name": "update",

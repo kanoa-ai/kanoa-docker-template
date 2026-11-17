@@ -1,0 +1,113 @@
+{
+  "custom": {},
+  "params": {
+    "rowData": {
+      "selectable": true,
+      "stateAssetLinkId": null,
+      "unknownState": false
+    },
+    "value": true
+  },
+  "propConfig": {
+    "params.rowData": {
+      "paramDirection": "input"
+    },
+    "params.value": {
+      "paramDirection": "input"
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 30,
+      "width": 120
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "events": {
+          "component": {
+            "onActionPerformed": {
+              "config": {
+                "script": "\n\t#The asset\u0027s States table takes the change (permissions, the service call, the toast, the refresh)\n\tsystem.perspective.sendMessage(\u0027setStateLinkSelectable\u0027, {\u0027stateAssetLinkId\u0027: self.view.params.rowData.stateAssetLinkId, \u0027selectable\u0027: self.props.selected}, scope\u003d\u0027page\u0027)\n"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "chkSelectable"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "!toBoolean({view.params.rowData.unknownState})"
+              },
+              "type": "expr"
+            }
+          },
+          "props.selected": {
+            "binding": {
+              "config": {
+                "expression": "toBoolean({view.params.value})"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "text": ""
+        },
+        "type": "ia.input.checkbox"
+      },
+      {
+        "meta": {
+          "name": "icnLocked",
+          "tooltip": {
+            "enabled": true,
+            "location": "top",
+            "text": "Unknown State can\u0027t be selectable: operators shouldn\u0027t pick it. Link the code to the state it really means instead."
+          }
+        },
+        "position": {
+          "basis": "18px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "toBoolean({view.params.rowData.unknownState})"
+              },
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "color": "var(--warning)",
+          "path": "material/block",
+          "style": {
+            "height": "18px"
+          }
+        },
+        "type": "ia.display.icon"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "alignItems": "center",
+      "justify": "center",
+      "style": {
+        "overflow": "hidden"
+      }
+    },
+    "type": "ia.container.flex"
+  }
+}

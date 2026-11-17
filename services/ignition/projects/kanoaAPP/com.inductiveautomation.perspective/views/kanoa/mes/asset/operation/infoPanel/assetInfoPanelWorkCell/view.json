@@ -68,7 +68,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value is None: return None\n\treturn system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getAssetAttributes({\u0027assetId\u0027: value}), \u0027assetAttrName\u0027, \u0027assetAttrValue\u0027)",
+            "code": "\n\tif value is None: return None\n\treturn system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getAssetAttributes({'assetId': value}), 'assetAttrName', 'assetAttrValue')",
             "type": "script"
           }
         ],
@@ -83,7 +83,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tif value is None: return []\n\treturn {\n\t\t\t\t\t\u0027FL500\u0027: system.kanoa.utilities.convertDatasetToDict(system.kanoa.item.getAssetItems({\u0027assetPath\u0027: value + \u0027%\u0027, \u0027itemName\u0027: \u0027FL500\u0027}), \u0027assetPath\u0027, None),\n\t\t\t\t\t\u002710225125\u0027: system.kanoa.utilities.convertDatasetToDict(system.kanoa.item.getAssetItems({\u0027assetPath\u0027: value + \u0027%\u0027, \u0027itemName\u0027: \u002710225125\u0027}), \u0027assetPath\u0027, None)\n\t\t\t\t}",
+            "code": "\t\n\tif value is None: return []\n\treturn {\n\t\t\t\t\t'FL500': system.kanoa.utilities.convertDatasetToDict(system.kanoa.item.getAssetItems({'assetPath': value + '%', 'itemName': 'FL500'}), 'assetPath', None),\n\t\t\t\t\t'10225125': system.kanoa.utilities.convertDatasetToDict(system.kanoa.item.getAssetItems({'assetPath': value + '%', 'itemName': '10225125'}), 'assetPath', None)\n\t\t\t\t}",
             "type": "script"
           }
         ],
@@ -94,24 +94,17 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.custom.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "if(isNull({view.custom.assetInfo.assetPath}) || len({view.custom.assetInfo.assetPath}) = 0, \"\", \"[kanoaMES]\" + replace({view.custom.assetInfo.assetPath}, \"\\\\\", \"/\") + \"/OEE/info\")"
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value.OEE",
+            "code": "\n\t#The asset's OEE/info tag (its kanoaMES OEE tags in one document that changes whenever any of them does), so the view\n\t#updates as they change with one binding and no timer. Dates as dates. None when the asset has no OEE tags\n\tif value is None: return None\n\tdef field(folder, name):\n\t\ttry: v = value[folder][name]\n\t\texcept: return None\n\t\treturn system.date.fromMillis(long(v)) if v is not None and name in ['startDate', 'stateStart', 'shiftStart', 'shiftEnd', 'scheduleStart', 'scheduleEnd', 'lastUpdated'] else v\n\tinfo = dict((name, field('Status', name)) for name in ['modeName', 'modeTypeName', 'modeColor', 'modeSourceName', 'userName', 'stateName', 'stateColor', 'stateTypeColor', 'stateStart', 'itemName', 'workOrderId', 'workOrderName', 'reqdQty', 'woActualQty', 'outfeedUnits'])\n\tfor name in ['startDate']:\n\t\tinfo[name] = field('Current Run', name)\n\treturn info",
             "type": "script"
           }
         ],
         "type": "tag"
-      },
-      "onChange": {
-        "enabled": null,
-        "script": "\t\n\tif previousValue is None: return\n\ttry:\n\t\tprevShiftValue \u003d previousValue.value[\u0027shiftName\u0027]\n\t\tshiftValue \u003d currentValue.value[\u0027shiftName\u0027]\n\texcept: return\n#\tsystem.perspective.print(message)\t\n\t\n\tif shiftValue !\u003d prevShiftValue:\n\t\t#Open popup with warning message at the end of shift to say something like \"AGD1, LISA, and Jason are logged in, \n\t\t#do you wish to continue login for next shift?\"\n\t\t\n\t\toperators \u003d [operator[\u0027value\u0027] for operator in self.custom.operators if operator[\u0027endDate\u0027] is None]\n\t\tif len(operators) \u003d\u003d 0: return\n\t\telif len(operators) \u003d\u003d 1: operators \u003d operators[0]\n\t\telif len(operators) \u003d\u003d 2: operators \u003d \"{} and {}\".format(operators[0], operators[1])\n\t\telse: operators \u003d \"{}, and {}\".format(\u0027, \u0027.join(operators[:-1]), operators[-1])\n\t\t\n\t\tmsg \u003d \"%s are logged in, do you wish to continue login for next shift?\"%operators\n\t\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\", {\u0027text\u0027:msg, \u0027messageHandler\u0027:\u0027shiftChange\u0027, \u0027inputPayload\u0027: {}}, title\u003d\u0027Shift Change\u0027, resizable\u003dTrue, draggable\u003dTrue, showCloseIcon\u003dTrue)\t\n\t\t\n\treturn\t\t\n"
       }
     },
     "custom.assetInfo": {
@@ -122,7 +115,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetId\u0027: value or -1}), 0)",
+            "code": "\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({'assetId': value or -1}), 0)",
             "type": "script"
           }
         ],
@@ -145,7 +138,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value[\u0027filter\u0027][\u0027assetPath\u0027] is None: return []\n\t\n\tstartDate \u003d value[\u0027filter\u0027][\u0027startDate\u0027]\n\tendDate \u003d value[\u0027filter\u0027][\u0027endDate\u0027]\n\tselectedRange \u003d value[\u0027filter\u0027][\u0027selectedRange\u0027]\n\tif selectedRange and \u0027current\u0027 in selectedRange.lower(): endDate \u003d None\n\tparamsDict \u003d {\u0027assetPath\u0027: value[\u0027filter\u0027][\u0027assetPath\u0027], \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tvalues \u003d []\n\tfailedUnits \u003d {}\n\tfor row in data:\n\t\trow \u003d dict(row)\n\t\tif row[\u0027value\u0027] \u003d\u003d 0: continue\n\t\tassetPath \u003d row[\u0027assetPath\u0027]\n\t\tassetName \u003d assetPath.split(\"\\\\\")[-1]\n\t\titemPath \u003d row[\u0027itemPath\u0027]\n\t\titemRate \u003d None\n\t\titemStatePath \u003d row[\u0027itemStatePath\u0027] or \u0027\u0027\n\t\trow[\u0027earnedLaborSecs\u0027] \u003d 0\t\t\n\t\tif itemPath:\n\t\t\titemName \u003d itemPath.split(\"\\\\\")[-1]\n\t\t\tif value[\u0027itemRates\u0027].has_key(itemName) and value[\u0027itemRates\u0027][itemName].has_key(assetPath): itemRate \u003d value[\u0027itemRates\u0027][itemName][assetPath]\n\n\t\tif itemRate:\n\t\t\ttaktTime \u003d 60 / itemRate[\u0027standardRate\u0027] if itemRate[\u0027itemPeriodName\u0027] \u003d\u003d \u0027Hour\u0027 else itemRate[\u0027standardRate\u0027] or 0.0\n\t\t\trow[\u0027earnedLaborSecs\u0027] \u003d (row[\u0027value\u0027] * taktTime) * 60\n\t\t\t\n\t\tfailedName \u003d \"%s - %s\"%(assetName, itemPath)\n\t\t\n\t\trow[\u0027countState\u0027] \u003d \u0027%s - %s\u0027%(row[\u0027counterName\u0027].title(), itemStatePath.split(\"\\\\\")[-1])\n\t\t\n\t\tvalues.append(row)\n\t\t\n\treturn sorted(values, key\u003dlambda x: x[\u0027itemPath\u0027])",
+            "code": "\n\tif value['filter']['assetPath'] is None: return []\n\t\n\tstartDate = value['filter']['startDate']\n\tendDate = value['filter']['endDate']\n\tselectedRange = value['filter']['selectedRange']\n\tif selectedRange and 'current' in selectedRange.lower(): endDate = None\n\tparamsDict = {'assetPath': value['filter']['assetPath'], 'startDate': startDate, 'endDate': endDate, 'isCoProduct': False}\n\tdata = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tvalues = []\n\tfailedUnits = {}\n\tfor row in data:\n\t\trow = dict(row)\n\t\tif row['value'] == 0: continue\n\t\tassetPath = row['assetPath']\n\t\tassetName = assetPath.split(\"\\\\\")[-1]\n\t\titemPath = row['itemPath']\n\t\titemRate = None\n\t\titemStatePath = row['itemStatePath'] or ''\n\t\trow['earnedLaborSecs'] = 0\t\t\n\t\tif itemPath:\n\t\t\titemName = itemPath.split(\"\\\\\")[-1]\n\t\t\tif value['itemRates'].has_key(itemName) and value['itemRates'][itemName].has_key(assetPath): itemRate = value['itemRates'][itemName][assetPath]\n\n\t\tif itemRate:\n\t\t\ttaktTime = 60 / itemRate['standardRate'] if itemRate['itemPeriodName'] == 'Hour' else itemRate['standardRate'] or 0.0\n\t\t\trow['earnedLaborSecs'] = (row['value'] * taktTime) * 60\n\t\t\t\n\t\tfailedName = \"%s - %s\"%(assetName, itemPath)\n\t\t\n\t\trow['countState'] = '%s - %s'%(row['counterName'].title(), itemStatePath.split(\"\\\\\")[-1])\n\t\t\n\t\tvalues.append(row)\n\t\t\n\treturn sorted(values, key=lambda x: x['itemPath'])",
             "type": "script"
           }
         ],
@@ -164,7 +157,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value[\u0027filter\u0027][\u0027assetPath\u0027] is None: return []\n\n\tstartDate \u003d value[\u0027filter\u0027][\u0027startDate\u0027]\n\tendDate \u003d value[\u0027filter\u0027][\u0027endDate\u0027]\n\tselectedRange \u003d value[\u0027filter\u0027][\u0027selectedRange\u0027]\n\tif selectedRange and \u0027current\u0027 in selectedRange.lower(): endDate \u003d None\n\tparamsDict \u003d {\u0027assetPath\u0027: value[\u0027filter\u0027][\u0027assetPath\u0027] + \u0027\\%\u0027, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tvalues \u003d []\n\tfailedUnits \u003d {}\n\tfor row in data:\n\t\trow \u003d dict(row)\n\t\tif row[\u0027value\u0027] \u003d\u003d 0: continue\n\t\trow[\u0027earnedLaborSecs\u0027] \u003d 0\n\t\tassetPath \u003d row[\u0027assetPath\u0027]\n\t\tassetName \u003d row[\u0027assetName\u0027]\n\t\titemPath \u003d row[\u0027itemPath\u0027]\n\t\tif itemPath:\n\t\t\titemName \u003d itemPath.split(\"\\\\\")[-1]\t\t\t\n\t\t\titemRate \u003d value[\u0027itemRates\u0027][itemName][assetPath] if value[\u0027itemRates\u0027].has_key(itemName) and value[\u0027itemRates\u0027][itemName].has_key(assetPath) else None\n\t\t\tif itemRate:\n\t\t\t\ttaktTime \u003d 60.0 / itemRate[\u0027standardRate\u0027] if itemRate[\u0027itemPeriodName\u0027] \u003d\u003d \u0027Hour\u0027 else itemRate[\u0027standardRate\u0027] if itemRate else 0\n\t\t\t\trow[\u0027earnedLaborSecs\u0027] \u003d int(taktTime * 60.0 * row[\u0027value\u0027])\n\n\t\tfailedName \u003d \"%s - %s\"%(assetName, itemPath)\t\t\n\t\tif row[\u0027counterName\u0027] !\u003d \u0027waste\u0027: values.append(row)\n\t\telif not failedUnits.has_key(failedName): failedUnits[failedName] \u003d row\n\t\telse: failedUnits[failedName][\u0027value\u0027] +\u003d row[\u0027value\u0027]\t\t\n\n\tfor k,v in failedUnits.items(): values.append(v)\n\t\n\treturn sorted(values, key\u003dlambda x: x[\u0027itemPath\u0027])\t",
+            "code": "\n\tif value['filter']['assetPath'] is None: return []\n\n\tstartDate = value['filter']['startDate']\n\tendDate = value['filter']['endDate']\n\tselectedRange = value['filter']['selectedRange']\n\tif selectedRange and 'current' in selectedRange.lower(): endDate = None\n\tparamsDict = {'assetPath': value['filter']['assetPath'] + '\\%', 'startDate': startDate, 'endDate': endDate, 'isCoProduct': False}\n\tdata = system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getCounterEventTotals(paramsDict))\n\t\n\tvalues = []\n\tfailedUnits = {}\n\tfor row in data:\n\t\trow = dict(row)\n\t\tif row['value'] == 0: continue\n\t\trow['earnedLaborSecs'] = 0\n\t\tassetPath = row['assetPath']\n\t\tassetName = row['assetName']\n\t\titemPath = row['itemPath']\n\t\tif itemPath:\n\t\t\titemName = itemPath.split(\"\\\\\")[-1]\t\t\t\n\t\t\titemRate = value['itemRates'][itemName][assetPath] if value['itemRates'].has_key(itemName) and value['itemRates'][itemName].has_key(assetPath) else None\n\t\t\tif itemRate:\n\t\t\t\ttaktTime = 60.0 / itemRate['standardRate'] if itemRate['itemPeriodName'] == 'Hour' else itemRate['standardRate'] if itemRate else 0\n\t\t\t\trow['earnedLaborSecs'] = int(taktTime * 60.0 * row['value'])\n\n\t\tfailedName = \"%s - %s\"%(assetName, itemPath)\t\t\n\t\tif row['counterName'] != 'waste': values.append(row)\n\t\telif not failedUnits.has_key(failedName): failedUnits[failedName] = row\n\t\telse: failedUnits[failedName]['value'] += row['value']\t\t\n\n\tfor k,v in failedUnits.items(): values.append(v)\n\t\n\treturn sorted(values, key=lambda x: x['itemPath'])\t",
             "type": "script"
           }
         ],
@@ -182,7 +175,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tif not value: return False\n\tassetPath \u003d system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value}))\n\treturn True if system.kanoa.asset.getClosestAncestorAttribute(assetPath, \u0027_assetOperationNavLocation\u0027) \u003d\u003d \u0027Left Panel\u0027 else False",
+            "code": "\t\n\tif not value: return False\n\tassetPath = system.kanoa.utilities.getFieldValue('assetPath', system.kanoa.asset.getAssets({'assetId': value}))\n\treturn True if system.kanoa.asset.getClosestAncestorAttribute(assetPath, '_assetOperationNavLocation') == 'Left Panel' else False",
             "type": "script"
           }
         ],
@@ -200,7 +193,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\treturn value[\u0027assetId\u0027]",
+            "code": "\t\n\treturn value['assetId']",
             "type": "script"
           }
         ],
@@ -215,7 +208,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\treturn value[\u0027assetPath\u0027]",
+            "code": "\t\n\treturn value['assetPath']",
             "type": "script"
           }
         ],
@@ -228,16 +221,21 @@
     "custom.production": {
       "binding": {
         "config": {
-          "path": "view.custom.assetInfo"
+          "struct": {
+            "assetId": "{view.custom.assetInfo.assetId}",
+            "minute": "now(60000)",
+            "timeZone": "{view.custom.assetInfo.timeZone}"
+          },
+          "waitOnAll": true
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value[\u0027assetId\u0027] is None: return []\n\t\n\tendDate \u003d system.date.now()\n\tdayNum \u003d system.date.getDayOfWeek(endDate)\n\tstartDate \u003d system.date.addDays(endDate, -dayNum+2)\n\tstartDate \u003d system.date.setTime(startDate, 0,0,0)\n\ttzOffsetMins \u003d system.kanoa.date.getTimeZoneOffsetMins(value[\u0027timeZone\u0027], endDate)\t\n\tstartDate \u003d system.date.addMinutes(startDate, tzOffsetMins)\n\t\n\tmodeId \u003d system.kanoa.utilities.getFieldValue(\u0027modeId\u0027, system.kanoa.asset.getAssetModes({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027modeName\u0027: \u0027Production\u0027}))\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsSummary({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027modeId\u0027: modeId, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027strictDates\u0027: True}))",
+            "code": "\n\t#Runs when the asset or its time zone changes, and once a minute so the week's figures move on: it ran on every new\n\t#assetInfo object, which the parent passes about twice a minute (868mub5yy). The runs while the view opens have no asset\n\tif not value['assetId']: return []\n\n\tif value['assetId'] is None: return []\n\t\n\tendDate = system.date.now()\n\tdayNum = system.date.getDayOfWeek(endDate)\n\tstartDate = system.date.addDays(endDate, -dayNum+2)\n\tstartDate = system.date.setTime(startDate, 0,0,0)\n\ttzOffsetMins = system.kanoa.date.getTimeZoneOffsetMins(value['timeZone'], endDate)\t\n\tstartDate = system.date.addMinutes(startDate, tzOffsetMins)\n\t\n\tmodeId = system.kanoa.utilities.getFieldValue('modeId', system.kanoa.asset.getAssetModes({'assetId': value['assetId'], 'modeName': 'Production'}))\n\treturn system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsSummary({'assetId': value['assetId'], 'modeId': modeId, 'startDate': startDate, 'endDate': endDate, 'strictDates': True}))",
             "type": "script"
           }
         ],
-        "type": "property"
+        "type": "expr-struct"
       },
       "persistent": true
     },
@@ -282,7 +280,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn \"Asset currently in %s mode\"%value[\u0027modeName\u0027]",
+                              "code": "\treturn \"Asset currently in %s mode\"%value['modeName']",
                               "type": "script"
                             }
                           ],
@@ -329,7 +327,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn \"Asset currently in %s mode\"%value[\u0027modeName\u0027]",
+                              "code": "\treturn \"Asset currently in %s mode\"%value['modeName']",
                               "type": "script"
                             }
                           ],
@@ -344,7 +342,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn value or \u0027Unknown\u0027",
+                              "code": "\treturn value or 'Unknown'",
                               "type": "script"
                             }
                           ],
@@ -382,7 +380,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\t\n\tif value[\u0027modeSourceName\u0027] \u003d\u003d \u0027Schedule\u0027: return \u0027Mode set by schedule\u0027\n\tname \u003d value.userName if value.userName is not None and value.userName !\u003d \u0027tagChange\u0027 else value.modeSourceName\n\treturn \u0027Mode set by %s\u0027%name or \u0027\u0027",
+                              "code": "\t\n\tif value['modeSourceName'] == 'Schedule': return 'Mode set by schedule'\n\tname = value.userName if value.userName is not None and value.userName != 'tagChange' else value.modeSourceName\n\treturn system.util.translate('Mode set by %s', self.session.props.locale)%name or ''",
                               "type": "script"
                             }
                           ],
@@ -396,7 +394,7 @@
                           },
                           "transforms": [
                             {
-                              "code": "\t\n\tif value \u003d\u003d \u0027Schedule\u0027: icon \u003d \u0027material/calendar_today\u0027\n\telif value \u003d\u003d \u0027PLC\u0027: icon \u003d \u0027kanoa/cell\u0027\n\telif value in (\u0027Operator\u0027, \u0027Operator Run\u0027): icon \u003d \u0027material/engineering\u0027\n\telse: icon \u003d \u0027\u0027\n\t\n\treturn icon",
+                              "code": "\t\n\tif value == 'Schedule': icon = 'material/calendar_today'\n\telif value == 'PLC': icon = 'kanoa/cell'\n\telif value in ('Operator', 'Operator Run'): icon = 'material/engineering'\n\telse: icon = ''\n\t\n\treturn icon",
                               "type": "script"
                             }
                           ],
@@ -509,7 +507,7 @@
                           },
                           "transforms": [
                             {
-                              "code": "\t\n\ttry:\n\t\tint(value)\n\t\treturn \u0027Unknown State (%s)\u0027%value\n\texcept:\n\t\treturn value or \u0027Unknown state\u0027",
+                              "code": "\t\n\ttry:\n\t\tint(value)\n\t\treturn 'Unknown State (%s)'%value\n\texcept:\n\t\treturn value or 'Unknown state'",
                               "type": "script"
                             }
                           ],
@@ -545,16 +543,20 @@
                       "props.text": {
                         "binding": {
                           "config": {
-                            "path": "view.custom.asset.tagInfo"
+                            "struct": {
+                              "info": "{view.custom.asset.tagInfo}",
+                              "tick": "now(30000)"
+                            },
+                            "waitOnAll": false
                           },
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\t#measure from the latest state event OR the latest mode event, whichever is sooner\t\n\tcurrentStateStartTime \u003d system.tag.read(self.view.custom.assetInfo.tagPath + \u0027/Line/OEE/stateName\u0027).timestamp\n\tcurrentModeStartTime \u003d system.date.fromMillis(self.view.custom.asset.tagInfo.startDate)\n\n\ttimes \u003d []\n\tif currentStateStartTime: times.append(currentStateStartTime)\n\tif currentModeStartTime: times.append(currentModeStartTime)\n\tmeasureFrom \u003d max(times)\n\tif measureFrom: secs \u003d system.date.secondsBetween(measureFrom, system.date.now())\n\telse: secs \u003d 0\n\t\n\treturn system.kanoa.utilities.secondsToText(secs, {\u0027showSecs\u0027: False, \u0027roundUp\u0027: True})",
+                              "code": "\t#From the latest state event or the run's start, whichever is later; the tick counts it up between OEE/info changes\n\tvalue = value['info']\n\tif value is None: return ''\n\ttimes = []\n\tfor t in (value['stateStart'], value['startDate']):\n\t\tif t is None: continue\n\t\ttimes.append(t if hasattr(t, 'getTime') else system.date.fromMillis(t))\n\tsecs = system.date.secondsBetween(max(times), system.date.now()) if times else 0\n\treturn system.kanoa.utilities.secondsToText(secs, {'showSecs': False, 'roundUp': True})",
                               "type": "script"
                             }
                           ],
-                          "type": "property"
+                          "type": "expr-struct"
                         }
                       },
                       "props.textStyle.color": {
@@ -595,7 +597,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\tif (value or None) is None: return \u0027--kcRed-60\u0027\n\t\n\timport re\n\n\t# Check if the string is a valdi hex color and starts with # and is followed by 3 or 6 hex characters\n\tpattern \u003d r\"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$\"\n  \tif not bool(re.match(pattern, value)): return \u0027#000000\u0027\n\tif value is None: return \u0027#000000\u0027\t\n\t\n\treturn system.kanoa.utilities.getContrastingColor(value)",
+                          "code": "\t\n\tif (value or None) is None: return '--kcRed-60'\n\t\n\timport re\n\n\t# Check if the string is a valdi hex color and starts with # and is followed by 3 or 6 hex characters\n\tpattern = r\"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$\"\n  \tif not bool(re.match(pattern, value)): return '#000000'\n\tif value is None: return '#000000'\t\n\t\n\treturn system.kanoa.utilities.getContrastingColor(value)",
                           "type": "script"
                         }
                       ],
@@ -609,7 +611,7 @@
                       },
                       "transforms": [
                         {
-                          "code": "\treturn value\u003d\u003d\u0027Production\u0027",
+                          "code": "\treturn value=='Production'",
                           "type": "script"
                         }
                       ],
@@ -624,7 +626,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn value[\u0027stateColor\u0027] or value[\u0027stateTypeColor\u0027]",
+                          "code": "\treturn value['stateColor'] or value['stateTypeColor']",
                           "type": "script"
                         }
                       ],
@@ -843,7 +845,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn value or \u0027\u0027",
+                              "code": "\treturn value or ''",
                               "type": "script"
                             }
                           ],
@@ -879,7 +881,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn \u0027\u0027 if value is None or not value.has_key(\u0027itemDescription\u0027) else value[\u0027itemDescription\u0027] or \u0027\u0027",
+                              "code": "\treturn '' if value is None or not value.has_key('itemDescription') else value['itemDescription'] or ''",
                               "type": "script"
                             }
                           ],
@@ -915,7 +917,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn value[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and value[\u0027itemName\u0027] is not None",
+                          "code": "\treturn value['modeTypeName'] == 'Production' and value['itemName'] is not None",
                           "type": "script"
                         }
                       ],
@@ -987,7 +989,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\treturn value or \u0027\u0027",
+                              "code": "\treturn value or ''",
                               "type": "script"
                             }
                           ],
@@ -1057,7 +1059,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\tval \u003d \u0027{:,.0f}\u0027.format(value[\u0027woActualQty\u0027] or 0)\n\treturn \u0027%s %s\u0027%(val, value[\u0027outfeedUnits\u0027] or \u0027\u0027)",
+                              "code": "\n\tval = '{:,.0f}'.format(value['woActualQty'] or 0)\n\treturn '%s %s'%(val, value['outfeedUnits'] or '')",
                               "type": "script"
                             }
                           ],
@@ -1126,7 +1128,7 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\t\n\tqty \u003d value[\u0027reqdQty\u0027] or 0\n\t\t\n\treturn \"{:,.0f} {}\".format(qty, value[\u0027outfeedUnits\u0027] or \u0027\u0027)",
+                              "code": "\t\n\tqty = value['reqdQty'] or 0\n\t\t\n\treturn \"{:,.0f} {}\".format(qty, value['outfeedUnits'] or '')",
                               "type": "script"
                             }
                           ],
@@ -1160,7 +1162,7 @@
                       },
                       "transforms": [
                         {
-                          "code": "\treturn value\u003d\u003d\u0027Production\u0027",
+                          "code": "\treturn value=='Production'",
                           "type": "script"
                         }
                       ],
@@ -1193,7 +1195,7 @@
                       },
                       "transforms": [
                         {
-                          "code": "\treturn value[\u0027reqdQty\u0027] or 0",
+                          "code": "\treturn value['reqdQty'] or 0",
                           "type": "script"
                         }
                       ],
@@ -1207,7 +1209,7 @@
                       },
                       "transforms": [
                         {
-                          "code": "\treturn value[\u0027woActualQty\u0027] or 0",
+                          "code": "\treturn value['woActualQty'] or 0",
                           "type": "script"
                         }
                       ],
@@ -1235,7 +1237,7 @@
                   },
                   "transforms": [
                     {
-                      "code": "\treturn value[\u0027workOrderId\u0027] is not None",
+                      "code": "\treturn value['workOrderId'] is not None",
                       "type": "script"
                     }
                   ],
@@ -1289,7 +1291,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn value or \u0027\u0027",
+                          "code": "\treturn value or ''",
                           "type": "script"
                         }
                       ],
@@ -1325,7 +1327,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn \u0027\u0027 if value is None or not value.has_key(\u0027itemDescription\u0027) else value[\u0027itemDescription\u0027] or \u0027\u0027",
+                          "code": "\treturn '' if value is None or not value.has_key('itemDescription') else value['itemDescription'] or ''",
                           "type": "script"
                         }
                       ],
@@ -1361,7 +1363,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn value[\u0027workOrderId\u0027] is None and value[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and value[\u0027itemName\u0027] is not None",
+                      "code": "\treturn value['workOrderId'] is None and value['modeTypeName'] == 'Production' and value['itemName'] is not None",
                       "type": "script"
                     }
                   ],
@@ -1409,7 +1411,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\n\tfilterInfo \u003d self.view.custom.filter\n\t\n\tendDate \u003d filterInfo[\u0027endDate\u0027] if filterInfo[\u0027endDate\u0027] \u003c system.date.now() else system.date.now()\n\t\n\ttotalDurationSecs \u003d system.date.secondsBetween(filterInfo[\u0027startDate\u0027], filterInfo[\u0027endDate\u0027])\n\tcurrentDurationSecs \u003d system.date.secondsBetween(filterInfo[\u0027startDate\u0027], endDate)\t\n\t\n\tcrewSize \u003d 1\n\t\n\ttotalDurationSecs \u003d totalDurationSecs * crewSize\n\tcurrentDurationSecs \u003d currentDurationSecs * crewSize\n\n\tearnedValueSecs \u003d system.math.sum([row[\u0027earnedLaborSecs\u0027] for row in value[\u0027stationCounts\u0027] or [] if row[\u0027earnedLaborSecs\u0027] is not None]) if len(value[\u0027stationCounts\u0027] or []) \u003e 0 else 0\n#\toperatorSecs \u003d system.math.sum([row[\u0027durationSecs\u0027] for row in value[\u0027operators\u0027] or [] if row[\u0027durationSecs\u0027] is not None]) if len(value[\u0027operators\u0027] or []) \u003e 0 else 0\n#\tunearnedSecs \u003d operatorSecs - earnedValueSecs\n\t \n\treturn {\u0027totalDurationSecs\u0027: totalDurationSecs, \u0027currentDurationSecs\u0027: currentDurationSecs, \u0027earnedValueSecs\u0027: earnedValueSecs, \u0027crewSize\u0027: crewSize}",
+                          "code": "\n\tfilterInfo = self.view.custom.filter\n\t\n\tendDate = filterInfo['endDate'] if filterInfo['endDate'] < system.date.now() else system.date.now()\n\t\n\ttotalDurationSecs = system.date.secondsBetween(filterInfo['startDate'], filterInfo['endDate'])\n\tcurrentDurationSecs = system.date.secondsBetween(filterInfo['startDate'], endDate)\t\n\t\n\tcrewSize = 1\n\t\n\ttotalDurationSecs = totalDurationSecs * crewSize\n\tcurrentDurationSecs = currentDurationSecs * crewSize\n\n\tearnedValueSecs = system.math.sum([row['earnedLaborSecs'] for row in value['stationCounts'] or [] if row['earnedLaborSecs'] is not None]) if len(value['stationCounts'] or []) > 0 else 0\n#\toperatorSecs = system.math.sum([row['durationSecs'] for row in value['operators'] or [] if row['durationSecs'] is not None]) if len(value['operators'] or []) > 0 else 0\n#\tunearnedSecs = operatorSecs - earnedValueSecs\n\t \n\treturn {'totalDurationSecs': totalDurationSecs, 'currentDurationSecs': currentDurationSecs, 'earnedValueSecs': earnedValueSecs, 'crewSize': crewSize}",
                           "type": "script"
                         }
                       ],
@@ -1424,7 +1426,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\ttotalTime \u003d system.kanoa.utilities.secondsToText(value[\u0027totalDurationSecs\u0027], {\u0027showDays\u0027: False, \u0027showSecs\u0027: False})\n\tcurrentTime \u003d system.kanoa.utilities.secondsToText(value[\u0027currentDurationSecs\u0027], {\u0027showDays\u0027: False, \u0027showSecs\u0027: False})\n\tearnedTime \u003d system.kanoa.utilities.secondsToText(value[\u0027earnedValueSecs\u0027], {\u0027showDays\u0027: False, \u0027showSecs\u0027: False})\n\t\n\tcrewSize \u003d 1\n\t\n\treturn str(\"Total %s, Current %s, Earned %s. Based on scheduled crew size of %s\"%(totalTime, currentTime, earnedTime, crewSize))",
+                          "code": "\t\n\ttotalTime = system.kanoa.utilities.secondsToText(value['totalDurationSecs'], {'showDays': False, 'showSecs': False})\n\tcurrentTime = system.kanoa.utilities.secondsToText(value['currentDurationSecs'], {'showDays': False, 'showSecs': False})\n\tearnedTime = system.kanoa.utilities.secondsToText(value['earnedValueSecs'], {'showDays': False, 'showSecs': False})\n\t\n\tcrewSize = 1\n\t\n\treturn str(\"Total %s, Current %s, Earned %s. Based on scheduled crew size of %s\"%(totalTime, currentTime, earnedTime, crewSize))",
                           "type": "script"
                         }
                       ],
@@ -1448,7 +1450,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\tcurrentDuration \u003d value[\u0027currentDurationSecs\u0027]\n\tearnedDuration \u003d value[\u0027earnedValueSecs\u0027]\n\t\n\tif (currentDuration or 0) \u003d\u003d 0 or (earnedDuration or 0) \u003d\u003d 0: return \u0027\u0027\n\t\n\tpercent \u003d float(earnedDuration) / float(currentDuration)\n\t\n\tif percent \u003e\u003d 1: indColor \u003d \u0027--kcGreen-60\u0027\n\telif percent \u003e\u003d 0.8: indColor \u003d \u0027--kcOrange-40\u0027\n\telse: indColor \u003d \u0027--kcRed-60\u0027\n\t\n\treturn indColor",
+                          "code": "\t\n\tcurrentDuration = value['currentDurationSecs']\n\tearnedDuration = value['earnedValueSecs']\n\t\n\tif (currentDuration or 0) == 0 or (earnedDuration or 0) == 0: return ''\n\t\n\tpercent = float(earnedDuration) / float(currentDuration)\n\t\n\tif percent >= 1: indColor = '--kcGreen-60'\n\telif percent >= 0.8: indColor = '--kcOrange-40'\n\telse: indColor = '--kcRed-60'\n\t\n\treturn indColor",
                           "type": "script"
                         }
                       ],
@@ -1503,7 +1505,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn len(value) \u003e 0",
+                      "code": "\treturn len(value) > 0",
                       "type": "script"
                     }
                   ],
@@ -1627,7 +1629,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\n\n\tassetType \u003d self.view.custom.assetInfo.assetTypeName\n\ttabs \u003d [\"%s Counts\"%assetType.title()]\n\tif len(value[\u0027cellCounts\u0027]) \u003e 0: tabs.append(\"Station Counts\")\n\t\n\treturn tabs",
+                      "code": "\n\n\tassetType = self.view.custom.assetInfo.assetTypeName\n\ttabs = [\"%s Counts\"%assetType.title()]\n\tif len(value['cellCounts']) > 0: tabs.append(\"Station Counts\")\n\t\n\treturn tabs",
                       "type": "script"
                     }
                   ],
@@ -1786,7 +1788,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\treturn system.kanoa.utilities.getFieldValue(\u0027assetPath\u0027, system.kanoa.asset.getAssets({\u0027assetId\u0027: value or -1}))",
+                      "code": "\treturn system.kanoa.utilities.getFieldValue('assetPath', system.kanoa.asset.getAssets({'assetId': value or -1}))",
                       "type": "script"
                     }
                   ],
@@ -1819,7 +1821,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\treturn value[\u0027showNavigation\u0027] or False",
+                  "code": "\t\n\treturn value['showNavigation'] or False",
                   "type": "script"
                 }
               ],

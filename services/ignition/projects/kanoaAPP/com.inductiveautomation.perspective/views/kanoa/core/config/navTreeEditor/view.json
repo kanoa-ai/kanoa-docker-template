@@ -10,75 +10,7 @@
     "filter": {
       "showNavItems": null
     },
-    "navItems": {
-      "$": [
-        "ds",
-        192,
-        1781103018459
-      ],
-      "$columns": [
-        {
-          "data": [],
-          "name": "roles",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "icon",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "project",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "type",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "parentId",
-          "type": "Integer"
-        },
-        {
-          "data": [],
-          "name": "enabled",
-          "type": "Boolean"
-        },
-        {
-          "data": [],
-          "name": "viewPath",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "path",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "reserved",
-          "type": "Boolean"
-        },
-        {
-          "data": [],
-          "name": "sortOrder",
-          "type": "Integer"
-        },
-        {
-          "data": [],
-          "name": "name",
-          "type": "String"
-        },
-        {
-          "data": [],
-          "name": "id",
-          "type": "Integer"
-        }
-      ]
-    },
+    "navItems": null,
     "reservedNavItems": [
       "kanoa/core/config/navTreeEditor",
       "kanoa/core/config/security/securityTable"
@@ -594,12 +526,21 @@
                       "overlayOptOut": true,
                       "type": "property"
                     }
+                  },
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
                   }
                 },
                 "props": {
                   "params": {
                     "refresh": false,
                     "values": {
+                      "data": null,
                       "msgHandler": "navTreeEditorItemSelected",
                       "options": {
                         "dragDrop": {
@@ -607,7 +548,8 @@
                           "msgHandler": "confirmMoveNavItem"
                         },
                         "multiSelect": false,
-                        "selectable": []
+                        "selectable": [],
+                        "leavesFirst": false
                       },
                       "selection": [],
                       "style": {
@@ -2181,7 +2123,7 @@
         {
           "name": "delete",
           "params": [],
-          "script": "\t\n\tuserId \u003d self.view.custom.security.userId\n\tnavInfo \u003d self.view.custom.navInfo\n\tif navInfo[\u0027viewPath\u0027] \u003d\u003d \u0027kanoa/core/config/navTreeEditor\u0027: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027This item cannot be deleted\u0027})\n\t\treturn\n\t\n\tretVal, msg \u003d system.kanoa.config.deleteNavigationItem(navInfo[\u0027id\u0027], userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"navInfo. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Navigation item has been deleted\u0027})\n\t\t\n\tself.view.params.value.id \u003d None\n\t\n\tself.view.refreshBinding(\"custom.navInfo\")\n\tself.view.refreshBinding(\"custom.navItems\")\n\t\n\tsystem.perspective.sendMessage(\u0027refreshNavigation\u0027, {})\t#Tells the navigation dock view to update itself\n\n\treturn"
+          "script": "\t\n\tuserId \u003d self.view.custom.security.userId\n\tnavInfo \u003d self.view.custom.navInfo\n\tif navInfo[\u0027viewPath\u0027] \u003d\u003d \u0027kanoa/core/config/navTreeEditor\u0027: \n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027This item cannot be deleted\u0027})\n\t\treturn\n\t\n\tretVal, msg \u003d system.kanoa.config.deleteNavigationItem(navInfo[\u0027id\u0027], userId)\n\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Couldn\u0027t delete navigation item. %s\"%msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Navigation item has been deleted\u0027})\n\t\t\n\tself.view.params.value.id \u003d None\n\t\n\tself.view.refreshBinding(\"custom.navInfo\")\n\tself.view.refreshBinding(\"custom.navItems\")\n\t\n\tsystem.perspective.sendMessage(\u0027refreshNavigation\u0027, {})\t#Tells the navigation dock view to update itself\n\n\treturn"
         },
         {
           "name": "save",
@@ -2201,7 +2143,7 @@
         {
           "messageType": "confirmMoveNavItem",
           "pageScope": true,
-          "script": "\t\n\tsystem.perspective.print(\"confirmMoveNavItem() msg rcvd with %s\"%payload)\n\t\n\tdraggedItem \u003d payload[\u0027draggedItem\u0027]\n\tdroppedItem \u003d payload[\u0027droppedItem\u0027]\n\tif droppedItem is None: droppedItem \u003d {\u0027id\u0027: None}\n\t\n\tsystem.perspective.print(\"Checking permissions() %s\"%self.view.custom.userAction)\n\tif not self.view.custom.userAction.canCreate: \n\t\tself.view.refreshBinding(\"custom.navItems\")\n\t\treturn\n\t\n\tif draggedItem[\u0027id\u0027] is None or draggedItem[\u0027id\u0027] \u003d\u003d droppedItem[\u0027id\u0027]: \n\t\t#We somehow managed to dropped an item onto itself\n\t\tsystem.perspective.print(\"Invalid move. Ignoring...\")\n\t\tself.view.refreshBinding(\"custom.navItems\")\n\t\treturn\n\n\tsystem.perspective.print(\"Moving %s to parentId %s\"%(draggedItem[\u0027path\u0027],  droppedItem[\u0027id\u0027]))\n\tnavInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.config.getNavigation({\u0027id\u0027: draggedItem[\u0027id\u0027]}),0)\n\tif navInfo[\u0027roles\u0027]: navInfo[\u0027roles\u0027] \u003d system.util.jsonDecode(navInfo[\u0027roles\u0027])\n\tif navInfo[\u0027project\u0027]: navInfo[\u0027project\u0027] \u003d system.util.jsonDecode(navInfo[\u0027project\u0027])\t\n\tnavInfo[\u0027parentId\u0027] \u003d droppedItem[\u0027id\u0027]\n\t\n\tself.view.custom.navInfo \u003d navInfo\n\tsystem.perspective.print(navInfo[\u0027roles\u0027])\n\tself.save()\n\t\n\treturn",
+          "script": "\n\t#A dragged item dropped under a parent (None: the top level) at a position: saves its parent, and its new siblings\u0027 order\n\t#as their sortOrder, 0 up (868mvq311). Siblings the editor isn\u0027t showing (the enabled filter) keep their order, after them.\n\t#siblingIds are tree node ids, the items\u0027 paths, in their new order\n\tdraggedItem \u003d payload[\u0027draggedItem\u0027]\n\tdroppedItem \u003d payload[\u0027droppedItem\u0027] or {\u0027id\u0027: None}\n\tuserId \u003d self.view.custom.security.userId\n\n\tif not self.view.custom.userAction.canCreate or draggedItem is None or draggedItem[\u0027id\u0027] is None or draggedItem[\u0027id\u0027] \u003d\u003d droppedItem[\u0027id\u0027]:\n\t\tself.view.refreshBinding(\"custom.navItems\")\t#Back to what\u0027s saved\n\t\treturn\n\n\tparentId \u003d droppedItem[\u0027id\u0027]\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.config.getNavigation({}))\n\tbyId \u003d dict((row[\u0027id\u0027], row) for row in rows)\n\tbyPath \u003d dict((row[\u0027path\u0027], row[\u0027id\u0027]) for row in rows)\n\tdragged \u003d byId[draggedItem[\u0027id\u0027]]\n\n\torder \u003d []\n\tfor nodeId in (payload[\u0027siblingIds\u0027] if payload.has_key(\u0027siblingIds\u0027) else None) or []:\n\t\t#The dragged item\u0027s node may still have its old path, or have its new one (under the new parent)\n\t\titemId \u003d byPath.get(nodeId)\n\t\tif nodeId in (dragged[\u0027path\u0027], draggedItem[\u0027path\u0027]): itemId \u003d draggedItem[\u0027id\u0027]\n\t\telif itemId is None and nodeId.split(\u0027\\\\\u0027)[-1] \u003d\u003d dragged[\u0027name\u0027]: itemId \u003d draggedItem[\u0027id\u0027]\n\t\tif itemId is not None and itemId not in order: order.append(itemId)\n\tif draggedItem[\u0027id\u0027] not in order: order.append(draggedItem[\u0027id\u0027])\n\thidden \u003d sorted([row for row in rows if row[\u0027parentId\u0027] \u003d\u003d parentId and row[\u0027id\u0027] not in order], key\u003dlambda row: (row[\u0027sortOrder\u0027] is None, row[\u0027sortOrder\u0027], row[\u0027name\u0027]))\n\torder +\u003d [row[\u0027id\u0027] for row in hidden]\n\n\tfailed \u003d []\n\tfor sortOrder, itemId in enumerate(order):\n\t\trow \u003d dict(byId[itemId])\n\t\tif row[\u0027parentId\u0027] \u003d\u003d parentId and row[\u0027sortOrder\u0027] \u003d\u003d sortOrder and itemId !\u003d draggedItem[\u0027id\u0027]: continue\n\t\trow[\u0027parentId\u0027] \u003d parentId\n\t\trow[\u0027sortOrder\u0027] \u003d sortOrder\n\t\tfor key in (\u0027roles\u0027, \u0027project\u0027):\n\t\t\tif not row[key]: row[key] \u003d None\n\t\tretVal, msg \u003d system.kanoa.config.updateNavigationItem(row, userId)\n\t\tif msg: failed.append(\u0027\"%s\": %s\u0027 % (row[\u0027name\u0027], msg))\n\tif failed: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027autoClose\u0027: 0, \u0027message\u0027: \"Couldn\u0027t save the new order of %s\" % \u0027; \u0027.join(failed)})\n\n\tself.view.refreshBinding(\"custom.navItems\")\n\tsystem.perspective.sendMessage(\u0027refreshNavigation\u0027, {})\t#Tells the navigation dock view to update itself\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

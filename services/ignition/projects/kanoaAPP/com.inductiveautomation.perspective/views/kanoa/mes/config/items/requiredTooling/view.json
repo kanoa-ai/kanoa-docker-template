@@ -1,0 +1,970 @@
+{
+  "custom": {
+    "itemId": null,
+    "refresh": null,
+    "rows": [],
+    "security": {},
+    "selected": null,
+    "selectedRow": null,
+    "userAction": {}
+  },
+  "params": {},
+  "propConfig": {
+    "custom.security": {
+      "binding": {
+        "config": {
+          "struct": {
+            "user": "{session.props.auth.user}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t\n\tsecConfig = system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), 'configName', 'configValue')\n\tuserId = system.kanoa.security.getIDPUserId(value['user'])\t\n\tuserCRUD = system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.userAction": {
+      "binding": {
+        "config": {
+          "path": "view.custom.security"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#Admins and users who configure items\n\tuserCRUD = value['userCRUD'] if value else None\n\tcanEdit = bool(userCRUD) and (userCRUD.get('isGatewayAdmin') or userCRUD.get('configureItems', {}).get('enabled'))\n\treturn {'canCreate': canEdit, 'canUpdate': canEdit, 'canRead': True}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      }
+    },
+    "custom.rows": {
+      "binding": {
+        "config": {
+          "struct": {
+            "itemId": "{view.custom.itemId}",
+            "refresh": "{view.custom.refresh}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tparams = {} if value['itemId'] is None else {'itemId': value['itemId']}\n\tdata = system.kanoa.tooling.getRequiredTooling(params)\n\tif not hasattr(data, 'getRowCount'): return []\n\trows = system.kanoa.utilities.convertDatasetToJSON(data)\n\tfor r in rows:\n\t\tr['machine'] = r['assetPath'] or 'Any machine'\n\t\tr['tool'] = r['toolingName'] or ('Any %s' % r['toolingTypeName'])\n\t\t#makesItem is False when the tool's output positions are all set to other items (None: nothing to check)\n\t\tr['check'] = {'value': \"Can't make this item: the tool's positions are all set to other items\" if r['makesItem'] is not None and not r['makesItem'] else '', 'style': {'color': '--kcError'}}\n\treturn rows",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.selected": {
+      "binding": {
+        "config": {
+          "struct": {
+            "rows": "{view.custom.rows}",
+            "row": "{view.custom.selectedRow}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\trows = value['rows'] or []\n\trow = value['row']\n\tif row is None or row < 0 or row >= len(rows): return None\n\treturn dict(rows[row])",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 500,
+      "width": 900
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblItem"
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "text": "Item"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "evItem"
+            },
+            "position": {
+              "basis": "260px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.params.values.data": {
+                "binding": {
+                  "config": {
+                    "expression": "now(0)"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\treturn system.kanoa.item.getItems({'enabled': True})",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr"
+                }
+              },
+              "props.params.values.path": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.itemId"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\n\t#The selected item's tree path (none: every item), so the selector shows it\n\tif value is None: return ''\n\treturn system.kanoa.utilities.getFieldValue('path', system.kanoa.item.getItems({'itemId': value})) or ''",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "params": {
+                "values": {
+                  "msgHandler": "requiredToolingItemSelected",
+                  "options": {
+                    "dragDrop": false,
+                    "expand": false,
+                    "multiSelect": false,
+                    "showBreadcrumb": true,
+                    "showClear": true,
+                    "showSelectedPath": false
+                  },
+                  "selection": [],
+                  "style": {
+                    "iconColor": "",
+                    "iconPath": "material/qr_code",
+                    "tooltip": "Pick an item"
+                  },
+                  "treePath": null
+                }
+              },
+              "path": "kanoa/core/templates/selectors/tree/selector"
+            },
+            "type": "ia.display.view"
+          },
+          {
+            "meta": {
+              "name": "lblHint"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/default",
+                "color": "--kcOnSurfaceVariant"
+              },
+              "text": "The tools an item needs on a machine. An operator who starts a run without them is warned."
+            },
+            "type": "ia.display.label"
+          }
+        ],
+        "meta": {
+          "name": "flxFilter"
+        },
+        "position": {
+          "basis": "34px",
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden",
+            "padding": "2px"
+          }
+        },
+        "type": "ia.container.flex"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\tself.view.getChild('root').openEditor(None)\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnAdd",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Add a required tool"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.userAction"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn value['canUpdate']",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/add"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": "25px",
+                    "width": "25px"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\trow = self.view.custom.selected\n\tif row: self.view.getChild('root').openEditor(row['itemAssetToolingId'])\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnEdit",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Edit the selected requirement"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "action": "{view.custom.userAction}",
+                          "row": "{view.custom.selected}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn value['action']['canUpdate'] and value['row'] is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/edit"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": "25px",
+                    "width": "25px"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              },
+              {
+                "events": {
+                  "component": {
+                    "onActionPerformed": {
+                      "config": {
+                        "script": "\n\trow = self.view.custom.selected\n\tif not row: return\n\tsystem.perspective.openPopup('requiredToolingDelete', 'kanoa/core/templates/inputs/confirm',\n\t\t{'text': 'Delete %s for %s?' % (row['tool'], row['itemName']), 'messageHandler': 'requiredToolingDelete', 'inputPayload': {'itemAssetToolingId': row['itemAssetToolingId']}},\n\t\ttitle='Delete required tooling', modal=True, overlayDismiss=True)\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                },
+                "meta": {
+                  "name": "btnDelete",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "center-right",
+                    "text": "Delete the selected requirement"
+                  }
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "propConfig": {
+                  "position.display": {
+                    "binding": {
+                      "config": {
+                        "struct": {
+                          "action": "{view.custom.userAction}",
+                          "row": "{view.custom.selected}"
+                        },
+                        "waitOnAll": true
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\n\treturn value['action']['canUpdate'] and value['row'] is not None",
+                          "type": "script"
+                        }
+                      ],
+                      "type": "expr-struct"
+                    }
+                  }
+                },
+                "props": {
+                  "image": {
+                    "icon": {
+                      "path": "material/delete"
+                    }
+                  },
+                  "style": {
+                    "classes": "kanoa/button/flatIcon",
+                    "height": "25px",
+                    "width": "25px"
+                  },
+                  "text": ""
+                },
+                "type": "ia.input.button"
+              }
+            ],
+            "meta": {
+              "name": "flxActions"
+            },
+            "position": {
+              "basis": "40px",
+              "shrink": 0
+            },
+            "props": {
+              "alignItems": "center",
+              "direction": "column",
+              "style": {
+                "backgroundColor": "--kcSurface",
+                "gap": 5,
+                "overflow": "hidden"
+              }
+            },
+            "type": "ia.container.flex"
+          },
+          {
+            "children": [
+              {
+                "meta": {
+                  "name": "tblRequired"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "propConfig": {
+                  "props.data": {
+                    "binding": {
+                      "config": {
+                        "path": "view.custom.rows"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.selection.selectedRow": {
+                    "binding": {
+                      "config": {
+                        "bidirectional": true,
+                        "path": "view.custom.selectedRow"
+                      },
+                      "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  }
+                },
+                "props": {
+                  "bodyStyle": {
+                    "classes": "kanoa/font/default"
+                  },
+                  "dragOrderable": false,
+                  "headerStyle": {
+                    "classes": "kanoa/font/default",
+                    "fontWeight": "bold"
+                  },
+                  "pager": {
+                    "bottom": false
+                  },
+                  "rows": {
+                    "striped": {
+                      "enabled": false
+                    },
+                    "style": {
+                      "gap": "2px",
+                      "padding": "2px"
+                    }
+                  },
+                  "selection": {
+                    "mode": "single"
+                  },
+                  "style": {
+                    "borderStyle": "none"
+                  },
+                  "columns": [
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "itemName",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Item"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "#",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 180
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "machine",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Machine"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "#",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 240
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "tool",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Tool"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "#",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 240
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "check",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Check"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "#",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 320
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "required",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Required"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "#",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "boolean",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 90
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "enabled",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Enabled"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "#",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "boolean",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": true,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 90
+                    }
+                  ],
+                  "data": []
+                },
+                "type": "ia.display.table",
+                "events": {
+                  "dom": {
+                    "onDoubleClick": {
+                      "config": {
+                        "script": "\n\trow = self.view.custom.selected\n\tif row and self.view.custom.userAction['canUpdate']: self.view.getChild('root').openEditor(row['itemAssetToolingId'])\n\treturn"
+                      },
+                      "scope": "G",
+                      "type": "script"
+                    }
+                  }
+                }
+              }
+            ],
+            "meta": {
+              "name": "flxTable"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/border"
+              }
+            },
+            "type": "ia.container.flex"
+          }
+        ],
+        "meta": {
+          "name": "flxBody"
+        },
+        "position": {
+          "grow": 1
+        },
+        "props": {
+          "style": {
+            "gap": 5,
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "openEditor",
+          "params": [
+            "itemAssetToolingId"
+          ],
+          "script": "\n\tsystem.perspective.openPopup('requiredToolingEditor', 'kanoa/mes/config/items/requiredToolingEditor',\n\t\t{'value': {'itemAssetToolingId': itemAssetToolingId, 'itemId': self.view.custom.itemId}},\n\t\ttitle='Required Tooling', modal=True, draggable=True, showCloseIcon=True, resizable=True)\n\treturn"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": [
+        {
+          "messageType": "requiredToolingChanged",
+          "pageScope": true,
+          "script": "\t\n\tself.view.custom.refresh = system.date.now()",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "requiredToolingDelete",
+          "pageScope": true,
+          "script": "\t\n\tif payload['userInput'] != 'OK': return\n\tresult, msg = system.kanoa.tooling.deleteRequiredTooling(payload['inputPayload']['itemAssetToolingId'], self.view.custom.security.userId)\n\tif msg: system.kanoa.toast.show({'type': 'error', 'message': msg})\n\telse: system.kanoa.toast.show({'type': 'success', 'message': 'Required tooling deleted'})\n\tself.view.custom.refresh = system.date.now()",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "requiredToolingItemSelected",
+          "pageScope": true,
+          "script": "\n\t#The item selector (868mvu236): its first selection's item, none when it's cleared\n\tselection = payload['selection'] if payload.has_key('selection') else []\n\tself.view.custom.itemId = selection[0]['value']['itemId'] if len(selection) else None\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        }
+      ]
+    },
+    "type": "ia.container.flex"
+  }
+}

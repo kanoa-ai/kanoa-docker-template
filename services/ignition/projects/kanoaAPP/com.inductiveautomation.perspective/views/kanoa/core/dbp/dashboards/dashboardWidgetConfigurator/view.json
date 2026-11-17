@@ -41,7 +41,8 @@
       "widgetPath": null
     },
     "widgetParamInfo": null,
-    "widgetParamsList": null
+    "widgetParamsList": null,
+    "invalidParams": []
   },
   "params": {
     "value": {
@@ -64,7 +65,11 @@
         ],
         "type": "property"
       },
-      "persistent": true
+      "persistent": true,
+      "onChange": {
+        "enabled": null,
+        "script": "\t\n\t# Reloaded from the db (open, refresh, after a save) - no rejected param edits are pending\n\tself.custom.invalidParams \u003d []\n\treturn"
+      }
     },
     "custom.widgetInfo": {
       "binding": {
@@ -120,6 +125,9 @@
     },
     "params.value": {
       "paramDirection": "input",
+      "persistent": true
+    },
+    "custom.invalidParams": {
       "persistent": true
     }
   },
@@ -190,7 +198,9 @@
                   "name": "lblWidgetName"
                 },
                 "position": {
-                  "grow": 1
+                  "basis": "0px",
+                  "grow": 1,
+                  "shrink": 1
                 },
                 "propConfig": {
                   "props.text": {
@@ -209,7 +219,16 @@
                     }
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "props": {
+                  "style": {
+                    "minWidth": 0
+                  },
+                  "textStyle": {
+                    "whiteSpace": "normal",
+                    "overflowWrap": "anywhere"
+                  }
+                }
               },
               {
                 "meta": {
@@ -301,13 +320,13 @@
               "name": "flxName"
             },
             "position": {
-              "grow": 1,
               "shrink": 0
             },
             "props": {
               "style": {
                 "gap": 5
-              }
+              },
+              "alignItems": "flex-start"
             },
             "type": "ia.container.flex"
           },
@@ -333,8 +352,9 @@
                   "name": "lblDescription"
                 },
                 "position": {
+                  "basis": "0px",
                   "grow": 1,
-                  "shrink": 0
+                  "shrink": 1
                 },
                 "propConfig": {
                   "props.text": {
@@ -349,7 +369,11 @@
                 },
                 "props": {
                   "style": {
-                    "width": "200px"
+                    "minWidth": 0
+                  },
+                  "textStyle": {
+                    "whiteSpace": "pre-wrap",
+                    "overflowWrap": "anywhere"
                   }
                 },
                 "type": "ia.display.label"
@@ -363,13 +387,12 @@
               "shrink": 0
             },
             "props": {
-              "alignItems": "center",
+              "alignItems": "flex-start",
               "style": {
                 "gap": 5,
-                "height": "40px",
                 "width": "100%"
               },
-              "wrap": "wrap"
+              "wrap": "nowrap"
             },
             "type": "ia.container.flex"
           },
@@ -395,8 +418,9 @@
                   "name": "lblViewPath"
                 },
                 "position": {
+                  "basis": "0px",
                   "grow": 1,
-                  "shrink": 0
+                  "shrink": 1
                 },
                 "propConfig": {
                   "props.text": {
@@ -415,7 +439,16 @@
                     }
                   }
                 },
-                "type": "ia.display.label"
+                "type": "ia.display.label",
+                "props": {
+                  "style": {
+                    "minWidth": 0
+                  },
+                  "textStyle": {
+                    "whiteSpace": "normal",
+                    "overflowWrap": "anywhere"
+                  }
+                }
               }
             ],
             "meta": {
@@ -426,14 +459,23 @@
               "shrink": 0
             },
             "props": {
-              "alignItems": "center",
+              "alignItems": "flex-start",
               "style": {
                 "gap": 5,
-                "height": "40px",
                 "width": "100%"
               }
             },
             "type": "ia.container.flex"
+          },
+          {
+            "type": "ia.container.flex",
+            "meta": {
+              "name": "spacer"
+            },
+            "position": {
+              "grow": 1
+            },
+            "props": {}
           },
           {
             "children": [
@@ -498,7 +540,8 @@
                   "name": "flxRptParams"
                 },
                 "position": {
-                  "grow": 1
+                  "shrink": 0,
+                  "basis": "0px"
                 },
                 "propConfig": {
                   "props.instances": {
@@ -515,6 +558,14 @@
                       ],
                       "type": "property"
                     }
+                  },
+                  "position.basis": {
+                    "binding": {
+                      "type": "expr",
+                      "config": {
+                        "expression": "if(isNull({view.custom.widgetParamsList}), \"0px\", toStr(len({view.custom.widgetParamsList}) * 40) + \"px\")"
+                      }
+                    }
                   }
                 },
                 "props": {
@@ -524,7 +575,7 @@
                   },
                   "path": "kanoa/core/dbp/dashboards/paramEditorRow",
                   "style": {
-                    "marginTop": "30px"
+                    "marginTop": "10px"
                   },
                   "useDefaultViewHeight": false,
                   "useDefaultViewWidth": false
@@ -537,22 +588,20 @@
               "name": "flxViewParams"
             },
             "position": {
-              "grow": 1
+              "shrink": 0
             },
             "props": {
-              "alignContent": "flex-start",
-              "alignItems": "flex-start",
+              "alignItems": "stretch",
               "style": {
                 "classes": "kanoa/border",
                 "gap": "5px",
                 "marginTop": "5px",
-                "minHeight": "100px",
                 "overflow": "visible",
                 "padding": "12px 5px 5px 5px",
-                "position": "relative",
-                "width": "100%"
+                "position": "relative"
               },
-              "wrap": "wrap"
+              "wrap": "nowrap",
+              "direction": "column"
             },
             "type": "ia.container.flex"
           },
@@ -642,7 +691,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tself.view.getChild(\"root\").saveDashboardWidgetParams()\n\t\n\treturn"
+                        "script": "\t\n\tsystem.perspective.sendMessage(\u0027saveDashboardWidgetParams\u0027, {})\n\t\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -754,11 +803,10 @@
               "name": "flxAction"
             },
             "position": {
-              "grow": 1,
               "shrink": 0
             },
             "props": {
-              "alignItems": "center",
+              "alignItems": "flex-start",
               "justify": "flex-end",
               "style": {
                 "gap": "5px",
@@ -777,13 +825,16 @@
           "shrink": 0
         },
         "props": {
-          "alignContent": "flex-start",
-          "alignItems": "flex-start",
+          "alignItems": "stretch",
           "style": {
             "gap": "5px",
-            "padding": "10px"
+            "padding": "10px",
+            "overflowX": "hidden",
+            "overflowY": "auto",
+            "minWidth": 0
           },
-          "wrap": "wrap"
+          "wrap": "nowrap",
+          "direction": "column"
         },
         "type": "ia.container.flex"
       },
@@ -940,7 +991,7 @@
         {
           "name": "saveDashboardWidgetParams",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"saveDashboardWidgetParams() called\")\n\t\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdashboardWidgetInfo \u003d dict(self.view.custom.dashboardWidgetInfo)\n\n\twidgetParamInfo \u003d dict(self.view.custom.widgetParamInfo)\n\twidgetParamInfo \u003d {k: (None if isinstance(v, basestring) and v.strip() \u003d\u003d \"\" else v) for k, v in widgetParamInfo.items()}\n\tdashboardWidgetInfo[\u0027viewParams\u0027] \u003d system.util.jsonEncode(widgetParamInfo)\n#\tsystem.perspective.print(\u0027dashboardWidgetInfo: %s\u0027 % dashboardWidgetInfo)\n\t\n\tdashboardWidgetId \u003d dashboardWidgetInfo[\u0027dashboardWidgetId\u0027]\n\t\n\tif dashboardWidgetId: \t# Save the widget\n\t\tsuccess, msg \u003d system.kanoa.dashboard.updateDashboardWidget(dashboardWidgetInfo, userId)\n#\t\tsystem.perspective.print(\u0027updateDashboardWidget returned %s %s\u0027%(success, msg))\n\t\tself.view.refreshBinding(\"custom.dashboardWidgetInfo\")\n\telse:\n\t\tdashboardWidgetId, msg \u003d system.kanoa.dashboard.addDashboardWidget(dashboardWidgetInfo, userId)\n#\t\tsystem.perspective.print(\u0027addDashboardWidget returned %s %s\u0027%(dashboardWidgetId, msg))\n\t\tself.view.params.value.dashboardWidgetId \u003d dashboardWidgetId\n\n\tif msg:\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Dashboard Widget has been saved\u0027})\n\t\n\tsystem.perspective.sendMessage(\u0027refreshDashboardWidgetParams\u0027, {\u0027dashboardWidgetId\u0027:dashboardWidgetId})\n\t\n\treturn dashboardWidgetId, msg\t\n\t\n\t"
+          "script": "\n\tsystem.perspective.print(\"saveDashboardWidgetParams() called\")\n\t\t\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tdashboardWidgetInfo \u003d dict(self.view.custom.dashboardWidgetInfo)\n\n\t# Unwrap the property tree all the way down - jsonEncode recurses forever on nested Perspective wrappers (e.g. a list param)\n\tdef toPy(v):\n\t\tif hasattr(v, \u0027keys\u0027): return {k: toPy(v[k]) for k in v.keys()}\n\t\tif hasattr(v, \u0027__iter__\u0027) and not isinstance(v, basestring): return [toPy(x) for x in v]\n\t\treturn v\n\t\n\twidgetParamInfo \u003d toPy(self.view.custom.widgetParamInfo) or {}\n\twidgetParamInfo \u003d {k: (None if isinstance(v, basestring) and v.strip() \u003d\u003d \"\" else v) for k, v in widgetParamInfo.items()}\n\tdashboardWidgetInfo[\u0027viewParams\u0027] \u003d system.util.jsonEncode(widgetParamInfo)\n#\tsystem.perspective.print(\u0027dashboardWidgetInfo: %s\u0027 % dashboardWidgetInfo)\n\t\n\tdashboardWidgetId \u003d dashboardWidgetInfo[\u0027dashboardWidgetId\u0027]\n\t\n\tif dashboardWidgetId: \t# Save the widget\n\t\tsuccess, msg \u003d system.kanoa.dashboard.updateDashboardWidget(dashboardWidgetInfo, userId)\n#\t\tsystem.perspective.print(\u0027updateDashboardWidget returned %s %s\u0027%(success, msg))\n\t\tself.view.refreshBinding(\"custom.dashboardWidgetInfo\")\n\telse:\n\t\tdashboardWidgetId, msg \u003d system.kanoa.dashboard.addDashboardWidget(dashboardWidgetInfo, userId)\n#\t\tsystem.perspective.print(\u0027addDashboardWidget returned %s %s\u0027%(dashboardWidgetId, msg))\n\t\tself.view.params.value.dashboardWidgetId \u003d dashboardWidgetId\n\n\tif msg:\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: msg})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Dashboard Widget has been saved\u0027})\n\t\n\tsystem.perspective.sendMessage(\u0027refreshDashboardWidgetParams\u0027, {\u0027dashboardWidgetId\u0027:dashboardWidgetId})\n\t\n\treturn dashboardWidgetId, msg\t\n\t\n\t"
         }
       ],
       "extensionFunctions": null,
@@ -948,7 +999,14 @@
         {
           "messageType": "updateWidgetParams",
           "pageScope": true,
-          "script": "\t\n\tsystem.perspective.print(\u0027updateWidgetParams() received with: %s\u0027%payload)\n\tkey, valueType, value \u003d payload[\u0027key\u0027], payload[\u0027type\u0027], payload[\u0027value\u0027]\n\t\n\tif valueType \u003d\u003d \u0027Integer\u0027: value \u003d int(value)\n\tself.view.custom.widgetParamInfo[key] \u003d value\n\treturn",
+          "script": "\t\n\tsystem.perspective.print(\u0027updateWidgetParams() received with: %s\u0027%payload)\n\tkey, valueType, value \u003d payload[\u0027key\u0027], payload[\u0027type\u0027], payload[\u0027value\u0027]\n\t\n\t#Numbers come from the row as int or float already (paramEditorRow); keep a fraction, don\u0027t cut it to an int\n\tif valueType in (\u0027Integer\u0027, \u0027Float\u0027) and isinstance(value, basestring):\n\t\ttry:\n\t\t\tnumber \u003d float(value)\n\t\t\tvalue \u003d int(number) if number \u003d\u003d int(number) else number\n\t\texcept ValueError:\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027%s must be a number - not changed\u0027 % key})\n\t\t\treturn\n\tif valueType in (\u0027Dictionary\u0027, \u0027List\u0027) and isinstance(value, basestring) and value.strip():\n\t\t# json.loads, not system.util.jsonDecode - jsonDecode hands back text that doesn\u0027t start with { or [ unchanged\n\t\timport json\n\t\texpected \u003d dict if valueType \u003d\u003d \u0027Dictionary\u0027 else list\n\t\ttry: value \u003d json.loads(value)\n\t\texcept: value \u003d None\n\t\tif not isinstance(value, expected):\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027%s is not a valid JSON %s - not changed\u0027 % (key, valueType)})\n\t\t\tif key not in self.view.custom.invalidParams: self.view.custom.invalidParams \u003d list(self.view.custom.invalidParams) + [key]\n\t\t\treturn\n\tself.view.custom.invalidParams \u003d [k for k in self.view.custom.invalidParams if k !\u003d key]\n\tself.view.custom.widgetParamInfo[key] \u003d value\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "saveDashboardWidgetParams",
+          "pageScope": true,
+          "script": "\t\n\t# Runs as a message, not straight from btnUpdate, so an edit committed by the click (blur -\u003e updateWidgetParams) is handled first\n\tinvalidParams \u003d list(self.view.custom.invalidParams)\n\tif invalidParams:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Not saved - fix %s first\u0027 % \u0027, \u0027.join(invalidParams)})\n\t\treturn\n\t\n\tself.view.getChild(\"root\").saveDashboardWidgetParams()\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

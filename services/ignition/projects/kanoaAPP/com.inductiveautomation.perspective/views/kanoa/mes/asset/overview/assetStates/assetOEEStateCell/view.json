@@ -46,11 +46,11 @@
       "scheduleBlockId": null,
       "scheduleEnd": null,
       "scheduleStart": null,
-      "shiftEnd": 1775041200000,
-      "shiftId": 533,
-      "shiftName": "No Shift Defined",
-      "shiftNameId": 9,
-      "shiftStart": 1774990800000,
+      "shiftEnd": null,
+      "shiftId": null,
+      "shiftName": null,
+      "shiftNameId": null,
+      "shiftStart": null,
       "standardRate": null,
       "startDate": null,
       "stateColor": null,
@@ -67,7 +67,8 @@
       "woRemainingMinutes": null,
       "workOrderId": null,
       "workOrderName": null,
-      "workOrderTitle": null
+      "workOrderTitle": null,
+      "loading": true
     }
   },
   "params": {
@@ -101,15 +102,19 @@
       "binding": {
         "config": {
           "struct": {
-            "tagInfo": "{view.custom.tagOEEInfo}"
+            "a": "{view.custom.tagOEEInfo.availability}",
+            "p": "{view.custom.tagOEEInfo.performance}",
+            "q": "{view.custom.tagOEEInfo.quality}",
+            "assetId": "{view.custom.tagOEEInfo.assetId}",
+            "thresholds": "{view.custom.oeeThresholds}"
           },
           "waitOnAll": false
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\ta \u003d value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0\n\tp \u003d value[\u0027tagInfo\u0027][\u0027performance\u0027]  or 0.0\n\tq \u003d value[\u0027tagInfo\u0027][\u0027quality\u0027]  or 0.0\n\toee \u003d a * p * q\t\n\t\n\tparamsDict \u003d {\u0027assetPath\u0027 : self.params.value.assetInfo.assetPath or \u0027none\u0027}\n\tif self.custom.oeeThresholds: paramsDict[\u0027oeeThresholds\u0027] \u003d self.custom.oeeThresholds\n\toeeColors \u003d system.kanoa.event.getOEEColors(paramsDict, oee, a, p, q)\n\t\t\n\treturn {\u0027availability\u0027: oeeColors[\u0027availability\u0027], \u0027performance\u0027: oeeColors[\u0027performance\u0027], \u0027quality\u0027: oeeColors[\u0027quality\u0027], \u0027oee\u0027: oeeColors[\u0027oee\u0027]}",
-            "type": "script"
+            "type": "script",
+            "code": "\n\t#OEE colours from the asset\u0027s A, P and Q against its thresholds from OEE/info: no database lookup, and it re-runs only\n\t#when those change, not on every count (868mu83yz)\n\tif value[\u0027a\u0027] is None and value[\u0027p\u0027] is None and value[\u0027q\u0027] is None: return {}\n\ta, p, q \u003d value[\u0027a\u0027] or 0.0, value[\u0027p\u0027] or 0.0, value[\u0027q\u0027] or 0.0\n\tparams \u003d {\u0027assetId\u0027: value[\u0027assetId\u0027]}\n\tif value[\u0027thresholds\u0027]: params[\u0027oeeThresholds\u0027] \u003d value[\u0027thresholds\u0027]\n\treturn system.kanoa.event.getOEEColors(params, a * p * q, a, p, q)"
           }
         ],
         "type": "expr-struct"
@@ -120,16 +125,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.params.value.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.params.value.assetInfo.tagPath}, indexOf({view.params.value.assetInfo.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value[\u0027oeeThresholds\u0027]",
+            "code": "\n\t#The asset\u0027s OEE thresholds, from its OEE/info tag (its kanoaMES OEE tags in one document), under the Line UDT\u0027s\n\t#oeeThresholds names. None without an asset\n\tif value is None: return None\n\ttry: thresholds \u003d value[\u0027Thresholds\u0027]\n\texcept: thresholds \u003d None\n\tresult \u003d {}\n\tfor name in [\u0027oee\u0027, \u0027oeeTolerance\u0027, \u0027a\u0027, \u0027aTolerance\u0027, \u0027p\u0027, \u0027pTolerance\u0027, \u0027q\u0027, \u0027qTolerance\u0027]:\n\t\ttry: result[name] \u003d thresholds[name]\n\t\texcept: result[name] \u003d None\n\treturn result",
             "type": "script"
           }
         ],
@@ -141,15 +143,13 @@
       "binding": {
         "config": {
           "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.params.value.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "mode": "expression",
+          "tagPath": "\"[kanoaMES]\" + replace(substring({view.params.value.assetInfo.tagPath}, indexOf({view.params.value.assetInfo.tagPath}, \"]\") + 1), \"\\\\\", \"/\") + \"/OEE/info\""
         },
+        "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value[\u0027OEE\u0027]",
+            "code": "\n\t#The asset\u0027s OEE/info tag: its kanoaMES OEE tags (which the module keeps for every OEE asset; the [Kanoa] Line UDT\n\t#isn\u0027t always there) in one document that changes whenever any of them does. Flattened to the names the Line UDT\u0027s\n\t#OEE folder had; dates are in milliseconds, as that binding gave them. None without an asset\n\tif value is None: return None\n\tdef folder(name):\n\t\ttry: return value[name]\n\t\texcept: return None\n\tdef field(values, name):\n\t\ttry: return values[name]\n\t\texcept: return None\n\tstatus, run \u003d folder(\u0027Status\u0027), folder(\u0027Current Run\u0027)\n\tinfo \u003d {}\n\tfor name in [\u0027modeId\u0027, \u0027modeName\u0027, \u0027modeTypeName\u0027, \u0027modeColor\u0027, \u0027modeSourceName\u0027, \u0027userName\u0027, \u0027iconPath\u0027, \u0027workOrderId\u0027,\n\t\t\t\u0027workOrderName\u0027, \u0027workOrderTitle\u0027, \u0027reqdQty\u0027, \u0027woActualQty\u0027, \u0027itemId\u0027, \u0027itemName\u0027, \u0027itemDescription\u0027, \u0027infeedUnits\u0027,\n\t\t\t\u0027outfeedUnits\u0027, \u0027wasteUnits\u0027, \u0027packageCount\u0027, \u0027woRemainingMinutes\u0027, \u0027shiftId\u0027, \u0027shiftNameId\u0027, \u0027shiftName\u0027, \u0027shiftStart\u0027,\n\t\t\t\u0027shiftEnd\u0027, \u0027scheduleBlockId\u0027, \u0027scheduleStart\u0027, \u0027scheduleEnd\u0027, \u0027stateName\u0027, \u0027stateStart\u0027, \u0027stateTypeName\u0027, \u0027stateColor\u0027,\n\t\t\t\u0027stateTypeColor\u0027, \u0027stateIconPath\u0027, \u0027assetId\u0027]:\n\t\tinfo[name] \u003d field(status, name)\n\tfor name in [\u0027startDate\u0027, \u0027durationSecs\u0027, \u0027runtimeSecs\u0027, \u0027unplannedDowntimeSecs\u0027, \u0027plannedDowntimeSecs\u0027, \u0027targetCount\u0027,\n\t\t\t\u0027standardRate\u0027, \u0027period\u0027, \u0027infeedRateSecs\u0027, \u0027availability\u0027, \u0027performance\u0027, \u0027quality\u0027, \u0027infeedCount\u0027, \u0027outfeedCount\u0027,\n\t\t\t\u0027wasteCount\u0027]:\n\t\tinfo[name] \u003d field(run, name)\n\t#As the module works it out for the Line tags: the run\u0027s outfeed per minute, in production only\n\tduration, outfeed \u003d info[\u0027durationSecs\u0027], info[\u0027outfeedCount\u0027]\n\tinfo[\u0027outfeedRatePerMinute\u0027] \u003d outfeed / (duration / 60.0) if info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027 and duration and outfeed is not None else None\n\tinfo[\u0027endDate\u0027] \u003d None\n\treturn info",
             "type": "script"
           }
         ],
@@ -227,72 +227,56 @@
         "type": "ia.display.label"
       },
       {
-        "children": [
-          {
-            "meta": {
-              "domId": "icoState",
-              "name": "icoState",
-              "tooltip": {
-                "enabled": true,
-                "location": "center-right"
-              }
-            },
-            "position": {
-              "basis": "20px",
-              "shrink": 0
-            },
-            "propConfig": {
-              "meta.tooltip.text": {
-                "binding": {
-                  "config": {
-                    "struct": {
-                      "tagValues": "{view.custom.tagOEEInfo}"
-                    },
-                    "waitOnAll": true
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\t\t\n\tif value.tagValues is None: return \u0027Asset Off line\u0027\n\tif value[\u0027tagValues\u0027][\u0027modeName\u0027] is None: return \u0027Unknown mode\u0027\n\tif value[\u0027tagValues\u0027][\u0027stateName\u0027] is None: return \u0027Unknown state\u0027\n\tif value[\u0027tagValues\u0027][\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027:return value[\u0027tagValues\u0027][\u0027stateName\u0027]\n\treturn value[\u0027tagValues\u0027][\u0027modeName\u0027]\n\t",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "expr-struct"
-                }
+        "meta": {
+          "domId": "icoState",
+          "name": "icoState"
+        },
+        "position": {
+          "basis": "20px",
+          "shrink": 0
+        },
+        "propConfig": {
+          "props.path": {
+            "binding": {
+              "config": {
+                "path": "view.custom.tagOEEInfo"
               },
-              "props.color": {
-                "binding": {
-                  "config": {
-                    "path": "parent.props.style.color"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\tif value is None: return \u0027material/link_off\u0027\n\tif value[\u0027modeName\u0027] is None: return \u0027kanoa/unknown\u0027\n\tif value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: return value[\u0027stateIconPath\u0027] or value[\u0027iconPath\u0027]\n\treturn value[\u0027iconPath\u0027]",
+                  "type": "script"
                 }
-              },
-              "props.path": {
-                "binding": {
-                  "config": {
-                    "path": "view.custom.tagOEEInfo"
-                  },
-                  "overlayOptOut": true,
-                  "transforms": [
-                    {
-                      "code": "\n\tif value is None: return \u0027material/link_off\u0027\n\tif value[\u0027modeName\u0027] is None: return \u0027kanoa/unknown\u0027\n\tif value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: return value[\u0027stateIconPath\u0027] or value[\u0027iconPath\u0027]\n\treturn value[\u0027iconPath\u0027]",
-                      "type": "script"
-                    }
-                  ],
-                  "type": "property"
-                }
-              }
-            },
-            "props": {
-              "style": {
-                "classes": "",
-                "maxHeight": 25
-              }
-            },
-            "type": "ia.display.icon"
+              ],
+              "type": "property"
+            }
           },
+          "props.color": {
+            "binding": {
+              "config": {
+                "path": "view.custom.tagOEEInfo"
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t#The status is plain text beside the icon; only unplanned downtime colours the icon, in the state\u0027s colour (868mvwg9e)\n\tif value is None or value[\u0027modeName\u0027] !\u003d \u0027Production\u0027 or value[\u0027stateTypeName\u0027] !\u003d \u0027Unplanned Downtime\u0027: return \u0027\u0027\n\treturn value[\u0027stateColor\u0027] or value[\u0027stateTypeColor\u0027] or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
+              "type": "property"
+            }
+          }
+        },
+        "props": {
+          "style": {
+            "classes": "",
+            "maxHeight": 25
+          }
+        },
+        "type": "ia.display.icon"
+      },
+      {
+        "children": [
           {
             "meta": {
               "domId": "lblStatus",
@@ -328,7 +312,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\ttagValues \u003d value.tagValues\t\n\tif tagValues is None: labelStatus \u003d system.util.translate(\u0027PLC Tags not configured\u0027, locale)\n\telif tagValues[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: labelStatus \u003d system.util.translate(str(tagValues[\u0027stateName\u0027] or \u0027Unknown\u0027), self.session.props.locale)\n\telse: labelStatus \u003d tagValues[\u0027modeName\u0027] or \u0027No mode set\u0027\n\t\n\treturn labelStatus",
+                      "code": "\t\n\ttagValues \u003d value.tagValues\t\n\t#The saved placeholder (custom.tagOEEInfo.loading) until the asset\u0027s own data arrives: show nothing rather than \u0027No mode set\u0027\n\ttry: loading \u003d bool(tagValues[\u0027loading\u0027])\n\texcept: loading \u003d False\n\tif tagValues is not None and loading: return \u0027\u0027\n\tif tagValues is None: labelStatus \u003d system.util.translate(\u0027PLC Tags not configured\u0027, locale)\n\telif tagValues[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: labelStatus \u003d system.util.translate(str(tagValues[\u0027stateName\u0027] or \u0027Unknown\u0027), self.session.props.locale)\n\telse: labelStatus \u003d tagValues[\u0027modeName\u0027] or \u0027No mode set\u0027\n\t\n\treturn labelStatus",
                       "type": "script"
                     }
                   ],
@@ -338,7 +322,7 @@
             },
             "props": {
               "style": {
-                "color": "",
+                "color": "var(--kcOnSurfaceVariant)",
                 "maxHeight": "35px"
               },
               "textStyle": {
@@ -357,33 +341,15 @@
           "shrink": 0
         },
         "propConfig": {
-          "props.style.backgroundColor": {
+          "props.style.classes": {
             "binding": {
               "config": {
-                "struct": {
-                  "tagValues": "{view.custom.tagOEEInfo}"
-                },
-                "waitOnAll": false
+                "path": "view.custom.tagOEEInfo"
               },
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\ttagValues \u003d value.tagValues\t\n\tif tagValues is None: return \u0027#000000\u0027\n\telif tagValues[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: return tagValues[\u0027stateColor\u0027]\n\telse: return \u0027#000000\u0027",
-                  "type": "script"
-                }
-              ],
-              "type": "expr-struct"
-            }
-          },
-          "props.style.color": {
-            "binding": {
-              "config": {
-                "path": "this.props.style.backgroundColor"
-              },
-              "overlayOptOut": true,
-              "transforms": [
-                {
-                  "code": "\t\n\tif (value or None) is None: return \u0027\u0027\n\treturn system.kanoa.utilities.getContrastingColor(value)",
+                  "code": "\n\tif value is None: return \u0027\u0027\n\treturn \u0027kanoa/animation/flashRed\u0027 if value[\u0027stateTypeName\u0027] \u003d\u003d \u0027Unplanned Downtime\u0027 and value[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027 else \u0027\u0027",
                   "type": "script"
                 }
               ],
@@ -393,13 +359,9 @@
         },
         "props": {
           "style": {
-            "borderBottomLeftRadius": "3px",
-            "borderBottomRightRadius": "3px",
-            "borderTopLeftRadius": "3px",
-            "borderTopRightRadius": "3px",
             "gap": "5px",
             "maxHeight": 25,
-            "padding": "0px 5px 0px 5px"
+            "padding": "0px 6px"
           }
         },
         "type": "ia.container.flex"
@@ -420,7 +382,12 @@
       "domId": "root",
       "name": "root",
       "tooltip": {
-        "enabled": true
+        "enabled": true,
+        "location": "bottom-left",
+        "style": {
+          "whiteSpace": "pre-line",
+          "textAlign": "left"
+        }
       }
     },
     "propConfig": {
@@ -438,23 +405,56 @@
           ],
           "type": "property"
         }
+      },
+      "meta.tooltip.text": {
+        "binding": {
+          "type": "expr-struct",
+          "config": {
+            "struct": {
+              "tagValues": "{view.custom.tagOEEInfo}",
+              "oeeColors": "{view.custom.oeeColors}",
+              "assetName": "{view.params.value.assetInfo.assetName}",
+              "locale": "{session.props.locale}"
+            },
+            "waitOnAll": false
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "type": "script",
+              "code": "\n\t#One tooltip for the whole cell, a line each: the state (or the mode outside production), who set the mode, the\n\t#order and item, and OEE against its target in production. Blank lines are left out\n\tinfo \u003d value[\u0027tagValues\u0027]\n\t#The saved placeholder (custom.tagOEEInfo.loading) until the asset\u0027s own data arrives: show nothing rather than \u0027No mode set\u0027\n\ttry: loading \u003d bool(info[\u0027loading\u0027])\n\texcept: loading \u003d False\n\tif info is not None and loading: return \u0027\u0027\n\t#\"Injection Press 1 is Running\", \"Machine 2 is Idle\", \"Machine 5 is in Maintenance\"\n\tt \u003d lambda s: system.util.translate(s, self.session.props.locale)\n\tname \u003d value[\u0027assetName\u0027] or t(\u0027Asset\u0027)\n\tif info is None: return t(\u0027%s is off line\u0027) % name\n\tlines \u003d []\n\tif info[\u0027modeName\u0027] is None: lines.append(t(\u0027%s has no mode set\u0027) % name)\n\telif info[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027: lines.append(t(\u0027%s is %s\u0027) % (name, t(info[\u0027stateName\u0027] or \u0027in an unknown state\u0027)))\n\telif info[\u0027modeName\u0027] \u003d\u003d \u0027Idle\u0027: lines.append(t(\u0027%s is Idle\u0027) % name)\n\telse: lines.append(t(\u0027%s is in %s\u0027) % (name, t(info[\u0027modeName\u0027])))\n\tsetBy \u003d info[\u0027userName\u0027] if info[\u0027userName\u0027] not in (None, \u0027\u0027, \u0027tagChange\u0027) else info[\u0027modeSourceName\u0027]\n\t#The mode by name, in production too (the line above names the state there), and who set it: \u0027Mode: Idle, set by Jason\u0027\n\tlines.append(t(\u0027Mode: %s%s\u0027) % (t(info[\u0027modeName\u0027] or \u0027none\u0027), (t(\u0027, set by %s\u0027) % setBy) if setBy else \u0027\u0027))\n\tif info[\u0027modeName\u0027] \u003d\u003d \u0027Production\u0027:\n\t\tworkOrder \u003d info[\u0027workOrderTitle\u0027] if info.has_key(\u0027workOrderTitle\u0027) else info[\u0027workOrderName\u0027]\n\t\torderItem \u003d \u0027 \u0027.join(v for v in (workOrder, info[\u0027itemName\u0027], info[\u0027itemDescription\u0027]) if v not in (None, \u0027\u0027))\n\t\tif orderItem: lines.append(orderItem)\n\tcolors \u003d value[\u0027oeeColors\u0027]\n\tif colors is not None and info[\u0027modeTypeName\u0027] \u003d\u003d \u0027Production\u0027:\n\t\toee \u003d round((info[\u0027availability\u0027] or 0.0) * (info[\u0027performance\u0027] or 0.0) * (info[\u0027quality\u0027] or 0.0) * 100.0, 1)\n\t\ttext \u003d {\u0027--kcGood\u0027: \u0027OEE on target\u0027, \u0027--kcOk\u0027: \u0027OEE within threshold\u0027, \u0027--kcBad\u0027: \u0027OEE below target\u0027}.get(colors[\u0027oee\u0027])\n\t\tif text: lines.append(\u0027%s: %s%%\u0027 % (t(text), oee))\n\treturn \u0027\\n\u0027.join(lines)"
+            }
+          ]
+        }
+      },
+      "props.style.borderLeftColor": {
+        "binding": {
+          "config": {
+            "path": "view.custom.tagOEEInfo"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\n\t#The stripe on the card\u0027s left edge is the mode\u0027s colour; the outline colour with no mode\n\tif value is None: return \u0027var(--border)\u0027\n\treturn value[\u0027modeColor\u0027] or \u0027var(--border)\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
       }
     },
     "props": {
       "alignItems": "center",
       "style": {
-        "backgroundColor": "--kcSurfaceVariant",
-        "borderBottomLeftRadius": 5,
-        "borderBottomRightRadius": 5,
-        "borderColor": "--kcOutlineVariant",
-        "borderStyle": "solid",
-        "borderTopLeftRadius": 5,
-        "borderTopRightRadius": 5,
-        "borderWidth": "1px",
-        "classes": "kanoa/clickable kanoa/font/default",
+        "classes": "kanoa/container kanoa/clickable kanoa/font/default",
         "gap": "5px",
         "overflow": "hidden",
-        "padding": "5px"
+        "padding": "5px",
+        "borderLeftStyle": "solid",
+        "borderLeftWidth": "4px",
+        "borderTopWidth": "0px",
+        "borderRightWidth": "0px",
+        "borderBottomWidth": "0px"
       }
     },
     "type": "ia.container.flex"

@@ -204,8 +204,8 @@
                 "children": []
               }, 
               {
-                "icon": "material/vpn_key", 
-                "label": "Reliability KPIs", 
+                "icon": "material/trending_down", 
+                "label": "Loss Analysis", 
                 "enabled": true, 
                 "target": {
                   "type": "view", 
@@ -390,26 +390,6 @@
                 "children": []
               }, 
               {
-                "icon": "material/watch_later", 
-                "label": "Timers", 
-                "enabled": true, 
-                "target": {
-                  "type": "view", 
-                  "path": "kanoa/core/config/timers/tagTimers"
-                }, 
-                "children": []
-              }, 
-              {
-                "icon": "material/bug_report", 
-                "label": "Debug", 
-                "enabled": true, 
-                "target": {
-                  "type": "view", 
-                  "path": "kanoa/core/config/debuggers/tagDebuggers"
-                }, 
-                "children": []
-              }, 
-              {
                 "icon": "material/settings_applications", 
                 "label": "Settings", 
                 "enabled": true, 
@@ -572,16 +552,6 @@
         "target": {
           "type": "url", 
           "path": "https://docs.kanoa.ai/"
-        }, 
-        "children": []
-      }, 
-      {
-        "icon": "material/comment", 
-        "label": "Logs", 
-        "enabled": true, 
-        "target": {
-          "type": "view", 
-          "path": "kanoa/core/logs/logs"
         }, 
         "children": []
       }
@@ -1149,7 +1119,7 @@
       "messageHandlers": [
         {
           "viewScope": false, 
-          "script": "\tsystem.perspective.print(\"updateNavigation() msg rcvd with \" + str(payload))\n\t# - implement your handler here\n\t# - any navigation action will call this, ex: menu tree, home button, any links\n\t# - this function adds new history items\n\t# - if this function is called when currentIndex is not pointing to the end of history,\n\t# delete every entry after the currentIndex, then add the new history item\n\t# - afterwards, navigate to the newly added history item/view\n\n\tif payload['type']\t!= 'url':\t#urls will be opended in a new tab so we don't need to store history\n\t\t\t\n\t\tpageId = self.page.props.pageId\n\t\tif '/' in pageId: pageId = 'designer'\t\t#For debug in designer\n\t\t\t\n\t\ttabNavigation = self.session.custom.kanoa[pageId].navigation\n\t\thistory = tabNavigation[\"history\"]\n\t\tcurrentIndex = tabNavigation[\"currentIndex\"]\n\t\t\n\t\tif currentIndex < len(history) - 1: self.session.custom.kanoa[pageId].navigation[\"history\"] = history[:currentIndex + 1]\n\t\t\t\n\t\tif history[currentIndex][\"path\"] != payload[\"path\"]:\n\t\t\tnewHistoryItem = {\n\t\t\t\t\"path\": payload[\"path\"],\n\t\t\t\t\"name\": payload['name'],\n\t\t\t\t\"type\": payload['type'],\n\t\t\t\t\"params\": system.util.jsonEncode(payload['params'])\n\t\t\t}\n\t\t\tself.session.custom.kanoa[pageId].navigation[\"history\"].append(newHistoryItem)\n\t\t\tif len(self.session.custom.kanoa[pageId].navigation[\"history\"]) > 30: self.session.custom.kanoa[pageId].navigation[\"history\"] = self.session.custom.kanoa[pageId].navigation[\"history\"][1:]\n\t\t\telse: self.session.custom.kanoa[pageId].navigation[\"currentIndex\"] += 1\n\t\telse: return\n\t\t\t\t\t\n\tself.navigateTo(payload['type'], payload['path'], payload['params'])\n\tsystem.perspective.print('currentNavigation: %s'%self.session.custom.kanoa[pageId].navigation)\n\n\treturn", 
+          "script": "\tsystem.perspective.print(\"updateNavigation() msg rcvd with \" + str(payload))\n\t# - implement your handler here\n\t# - any navigation action will call this, ex: menu tree, home button, any links\n\t# - this function adds new history items\n\t# - if this function is called when currentIndex is not pointing to the end of history,\n\t# delete every entry after the currentIndex, then add the new history item\n\t# - afterwards, navigate to the newly added history item/view\n\n\tif payload['type']\t!= 'url':\t#urls will be opended in a new tab so we don't need to store history\n\t\t\t\n\t\tpageId = self.page.props.pageId\n\t\tif '/' in pageId: pageId = 'designer'\t\t#For debug in designer\n\t\t\t\n\t\ttabNavigation = self.session.custom.kanoa[pageId].navigation\n\t\thistory = tabNavigation[\"history\"]\n\t\tcurrentIndex = tabNavigation[\"currentIndex\"]\n\t\t\n\t\tif currentIndex < len(history) - 1: self.session.custom.kanoa[pageId].navigation[\"history\"] = history[:currentIndex + 1]\n\t\t\t\n\t\tif history[currentIndex][\"path\"] != payload[\"path\"]:\n\t\t\tnewHistoryItem = {\n\t\t\t\t\"path\": payload[\"path\"],\n\t\t\t\t\"name\": payload['name'],\n\t\t\t\t\"type\": payload['type'],\n\t\t\t\t\"params\": system.util.jsonEncode(payload['params'])\n\t\t\t}\n\t\t\tself.session.custom.kanoa[pageId].navigation[\"history\"].append(newHistoryItem)\n\t\t\tif len(self.session.custom.kanoa[pageId].navigation[\"history\"]) > 30: self.session.custom.kanoa[pageId].navigation[\"history\"] = self.session.custom.kanoa[pageId].navigation[\"history\"][1:]\n\t\t\telse: self.session.custom.kanoa[pageId].navigation[\"currentIndex\"] += 1\n\t\t\t\t\t\n\t#Navigate even when this path is already the current history entry (no new entry then): the screen can show\n\t#something else, e.g. a dashboard in Asset Operation, and a click on an asset card there did nothing (868mw8qwy)\n\tself.navigateTo(payload['type'], payload['path'], payload['params'])\n\tsystem.perspective.print('currentNavigation: %s'%self.session.custom.kanoa[pageId].navigation)\n\n\treturn", 
           "messageType": "updateNavigation", 
           "sessionScope": false, 
           "pageScope": true
@@ -1176,7 +1146,7 @@
             "navPath", 
             "navParams"
           ], 
-          "script": "\t\n\tsystem.perspective.print(\"navigating to \" + str(navPath) + \" with \" + str(navParams))\n\tself.custom.currentViewPath = navPath\n\tself.view.custom.search = ''\n\tnewTab = True if navType == 'url' else False\n\tsystem.perspective.navigate(**{navType: navPath, 'params': navParams or {}, 'newTab':newTab})\n\t#This has a problem with None being passed in for params when it thinks it should a dictionary.\n", 
+          "script": "\t\n\tsystem.perspective.print(\"navigating to \" + str(navPath) + \" with \" + str(navParams))\n\tself.custom.currentViewPath = navPath\n\tself.view.custom.search = ''\n\tnewTab = True if navType == 'url' else False\n\t#Popups belong to the screen they were opened on: close the last one opened (868mvvygc). An empty id closes only the\n\t#most recent popup, so one opened from another popup stays. A link in a new tab leaves this page as it is\n\tif not newTab: system.perspective.closePopup('')\n\tsystem.perspective.navigate(**{navType: navPath, 'params': navParams or {}, 'newTab':newTab})\n\t#This has a problem with None being passed in for params when it thinks it should a dictionary.\n", 
           "name": "navigateTo"
         }
       ], 

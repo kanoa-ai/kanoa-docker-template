@@ -62,7 +62,11 @@
       },
       "parentPathList": [],
       "persistent": false,
-      "useSessionValue": false
+      "useSessionValue": false,
+      "includeTooling": false,
+      "followValue": false,
+      "excludeMobile": false,
+      "msgHandler": ""
     }
   },
   "propConfig": {
@@ -74,7 +78,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027:value or \u0027None\u0027}), 0)",
+            "code": "\n\t#The path now, not the value this run started with: runs can finish out of order, and a stale run with no path\n\t#would leave the selection empty while the breadcrumb shows the asset\n\tassetPath \u003d self.custom.assetPath\n\treturn system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.asset.getAssets({\u0027assetPath\u0027: assetPath or \u0027None\u0027}), 0)",
             "type": "script"
           }
         ],
@@ -99,13 +103,17 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n#\tsystem.perspective.print(\"assetSelector - assetPath binding change\")\n\tparams \u003d value[\u0027params\u0027]\n\tif not params.has_key(\u0027useSessionValue\u0027) or params[\u0027useSessionValue\u0027]: \n\t\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\t\tassetPath \u003d value[\u0027sessionCustomProps\u0027][page][\u0027selectors\u0027][\u0027assetPath\u0027]\n\t\treturn assetPath\n\telif params.has_key(\u0027assetPath\u0027) and params[\u0027assetPath\u0027]: return params[\u0027assetPath\u0027]\n\t\n\treturn self.custom.assetPath",
+            "code": "\n#\tsystem.perspective.print(\"assetSelector - assetPath binding change\")\n\tparams \u003d value[\u0027params\u0027]\n\t# followValue: the assetPath param is the selection, even when it\u0027s cleared (the form owns the value)\n\tif params.has_key(\u0027followValue\u0027) and params[\u0027followValue\u0027]:\n\t\treturn params[\u0027assetPath\u0027] if params.has_key(\u0027assetPath\u0027) else None\n\tif not params.has_key(\u0027useSessionValue\u0027) or params[\u0027useSessionValue\u0027]: \n\t\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\t\tassetPath \u003d value[\u0027sessionCustomProps\u0027][page][\u0027selectors\u0027][\u0027assetPath\u0027]\n\t\treturn assetPath\n\telif params.has_key(\u0027assetPath\u0027) and params[\u0027assetPath\u0027]: return params[\u0027assetPath\u0027]\n\t\n\treturn self.custom.assetPath",
             "type": "script"
           }
         ],
         "type": "expr-struct"
       },
-      "persistent": true
+      "persistent": true,
+      "onChange": {
+        "enabled": null,
+        "script": "\t# followValue: the tree ignores a path set to nothing, so clear it when the assetPath param is cleared. Only on a\n\t# change from an asset to none: the tree answers clearSelection with an empty selection, which sets None again\n\tparams \u003d self.params.value\n\tcleared \u003d currentValue is not None and currentValue.value is None and previousValue is not None and previousValue.value is not None\n\tif cleared and params.get(\u0027followValue\u0027):\n\t\tsystem.perspective.sendMessage(\u0027clearSelection\u0027, {\u0027selectorId\u0027: self.custom.selectorId}, scope\u003d\u0027page\u0027)"
+      }
     },
     "custom.selectorId": {
       "binding": {
@@ -166,7 +174,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tparamsDict \u003d {\u0027userId\u0027: userId, \u0027enabled\u0027: True}\n\n\tviewParams \u003d value\n\tif viewParams.has_key(\u0027parentPathList\u0027) and len(viewParams[\u0027parentPathList\u0027] or []) \u003e 0:\n\t\tassets \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetPathList\u0027: viewParams[\u0027parentPathList\u0027]}))\n\t\tassetPathList \u003d []\n\t\tfor asset in assets:\n\t\t\tif asset[\u0027assetTypeName\u0027].lower() in (\u0027enterprise\u0027, \u0027site\u0027, \u0027area\u0027): \tassetPathList.append(asset[\u0027assetPath\u0027] + \u0027%\u0027)\n\t\t\telse: assetPathList.append(asset[\u0027assetPath\u0027])\n\t\t\t\n\t\tparamsDict[\u0027assetPathList\u0027] \u003d assetPathList\n\n\treturn system.kanoa.asset.getAssets(paramsDict)",
+                  "code": "\n\tuserId \u003d system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\tparamsDict \u003d {\u0027userId\u0027: userId, \u0027enabled\u0027: True}\n\n\tviewParams \u003d value\n\tif viewParams.has_key(\u0027parentPathList\u0027) and len(viewParams[\u0027parentPathList\u0027] or []) \u003e 0:\n\t\tassets \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({\u0027assetPathList\u0027: viewParams[\u0027parentPathList\u0027]}))\n\t\t#An enterprise, site or area stands for the assets under it; with includeChildren every listed asset does (e.g. a lot\n\t\t#operation linked to Storage happens at Storage\\Receiving). Children are matched under a separator, so Machine 1 isn\u0027t Machine 10\n\t\tincludeChildren \u003d viewParams.has_key(\u0027includeChildren\u0027) and bool(viewParams[\u0027includeChildren\u0027])\n\t\tassetPathList \u003d []\n\t\tfor asset in assets:\n\t\t\tassetPathList.append(asset[\u0027assetPath\u0027])\n\t\t\tif includeChildren or asset[\u0027assetTypeName\u0027].lower() in (\u0027enterprise\u0027, \u0027site\u0027, \u0027area\u0027): assetPathList.append(asset[\u0027assetPath\u0027] + \u0027\\\\%\u0027)\n\t\t\t\n\t\tparamsDict[\u0027assetPathList\u0027] \u003d assetPathList\n\n\tassets \u003d system.kanoa.asset.getAssets(paramsDict)\n\t#Tools are left out of asset lists unless asked for (e.g. CMMS work orders on a mold)\n\tif viewParams.has_key(\u0027includeTooling\u0027) and viewParams[\u0027includeTooling\u0027]:\n\t\tparamsDict[\u0027isTooling\u0027] \u003d True\n\t\ttools \u003d system.kanoa.asset.getAssets(paramsDict)\n\t\tif tools is not None and assets is not None and tools.getRowCount() \u003e 0:\n\t\t\tassets \u003d system.dataset.appendDataset(assets, tools)\n\t#Transports (mobile assets) are left out when they can\u0027t be the answer, e.g. where a lot operation happens\n\tif viewParams.has_key(\u0027excludeMobile\u0027) and viewParams[\u0027excludeMobile\u0027] and assets is not None:\n\t\tmobile \u003d [i for i in range(assets.getRowCount()) if assets.getValueAt(i, \u0027mobile\u0027)]\n\t\tif mobile: assets \u003d system.dataset.deleteRows(assets, mobile)\n\treturn assets",
                   "type": "script"
                 }
               ],
@@ -243,7 +251,7 @@
         {
           "messageType": "assetSelected",
           "pageScope": true,
-          "script": "\n#\tsystem.perspective.print(\"assetSelector - assetSelected msg rcvd with %s\"%payload)\n\tif payload[\u0027selectorId\u0027] is not None and payload[\u0027selectorId\u0027] !\u003d self.view.custom.selectorId: return\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeSelected\u0027: \n\t\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\tparams \u003d dict(self.view.params.value)\n\t\tif not (params.has_key(\u0027persistent\u0027) and params[\u0027persistent\u0027] \u003d\u003d False): system.kanoa.utilities.storeAssetPath(self, assetPath)\t\n\t\tself.view.custom.assetPath \u003d assetPath\n\t\tself.view.params.value.assetPath \u003d assetPath\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeDropped\u0027: system.perspective.print(\u0027asset drag and drop done\u0027)\n\treturn",
+          "script": "\n#\tsystem.perspective.print(\"assetSelector - assetSelected msg rcvd with %s\"%payload)\n\tif payload[\u0027selectorId\u0027] is not None and payload[\u0027selectorId\u0027] !\u003d self.view.custom.selectorId: return\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeSelected\u0027: \n\t\tassetPath \u003d payload[\u0027selection\u0027][0][\u0027value\u0027][\u0027path\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\t\tparams \u003d dict(self.view.params.value)\n\t\tif not (params.has_key(\u0027persistent\u0027) and params[\u0027persistent\u0027] \u003d\u003d False): system.kanoa.utilities.storeAssetPath(self, assetPath)\t\n\t\tself.view.custom.assetPath \u003d assetPath\n\t\tself.view.params.value.assetPath \u003d assetPath\n\t\tif params.get(\u0027msgHandler\u0027):\n\t\t\tsystem.perspective.sendMessage(params[\u0027msgHandler\u0027], {\u0027assetPath\u0027: assetPath}, scope\u003d\u0027page\u0027)\n\t\n\tif payload[\u0027activity\u0027] \u003d\u003d \u0027nodeDropped\u0027: system.perspective.print(\u0027asset drag and drop done\u0027)\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

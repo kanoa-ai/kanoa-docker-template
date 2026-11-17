@@ -1,5 +1,6 @@
 {
   "custom": {
+    "toastId": null,
     "calculation": {
       "table": {
         "selection": {
@@ -42,6 +43,11 @@
       "takenDateChkItemId": null
     },
     "chkTypeName": null,
+    "dataSource": {
+      "ignoreZeroValues": false,
+      "scaleFactor": null,
+      "sourceTagPath": ""
+    },
     "dataTypeName": null,
     "formulaCheck": {},
     "images": {
@@ -441,6 +447,22 @@
       },
       "persistent": true
     },
+    "custom.dataSource": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.chkItemId"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t#The tag this check reads its value from without an attribute; no row when it has none\n\trow \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChkItemDataSource(value or -1), 0)\n\treturn {\u0027sourceTagPath\u0027: row[\u0027sourceTagPath\u0027] or \u0027\u0027, \u0027scaleFactor\u0027: row[\u0027scaleFactor\u0027], \u0027ignoreZeroValues\u0027: bool(row[\u0027ignoreZeroValues\u0027])}",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
     "custom.dataTypeName": {
       "binding": {
         "config": {
@@ -516,7 +538,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\timport re\n\t\n\tdef replaceOptionQuotes(JSONString):\n\t\treturn re.sub(r\"(?\u003c![A-Za-z])\u0027(?![A-Za-z])|(?\u003c![A-Za-z])\u0027|\\\u0027(?![A-Za-z])\", \u0027\"\u0027, JSONString)\n\t\t\n\tdefaultValues \u003d {\n\t\t\t\t\t\t\u0027Number\u0027: {\u0027increment\u0027: None, \u0027min\u0027: None, \u0027max\u0027: None},\n\t\t\t\t\t\t\u0027Fraction\u0027: {\u0027increment\u0027: None, \u0027min\u0027: None, \u0027max\u0027: None},\n\t\t\t\t\t\t\u0027Text\u0027: {\u0027PASS\u0027: [], \u0027WARNING\u0027: [], \u0027FAIL\u0027: [], \u0027NEUTRAL\u0027: [], \u0027multiSelect\u0027: False},\n\t\t\t\t\t\t\u0027Boolean\u0027: {\u0027TRUE\u0027: [\u0027Yes\u0027], \u0027FALSE\u0027: [\u0027No\u0027]},\n\t\t\t\t\t\t\u0027Barcode Scanner\u0027: {\u0027script\u0027: None},\n\t\t\t\t\t\t\u0027Time\u0027: None,\n\t\t\t\t\t\t\u0027Tree\u0027: \u0027\u0027\n\t\t\t\t\t}\n\n \tif value is None or (value[\u0027pickListValues\u0027] or None) is None: return defaultValues\n \tpickListString \u003d value[\u0027pickListValues\u0027]\n\tchkItemPickList \u003d system.util.jsonDecode(replaceOptionQuotes(value[\u0027pickListValues\u0027]))\n\tif value[\u0027pickListName\u0027]: defaultValues[value[\u0027pickListName\u0027]] \u003d chkItemPickList\t\n\n\treturn defaultValues",
+            "code": "\t\n\timport re\n\t\n\tdef replaceOptionQuotes(JSONString):\n\t\treturn re.sub(r\"(?\u003c![A-Za-z])\u0027(?![A-Za-z])|(?\u003c![A-Za-z])\u0027|\\\u0027(?![A-Za-z])\", \u0027\"\u0027, JSONString)\n\t\t\n\tdefaultValues \u003d {\n\t\t\t\t\t\t\u0027Number\u0027: {\u0027increment\u0027: None, \u0027min\u0027: None, \u0027max\u0027: None},\n\t\t\t\t\t\t\u0027Fraction\u0027: {\u0027increment\u0027: None, \u0027min\u0027: None, \u0027max\u0027: None},\n\t\t\t\t\t\t\u0027Text\u0027: {\u0027PASS\u0027: [], \u0027WARNING\u0027: [], \u0027FAIL\u0027: [], \u0027NEUTRAL\u0027: [], \u0027multiSelect\u0027: False},\n\t\t\t\t\t\t\u0027Boolean\u0027: {\u0027TRUE\u0027: [\u0027Yes\u0027], \u0027FALSE\u0027: [\u0027No\u0027]},\n\t\t\t\t\t\t\u0027Barcode Scanner\u0027: {\u0027script\u0027: None},\n\t\t\t\t\t\t\u0027Time\u0027: None,\n\t\t\t\t\t\t\u0027Tree\u0027: \u0027\u0027\n\t\t\t\t\t}\n\n \tif value is None or (value[\u0027pickListValues\u0027] or None) is None: return defaultValues\n \tpickListString \u003d value[\u0027pickListValues\u0027]\n\tif value[\u0027pickListName\u0027] \u003d\u003d \u0027Tree\u0027:\n\t\t#Shown one option per line; parseTreeOptions reads every format a Tree has been saved in\n\t\tchkItemPickList \u003d \u0027\\n\u0027.join(system.kanoa.utilities.parseTreeOptions(value[\u0027pickListValues\u0027]))\n\telse:\n\t\tchkItemPickList \u003d system.util.jsonDecode(replaceOptionQuotes(value[\u0027pickListValues\u0027]))\n\tif value[\u0027pickListName\u0027]: defaultValues[value[\u0027pickListName\u0027]] \u003d chkItemPickList\t\n\n\treturn defaultValues",
             "type": "script"
           }
         ],
@@ -570,7 +592,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tdefaultSpec \u003d {\n\t\t\t\t\t\t\"specType\": None, \n\t\t\t\t\t\t\"tolerance\": {\"lcl\": None, \"ldl\": None, \"lel\": None, \"lsl\": None, \"tgt\": None, \"ucl\": None, \"udl\": None, \"uel\": None, \"usl\": None},\n\t\t\t\t\t\t\"setPoint\": {\"operator\": None, \"value\": None},\n\t\t\t\t\t\t\"range\": {\"min\": None, \"max\": None},\n\t\t\t\t\t\t\"attributeTolerance\": {},\n\t\t\t\t\t\t\"regex\": {\u0027value\u0027: \u0027\u0027}\n\t\t\t\t\t}\n\n \tif value is None: return defaultSpec\n\n\ttry:\n\t\tchkItemSpec \u003d system.util.jsonDecode(value)\n\t\tdefaultSpec[\u0027specType\u0027] \u003d chkItemSpec[\u0027specType\u0027]\n\t\tif chkItemSpec[\u0027specType\u0027] !\u003d \u0027attributeTolerance\u0027:\n\t\t\tdefaultSpec[chkItemSpec[\u0027specType\u0027]] \u003d chkItemSpec[chkItemSpec[\u0027specType\u0027]]\n\texcept:\n\t\treturn defaultSpec\n\n\treturn defaultSpec",
+            "code": "\n\tdefaultSpec \u003d {\n\t\t\t\t\t\t\"specType\": None, \n\t\t\t\t\t\t\"tolerance\": {\"lcl\": None, \"ldl\": None, \"lel\": None, \"lsl\": None, \"tgt\": None, \"ucl\": None, \"udl\": None, \"uel\": None, \"usl\": None},\n\t\t\t\t\t\t\"setPoint\": {\"operator\": None, \"value\": None},\n\t\t\t\t\t\t\"range\": {\"min\": None, \"max\": None, \"lel\": None, \"uel\": None},\n\t\t\t\t\t\t\"attributeTolerance\": {},\n\t\t\t\t\t\t\"regex\": {\u0027value\u0027: \u0027\u0027, \u0027example\u0027: \u0027\u0027}\n\t\t\t\t\t}\n\n \tif value is None: return defaultSpec\n\n\ttry:\n\t\tchkItemSpec \u003d system.util.jsonDecode(value)\n\t\tdefaultSpec[\u0027specType\u0027] \u003d chkItemSpec[\u0027specType\u0027]\n\t\tif chkItemSpec[\u0027specType\u0027] !\u003d \u0027attributeTolerance\u0027:\n\t\t\tdefaultSpec[chkItemSpec[\u0027specType\u0027]] \u003d chkItemSpec[chkItemSpec[\u0027specType\u0027]]\n\t\tif chkItemSpec[\u0027specType\u0027] \u003d\u003d \u0027range\u0027:\t#Entry limits were added later; older ranges only have \u0027min\u0027 and \u0027max\u0027\n\t\t\tdefaultSpec[\u0027range\u0027] \u003d dict({\u0027min\u0027: None, \u0027max\u0027: None, \u0027lel\u0027: None, \u0027uel\u0027: None}, **dict(chkItemSpec[\u0027range\u0027]))\n\t\tif chkItemSpec[\u0027specType\u0027] \u003d\u003d \u0027regex\u0027:\t#\u0027example\u0027 was added later; older specs only have \u0027value\u0027\n\t\t\tdefaultSpec[\u0027regex\u0027] \u003d dict({\u0027value\u0027: \u0027\u0027, \u0027example\u0027: \u0027\u0027}, **dict(chkItemSpec[\u0027regex\u0027]))\n\texcept:\n\t\treturn defaultSpec\n\n\treturn defaultSpec",
             "type": "script"
           }
         ],
@@ -2059,6 +2081,258 @@
                           "config": {
                             "struct": {
                               "chkTypeName": "{view.custom.chkTypeName}",
+                              "dataTypeName": "{view.custom.dataTypeName}",
+                              "tag": "{view.custom.dataSource.sourceTagPath}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value[\u0027chkTypeName\u0027] is None or value[\u0027dataTypeName\u0027] is None: return False\n\treturn value[\u0027chkTypeName\u0027] not in (\u0027Calculated\u0027, \u0027Trigger\u0027) and value[\u0027dataTypeName\u0027] not in (\u0027Image\u0027, \u0027Geo Location\u0027) and not (value[\u0027tag\u0027] or \u0027\u0027).strip()\t#A check reads either an attribute or a tag",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 5
+                      },
+                      "wrap": "wrap"
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblSourceTag",
+                          "name": "lbl"
+                        },
+                        "position": {
+                          "basis": "150px"
+                        },
+                        "props": {
+                          "text": "Data Source Tag",
+                          "textStyle": {
+                            "classes": "kanoa/font/labelMedium"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "txtSourceTagPath",
+                          "name": "txtSourceTagPath",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "Tag path this check reads its value from"
+                          }
+                        },
+                        "position": {
+                          "basis": "250px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.enabled": {
+                            "binding": {
+                              "config": {
+                                "path": "view.params.value.editMode"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          },
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.dataSource.sourceTagPath"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "deferUpdates": true,
+                          "placeholder": "e.g. [Kanoa]Line 1/Temperature",
+                          "style": {
+                            "classes": "kanoa/border",
+                            "paddingLeft": "10px",
+                            "textAlign": "left"
+                          }
+                        },
+                        "type": "ia.input.text-field"
+                      },
+                      {
+                        "events": {
+                          "component": {
+                            "onActionPerformed": {
+                              "config": {
+                                "script": "\t\n\tsystem.perspective.openPopup(\"tagSelector\", \u0027kanoa/core/templates/selectors/tagSelector\u0027, params \u003d {\u0027inputTagPath\u0027: \u0027\u0027, \u0027popupId\u0027: \u0027Tag Selector\u0027}, title\u003d\"Tag Selector\", showCloseIcon \u003d True, resizable \u003d True, modal \u003d True, overlayDismiss\u003dTrue)\n\t\n\treturn"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "domId": "btnTagSelector",
+                          "name": "btnTagSelector",
+                          "tooltip": {
+                            "enabled": true,
+                            "text": "Browse for a tag"
+                          }
+                        },
+                        "position": {
+                          "basis": "30px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "position.display": {
+                            "binding": {
+                              "config": {
+                                "path": "view.params.value.editMode"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "image": {
+                            "icon": {
+                              "path": "material/label"
+                            },
+                            "style": {
+                              "marginBottom": "4px",
+                              "marginTop": "4px"
+                            }
+                          },
+                          "style": {
+                            "classes": "kanoa/button/flatIcon"
+                          },
+                          "text": ""
+                        },
+                        "type": "ia.input.button"
+                      },
+                      {
+                        "events": {
+                          "dom": {
+                            "onClick": {
+                              "config": {
+                                "script": "\t\n\tself.view.custom.dataSource.sourceTagPath \u003d \u0027\u0027\n\t\n\treturn"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "domId": "icoClearTag",
+                          "name": "icoClear",
+                          "tooltip": {
+                            "enabled": true,
+                            "text": "Clear"
+                          }
+                        },
+                        "position": {
+                          "basis": "16px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "position.display": {
+                            "binding": {
+                              "config": {
+                                "struct": {
+                                  "editMode": "{view.params.value.editMode}",
+                                  "tag": "{view.custom.dataSource.sourceTagPath}"
+                                },
+                                "waitOnAll": true
+                              },
+                              "overlayOptOut": true,
+                              "transforms": [
+                                {
+                                  "code": "\treturn value[\u0027editMode\u0027] and bool((value[\u0027tag\u0027] or \u0027\u0027).strip())",
+                                  "type": "script"
+                                }
+                              ],
+                              "type": "expr-struct"
+                            }
+                          }
+                        },
+                        "props": {
+                          "path": "material/close"
+                        },
+                        "type": "ia.display.icon"
+                      },
+                      {
+                        "events": {
+                          "dom": {
+                            "onClick": {
+                              "config": {
+                                "script": "\n\tsystem.perspective.navigate(url \u003d \u0027https://docs.kanoa.ai/configuration/quality/checkSheets#data-source-and-tolerance\u0027, newTab\u003dTrue)\n\t"
+                              },
+                              "scope": "G",
+                              "type": "script"
+                            }
+                          }
+                        },
+                        "meta": {
+                          "domId": "icoHelpTag",
+                          "name": "icoHelpTag",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "bottom-right",
+                            "style": {
+                              "textAlign": "left",
+                              "whiteSpace": "pre"
+                            }
+                          }
+                        },
+                        "position": {
+                          "basis": "24px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "meta.tooltip.text": {
+                            "binding": {
+                              "config": {
+                                "expression": "\"A tag this check reads its value from when it is triggered, or on an auto check sheet, without an attribute.\\nA check gets its data source from either an attribute or a tag.\""
+                              },
+                              "type": "expr"
+                            }
+                          }
+                        },
+                        "props": {
+                          "color": "--kcBlue-60",
+                          "path": "material/help_center",
+                          "style": {
+                            "height": 30
+                          }
+                        },
+                        "type": "ia.display.icon"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxDataSource",
+                      "name": "flxDataSource"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "attributeId": "{view.custom.value.attributeId}",
+                              "chkTypeName": "{view.custom.chkTypeName}",
                               "dataTypeName": "{view.custom.dataTypeName}"
                             },
                             "waitOnAll": true
@@ -2066,7 +2340,146 @@
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\tif value[\u0027chkTypeName\u0027] is None or value[\u0027dataTypeName\u0027] is None: return False\n\treturn value[\u0027chkTypeName\u0027] not in (\u0027Calculated\u0027, \u0027Trigger\u0027) and value[\u0027dataTypeName\u0027] not in (\u0027Image\u0027, \u0027Geo Location\u0027)",
+                              "code": "\n\tif value[\u0027chkTypeName\u0027] is None or value[\u0027dataTypeName\u0027] is None: return False\n\treturn value[\u0027chkTypeName\u0027] not in (\u0027Calculated\u0027, \u0027Trigger\u0027) and value[\u0027dataTypeName\u0027] not in (\u0027Image\u0027, \u0027Geo Location\u0027) and value[\u0027attributeId\u0027] is None\t#A check reads either an attribute or a tag",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "expr-struct"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "gap": 5
+                      },
+                      "wrap": "wrap"
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblScaleFactor",
+                          "name": "lbl"
+                        },
+                        "position": {
+                          "basis": "150px"
+                        },
+                        "props": {
+                          "text": "Scale Factor",
+                          "textStyle": {
+                            "classes": "kanoa/font/labelMedium"
+                          }
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "numScaleFactor",
+                          "name": "numScaleFactor",
+                          "tooltip": {
+                            "enabled": true,
+                            "location": "center-right",
+                            "text": "The tag value is multiplied by this. Empty is 1"
+                          }
+                        },
+                        "position": {
+                          "basis": "80px",
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.enabled": {
+                            "binding": {
+                              "config": {
+                                "path": "view.params.value.editMode"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          },
+                          "props.value": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.dataSource.scaleFactor"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "align": "center",
+                          "format": "0,0.####",
+                          "spinner": {
+                            "enabled": false
+                          }
+                        },
+                        "type": "ia.input.numeric-entry-field"
+                      },
+                      {
+                        "meta": {
+                          "domId": "chkIgnoreZeroValues",
+                          "name": "chkIgnoreZeroValues",
+                          "tooltip": {
+                            "enabled": true,
+                            "text": "A zero read from the tag is treated as no value"
+                          }
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "propConfig": {
+                          "props.enabled": {
+                            "binding": {
+                              "config": {
+                                "path": "view.params.value.editMode"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          },
+                          "props.selected": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.dataSource.ignoreZeroValues"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "props": {
+                          "text": "Ignore Zero Values"
+                        },
+                        "type": "ia.input.checkbox"
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxDataSourceOptions",
+                      "name": "flxDataSourceOptions"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "struct": {
+                              "attributeId": "{view.custom.value.attributeId}",
+                              "chkTypeName": "{view.custom.chkTypeName}",
+                              "dataTypeName": "{view.custom.dataTypeName}",
+                              "tag": "{view.custom.dataSource.sourceTagPath}"
+                            },
+                            "waitOnAll": true
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\n\tif value[\u0027chkTypeName\u0027] is None or value[\u0027dataTypeName\u0027] is None: return False\n\treturn value[\u0027chkTypeName\u0027] not in (\u0027Calculated\u0027, \u0027Trigger\u0027) and value[\u0027dataTypeName\u0027] not in (\u0027Image\u0027, \u0027Geo Location\u0027) and value[\u0027attributeId\u0027] is None and bool((value[\u0027tag\u0027] or \u0027\u0027).strip())",
                               "type": "script"
                             }
                           ],
@@ -5938,6 +6351,21 @@
                                   "type": "property"
                                 }
                               },
+                              "props.style.backgroundColor": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.specification.specInfo.range"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\n\tvalid \u003d system.kanoa.quality.config.checkTolerance(\u0027lsl\u0027, {\u0027lel\u0027: value.lel, \u0027lsl\u0027: value.min, \u0027usl\u0027: value.max, \u0027uel\u0027: value.uel})\n\treturn \u0027\u0027 if valid else \u0027--kcRed-40\u0027",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              },
                               "props.value": {
                                 "binding": {
                                   "config": {
@@ -5986,6 +6414,21 @@
                                     "path": "view.params.value.editMode"
                                   },
                                   "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              },
+                              "props.style.backgroundColor": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.specification.specInfo.range"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\n\tvalid \u003d system.kanoa.quality.config.checkTolerance(\u0027usl\u0027, {\u0027lel\u0027: value.lel, \u0027lsl\u0027: value.min, \u0027usl\u0027: value.max, \u0027uel\u0027: value.uel})\n\treturn \u0027\u0027 if valid else \u0027--kcRed-40\u0027",
+                                      "type": "script"
+                                    }
+                                  ],
                                   "type": "property"
                                 }
                               },
@@ -6074,6 +6517,217 @@
                           }
                         },
                         "type": "ia.container.flex"
+                      },
+                      {
+                        "children": [
+                          {
+                            "meta": {
+                              "domId": "lblEntryLimits",
+                              "name": "lbl",
+                              "tooltip": {
+                                "enabled": true,
+                                "text": "Optional. A value outside the entry limits is rejected when it is entered, rather than saved as a FAIL"
+                              }
+                            },
+                            "position": {
+                              "basis": "150px",
+                              "shrink": 0
+                            },
+                            "props": {
+                              "text": "Entry Limits",
+                              "textStyle": {
+                                "classes": "kanoa/font/labelMedium"
+                              }
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "domId": "numLEL",
+                              "name": "numLEL"
+                            },
+                            "position": {
+                              "basis": "50px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.enabled": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.params.value.editMode"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              },
+                              "props.style.backgroundColor": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.specification.specInfo.range"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\n\tvalid \u003d system.kanoa.quality.config.checkTolerance(\u0027lel\u0027, {\u0027lel\u0027: value.lel, \u0027lsl\u0027: value.min, \u0027usl\u0027: value.max, \u0027uel\u0027: value.uel})\n\treturn \u0027\u0027 if valid else \u0027--kcRed-40\u0027",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              },
+                              "props.value": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.specification.specInfo.range.lel"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "align": "center",
+                              "spinner": {
+                                "enabled": false
+                              },
+                              "format": "0,0.###"
+                            },
+                            "type": "ia.input.numeric-entry-field"
+                          },
+                          {
+                            "meta": {
+                              "domId": "lblEntryTo",
+                              "name": "lblTo"
+                            },
+                            "position": {
+                              "shrink": 0
+                            },
+                            "props": {
+                              "text": "to"
+                            },
+                            "type": "ia.display.label"
+                          },
+                          {
+                            "meta": {
+                              "domId": "numUEL",
+                              "name": "numUEL"
+                            },
+                            "position": {
+                              "basis": "50px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "props.enabled": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.params.value.editMode"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              },
+                              "props.style.backgroundColor": {
+                                "binding": {
+                                  "config": {
+                                    "path": "view.custom.specification.specInfo.range"
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\n\tvalid \u003d system.kanoa.quality.config.checkTolerance(\u0027uel\u0027, {\u0027lel\u0027: value.lel, \u0027lsl\u0027: value.min, \u0027usl\u0027: value.max, \u0027uel\u0027: value.uel})\n\treturn \u0027\u0027 if valid else \u0027--kcRed-40\u0027",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "property"
+                                }
+                              },
+                              "props.value": {
+                                "binding": {
+                                  "config": {
+                                    "bidirectional": true,
+                                    "path": "view.custom.specification.specInfo.range.uel"
+                                  },
+                                  "overlayOptOut": true,
+                                  "type": "property"
+                                }
+                              }
+                            },
+                            "props": {
+                              "align": "center",
+                              "spinner": {
+                                "enabled": false
+                              },
+                              "format": "0,0.###"
+                            },
+                            "type": "ia.input.numeric-entry-field"
+                          },
+                          {
+                            "events": {
+                              "dom": {
+                                "onClick": {
+                                  "config": {
+                                    "script": "\t\n\tself.view.custom.specification.specInfo.range.lel \u003d None\n\tself.view.custom.specification.specInfo.range.uel \u003d None\n\t\n\treturn"
+                                  },
+                                  "scope": "G",
+                                  "type": "script"
+                                }
+                              }
+                            },
+                            "meta": {
+                              "domId": "icoClearEntryLimits",
+                              "name": "icoClear",
+                              "tooltip": {
+                                "enabled": true,
+                                "text": "Clear"
+                              }
+                            },
+                            "position": {
+                              "basis": "16px",
+                              "shrink": 0
+                            },
+                            "propConfig": {
+                              "position.display": {
+                                "binding": {
+                                  "config": {
+                                    "struct": {
+                                      "editMode": "{view.params.value.editMode}",
+                                      "max": "{../numUEL.props.value}",
+                                      "min": "{../numLEL.props.value}"
+                                    },
+                                    "waitOnAll": true
+                                  },
+                                  "overlayOptOut": true,
+                                  "transforms": [
+                                    {
+                                      "code": "\treturn value[\u0027editMode\u0027] and (value[\u0027min\u0027] is not None or value[\u0027max\u0027] is not None)\n\t",
+                                      "type": "script"
+                                    }
+                                  ],
+                                  "type": "expr-struct"
+                                }
+                              }
+                            },
+                            "props": {
+                              "path": "material/close"
+                            },
+                            "type": "ia.display.icon"
+                          }
+                        ],
+                        "meta": {
+                          "domId": "flxEntryLimits",
+                          "name": "flxEntryLimits"
+                        },
+                        "position": {
+                          "shrink": 0
+                        },
+                        "props": {
+                          "style": {
+                            "gap": 5,
+                            "height": "30px"
+                          }
+                        },
+                        "type": "ia.container.flex"
                       }
                     ],
                     "meta": {
@@ -6150,6 +6804,79 @@
                     "meta": {
                       "domId": "flxRegex",
                       "name": "flxRegex"
+                    },
+                    "position": {
+                      "shrink": 0
+                    },
+                    "propConfig": {
+                      "position.display": {
+                        "binding": {
+                          "config": {
+                            "path": "view.custom.specification.specInfo.specType"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\treturn (value or \u0027\u0027) \u003d\u003d \u0027regex\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      }
+                    },
+                    "props": {
+                      "style": {
+                        "gap": "5px"
+                      }
+                    },
+                    "type": "ia.container.flex"
+                  },
+                  {
+                    "children": [
+                      {
+                        "meta": {
+                          "domId": "lblRegexExample",
+                          "name": "lblRegexExample"
+                        },
+                        "position": {
+                          "basis": "150px"
+                        },
+                        "props": {
+                          "text": "Example"
+                        },
+                        "type": "ia.display.label"
+                      },
+                      {
+                        "meta": {
+                          "domId": "txtRegexExample",
+                          "name": "txtRegexExample"
+                        },
+                        "position": {
+                          "basis": "autoo",
+                          "grow": 1
+                        },
+                        "propConfig": {
+                          "props.text": {
+                            "binding": {
+                              "config": {
+                                "bidirectional": true,
+                                "path": "view.custom.specification.specInfo.regex.example"
+                              },
+                              "overlayOptOut": true,
+                              "type": "property"
+                            }
+                          }
+                        },
+                        "type": "ia.input.text-field",
+                        "props": {
+                          "placeholder": "A value that matches, shown to the operator. e.g. AB12CD34"
+                        }
+                      }
+                    ],
+                    "meta": {
+                      "domId": "flxRegexExample",
+                      "name": "flxRegexExample"
                     },
                     "position": {
                       "shrink": 0
@@ -6557,7 +7284,7 @@
                           "component": {
                             "onActionPerformed": {
                               "config": {
-                                "script": "\n\tvalues \u003d self.view.custom.value\n\tpickListName \u003d self.view.custom.pickLists[str(values.pickListId)][\u0027pickListName\u0027]\n\t\n\tsystem.perspective.print(\u0027pickListName %s\u0027%pickListName)\t\n#\tpickListValues \u003d system.util.jsonEncode(self.view.custom.pickListValues[pickListName])\n\tpickListValues \u003d self.view.custom.pickListValues[pickListName]\n\n\tpayload \u003d {\u0027value\u0027: {\n\t\t\t\t\t\t\t\"dataTypeId\": values.dataTypeId,\n\t\t\t\t\t\t\t\"pickListId\": values.pickListId,\n\t\t\t\t\t\t\t\"pickListValues\": pickListValues,\n\t\t\t\t\t\t\t\"engUnitId\": None,\n\t\t\t\t\t\t\t\"chkItemId\": None,\n\t\t\t\t\t\t\t\"chkItemTypeId\": values.chkItemTypeId,\n\t\t\t\t\t\t\t\"tolerances\": {\"lel\": None, \"ldl\": None, \"lsl\": None, \"lcl\": None, \"tgt\": None,\"ucl\": None, \"usl\": None, \"udl\": None, \"uel\": None},\n\t\t\t\t\t\t\t\"specification\": self.view.custom.specification.specInfo\n\t\t\t\t\t\t}\n\t\t\t\t}\n\tself.view.custom.TESTREMOVE \u003d payload\n\tsystem.perspective.print(\u0027%s\u0027%payload)\n\t\n\tsystem.perspective.openPopup(\u0027chkValueSelector\u0027, \u0027kanoa/qds/schedule/popups/checkValueSelector\u0027, params\u003dpayload, title\u003d\u0027Picklist Values Checker\u0027, draggable\u003dTrue, resizable\u003dTrue)\n#\tsystem.perspective.openPopup(\u0027chkValueSelector\u0027, \u0027kanoa/qds/schedule/checkValueSelectorMulti/checkValueSelector\u0027, params\u003dpayload, title\u003d\u0027Picklist Values Checker\u0027, draggable\u003dTrue, resizable\u003dTrue)\n\t\n\treturn"
+                                "script": "\n\tvalues \u003d self.view.custom.value\n\tpickListName \u003d self.view.custom.pickLists[str(values.pickListId)][\u0027pickListName\u0027]\n\t\n\tsystem.perspective.print(\u0027pickListName %s\u0027%pickListName)\t\n#\tpickListValues \u003d system.util.jsonEncode(self.view.custom.pickListValues[pickListName])\n\tpickListValues \u003d self.view.custom.pickListValues[pickListName]\n\n\tpayload \u003d {\u0027value\u0027: {\n\t\t\t\t\t\t\t\"dataTypeId\": values.dataTypeId,\n\t\t\t\t\t\t\t\"pickListId\": values.pickListId,\n\t\t\t\t\t\t\t\"pickListValues\": pickListValues,\n\t\t\t\t\t\t\t\"engUnitId\": None,\n\t\t\t\t\t\t\t\"chkItemId\": None,\n\t\t\t\t\t\t\t\"chkItemTypeId\": values.chkItemTypeId,\n\t\t\t\t\t\t\t\"tolerances\": {\"lel\": None, \"ldl\": None, \"lsl\": None, \"lcl\": None, \"tgt\": None,\"ucl\": None, \"usl\": None, \"udl\": None, \"uel\": None},\n\t\t\t\t\t\t\t\"specification\": self.view.custom.specification.specInfo\n\t\t\t\t\t\t}\n\t\t\t\t}\n\tself.view.custom.TESTREMOVE \u003d payload\n\tsystem.perspective.print(\u0027%s\u0027%payload)\n\t\n\t#Modal, and opened afresh: a popup already open under this id would be updated where it is, behind the Check Item Editor\n\tsystem.perspective.closePopup(\u0027chkValueSelector\u0027)\n\tsystem.perspective.openPopup(\u0027chkValueSelector\u0027, \u0027kanoa/qds/schedule/popups/checkValueSelector\u0027, params\u003dpayload, title\u003d\u0027Picklist Values Checker\u0027, draggable\u003dTrue, resizable\u003dTrue, modal\u003dTrue, overlayDismiss\u003dTrue, showCloseIcon\u003dTrue)\n#\tsystem.perspective.openPopup(\u0027chkValueSelector\u0027, \u0027kanoa/qds/schedule/checkValueSelectorMulti/checkValueSelector\u0027, params\u003dpayload, title\u003d\u0027Picklist Values Checker\u0027, draggable\u003dTrue, resizable\u003dTrue)\n\t\n\treturn"
                               },
                               "scope": "G",
                               "type": "script"
@@ -7999,6 +8726,7 @@
                           }
                         },
                         "props": {
+                          "placeholder": "One option per line, levels separated by /\ne.g.\nKanoa Industries/T1-Acme, TX\nKanoa Enterprises/P1/Line 1",
                           "resize": "vertical",
                           "style": {
                             "classes": "kanoa/font/default"
@@ -8727,7 +9455,7 @@
                           "component": {
                             "onActionPerformed": {
                               "config": {
-                                "script": "\t\n\tretVal, msg \u003d system.kanoa.quality.config.deleteChkItemImage(self.view.custom.images.selection.chkItemImageId, self.view.custom.security.userId)\n\tif msg is None: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Image deleted\"})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Failed to delete image. %s\"%msg})\n\t\n\tself.view.refreshBinding(\"custom.images.data\")\n\t\n\t\n\treturn"
+                                "script": "\t\n\tretVal, msg \u003d system.kanoa.quality.config.deleteChkItemImage(self.view.custom.images.selection.chkItemImageId, self.view.custom.security.userId)\n\tif msg is None: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Image deleted\"})\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Failed to delete image. %s\"%msg})\n\t\n\tself.view.refreshBinding(\"custom.images.data\")\n\t\n\t\n\treturn"
                               },
                               "scope": "G",
                               "type": "script"
@@ -9132,6 +9860,13 @@
     "scripts": {
       "customMethods": [
         {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)"
+        },
+        {
           "name": "selectionUpdated",
           "params": [],
           "script": "\n#\tsystem.perspective.print(\"sending updateCheckItem() msg with %s\"%self.view.custom.value)\n\tsystem.perspective.sendMessage(\"updateCheckItem\", payload \u003d self.view.custom.value, scope \u003d \"page\")\t\n\t\n\treturn"
@@ -9144,7 +9879,7 @@
         {
           "name": "saveChkItem",
           "params": [],
-          "script": "\n\tsystem.perspective.print(\"saveChkItem() called\")\n\t\n\tuserId \u003d self.view.custom.security.userId\n\tchkItemInfo \u003d dict(self.view.custom.value)\n\tif self.view.custom.chkTypeName \u003d\u003d \u0027Calculated\u0027:\n\t\tcalcInfo \u003d self.view.custom.calculation.info\n\t\tchkItemInfo[\u0027calculation\u0027] \u003d system.util.jsonEncode({\"formulaType\":calcInfo.formulaType, \"script\":calcInfo.script, \"values\":calcInfo.formula})\t\n\n\t# sort out the chkItem specification\n\tspecInfo \u003d self.view.custom.specification.specInfo\n\tspecType \u003d specInfo[\u0027specType\u0027]\n\tif specType:\n\t\tspec \u003d {}\n\t\tspec[\u0027specType\u0027] \u003d specType\n\t\tspec[specType] \u003d dict(specInfo[specType])\n\t\tchkItemInfo[\u0027specification\u0027] \u003d system.util.jsonEncode(spec)\n\telse:\n\t\tchkItemInfo[\u0027specification\u0027] \u003d None\n\t\t\n\t# sort out the chkItem picklist values\n\tif self.view.custom.value.pickListId is not None:\n\t\tpickListValues \u003d self.view.custom.pickListValues\n\t\tpickListName \u003d self.view.custom.pickLists[str(self.view.custom.value.pickListId)][\u0027pickListName\u0027]\n\t\tsystem.perspective.print(\"pickListName %s\"%pickListName)\n\t\tpickListValue \u003d pickListValues[pickListName] if pickListName \u003d\u003d \u0027Tree\u0027 else system.util.jsonEncode(pickListValues[pickListName])\n\t\tchkItemInfo[\u0027pickListValues\u0027] \u003d pickListValue if pickListName else None\n\t\n\tif self.view.custom.chkTypeName \u003d\u003d \u0027Trigger\u0027:\n\t\tchkItemInfo[\u0027measCount\u0027] \u003d 1\n\t\tchkItemInfo[\u0027required\u0027] \u003d False\n\n\tif chkItemInfo[\u0027chkItemId\u0027] is None: \n\t\tself.view.params.value.chkItemId \u003d system.kanoa.quality.config.addCheck(chkItemInfo, userId)\n\t\tif self.view.params.value.chkItemId is not None: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Check Item added\"})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Failed to add Check Item\"})\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Check Item added\"})\n\n\t\tif self.view.custom.chkShtInfo.chkShtVersionStateName !\u003d \u0027Draft\u0027:\n\t\t\tchange \u003d \"Check Item %s added\"%(chkItemInfo[\u0027chkItemName\u0027])\n\t\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: chkItemInfo[\u0027chkShtId\u0027], \u0027change\u0027: change}, self.view.custom.security.userId)\n\telse:\n\t\tcompareInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChecks({\u0027chkItemId\u0027: chkItemInfo[\u0027chkItemId\u0027]}), 0)\n\t\tif all((dict(chkItemInfo).get(k) \u003d\u003d v for k, v in dict(compareInfo).items())):\n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"No changes found. No need to save\"})\n\t\t\treturn #Don\u0027t save if nothing has changed\n\t\t\n\t\tretVal \u003d system.kanoa.quality.config.updateCheck(chkItemInfo, userId)\n\t\tif retVal \u003e 0: \n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \"Check Item updated\"})\n\t\t\tself.logChanges(compareInfo, chkItemInfo)\n\t\telse: \n\t\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \"Failed to update Check Item\"})\n\n\tsystem.perspective.sendMessage(\u0027refreshCheckItems\u0027, {\u0027chkShtId\u0027:self.view.params.value.chkShtId})\n\t\t\n\treturn"
+          "script": "\n\tsystem.perspective.print(\"saveChkItem() called\")\n\t\n\tuserId \u003d self.view.custom.security.userId\n\tchkItemInfo \u003d dict(self.view.custom.value)\n\tif self.view.custom.chkTypeName \u003d\u003d \u0027Calculated\u0027:\n\t\tcalcInfo \u003d self.view.custom.calculation.info\n\t\tchkItemInfo[\u0027calculation\u0027] \u003d system.util.jsonEncode({\"formulaType\":calcInfo.formulaType, \"script\":calcInfo.script, \"values\":calcInfo.formula})\t\n\n\t# sort out the chkItem specification\n\tspecInfo \u003d self.view.custom.specification.specInfo\n\tspecType \u003d specInfo[\u0027specType\u0027]\n\tif specType:\n\t\tspec \u003d {}\n\t\tspec[\u0027specType\u0027] \u003d specType\n\t\tspec[specType] \u003d dict(specInfo[specType])\n\t\tchkItemInfo[\u0027specification\u0027] \u003d system.util.jsonEncode(spec)\n\telse:\n\t\tchkItemInfo[\u0027specification\u0027] \u003d None\n\t\t\n\t# sort out the chkItem picklist values\n\tif self.view.custom.value.pickListId is not None:\n\t\tpickListValues \u003d self.view.custom.pickListValues\n\t\tpickListName \u003d self.view.custom.pickLists[str(self.view.custom.value.pickListId)][\u0027pickListName\u0027]\n\t\tsystem.perspective.print(\"pickListName %s\"%pickListName)\n\t\tif pickListName \u003d\u003d \u0027Tree\u0027:\n\t\t\t#Saved as a JSON list of option paths, however the options were typed\n\t\t\ttreeOptions \u003d list(system.kanoa.utilities.parseTreeOptions(pickListValues[pickListName]))\n\t\t\tpickListValue \u003d system.util.jsonEncode(treeOptions) if treeOptions else None\n\t\telse:\n\t\t\tpickListValue \u003d system.util.jsonEncode(pickListValues[pickListName])\n\t\tchkItemInfo[\u0027pickListValues\u0027] \u003d pickListValue if pickListName else None\n\t\n\tif self.view.custom.chkTypeName \u003d\u003d \u0027Trigger\u0027:\n\t\tchkItemInfo[\u0027measCount\u0027] \u003d 1\n\t\tchkItemInfo[\u0027required\u0027] \u003d False\n\n\tif chkItemInfo[\u0027chkItemId\u0027] is None: \n\t\tchkItemId \u003d system.kanoa.quality.config.addCheck(chkItemInfo, userId)\n\t\tif chkItemId is None:\n\t\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Couldn\\\u0027t add check item \"%s\"\u0027 % chkItemInfo[\u0027chkItemName\u0027]})\n\t\t\treturn\n\t\t#The editor now shows the new item: the next Save updates it. Set on the form too, not only the params its binding\n\t\t#reads, so that doesn\u0027t depend on the binding re-running first (868j6zyqk)\n\t\tself.view.params.value.chkItemId \u003d chkItemId\n\t\tself.view.custom.value.chkItemId \u003d chkItemId\n\t\tdataSourceChanged, dataSourceMsg \u003d self.saveDataSource(chkItemId, chkItemInfo[\u0027attributeId\u0027])\n\t\tif dataSourceMsg: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Check item \"%s\" added; couldn\\\u0027t save the data source tag. %s\u0027 % (chkItemInfo[\u0027chkItemName\u0027], dataSourceMsg)})\n\t\telse: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Check item \"%s\" added\u0027 % chkItemInfo[\u0027chkItemName\u0027]})\n\n\t\tif self.view.custom.chkShtInfo.chkShtVersionStateName !\u003d \u0027Draft\u0027:\n\t\t\tchange \u003d \"Check Item %s added\"%(chkItemInfo[\u0027chkItemName\u0027])\n\t\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: chkItemInfo[\u0027chkShtId\u0027], \u0027change\u0027: change}, self.view.custom.security.userId)\n\telse:\n\t\tcompareInfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChecks({\u0027chkItemId\u0027: chkItemInfo[\u0027chkItemId\u0027]}), 0)\n\t\tcheckChanged \u003d not all((dict(chkItemInfo).get(k) \u003d\u003d v for k, v in dict(compareInfo).items()))\n\t\tupdated \u003d False\n\t\tif checkChanged:\n\t\t\tretVal \u003d system.kanoa.quality.config.updateCheck(chkItemInfo, userId)\n\t\t\tupdated \u003d retVal \u003e 0\n\t\t\tif updated: self.logChanges(compareInfo, chkItemInfo)\n\t\t\n\t\t#The data source tag isn\u0027t a check item column, so it\u0027s saved (and compared) on its own\n\t\tdataSourceChanged, dataSourceMsg \u003d self.saveDataSource(chkItemInfo[\u0027chkItemId\u0027], chkItemInfo[\u0027attributeId\u0027])\n\t\tif not checkChanged and not dataSourceChanged and not dataSourceMsg:\n\t\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \"No changes found. No need to save\"})\n\t\t\treturn #Don\u0027t save if nothing has changed\n\t\t\n\t\t#One toast for the Save: the check item\u0027s, with the data source tag only if it couldn\u0027t be saved (868mvvzbz)\n\t\tfailures \u003d []\n\t\tif checkChanged and not updated: failures.append(\"couldn\u0027t update the check item\")\n\t\tif dataSourceMsg: failures.append(\"couldn\u0027t save the data source tag. %s\"%dataSourceMsg)\n\t\tsaved \u003d updated or dataSourceChanged\n\t\tif not failures: self.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Check item \"%s\" updated\u0027 % chkItemInfo[\u0027chkItemName\u0027]})\n\t\telif saved: self.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Check item \"%s\" updated; %s\u0027 % (chkItemInfo[\u0027chkItemName\u0027], \u0027; \u0027.join(failures))})\n\t\telse:\n\t\t\tmessage \u003d \u0027; \u0027.join(failures)\n\t\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: message[0].upper() + message[1:]})\n\n\tsystem.perspective.sendMessage(\u0027refreshCheckItems\u0027, {\u0027chkShtId\u0027:self.view.params.value.chkShtId})\n\t\t\n\treturn"
         },
         {
           "name": "logChanges",
@@ -9153,6 +9888,14 @@
             "chkItemInfo"
           ],
           "script": "\n\tdef norm(v):\n\t\t# (Optional) normalize to reduce noisy diffs: treat \u0027\u0027 like None, trim strings, etc.\n\t\tif (v or None) is None: return None\n\t\t# Coerce Java BigDecimal/Long/etc. to Python primitives if needed\n\t\ttry:\n\t\t\tfrom java.lang import Number\n\t\t\tif isinstance(v, Number):\n\t\t\t\t# keep ints as int, decimals as float\n\t\t\t\ti \u003d int(v)\n\t\t\t\tif float(v) \u003d\u003d float(i): return i\n\t\t\t\treturn float(v)\n\t\texcept:\n\t\t\tpass\n\t\tif isinstance(v, basestring): return v.strip()\n\t\treturn v\n\n\tif self.view.custom.chkShtInfo.chkShtVersionStateName \u003d\u003d \u0027Draft\u0027: return\t# Only log changes to currently released checksheets\n\n\t# Ensure plain dicts\n\told \u003d dict(compareInfo)     # values currently in DB\n\tnew \u003d dict(chkItemInfo)      # values you intend to save\n\t\n\t# Build list of changes\n\tchanges \u003d []\n\texcludeKeys \u003d []\n\t\n\t# Keys present in both: modified?\n\tfor k in set(old.keys()).intersection(new.keys()):\n\t\tif k in excludeKeys: continue\n\t\tov \u003d norm(old.get(k))\n\t\tnv \u003d norm(new.get(k))\n\t\tif ov !\u003d nv: changes.append((\"modified\", k, old.get(k), new.get(k)))\n\t\n\t# Keys only in _new: added\n\tfor k in set(new.keys()) - set(old.keys()):\n\t\tif k in excludeKeys: continue\t\t\n\t\tchanges.append((\"added\", k, None, new.get(k)))\n\t\n\t# Keys only in _old: removed\n\tfor k in set(old.keys()) - set(new.keys()):\n\t\tif k in excludeKeys: continue\t\t\n\t\tchanges.append((\"removed\", k, old.get(k), None))\n\t\t\n\t# If nothing changed, bail out (keeps your early-return behavior)\n\tif not changes:\treturn  # Don\u0027t save if nothing has changed\n\t\n\t# Log each change\n\tfor kind, key, oldVal, newVal in sorted(changes, key\u003dlambda t: t[1].lower() if isinstance(t[1], basestring) else t[1]):\n\t\tif (oldVal or None) \u003d\u003d (newVal or None): continue\n\t\tchange \u003d \"Check Item %s %s field %s old value: %r new value: %r\"%(chkItemInfo[\u0027chkItemName\u0027], key, kind, oldVal, newVal)\n\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: chkItemInfo[\u0027chkShtId\u0027], \u0027change\u0027: change}, self.view.custom.security.userId)\n\t\n\treturn"
+        },
+        {
+          "name": "saveDataSource",
+          "params": [
+            "chkItemId",
+            "attributeId"
+          ],
+          "script": "\t\u0027\u0027\u0027\n\t\tSaves the tag this check reads its value from without an attribute. A check reads either an attribute or a tag, so a\n\t\tcheck with an attribute keeps no tag.\n\t\tReturns:\n\t\t\tchanged (bool): True if the saved tag changed\n\t\t\tmsg (str): why it couldn\u0027t be saved, else None. The caller shows them in its one toast for the Save (868mvvzbz)\n\t\u0027\u0027\u0027\n\tif chkItemId is None: return False, None\n\t\n\tsource \u003d self.view.custom.dataSource\n\ttagPath \u003d (source.sourceTagPath or \u0027\u0027).strip() if attributeId is None else \u0027\u0027\n\tsaved \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.quality.config.getChkItemDataSource(chkItemId), 0)\n\tif (saved[\u0027sourceTagPath\u0027] or \u0027\u0027) \u003d\u003d tagPath:\n\t\tif not tagPath or (saved[\u0027scaleFactor\u0027] \u003d\u003d source.scaleFactor and bool(saved[\u0027ignoreZeroValues\u0027]) \u003d\u003d bool(source.ignoreZeroValues)): return False, None\n\t\n\tdataSourceInfo \u003d {\u0027chkItemId\u0027: chkItemId, \u0027sourceTagPath\u0027: tagPath or None, \u0027scaleFactor\u0027: source.scaleFactor, \u0027ignoreZeroValues\u0027: bool(source.ignoreZeroValues), \u0027enabled\u0027: True}\n\tdataSourceId, msg \u003d system.kanoa.quality.config.setChkItemDataSource(dataSourceInfo, self.view.custom.security.userId)\n\tif msg: return False, msg\n\t\n\tif self.view.custom.chkShtInfo.chkShtVersionStateName !\u003d \u0027Draft\u0027:\n\t\tchange \u003d \"Check Item %s data source tag %s\"%(self.view.custom.value.chkItemName, \u0027set to %s\u0027%tagPath if tagPath else \u0027removed\u0027)\n\t\tsystem.kanoa.quality.sheet.addChangeLog({\u0027chkShtId\u0027: self.view.custom.value.chkShtId, \u0027change\u0027: change}, self.view.custom.security.userId)\n\t\n\treturn True, None"
         }
       ],
       "extensionFunctions": null,
@@ -9167,7 +9910,7 @@
         {
           "messageType": "ValuePicked",
           "pageScope": true,
-          "script": "\n\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \"Value Picked - %s\"%payload})",
+          "script": "\n\tpass",
           "sessionScope": false,
           "viewScope": false
         },
@@ -9203,6 +9946,13 @@
           "messageType": "imageSelected",
           "pageScope": true,
           "script": "\t\n\tsystem.perspective.print(\"imageSelected() msg rcvd with %s\"%payload)\n\t\n\tself.view.custom.images.selection.chkItemImageId \u003d payload[\u0027chkItemImageId\u0027]\n\t\n\treturn",
+          "sessionScope": false,
+          "viewScope": false
+        },
+        {
+          "messageType": "TagSelected",
+          "pageScope": true,
+          "script": "\n\tif not self.view.params.value.editMode: return\n\tself.view.custom.dataSource.sourceTagPath \u003d payload.get(\u0027tagPath\u0027) or \u0027\u0027\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         }

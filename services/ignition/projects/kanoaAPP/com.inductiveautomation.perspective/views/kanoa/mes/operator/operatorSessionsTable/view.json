@@ -113,7 +113,7 @@
           "enabled": false
         }
       },
-      "userId": 5
+      "userId": null
     },
     "sessions": [
       {
@@ -237,7 +237,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value, self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tfilters[\u0027startDate\u0027] \u003d filters.get(\u0027dateRange\u0027,{}).get(\u0027startDate\u0027)\n\tfilters[\u0027endDate\u0027] \u003d filters.get(\u0027dateRange\u0027,{}).get(\u0027endDate\u0027)\n\tfilters.pop(\u0027dateRange\u0027)\n\t\n\treturn filters",
+            "code": "\n\tfilters \u003d system.kanoa.dashboard.getWidgetFilters(self.page.props.pageId, value, self.session.custom.kanoa, self.session.props.device.timezone.id)\n\tfilters[\u0027startDate\u0027] \u003d filters.get(\u0027dateRange\u0027,{}).get(\u0027startDate\u0027)\n\tfilters[\u0027endDate\u0027] \u003d filters.get(\u0027dateRange\u0027,{}).get(\u0027endDate\u0027)\n\tfilters.pop(\u0027dateRange\u0027)\n\t#When the range was worked out: one that ended then (Last 24 Hrs, Year To Date...) runs on to now in custom.sessions\n\tfilters[\u0027computedAt\u0027] \u003d system.date.now()\n\t\n\treturn filters",
             "type": "script"
           }
         ],
@@ -258,16 +258,20 @@
     "custom.sessions": {
       "binding": {
         "config": {
-          "path": "view.custom.filter"
+          "struct": {
+            "filter": "{view.custom.filter}",
+            "now": "now(60000)"
+          },
+          "waitOnAll": true
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tif value is None or value[\u0027assetPath\u0027] is None: return []\n\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.operators.getOperators({\u0027assetPath\u0027: value[\u0027assetPath\u0027], \u0027startDate\u0027: value[\u0027startDate\u0027], \u0027endDate\u0027: value[\u0027endDate\u0027]}))\n\t\n\tfor item in data:\n\t\tendDate \u003d item[\u0027endDate\u0027] or system.date.now()\n\t\tstartDate \u003d item[\u0027startDate\u0027] if item[\u0027startDate\u0027] \u003e value[\u0027startDate\u0027] else value[\u0027startDate\u0027]\n\t\tendDate \u003d endDate if endDate \u003c value[\u0027endDate\u0027] else value[\u0027endDate\u0027]\n\t\titem[\u0027durationSecs\u0027] \u003d system.date.secondsBetween(startDate, endDate)\n\t\n\treturn data",
+            "code": "\n\t#Read again every minute (now) while the screen is open, so an open session\u0027s duration and the total keep up (868mvt9p3)\n\tfilter \u003d value[\u0027filter\u0027]\n\tif filter is None or filter[\u0027assetPath\u0027] is None: return []\n\tnow \u003d system.date.now()\n\t#A range that ended when it was worked out (Last 24 Hrs, Year To Date...) runs on to now; one that ends later (Today) or\n\t#before (Yesterday) keeps its end, and so does one the date selector moves itself (Current Shift)\n\tcomputedAt \u003d filter.get(\u0027computedAt\u0027)\n\trolling \u003d computedAt is not None and filter[\u0027endDate\u0027] is not None and abs(system.date.millisBetween(computedAt, filter[\u0027endDate\u0027])) \u003c 60000\n\tendDate \u003d now if rolling else filter[\u0027endDate\u0027]\n\t\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.operators.getOperators({\u0027assetPath\u0027: filter[\u0027assetPath\u0027], \u0027startDate\u0027: filter[\u0027startDate\u0027], \u0027endDate\u0027: endDate}))\n\t\n\tfor item in data:\n\t\titemEnd \u003d item[\u0027endDate\u0027] or now\n\t\tstartDate \u003d item[\u0027startDate\u0027] if item[\u0027startDate\u0027] \u003e filter[\u0027startDate\u0027] else filter[\u0027startDate\u0027]\n\t\titemEnd \u003d itemEnd if itemEnd \u003c endDate else endDate\n\t\titem[\u0027durationSecs\u0027] \u003d max(0, system.date.secondsBetween(startDate, itemEnd))\n\t\n\treturn data",
             "type": "script"
           }
         ],
-        "type": "property"
+        "type": "expr-struct"
       },
       "persistent": true
     },
@@ -676,7 +680,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\ttimes \u003d [row[\u0027durationSecs\u0027] for row in value if row[\u0027durationSecs\u0027] is not None]\n\tdurationSecs \u003d system.math.sum(times) if len(times) \u003e 0 else 0\n\treturn \"Total Time: %s\" % system.kanoa.utilities.secondsToText(durationSecs, {\u0027showDays\u0027: False, \u0027showSecs\u0027: False})",
+                  "code": "\ttimes \u003d [row[\u0027durationSecs\u0027] for row in value if row[\u0027durationSecs\u0027] is not None]\n\tdurationSecs \u003d system.math.sum(times) if len(times) \u003e 0 else 0\n\treturn system.util.translate(\"Total Time\", self.session.props.locale) + \": %s\" % system.kanoa.utilities.secondsToText(durationSecs, {\u0027showDays\u0027: False, \u0027showSecs\u0027: False})",
                   "type": "script"
                 }
               ],

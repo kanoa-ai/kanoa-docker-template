@@ -201,7 +201,7 @@
                   },
                   "transforms": [
                     {
-                      "code": "\treturn \u0027--kcOnPrimary\u0027 if value else \u0027--kcButton-DisabledColor\u0027",
+                      "code": "\treturn \u0027--kcDockColor\u0027 if value else \u0027--kcButton-DisabledColor\u0027",
                       "type": "script"
                     }
                   ],
@@ -218,7 +218,7 @@
                 "width": 36
               },
               "style": {
-                "background": "--kcPrimary",
+                "background": "--kcDockBackground",
                 "classes": "kanoa/button/flatIcon",
                 "height": "48px",
                 "width": "48px"
@@ -274,7 +274,7 @@
                   },
                   "transforms": [
                     {
-                      "code": "\treturn \u0027--kcOnPrimary\u0027 if value else \u0027--kcButton-DisabledColor\u0027",
+                      "code": "\treturn \u0027--kcDockColor\u0027 if value else \u0027--kcButton-DisabledColor\u0027",
                       "type": "script"
                     }
                   ],
@@ -291,7 +291,7 @@
                 "width": 36
               },
               "style": {
-                "background": "--kcPrimary",
+                "background": "--kcDockBackground",
                 "classes": "kanoa/button/flatIcon",
                 "height": "48px",
                 "width": "48px"
@@ -325,15 +325,19 @@
           "props.text": {
             "binding": {
               "config": {
-                "path": "parent.custom.navHistory"
+                "struct": {
+                  "navHistory": "{parent.custom.navHistory}",
+                  "locale": "{session.props.locale}"
+                },
+                "waitOnAll": true
               },
               "transforms": [
                 {
-                  "code": "\t\n\ttry:\t#If page is refreshed afte ran update, sometimes there is no index\n\t\treturn value[\u0027history\u0027][value[\u0027currentIndex\u0027]].name\n\texcept:\n\t\t\u0027\u0027",
+                  "code": "\t\n\ttry:\t#If page is refreshed after an update, sometimes there is no index\n\t\tnavHistory \u003d value[\u0027navHistory\u0027]\n\t\tname \u003d navHistory[\u0027history\u0027][navHistory[\u0027currentIndex\u0027]].name\n\texcept:\n\t\treturn \u0027\u0027\n\t#Each part in the session\u0027s language, e.g. a dashboard\u0027s folder and name\n\treturn \u0027 \u003e \u0027.join(system.util.translate(part, value[\u0027locale\u0027]) for part in (name or \u0027\u0027).split(\u0027 \u003e \u0027))",
                   "type": "script"
                 }
               ],
-              "type": "property"
+              "type": "expr-struct"
             }
           }
         },
@@ -363,7 +367,7 @@
           "dom": {
             "onClick": {
               "config": {
-                "script": "\t\n\tsystem.perspective.toggleDock(\u0027options\u0027)"
+                "script": "\tsystem.perspective.togglePopup(\u0027kanoaOptionsMenu\u0027, \u0027kanoa/core/menus/optionsMenu\u0027, {},\n\t\tposition\u003d{\u0027right\u0027: 4, \u0027top\u0027: 44, \u0027width\u0027: 240, \u0027height\u0027: 460},\n\t\tshowCloseIcon\u003dFalse, draggable\u003dFalse, resizable\u003dFalse, modal\u003dTrue, overlayDismiss\u003dTrue)"
               },
               "scope": "G",
               "type": "script"
@@ -394,23 +398,12 @@
         "type": "ia.display.icon"
       },
       {
-        "custom": {
-          "test": false
-        },
         "meta": {
           "domId": "toast",
           "name": "toast"
         },
         "position": {
           "shrink": 0
-        },
-        "propConfig": {
-          "custom.test": {
-            "onChange": {
-              "enabled": null,
-              "script": "\tif currentValue.value:\n\t\t# showToast\n\t\t# showSuccessfulToast\n\t\t# showFailerToast\n\t\t# showBugToast\n\t\t# showWarningToast\n\t\t# showInfoToast\n\t\t\n\t\tpayload \u003d {\n\t\t\t\u0027message\u0027: \u0027This is a test\u0027,\n\t\t\t\u0027bgColor\u0027: \u0027green\u0027,\n\t\t\t\u0027fgColor\u0027: \u0027white\u0027,\n\t\t\t\u0027icon\u0027: \u0027material/bubble_chart\u0027,\n\t\t}\n\t\n\t\tsystem.perspective.sendMessage(\u0027showToast\u0027, payload)\n\t\tself.custom.test \u003d False"
-            }
-          }
         },
         "props": {
           "path": "kanoa/core/docks/toast",

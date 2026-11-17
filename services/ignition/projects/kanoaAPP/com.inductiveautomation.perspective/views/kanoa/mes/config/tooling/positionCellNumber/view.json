@@ -1,0 +1,106 @@
+{
+  "custom": {},
+  "params": {
+    "value": null,
+    "rowData": {
+      "rowKey": null
+    },
+    "field": "",
+    "msgHandler": "toolPositionCellEdit",
+    "lockedType": ""
+  },
+  "propConfig": {
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.rowData": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.field": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.msgHandler": {
+      "paramDirection": "input",
+      "persistent": true
+    },
+    "params.lockedType": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 32,
+      "width": 120
+    }
+  },
+  "root": {
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "style": {
+        "padding": "1px 2px"
+      }
+    },
+    "type": "ia.container.flex",
+    "children": [
+      {
+        "meta": {
+          "name": "numValue"
+        },
+        "position": {
+          "grow": 1
+        },
+        "propConfig": {
+          "props.value": {
+            "binding": {
+              "config": {
+                "path": "view.params.value"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            },
+            "onChange": {
+              "enabled": null,
+              "script": "\n\tif origin !\u003d \u0027Browser\u0027 or currentValue.value \u003d\u003d self.view.params.value: return\n\tp \u003d self.view.params\n\tvalue \u003d int(currentValue.value) if currentValue.value is not None else None\n\tsystem.perspective.sendMessage(p.msgHandler, {\u0027rowKey\u0027: p.rowData[\u0027rowKey\u0027], \u0027field\u0027: p.field, \u0027value\u0027: value}, scope\u003d\u0027page\u0027)"
+            }
+          },
+          "props.enabled": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "type": "{view.params.rowData.positionType}",
+                  "locked": "{view.params.lockedType}"
+                },
+                "waitOnAll": true
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\treturn not value[\u0027locked\u0027] or value[\u0027type\u0027] !\u003d value[\u0027locked\u0027]",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          }
+        },
+        "props": {
+          "align": "center",
+          "format": "0",
+          "spinner": {
+            "enabled": false
+          },
+          "style": {
+            "classes": "kanoa/font/default"
+          }
+        },
+        "type": "ia.input.numeric-entry-field"
+      }
+    ]
+  }
+}

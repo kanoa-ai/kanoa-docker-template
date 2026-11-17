@@ -1,6 +1,7 @@
 {
   "custom": {
-    "selectedOption": "This event"
+    "selectedOption": "This event", 
+    "submitted": false
   }, 
   "params": {
     "action": null
@@ -129,6 +130,16 @@
         "children": [
           {
             "type": "ia.input.button", 
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "!{view.custom.submitted}"
+                  }, 
+                  "type": "expr"
+                }
+              }
+            }, 
             "props": {
               "image": {
                 "icon": {
@@ -153,7 +164,7 @@
                   "type": "script", 
                   "scope": "G", 
                   "config": {
-                    "script": "\t\n\tsystem.perspective.sendMessage('editRecurringEvent', {'selectedOption': self.view.custom.selectedOption, 'action': self.view.params.action})\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
+                    "script": "\t\n\t#One message per popup: a second press would arrive after the first has saved and cleared the pending change\n\tif self.view.custom.submitted: return\n\tself.view.custom.submitted = True\n\n\tsystem.perspective.sendMessage('editRecurringEvent', {'selectedOption': self.view.custom.selectedOption, 'action': self.view.params.action})\n\tsystem.perspective.closePopup('')\n\t\n\treturn"
                   }
                 }
               }
@@ -213,6 +224,9 @@
     }, 
     "params.action": {
       "paramDirection": "input", 
+      "persistent": true
+    }, 
+    "custom.submitted": {
       "persistent": true
     }
   }

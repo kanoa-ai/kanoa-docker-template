@@ -190,8 +190,9 @@
           "enabled": true
         }
       },
-      "userId": 5
-    }
+      "userId": null
+    },
+    "toastId": null
   },
   "params": {},
   "propConfig": {
@@ -735,7 +736,7 @@
                           "component": {
                             "onEditCellCommit": {
                               "config": {
-                                "script": "\n\tif self.view.custom.orderStates.userAction.canUpdate:\n\t\tworkOrderStatusId \u003d self.props.data[event.row][\u0027workOrderStatusId\u0027]\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027isActive\u0027, \u0027canSchedule\u0027, \u0027canExecute\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.order.updateProductionOrderStateField(workOrderStatusId, event.column, event.value, self.view.custom.security.userId)\n\t\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the order state. %s\u0027%msg})\n\t\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order State has been updated\u0027})\t\t\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update order states\u0027})\n\n\tself.view.refreshBinding(\"custom.orderStates.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
+                                "script": "\n\tif self.view.custom.orderStates.userAction.canUpdate:\n\t\tworkOrderStatusId \u003d self.props.data[event.row][\u0027workOrderStatusId\u0027]\t\t\n\t\tif event.column in (\u0027enabled\u0027, \u0027isActive\u0027, \u0027canSchedule\u0027, \u0027canExecute\u0027):\n\t\t\tretVal, msg \u003d system.kanoa.order.updateProductionOrderStateField(workOrderStatusId, event.column, event.value, self.view.custom.security.userId)\n\t\t\tif msg: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Failed to update the order state. %s\u0027%msg})\n\t\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order State has been updated\u0027})\t\t\n\t\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Column is not enabled for editing\u0027})\n\telse: self.view.rootContainer.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027No permissions to update order states\u0027})\n\n\tself.view.refreshBinding(\"custom.orderStates.data\")\n\tself.props.selection.selectedRow \u003d None\t\n\tself.props.selection.selectedCol \u003d None\t\n\t\t\n\treturn"
                               },
                               "scope": "G",
                               "type": "script"
@@ -766,14 +767,6 @@
                               },
                               "overlayOptOut": true,
                               "type": "property"
-                            }
-                          },
-                          "props.columns[2].header.title": {
-                            "binding": {
-                              "config": {
-                                "expression": "translate(\u0027Enabled\u0027)"
-                              },
-                              "type": "expr"
                             }
                           },
                           "props.columns[3].editable": {
@@ -1023,7 +1016,8 @@
                                 "justify": "center",
                                 "style": {
                                   "classes": "kanoa/font/default"
-                                }
+                                },
+                                "title": "Enabled"
                               },
                               "justify": "center",
                               "number": "value",
@@ -1570,7 +1564,7 @@
         {
           "name": "deleteOrderStates",
           "params": [],
-          "script": "\t\n\tfor row in self.view.custom.orderStates.selectedData:\n\t\tretVal, msg \u003d system.kanoa.order.deleteProductionOrderState(row[\u0027workOrderStatusId\u0027], self.view.custom.security.userId)\n\t\tif msg: system.kanoa.toast.show({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: msg})\n\t\telse: system.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order state %s has been deleted\u0027%row[\u0027workOrderStatusName\u0027]})\n\n\tself.view.refreshBinding(\"custom.orderStates.data\")\n\n\treturn"
+          "script": "\t\n\tdeleted, failed \u003d [], []\n\tfor row in self.view.custom.orderStates.selectedData:\n\t\tname \u003d row[\u0027workOrderStatusName\u0027]\t#the table shows it styled: {\u0027value\u0027: name, \u0027style\u0027: ...}\n\t\tif not (name is None or isinstance(name, basestring)): name \u003d name[\u0027value\u0027]\n\t\tretVal, msg \u003d system.kanoa.order.deleteProductionOrderState(row[\u0027workOrderStatusId\u0027], self.view.custom.security.userId)\n\t\tif msg: failed.append(\u0027%s (%s)\u0027 % (name, msg))\n\t\telse: deleted.append(name)\n\n\t#One toast for the whole selection (868mvvzbz)\n\tif failed:\n\t\tif deleted: message \u003d \"Deleted %d of %d order states; %d couldn\u0027t be deleted: %s\" % (len(deleted), len(deleted) + len(failed), len(failed), \u0027, \u0027.join(failed))\n\t\telse: message \u003d \"Couldn\u0027t delete %s\" % \u0027, \u0027.join(failed)\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027 if deleted else \u0027error\u0027, \u0027message\u0027: message})\n\telif deleted:\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Order state \"%s\" deleted\u0027 % deleted[0] if len(deleted) \u003d\u003d 1 else \u0027Deleted %d order states\u0027 % len(deleted)})\n\n\tself.view.refreshBinding(\"custom.orderStates.data\")\n\n\treturn"
         },
         {
           "name": "openEditor",
@@ -1582,12 +1576,19 @@
         {
           "name": "exportOrderStates",
           "params": [],
-          "script": "\t\n\t\u0027\u0027\u0027 \n \t\tExports performance information and associated data such as class and link info\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\tPSIds \u003d [row[\u0027performanceStateId\u0027] for row in self.view.custom.orderStates.selectedData]\n \tlog.info(\"exportorderStates() called with %s\"%(PSIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\torderStates \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.performanceState.getorderStates({\u0027performanceStateIdList\u0027: PSIds}))\n\t\tperformanceStateClassIds \u003d list(set([row[\u0027performanceStateClassId\u0027] for row in orderStates]))\n\t\tperformanceStateClasses \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.performanceState.getPerformanceStateClasses({\u0027performanceStateClassIdList\u0027: performanceStateClassIds}))\n\t\tPSCDict \u003d {}\n\t\tfor PSC in performanceStateClasses:\n\t\t\tPSCDict[PSC[\u0027performanceStateClassId\u0027]] \u003d PSC[\u0027performanceStateClassDescription\u0027]\n\t\tfor item in orderStates:\n\t\t\titem[\u0027performanceStateClassDescription\u0027] \u003d PSCDict[item[\u0027performanceStateClassId\u0027]]\n\t\tperformanceStateLinks \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.performanceState.getPerformanceStateLinks({\u0027performanceStateIdList\u0027: PSIds}))\n\t\t\n \t\texportInfo[\u0027orderStates\u0027] \u003d orderStates\n\t\texportInfo[\u0027performanceStateLinks\u0027] \u003d performanceStateLinks\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Performance States Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027performanceStateInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Performance States exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportorderStates() threw exception %s \"%(e.cause))\n \t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Performance States failed to export: %s\u0027%e.cause})\n\t\n\treturn"
+          "script": "\t\n\t\u0027\u0027\u0027 \n \t\tExports performance information and associated data such as class and link info\n \t\t \n \t\tArgs: \n \t\t\titemIds (list[int]): list of itemIds\n \t\tReturns: \n \t\t\texportInfo (dict) \n \t\t\tmessage (string): None if successful \n \t\tUpdated: \n \t\t\tjz  10/14/25 created\n \t\u0027\u0027\u0027\n \tdbName \u003d system.kanoa.config.getDBName(\u0027core\u0027) \n \tlog \u003d system.util.getLogger(\u0027kanoa_lot\u0027)\n \t\n\timport java.lang\n\t\n\tPSIds \u003d [row[\u0027performanceStateId\u0027] for row in self.view.custom.orderStates.selectedData]\n \tlog.info(\"exportorderStates() called with %s\"%(PSIds)) \n \texportInfo \u003d {}\n \t\n \ttry:\n\t\torderStates \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.performanceState.getorderStates({\u0027performanceStateIdList\u0027: PSIds}))\n\t\tperformanceStateClassIds \u003d list(set([row[\u0027performanceStateClassId\u0027] for row in orderStates]))\n\t\tperformanceStateClasses \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.performanceState.getPerformanceStateClasses({\u0027performanceStateClassIdList\u0027: performanceStateClassIds}))\n\t\tPSCDict \u003d {}\n\t\tfor PSC in performanceStateClasses:\n\t\t\tPSCDict[PSC[\u0027performanceStateClassId\u0027]] \u003d PSC[\u0027performanceStateClassDescription\u0027]\n\t\tfor item in orderStates:\n\t\t\titem[\u0027performanceStateClassDescription\u0027] \u003d PSCDict[item[\u0027performanceStateClassId\u0027]]\n\t\tperformanceStateLinks \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.performanceState.getPerformanceStateLinks({\u0027performanceStateIdList\u0027: PSIds}))\n\t\t\n \t\texportInfo[\u0027orderStates\u0027] \u003d orderStates\n\t\texportInfo[\u0027performanceStateLinks\u0027] \u003d performanceStateLinks\n\t \t\n \t\tdata \u003d system.util.jsonDecode(str(system.util.jsonEncode(exportInfo)))\n \t\tfileName \u003d \u0027Performance States Export ({}).json\u0027.format(system.date.format(system.date.now(), \u0027yyyy-MM-dd HH:mm\u0027))\n\t\n\t\tdocument \u003d system.util.jsonEncode({\u0027exportType\u0027: \u0027performanceStateInfo\u0027, \u0027data\u0027: system.util.jsonDecode(system.util.jsonEncode(data))})\n\t\tsystem.perspective.download(fileName, document)\n\t\t\n\t\tself.toast({\u0027type\u0027: \u0027success\u0027, \u0027message\u0027: \u0027Performance States exported\u0027})\n \t\t \n \texcept java.lang.Exception, e:\n \t\tlog.error(\"exportorderStates() threw exception %s \"%((getattr(e, \u0027cause\u0027, None) or e)))\n \t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Performance States failed to export: %s\u0027%(getattr(e, \u0027cause\u0027, None) or e)})\n\t\n\treturn"
         },
         {
           "name": "importOrderStates",
           "params": [],
           "script": "\t\n\tsystem.perspective.openPopup(\n\t\tid \u003d \u0027Performance Statae Importer\u0027,\n\t\tview \u003d \u0027kanoa/mes/config/lots/lotsDataImporter\u0027,\n\t\ttitle \u003d \u0027Performance State Importer\u0027,\n\t\tparams \u003d {\u0027callerId\u0027: system.kanoa.utilities.getUUID(), \u0027msgHandler\u0027: \u0027importorderStates\u0027},\n\t\tmodal \u003d True,\n\t\toverlayDismiss \u003d True\n\t)\n\treturn"
+        },
+        {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t\u0027\u0027\u0027One toast at a time on this view. The first one\u0027s id is kept; every later toast updates it while it\u0027s showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).\u0027\u0027\u0027\n\tparams \u003d dict(params)\n\ttoastId \u003d self.view.custom.toastId\n\tif toastId:\n\t\tparams[\u0027id\u0027] \u003d toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId \u003d system.kanoa.toast.show(params)\n"
         }
       ],
       "extensionFunctions": null,

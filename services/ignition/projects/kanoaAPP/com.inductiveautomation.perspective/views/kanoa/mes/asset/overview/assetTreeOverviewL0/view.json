@@ -138,7 +138,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\n#\tsystem.perspective.print(\"Building L0 child asset instances\")\n\n\tlevel \u003d self.view.params.value.level + 1\n\texpand \u003d self.view.params.value.expand\n\tinfo \u003d []\n\n\tvalue \u003d sorted(value, key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tif len(dict(item[childAssets])) \u003d\u003d 1: assets.append(item[childAssets])\n\t\t\telse: children.append(item[childAssets])\n\t\t\t\t\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item[\u0027assetInfo\u0027][\u0027assetName\u0027], \u0027assetInfo\u0027: item[\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\t\n#\tsystem.perspective.print(\"Completed L0 child asset instances\")\t\n\t\n\treturn info",
+                  "code": "\n#\tsystem.perspective.print(\"Building L0 child asset instances\")\n\n\tlevel \u003d self.view.params.value.level + 1\n\texpand \u003d self.view.params.value.expand\n\tinfo \u003d []\n\n\tvalue \u003d sorted(value, key\u003dlambda x: x[\u0027assetInfo\u0027][\u0027sortOrder\u0027])\n\tfor item in value:\n\t\tchildren \u003d []\n\t\tassets \u003d []\t\t\n\t\tfor childAssets in item:\n\t\t\tif childAssets \u003d\u003d \u0027assetInfo\u0027: continue\n\t\t\tchild \u003d item[childAssets]\n\t\t\tif len(dict(child)) \u003d\u003d 1: assets.append(child)\n\t\t\telse:\n\t\t\t\tchildren.append(child)\n\t\t\t\t#A line with cells is a tile among its area\u0027s lines too; its cells get a section of their own below it (868mvwg9e)\n\t\t\t\tif child[\u0027assetInfo\u0027] and child[\u0027assetInfo\u0027][\u0027oeeEnabled\u0027]: assets.append({\u0027assetInfo\u0027: child[\u0027assetInfo\u0027]})\n\t\t\t\t\n\t\tinfo.append({\u0027value\u0027: {\u0027assetName\u0027: item[\u0027assetInfo\u0027][\u0027assetName\u0027], \u0027assetInfo\u0027: item[\u0027assetInfo\u0027], \u0027childAssets\u0027: children, \u0027assets\u0027: assets, \u0027expand\u0027: expand, \u0027level\u0027: level}})\n\t\n#\tsystem.perspective.print(\"Completed L0 child asset instances\")\t\n\t\n\treturn info",
                   "type": "script"
                 }
               ],
@@ -173,8 +173,8 @@
             "padding": 5
           },
           "style": {
-            "backgroundColor": "--kcSurface",
-            "gap": "3px"
+            "backgroundColor": "transparent",
+            "gap": "16px"
           },
           "useDefaultViewHeight": false,
           "useDefaultViewWidth": false
@@ -189,8 +189,9 @@
     "props": {
       "direction": "column",
       "style": {
-        "backgroundColor": "--kcSurface",
-        "padding": "3px"
+        "backgroundColor": "transparent",
+        "padding": "6px 8px 8px 8px",
+        "borderRadius": "var(--borderRadius)"
       }
     },
     "scripts": {
@@ -206,6 +207,38 @@
         }
       ]
     },
-    "type": "ia.container.flex"
+    "type": "ia.container.flex",
+    "propConfig": {
+      "props.style.backgroundColor": {
+        "binding": {
+          "config": {
+            "path": "view.params.value.childAssets"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t#Each section of tiles is a tinted panel, set apart by the space between them; groups of groups stay plain (868mvwg9e)\n\treturn \u0027transparent\u0027 if len(value or []) else \u0027color-mix(in srgb, var(--kcSurfaceVariant) 45%, var(--kcSurface))\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      },
+      "props.style.gap": {
+        "binding": {
+          "config": {
+            "path": "view.params.value"
+          },
+          "overlayOptOut": true,
+          "transforms": [
+            {
+              "code": "\t#A group with lines and groups under it (868mvwg9e): its tinted lines panel and the sections below are spaced like sibling sections\n\treturn \u002716px\u0027 if len(value.get(\u0027childAssets\u0027) or []) and len(value.get(\u0027assets\u0027) or []) else \u00270px\u0027",
+              "type": "script"
+            }
+          ],
+          "type": "property"
+        }
+      }
+    }
   }
 }

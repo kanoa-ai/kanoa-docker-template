@@ -6,7 +6,7 @@
         "$": [
           "ds",
           192,
-          1786209611446
+          1793203236589
         ],
         "$columns": [
           {
@@ -120,7 +120,7 @@
     },
     "path": "",
     "selection": [],
-    "selectorId": "b871bb04-52d7-486c-988f-e8291fa89e95",
+    "selectorId": "27773073-94f4-4fc2-b88a-4fb67b400282",
     "setPath": false
   },
   "events": {
@@ -351,7 +351,7 @@
           "dom": {
             "onClick": {
               "config": {
-                "script": "\t\n\tif self.view.params.values is None or not self.view.params.values.has_key(\u0027data\u0027):\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Selector still initializing...\u0027})\n\telse:\n\t\tvalues \u003d dict(self.view.custom.params)\n\t\tvalues[\u0027selectorId\u0027] \u003d self.view.custom.selectorId\n\t\tpayload \u003d {\u0027values\u0027: values}\n\t\tsystem.perspective.openPopup(\"Tree Selector\", \"kanoa/core/templates/selectors/tree/treePopup\", params\u003dpayload, overlayDismiss\u003dTrue, resizable\u003dTrue, viewportBound\u003dTrue, showCloseIcon\u003dTrue)\n\t\n\treturn"
+                "script": "\t\n\tif self.view.params.values is None or not self.view.params.values.has_key(\u0027data\u0027) or self.view.params.values[\u0027data\u0027] is None:\n\t\tsystem.kanoa.toast.show({\u0027type\u0027: \u0027info\u0027, \u0027message\u0027: \u0027Selector still initializing...\u0027})\n\telse:\n\t\tvalues \u003d dict(self.view.custom.params)\n\t\tvalues[\u0027selectorId\u0027] \u003d self.view.custom.selectorId\n\t\tpayload \u003d {\u0027values\u0027: values}\n\t\tsystem.perspective.openPopup(\"Tree Selector\", \"kanoa/core/templates/selectors/tree/treePopup\", params\u003dpayload, overlayDismiss\u003dTrue, resizable\u003dTrue, viewportBound\u003dTrue, showCloseIcon\u003dTrue)\n\t\n\treturn"
               },
               "scope": "G",
               "type": "script"
@@ -510,16 +510,21 @@
           "props.text": {
             "binding": {
               "config": {
-                "path": "view.custom.display"
+                "struct": {
+                  "display": "{view.custom.display}",
+                  "locale": "{session.props.locale}",
+                  "options": "{view.params.values.options}"
+                },
+                "waitOnAll": true
               },
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\treturn system.kanoa.utilities.formatPath(value, {})",
+                  "code": "\toptions \u003d value[\u0027options\u0027] or {}\n\t#The selected path in the session\u0027s language when the tree shows translated names (e.g. dashboards)\n\ttranslate \u003d bool(options[\u0027translate\u0027]) if hasattr(options, \u0027has_key\u0027) and options.has_key(\u0027translate\u0027) else False\n\treturn system.kanoa.utilities.formatPath(value[\u0027display\u0027], {\u0027locale\u0027: value[\u0027locale\u0027]} if translate else {})",
                   "type": "script"
                 }
               ],
-              "type": "property"
+              "type": "expr-struct"
             }
           }
         },
@@ -531,9 +536,20 @@
         "type": "ia.display.label"
       },
       {
+        "events": {
+          "component": {
+            "onPathChange": {
+              "config": {
+                "script": "\t\n\t#Look the node up gateway-side instead of using event.selectedData, which has been through the browser and loses the dataset\u0027s types (dates etc.)\n\tselection \u003d []\n\tif event.selectedPath:\n\t\tnode \u003d None\n\t\tfor section in event.selectedPath.split(\"\\\\\"):\n\t\t\tmatches \u003d [n for n in (node[\u0027children\u0027] if node else self.props.items) if n[\u0027label\u0027] \u003d\u003d section]\n\t\t\tif not matches: break\n\t\t\tnode \u003d matches[0]\n\t\tif node is not None: selection \u003d [{\u0027value\u0027: node[\u0027data\u0027]}]\n\t\n\tpayload \u003d {\u0027activity\u0027: \u0027nodeSelected\u0027, \u0027selection\u0027: selection, \u0027msgHandler\u0027: self.view.custom.params.msgHandler, \u0027selectorId\u0027: self.view.custom.selectorId}\n\tself.parent.sendUpdate(payload)\n\t\n\treturn"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
         "meta": {
-          "domId": "evBreadCrumb",
-          "name": "evBreadCrumb"
+          "domId": "breadcrumb",
+          "name": "breadcrumb"
         },
         "position": {
           "grow": 1,
@@ -554,63 +570,44 @@
               "type": "property"
             }
           },
-          "props.params.values.data": {
+          "props.items": {
             "binding": {
               "config": {
                 "path": "view.params.values.data"
               },
               "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\timport re\n\t\n\t#A plain property binding, not a struct: a struct binding can keep a stale run with no data as the view opens, which leaves the breadcrumb empty\n\ttry: treePath \u003d self.view.params.values[\u0027treePath\u0027]\n\texcept: treePath \u003d None\n\ttreePath \u003d str(treePath or \u0027path\u0027)\n\trows \u003d system.kanoa.utilities.convertDatasetToDict(value, treePath, None) if value is not None else {}\n\tnodes \u003d {}\n\troots \u003d []\n\t\n\tfor key in rows.keys():\n\t\tif not key: continue\n\t\tsections \u003d key.split(\"\\\\\")\n\t\tfor i, section in enumerate(sections):\n\t\t\tpath \u003d \"\\\\\".join(sections[:i+1])\n\t\t\tif nodes.has_key(path): continue\n\t\t\tif rows.has_key(path): data \u003d dict(rows[path])\n\t\t\telse:\t#Intermediate node that isn\u0027t in the dataset\n\t\t\t\tdata \u003d dict((k, None) for k in rows[key].keys())\n\t\t\t\tdata[treePath] \u003d path\n\t\t\tnodes[path] \u003d {\u0027id\u0027: path, \u0027label\u0027: section, \u0027data\u0027: data, \u0027children\u0027: []}\n\t\t\tif i \u003d\u003d 0: roots.append(nodes[path])\n\t\t\telse: nodes[\"\\\\\".join(sections[:i])][\u0027children\u0027].append(nodes[path])\n\t\n\tdef naturalLabelKey(s):\n\t\treturn tuple((0, int(part)) if part.isdigit() else (1, part) for part in re.findall(r\u0027\\d+|[^\\d]+\u0027, (s or \u0027\u0027).strip().lower()))\n\t\n\tdef sortKey(node):\n\t\tsortOrder \u003d node[\u0027data\u0027].get(\u0027sortOrder\u0027)\n\t\treturn (sortOrder is None, sortOrder if sortOrder is not None else 0, naturalLabelKey(node[\u0027label\u0027]))\n\t\n\tdef sortNodes(level):\n\t\tlevel.sort(key\u003dsortKey)\n\t\tfor node in level: sortNodes(node[\u0027children\u0027])\n\t\n\tsortNodes(roots)\n\treturn roots",
+                  "type": "script"
+                }
+              ],
               "type": "property"
             }
           },
-          "props.params.values.msgHandler": {
-            "binding": {
-              "config": {
-                "path": "view.params.values.msgHandler"
-              },
-              "overlayOptOut": true,
-              "type": "property"
-            }
-          },
-          "props.params.values.path": {
+          "props.selectedPath": {
             "binding": {
               "config": {
                 "path": "view.custom.path"
               },
               "overlayOptOut": true,
-              "type": "property"
-            }
-          },
-          "props.params.values.selectorId": {
-            "binding": {
-              "config": {
-                "path": "view.custom.selectorId"
-              },
-              "overlayOptOut": true,
-              "type": "property"
-            }
-          },
-          "props.params.values.treePath": {
-            "binding": {
-              "config": {
-                "path": "view.params.values.treePath"
-              },
-              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\treturn value or \u0027\u0027",
+                  "type": "script"
+                }
+              ],
               "type": "property"
             }
           }
         },
         "props": {
-          "params": {
-            "values": {
-              "options": {
-                "showClear": false
-              }
-            }
-          },
-          "path": "kanoa/core/templates/selectors/tree/breadcrumb"
+          "selectedData": null,
+          "style": {
+            "classes": "kanoa/font/default"
+          }
         },
-        "type": "ia.display.view"
+        "type": "kanoa.ops.breadcrumb"
       }
     ],
     "meta": {
@@ -623,7 +620,7 @@
         "gap": 5,
         "maxHeight": 30,
         "minWidth": 30,
-        "overflow": "hidden",
+        "overflow": "visible",
         "position": "relative",
         "width": "max-content"
       }
@@ -656,13 +653,6 @@
           "messageType": "clearSelection",
           "pageScope": true,
           "script": "\n#\tsystem.perspective.print(\"clearSelection() msg rcvd by treeSelector with payload %s\"%payload)\n\tif payload.has_key(\u0027selectorId\u0027) and self.view.custom.selectorId \u003d\u003d payload[\u0027selectorId\u0027]: self.clearSelection()\n\n\treturn",
-          "sessionScope": false,
-          "viewScope": false
-        },
-        {
-          "messageType": "breadCrumbSelected",
-          "pageScope": true,
-          "script": "\t\n#\tsystem.perspective.print(\"breadCrumbSelected msg handler rcvd with %s\"%payload)\n\tif payload.has_key(\u0027selectorId\u0027) and self.view.custom.selectorId \u003d\u003d payload[\u0027selectorId\u0027]: self.sendUpdate(payload)\n\t\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

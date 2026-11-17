@@ -1,5 +1,7 @@
 {
   "custom": {
+    "deleteRequestId": null,
+    "toastId": null,
     "display": {},
     "metaDataInfo": {},
     "scheduledWorkOrders": {
@@ -498,6 +500,25 @@
           }
         ],
         "type": "property"
+      }
+    },
+    "custom.metaDataInfo.workOrderMetaDataId": {
+      "binding": {
+        "config": {
+          "struct": {
+            "metaData": "{view.custom.metaDataInfo.metaData}",
+            "selectedTab": "{view.custom.selectedTab}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# The selected tab's meta data entry, or None on the Order Info, Scheduled and Production Runs tabs\n\tfor row in value['metaData'] or []:\n\t\tif row['metaDataName'] == value['selectedTab']: return row['workOrderMetaDataId']\n\treturn None",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
       }
     },
     "custom.scheduledWorkOrders": {
@@ -1520,7 +1541,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tmsg = \"Are you sure you want to delete the selected metaData?\"\n\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\",  {'text':msg, 'messageHandler':'deleteMetaDataMsg'}, title='Delete Production Order Meta Data', draggable=True, showCloseIcon = True, overlayDismiss=True)\n\n#\tself.view.getChild(\"root\").deleteEntry()\n\n\treturn"
+                        "script": "\t\n\tfrom java.util import UUID\n\n\tmsg = \"Are you sure you want to delete the selected metaData?\"\n\t#Only this copy of the view acts on the confirm: see the deleteMetaDataMsg handler (868mvvzbz)\n\tself.view.custom.deleteRequestId = str(UUID.randomUUID())\n\tsystem.perspective.openPopup(\"UserConfirmPopup\", \"kanoa/core/templates/inputs/confirm\",  {'text':msg, 'messageHandler':'deleteMetaDataMsg', 'inputPayload': {'requestId': self.view.custom.deleteRequestId}}, title='Delete Production Order Meta Data', draggable=True, showCloseIcon = True, overlayDismiss=True)\n\n#\tself.view.getChild(\"root\").deleteEntry()\n\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -1871,9 +1892,16 @@
     "scripts": {
       "customMethods": [
         {
+          "name": "toast",
+          "params": [
+            "params"
+          ],
+          "script": "\t'''One toast at a time on this view. The first one's id is kept; every later toast updates it while it's showing, and shows it again under\n\tthe same id once it has closed (a show with the id of a toast still showing is ignored, so the two never stack) (868mvvzbz).'''\n\tparams = dict(params)\n\ttoastId = self.view.custom.toastId\n\tif toastId:\n\t\tparams['id'] = toastId\n\t\tsystem.kanoa.toast.update(params)\n\t\tsystem.kanoa.toast.show(params)\n\telse:\n\t\tself.view.custom.toastId = system.kanoa.toast.show(params)"
+        },
+        {
           "name": "deleteEntry",
           "params": [],
-          "script": "\n\tdef deleteProductionOrderMetaData(workOrderMetaDataId, userId):\n\t\t'''\n\t\t\tDeletes a production order meta data entry (kanoaOPS)\n\t\t\tArgs:\n\t\t\t\tworkorderMetaDataId: int\n\t\t\t\tuserId: int\n\t\t\tReturns:\n\t\t\t\t# of records modified: int\n\t\t\t\tmsg: str - None if success\n\t\t\t\n\t\t\tUpdated:\n\t\t\t\tjfc - 7/25/24 1:36pm Created\n\t\t'''\n\t\t\n\t\tlog = system.util.getLogger('kanoa_order')\n\t\tlog.warn(\"deleteProductionOrderMetaData() called for %s by %s\"%(workOrderMetaDataId, userId))\n\t\tdbName = system.kanoa.config.getDBName('core')\t\t\n\t\t\n\t\timport java.lang\n\t\ttry:\n\t\t\treturn system.db.runPrepUpdate(\"DELETE FROM mes.[workOrderMetaData] WHERE workOrderMetaDataId = ?\", [workOrderMetaDataId], dbName, getKey=0), None\n\t\texcept java.lang.Exception, e:\n\t\t\tlog.warn(\"deleteProductionOrderMetaData() returned %s\"%e.cause)\n\t\t\treturn False, e.cause\n\n\tworkOrderMetaDataId = self.view.custom.metaDataInfo.workOrderMetaDataId\n\tif (workOrderMetaDataId or None) is None:\n\t\tsystem.kanoa.toast.show({'type': 'warning', 'message': 'invalid metaDataId.'})\n\t\treturn\n\t\t\n#\tretVal, msg = system.kanoa.order.deleteProductionOrderMetaData(item['workOrderId'], self.view.custom.security.userId)\n\tretVal, msg = deleteProductionOrderMetaData(workOrderMetaDataId, self.view.custom.security.userId)\n\tif msg: system.kanoa.toast.show({'type': 'warning', 'message': 'Could not delete meta data. %s'%msg})\n\telse: system.kanoa.toast.show({'type': 'success', 'message': 'Work Order meta data has been deleted.'})\n\n\tself.view.refreshBinding(\"custom.metaDataInfo.metaData\")\n\t\n\treturn"
+          "script": "\n\tworkOrderMetaDataId \u003d self.view.custom.metaDataInfo.workOrderMetaDataId\n\tmetaDataName \u003d self.view.custom.selectedTab\n\tif workOrderMetaDataId is None:\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Select a meta data tab to delete\u0027})\n\t\treturn\n\n\tretVal, msg \u003d system.kanoa.order.deleteProductionOrderMetaData(workOrderMetaDataId, self.view.custom.security.userId)\n\tif msg:\n\t\tself.toast({\u0027type\u0027: \u0027error\u0027, \u0027message\u0027: \u0027Couldn\\\u0027t delete meta data \"%s\": %s\u0027 % (metaDataName, msg), \u0027autoClose\u0027: 0})\n\t\treturn\n\tif not retVal:\n\t\t# Nothing deleted: someone else deleted it first\n\t\tself.toast({\u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: \u0027Meta data \"%s\" was already deleted\u0027 % metaDataName})\n\n\t# Its tab goes with it, so show the first tab\n\tself.view.custom.tabInfo.idx \u003d 0\n\tself.view.refreshBinding(\"custom.metaDataInfo.metaData\")\n\treturn"
         }
       ],
       "extensionFunctions": null,
@@ -1881,7 +1909,7 @@
         {
           "messageType": "deleteMetaDataMsg",
           "pageScope": true,
-          "script": "\t\n\tsystem.perspective.print(\"deleteMetaDataMsg() msg rcvd with %s\"%payload)\n\tif payload.has_key('userInput') and payload['userInput'] == 'OK': self.deleteEntry()\n\t\n\treturn",
+          "script": "\t\n\tsystem.perspective.print(\"deleteMetaDataMsg() msg rcvd with %s\"%payload)\n\t#Every expanded copy of this view (a table subview) gets this page-scope message: only the copy whose Delete opened the confirm acts.\n\t#An order can be on more than one row (e.g. scheduled events), so the Delete button's request id is matched, not the order (868mvvzbz)\n\trequestId = self.view.custom.deleteRequestId\n\tif requestId is None or not (payload.has_key('inputPayload') and payload['inputPayload']['requestId'] == requestId): return\n\tself.view.custom.deleteRequestId = None\n\tif payload.has_key('userInput') and payload['userInput'] == 'OK': self.deleteEntry()\n\t\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

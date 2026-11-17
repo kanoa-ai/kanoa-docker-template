@@ -1,58 +1,7 @@
 {
   "custom": {
-    "oeeData": null,
-    "tagInfo": {
-      "availability": null,
-      "durationSecs": 800975,
-      "endDate": null,
-      "iconPath": "kanoa/idle",
-      "infeedCount": null,
-      "infeedRateSecs": null,
-      "infeedUnits": null,
-      "itemDescription": null,
-      "itemId": null,
-      "itemName": null,
-      "modeColor": "#a2aa8a",
-      "modeName": "Idle",
-      "modeSourceName": "Schedule",
-      "modeTypeName": "Idle",
-      "outfeedCount": null,
-      "outfeedRatePerMinute": null,
-      "outfeedUnits": null,
-      "packageCount": 1,
-      "performance": null,
-      "period": null,
-      "plannedDowntimeSecs": null,
-      "quality": null,
-      "refresh": false,
-      "reqdQty": null,
-      "runtimeSecs": null,
-      "scheduleBlockId": 4495,
-      "scheduleEnd": 1775014020000,
-      "scheduleStart": 1774962000000,
-      "shiftEnd": 1775775600000,
-      "shiftId": 362,
-      "shiftName": "2nd Shift",
-      "shiftNameId": 2,
-      "shiftStart": 1775746800000,
-      "standardRate": null,
-      "startDate": 1774963565160,
-      "stateColor": "#ba1a1a",
-      "stateIconPath": "kanoa/faulted",
-      "stateName": "Idle",
-      "stateTypeColor": "#ba1a1a",
-      "stateTypeName": "Unplanned Downtime",
-      "targetCount": null,
-      "unplannedDowntimeSecs": null,
-      "userName": "srussem",
-      "wasteCount": null,
-      "wasteUnits": null,
-      "woActualQty": null,
-      "woRemainingMinutes": null,
-      "workOrderId": null,
-      "workOrderName": null,
-      "workOrderTitle": null
-    }
+    "kpi": {},
+    "oeeData": null
   },
   "params": {
     "value": {
@@ -79,19 +28,78 @@
     }
   },
   "propConfig": {
+    "custom.kpi.availability": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.oeePath}"
+          },
+          "tagPath": "{1}/availability"
+        },
+        "overlayOptOut": true,
+        "type": "tag"
+      }
+    },
+    "custom.kpi.oee": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.oeePath}"
+          },
+          "tagPath": "{1}/oee"
+        },
+        "overlayOptOut": true,
+        "type": "tag"
+      }
+    },
+    "custom.kpi.performance": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.oeePath}"
+          },
+          "tagPath": "{1}/performance"
+        },
+        "overlayOptOut": true,
+        "type": "tag"
+      }
+    },
+    "custom.kpi.quality": {
+      "binding": {
+        "config": {
+          "fallbackDelay": 2.5,
+          "mode": "indirect",
+          "references": {
+            "1": "{view.custom.oeePath}"
+          },
+          "tagPath": "{1}/quality"
+        },
+        "overlayOptOut": true,
+        "type": "tag"
+      }
+    },
     "custom.oeeData": {
       "binding": {
         "config": {
           "struct": {
-            "params": "{view.params.value}",
-            "tagInfo": "{view.custom.tagInfo}"
+            "a": "{view.custom.kpi.availability}",
+            "assetPath": "{view.params.value.assetInfo.assetPath}",
+            "oee": "{view.custom.kpi.oee}",
+            "p": "{view.custom.kpi.performance}",
+            "q": "{view.custom.kpi.quality}"
           },
           "waitOnAll": false
         },
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tassetPath \u003d self.params.value.assetInfo.assetPath\n\t\n\tperiod \u003d value[\u0027params\u0027][\u0027period\u0027] if value[\u0027params\u0027].has_key(\u0027period\u0027) else \u0027Current Run\u0027\n\tif period \u003d\u003d \u0027Current Run\u0027:\n\t\ta \u003d value[\u0027tagInfo\u0027][\u0027availability\u0027] or 0.0\n\t\tp \u003d value[\u0027tagInfo\u0027][\u0027performance\u0027]  or 0.0\n\t\tq \u003d value[\u0027tagInfo\u0027][\u0027quality\u0027]  or 0.0\n\n\telif period \u003d\u003d \u0027Current Shift\u0027:\n\t\t\n\t\truntimeSecs \u003d 0\n\t\tunplannedDowntimeSecs \u003d 0\n\t\ttargetCount \u003d 0.0\n\t\tinfeedCount \u003d 0.0\n\t\toutfeedCount \u003d 0.0\n\t\twasteCount \u003d 0.0\t\t\n\n\t\tstartDate \u003d system.date.addDays(system.date.now(), -1)\n#\t\tendDate \u003d system.date.now()\n\t\tendDate \u003d None\t#jfc 4/9/26\n\t\tprodEvents \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.event.getAssetProductionEventsByShift({\u0027assetPath\u0027: self.view.params.value.assetInfo.assetPath + \u0027%\u0027, \u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate}))\n\t\t\n\t\tlatestRecords \u003d list({r[\"assetPath\"]: r for r in sorted(prodEvents, key\u003dlambda r: (r[\"assetPath\"], r[\"shiftStart\"].getTime()))}.values())\n\t\tfor item in latestRecords:\n\t\t\tif item[\u0027modeName\u0027] !\u003d \u0027Production\u0027: continue\n\t\t\truntimeSecs +\u003d item[\u0027runtimeSecs\u0027] or 0\n\t\t\tunplannedDowntimeSecs +\u003d item[\u0027unplannedDowntimeSecs\u0027] or 0\n\t\t\ttargetCount +\u003d item[\u0027targetCount\u0027] or 0.0\n\t\t\tinfeedCount +\u003d item[\u0027infeedCount\u0027] or 0.0\n\t\t\toutfeedCount +\u003d item[\u0027outfeedCount\u0027] or 0.0\n\t\t\twasteCount +\u003d item[\u0027wasteCount\u0027] or 0.0\n\t\t\n\t\ttotalSecs \u003d runtimeSecs + unplannedDowntimeSecs\n\t\ta \u003d float(runtimeSecs) / totalSecs if totalSecs \u003e 0 else 0\n\t\tp \u003d infeedCount / targetCount if targetCount \u003e 0.0 else 1.0\n\t\tq \u003d (infeedCount - wasteCount) / infeedCount if infeedCount \u003e 0.0 else 1.0\n\t\t\n#\t\tsystem.perspective.print(\"%s %s %s %s\"%(assetPath, infeedCount, targetCount, p))\n\t\n\toee \u003d a * p * q\n\toeeColors \u003d system.kanoa.event.getOEEColors({\u0027assetPath\u0027: assetPath}, oee, a, p, q)\t\n\toeeDict \u003d {\u0027a\u0027: a, \u0027p\u0027: p, \u0027q\u0027: q, \u0027oee\u0027: oee}\n\treturn {\u0027oee\u0027: oeeDict, \u0027colors\u0027: oeeColors}",
+            "code": "\n\ta \u003d value[\u0027a\u0027] or 0.0\n\tp \u003d value[\u0027p\u0027] or 0.0\n\tq \u003d value[\u0027q\u0027] or 0.0\n\toee \u003d value[\u0027oee\u0027] or 0.0\n\toeeColors \u003d system.kanoa.event.getOEEColors({\u0027assetPath\u0027: value[\u0027assetPath\u0027]}, oee, a, p, q)\n\treturn {\u0027oee\u0027: {\u0027a\u0027: a, \u0027p\u0027: p, \u0027q\u0027: q, \u0027oee\u0027: oee}, \u0027colors\u0027: oeeColors}",
             "type": "script"
           }
         ],
@@ -99,25 +107,20 @@
       },
       "persistent": true
     },
-    "custom.tagInfo": {
+    "custom.oeePath": {
       "binding": {
         "config": {
-          "fallbackDelay": 2.5,
-          "mode": "indirect",
-          "references": {
-            "1": "{view.params.value.assetInfo.tagPath}"
-          },
-          "tagPath": "{1}/Line"
+          "path": "view.params.value"
         },
+        "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\treturn value[\u0027OEE\u0027]",
+            "code": "\n\t#The asset\u0027s OEE tags are in the kanoaMES tag provider, at its asset path\n\tassetPath \u003d value[\u0027assetInfo\u0027][\u0027assetPath\u0027] if value[\u0027assetInfo\u0027] else None\n\tif not assetPath: return \u0027\u0027\n\tperiod \u003d value[\u0027period\u0027] if value.has_key(\u0027period\u0027) and value[\u0027period\u0027] else \u0027Current Run\u0027\n\treturn \u0027[kanoaMES]\u0027 + assetPath.replace(\u0027\\\\\u0027, \u0027/\u0027) + \u0027/OEE/\u0027 + period",
             "type": "script"
           }
         ],
-        "type": "tag"
-      },
-      "persistent": true
+        "type": "property"
+      }
     },
     "params.value": {
       "paramDirection": "input",
@@ -498,8 +501,8 @@
     },
     "props": {
       "style": {
-        "backgroundColor": "--kcSurface",
-        "classes": "kanoa/border kanoa/clickable",
+        "backgroundColor": "var(--kcSurface)", "borderRadius": "var(--borderRadius)",
+        "classes": "kanoa/clickable",
         "padding": 5
       }
     },

@@ -286,13 +286,8 @@
                     "binding": {
                       "transforms": [
                         {
-                          "code": "\n\treturn value['scheduledDate']", 
+                          "code": "\t#In the device's time zone: this runs on the gateway, which would format in its own\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt = SimpleDateFormat(system.kanoa.date.localizeDateFormat('M/dd/yy HH:mm', self.session.props.locale))\n\tdeviceZone = self.session.props.device.timezone.id\n\tif deviceZone: fmt.setTimeZone(TimeZone.getTimeZone(deviceZone))\n\tdate = value['scheduledDate']\n\tif date is None: return ''\n\tif not hasattr(date, 'getTime'): date = system.date.fromMillis(long(date))\n\treturn fmt.format(date)", 
                           "type": "script"
-                        }, 
-                        {
-                          "type": "format", 
-                          "formatValue": "M/dd/YY HH:mm", 
-                          "formatType": "datetime"
                         }
                       ], 
                       "type": "property", 
@@ -406,7 +401,7 @@
         }, 
         {
           "viewScope": false, 
-          "script": "\t\n\tsystem.perspective.print(\"deleteChkEvent message received with %s\"%payload)\n\t\n\tif payload.has_key('userInput') and payload['userInput'] == 'OK':\t\n\t\tif payload.has_key('inputPayload') and payload['inputPayload']['chkShtEventId'] == self.view.params.value.chkShtEventId:\n\t\t\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\tsystem.kanoa.quality.event.deleteChkEvent(self.view.params.value.chkShtEventId, userId)\n\t\t\tsystem.kanoa.quality.event.updateChkEventDataTag()\n\t\n\treturn", 
+          "script": "\t\n\tsystem.perspective.print(\"deleteChkEvent message received with %s\"%payload)\n\t\n\tif payload.has_key('userInput') and payload['userInput'] == 'OK':\t\n\t\tif payload.has_key('inputPayload') and payload['inputPayload']['chkShtEventId'] == self.view.params.value.chkShtEventId:\n\t\t\tuserId = system.kanoa.security.getIDPUserId(self.session.props.auth.user)\n\t\t\tsystem.kanoa.quality.event.deleteChkEvent(self.view.params.value.chkShtEventId, userId)\n\t\n\treturn", 
           "messageType": "deleteChkEvent", 
           "sessionScope": false, 
           "pageScope": true

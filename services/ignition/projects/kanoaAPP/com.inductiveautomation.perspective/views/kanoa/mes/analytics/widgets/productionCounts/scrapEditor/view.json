@@ -1,0 +1,1190 @@
+{
+  "custom": {
+    "confirmDelete": false,
+    "data": {},
+    "group": "15 min",
+    "reasons": [],
+    "tick": 0,
+    "userId": null
+  },
+  "params": {
+    "value": {
+      "assetId": null,
+      "assetName": null,
+      "assetPath": null,
+      "endDate": null,
+      "startDate": null
+    }
+  },
+  "propConfig": {
+    "custom.confirmDelete": {
+      "persistent": true
+    },
+    "custom.data": {
+      "binding": {
+        "config": {
+          "struct": {
+            "tick": "{view.custom.tick}",
+            "value": "{view.params.value}"
+          },
+          "waitOnAll": false
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# The range\u0027s waste entries (each waste counter\u0027s counter events with a value) and the runs in Production with waste but no\n\t# waste entries: their waste is infeed less outfeed (by package count), coded in full as one entry. Read again on tick\n\tparams \u003d value[\u0027value\u0027] or {}\n\tassetId, start, end \u003d params.get(\u0027assetId\u0027), params.get(\u0027startDate\u0027), params.get(\u0027endDate\u0027)\n\tempty \u003d {\u0027entries\u0027: [], \u0027derived\u0027: [], \u0027runs\u0027: [], \u0027units\u0027: \u0027\u0027, \u0027counterId\u0027: None}\n\tif assetId is None or start is None or end is None: return empty\n\tnow \u003d system.date.now()\n\tupTo \u003d now if system.date.isBefore(now, end) else end\n\tok \u003d lambda d: d is not None and not isinstance(d, basestring)\n\tentries, counterId \u003d [], None\n\tcounters \u003d system.kanoa.asset.getCounter({\u0027assetId\u0027: assetId, \u0027counterTypeName\u0027: \u0027waste\u0027})\n\tfor c in system.dataset.toPyDataSet(counters) if ok(counters) else []:\n\t\tif counterId is None: counterId \u003d c[\u0027counterId\u0027]\n\t\tdata \u003d system.kanoa.event.getCounterEvents({\u0027counterId\u0027: c[\u0027counterId\u0027], \u0027startDate\u0027: start, \u0027endDate\u0027: upTo, \u0027hasValue\u0027: True})\n\t\tfor e in system.dataset.toPyDataSet(data) if ok(data) else []:\n\t\t\tif e[\u0027tStamp\u0027] is None: continue\n\t\t\tentries.append({\u0027id\u0027: e[\u0027counterEventId\u0027], \u0027counterId\u0027: e[\u0027counterId\u0027], \u0027t\u0027: system.date.toMillis(e[\u0027tStamp\u0027]), \u0027value\u0027: float(e[\u0027value\u0027] or 0),\n\t\t\t\t\u0027itemStateId\u0027: e[\u0027itemStateId\u0027], \u0027reason\u0027: e[\u0027itemStateName\u0027], \u0027category\u0027: e[\u0027itemStateClassName\u0027], \u0027itemId\u0027: e[\u0027itemId\u0027],\n\t\t\t\t\u0027item\u0027: e[\u0027itemName\u0027], \u0027workOrderId\u0027: e[\u0027workOrderId\u0027], \u0027workOrder\u0027: e[\u0027workOrderName\u0027], \u0027isCoProduct\u0027: bool(e[\u0027isCoProduct\u0027])})\n\tentries.sort(key\u003dlambda e: e[\u0027t\u0027])\n\truns, derived, units \u003d [], [], \u0027\u0027\n\tdata \u003d system.kanoa.event.getAssetProductionEvents({\u0027assetId\u0027: assetId, \u0027startDate\u0027: start, \u0027endDate\u0027: upTo, \u0027strictDates\u0027: True})\n\tfor r in system.dataset.toPyDataSet(data) if ok(data) else []:\n\t\tif r[\u0027modeTypeName\u0027] !\u003d \u0027Production\u0027 or r[\u0027startDate\u0027] is None: continue\n\t\tunits \u003d units or r[\u0027wasteUnits\u0027] or \u0027\u0027\n\t\t# The run\u0027s part of the range, as its counts are (strictDates)\n\t\tt0 \u003d max(system.date.toMillis(r[\u0027startDate\u0027]), system.date.toMillis(start))\n\t\tt1 \u003d min(system.date.toMillis(r[\u0027endDate\u0027]) if r[\u0027endDate\u0027] is not None else system.date.toMillis(upTo), system.date.toMillis(upTo))\n\t\trun \u003d {\u0027t0\u0027: t0, \u0027t1\u0027: t1, \u0027itemId\u0027: r[\u0027itemId\u0027], \u0027item\u0027: r[\u0027itemName\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027], \u0027workOrder\u0027: r[\u0027workOrderName\u0027]}\n\t\truns.append(run)\n\t\twaste \u003d float(r[\u0027wasteCount\u0027] or 0)\n\t\tif waste \u003e 0 and counterId is not None and not [e for e in entries if t0 \u003c\u003d e[\u0027t\u0027] \u003c\u003d t1]:\n\t\t\tderived.append(dict(run, value\u003dwaste))\n\truns.sort(key\u003dlambda r: r[\u0027t0\u0027])\n\treturn {\u0027entries\u0027: entries, \u0027derived\u0027: derived, \u0027runs\u0027: runs, \u0027units\u0027: units, \u0027counterId\u0027: counterId}",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      },
+      "persistent": true
+    },
+    "custom.group": {
+      "onChange": {
+        "enabled": null,
+        "script": "\t# Another grouping: nothing selected, and Delete asks again\n\tself.custom.confirmDelete \u003d False"
+      },
+      "persistent": true
+    },
+    "custom.reasons": {
+      "binding": {
+        "config": {
+          "path": "view.params.value.assetPath"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\t# The waste reasons for the asset: item states linked on it or above it (its site, its enterprise) for waste counters or for\n\t# no counter type, as the Count Editor\u0027s buttons; enabled ones only\n\tif not value: return []\n\tdata \u003d system.kanoa.item.getAssetItemStates({\u0027assetPath\u0027: value, \u0027enabled\u0027: True})\n\toptions, seen \u003d [], set()\n\tfor r in system.dataset.toPyDataSet(data) if data is not None and not isinstance(data, basestring) else []:\n\t\tif r[\u0027itemStateId\u0027] in seen or (r[\u0027counterTypeName\u0027] and r[\u0027counterTypeName\u0027] !\u003d \u0027waste\u0027): continue\n\t\tseen.add(r[\u0027itemStateId\u0027])\n\t\toptions.append({\u0027value\u0027: r[\u0027itemStateId\u0027], \u0027label\u0027: \u0027%s \u003e %s\u0027 % (r[\u0027itemStateClassName\u0027], r[\u0027itemStateName\u0027]) if r[\u0027itemStateClassName\u0027] else r[\u0027itemStateName\u0027]})\n\toptions.sort(key\u003dlambda o: o[\u0027label\u0027])\n\treturn options",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "custom.tick": {
+      "persistent": true
+    },
+    "custom.userId": {
+      "binding": {
+        "config": {
+          "path": "session.props.auth.user"
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\t# The user\u0027s Kanoa user id for the changes (changedBy); a guest has none and can only look\n\tif not value: return None\n\treturn system.kanoa.security.getIDPUserId(value)",
+            "type": "script"
+          }
+        ],
+        "type": "property"
+      },
+      "persistent": true
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
+    }
+  },
+  "props": {
+    "defaultSize": {
+      "height": 520,
+      "width": 1000
+    }
+  },
+  "root": {
+    "children": [
+      {
+        "children": [
+          {
+            "meta": {
+              "name": "lblGroup"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "props": {
+              "style": {
+                "classes": "kanoa/font/bodySmall",
+                "color": "var(--kcOnSurfaceVariant)"
+              },
+              "text": "Group by"
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
+              "name": "ddGroup"
+            },
+            "position": {
+              "basis": "110px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.value": {
+                "binding": {
+                  "config": {
+                    "bidirectional": true,
+                    "path": "view.custom.group"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "options": [
+                {
+                  "label": "Entry",
+                  "value": "Entry"
+                },
+                {
+                  "label": "15 min",
+                  "value": "15 min"
+                },
+                {
+                  "label": "Hour",
+                  "value": "Hour"
+                },
+                {
+                  "label": "Run",
+                  "value": "Run"
+                }
+              ],
+              "search": {
+                "enabled": false
+              },
+              "showClearIcon": false,
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "meta": {
+              "name": "chkCombine"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.group} !\u003d \u0027Entry\u0027"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "selected": true,
+              "style": {
+                "classes": "kanoa/font/bodySmall"
+              },
+              "text": "Combine each group into one entry"
+            },
+            "type": "ia.input.checkbox"
+          },
+          {
+            "meta": {
+              "name": "ddReason"
+            },
+            "position": {
+              "basis": "360px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.options": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.reasons"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "placeholder": {
+                "text": "Reason"
+              },
+              "showClearIcon": true,
+              "style": {
+                "classes": "kanoa/font/default"
+              },
+              "dropdownOptionStyle": {
+                "classes": "kanoa/font/default"
+              }
+            },
+            "type": "ia.input.dropdown"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.rootContainer.applyReason(False)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnSetReason"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "reason": "{../ddReason.props.value}",
+                      "rows": "{../../tblScrap.props.data}",
+                      "user": "{view.custom.userId}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn bool(value[\u0027user\u0027] and value[\u0027user\u0027] \u003e 0) and value[\u0027reason\u0027] is not None and any([r[\u0027sel\u0027] for r in value[\u0027rows\u0027] or []])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "text": "Set reason"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.rootContainer.applyReason(True)"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnClearReason"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "rows": "{../../tblScrap.props.data}",
+                      "user": "{view.custom.userId}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t# An entry selected (a run\u0027s uncoded waste has nothing to clear) and a logged-in user\n\treturn bool(value[\u0027user\u0027] and value[\u0027user\u0027] \u003e 0) and any([r[\u0027sel\u0027] and r[\u0027kind\u0027] \u003d\u003d \u0027entries\u0027 for r in value[\u0027rows\u0027] or []])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "text": "Clear reason"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\n\t# Every uncoded row selected, the rest cleared\n\ttable \u003d self.parent.parent.getChild(\u0027tblScrap\u0027)\n\tdata \u003d table.props.data\n\tfor n in range(len(data)):\n\t\tdata[n].sel \u003d data[n].kind \u003d\u003d \u0027derived\u0027 or data[n].itemStateId is None"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnSelectUncoded"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "../../tblScrap.props.data"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t# Only with two or more uncoded rows (a group with no reason, or a run\u0027s uncoded waste): one is selected with a click\n\treturn len([r for r in value or [] if r[\u0027kind\u0027] \u003d\u003d \u0027derived\u0027 or r[\u0027itemStateId\u0027] is None]) \u003e\u003d 2",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "expression": "{view.custom.userId} \u003e 0"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "primary": false,
+              "text": "Select uncoded"
+            },
+            "type": "ia.input.button"
+          },
+          {
+            "events": {
+              "component": {
+                "onActionPerformed": {
+                  "config": {
+                    "script": "\tself.view.rootContainer.deleteSelected()"
+                  },
+                  "scope": "G",
+                  "type": "script"
+                }
+              }
+            },
+            "meta": {
+              "name": "btnDelete"
+            },
+            "position": {
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "this.props.enabled"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
+              "props.enabled": {
+                "binding": {
+                  "config": {
+                    "struct": {
+                      "rows": "{../../tblScrap.props.data}",
+                      "user": "{view.custom.userId}"
+                    },
+                    "waitOnAll": false
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t# A waste entry selected (a run\u0027s uncoded waste has none to delete) and a logged-in user\n\treturn bool(value[\u0027user\u0027] and value[\u0027user\u0027] \u003e 0) and any([r[\u0027sel\u0027] and r[\u0027kind\u0027] \u003d\u003d \u0027entries\u0027 for r in value[\u0027rows\u0027] or []])",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "expr-struct"
+                }
+              },
+              "props.style.backgroundColor": {
+                "binding": {
+                  "config": {
+                    "expression": "if({view.custom.confirmDelete}, \u0027var(--kcError)\u0027, \u0027\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.style.color": {
+                "binding": {
+                  "config": {
+                    "expression": "if({view.custom.confirmDelete}, \u0027var(--kcOnError)\u0027, \u0027\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "expression": "if({view.custom.confirmDelete}, \u0027Confirm Delete\u0027, \u0027Delete\u0027)"
+                  },
+                  "overlayOptOut": true,
+                  "type": "expr"
+                }
+              }
+            },
+            "props": {
+              "primary": false
+            },
+            "type": "ia.input.button"
+          }
+        ],
+        "meta": {
+          "name": "flxControls"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "alignItems": "center",
+          "style": {
+            "gap": "12px"
+          },
+          "wrap": "wrap"
+        },
+        "type": "ia.container.flex",
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.userId} \u003e 0"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        }
+      },
+      {
+        "meta": {
+          "name": "lblHint"
+        },
+        "position": {
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "classes": "kanoa/font/bodySmall",
+            "color": "var(--kcOnSurfaceVariant)"
+          },
+          "text": ""
+        },
+        "type": "ia.display.label",
+        "propConfig": {
+          "props.text": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "user": "{view.custom.userId} \u003e 0",
+                  "data": "{view.custom.data}",
+                  "locale": "{session.props.locale}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\t# What Combine does (for a user who can change counts), and how a run\u0027s calculated waste is worked out when the range has one\n\ttr \u003d lambda s: system.util.translate(s, value[\u0027locale\u0027])\n\tparts \u003d []\n\tif value[\u0027user\u0027]: parts.append(tr(\"Combine replaces each group of entries with one entry for their total, at the group\u0027s last entry.\"))\n\tif ((value[\u0027data\u0027] or {}).get(\u0027derived\u0027) or []):\n\t\tparts.append(tr(\"Uncoded (calculated) is a run\u0027s waste worked out from its infeed and outfeed, as the run has no waste counts. It\u0027s one row for the whole run; the chart\u0027s Scrap row marks where it happened, by hour.\"))\n\t\tif value[\u0027user\u0027]: parts.append(tr(\u0027Setting a reason records it as one entry.\u0027))\n\treturn \u0027 \u0027.join(parts)",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "len({this.props.text}) \u003e 0"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        }
+      },
+      {
+        "events": {
+          "component": {
+            "onEditCellCommit": {
+              "config": {
+                "script": "\n\t# The checkbox (sel) on any row; the quantity of a single entry (by entry), at its own time\n\trow \u003d self.props.data[event.row]\n\tif event.column \u003d\u003d \u0027sel\u0027:\n\t\tself.props.data[event.row].sel \u003d bool(event.value)\n\t\treturn\n\tif event.column !\u003d \u0027qty\u0027 or self.view.custom.group !\u003d \u0027Entry\u0027 or row[\u0027kind\u0027] !\u003d \u0027entries\u0027 or row[\u0027entries\u0027] !\u003d 1: return\n\ttry: qty \u003d float(event.value)\n\texcept: return\n\t# A guest has no Kanoa user id to record the change with (its write would fail): say to log in instead\n\tuserId \u003d self.view.custom.userId\n\tif not userId or userId \u003c\u003d 0:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027scrapEditor\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Log in to change counts.\u0027, self.session.props.locale)})\n\t\treturn\n\tresult \u003d system.kanoa.event.updateCounterEvent({\u0027counterEventId\u0027: row[\u0027ids\u0027][0], \u0027counterId\u0027: row[\u0027counterId\u0027], \u0027deltaValue\u0027: qty,\n\t\t\u0027itemStateId\u0027: row[\u0027itemStateId\u0027], \u0027itemId\u0027: row[\u0027itemId\u0027], \u0027workOrderId\u0027: row[\u0027workOrderId\u0027], \u0027tStamp\u0027: system.date.fromMillis(row[\u0027t0\u0027]),\n\t\t\u0027isCoProduct\u0027: bool(row[\u0027isCoProduct\u0027])}, userId)\n\ttry: msg \u003d result[1]\n\texcept: msg \u003d None\n\tself.view.rootContainer.done([msg] if msg else [])"
+              },
+              "scope": "G",
+              "type": "script"
+            },
+            "onRowClick": {
+              "config": {
+                "script": "\n\t# A click anywhere on the row selects it or clears it (a checkbox cell needed several clicks); Delete asks again\n\tself.props.data[event.row].sel \u003d not self.props.data[event.row].sel\n\tself.view.custom.confirmDelete \u003d False"
+              },
+              "scope": "G",
+              "type": "script"
+            }
+          }
+        },
+        "meta": {
+          "name": "tblScrap"
+        },
+        "position": {
+          "basis": "200px",
+          "grow": 1
+        },
+        "propConfig": {
+          "props.columns[3].editable": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.userId} \u003e 0 \u0026\u0026 {view.custom.group} \u003d \u0027Entry\u0027"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          },
+          "props.data": {
+            "binding": {
+              "config": {
+                "struct": {
+                  "data": "{view.custom.data}",
+                  "group": "{view.custom.group}",
+                  "tz": "{session.props.device.timezone.id}"
+                },
+                "waitOnAll": false
+              },
+              "overlayOptOut": true,
+              "transforms": [
+                {
+                  "code": "\n\t# A row for each group of waste entries with the same reason, item, work order and counter: by entry, 15 minutes, hour or\n\t# run (custom.group); and one for each run\u0027s uncoded waste with no waste entries. sel is the row\u0027s checkbox\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone, Locale\n\tdef dfmt(ms, pattern):\n\t\t# Month names in the session\u0027s language\n\t\tf \u003d SimpleDateFormat(pattern, Locale.forLanguageTag(str(self.session.props.locale or \u0027en-US\u0027).replace(\u0027_\u0027, \u0027-\u0027)))\n\t\tif value[\u0027tz\u0027]: f.setTimeZone(TimeZone.getTimeZone(value[\u0027tz\u0027]))\n\t\treturn f.format(system.date.fromMillis(ms))\n\tdef span(a, b):\n\t\tif a \u003d\u003d b: return dfmt(a, \u0027MMM d, HH:mm:ss\u0027)\n\t\treturn \u0027%s - %s\u0027 % (dfmt(a, \u0027MMM d, HH:mm\u0027), dfmt(b, \u0027HH:mm\u0027 if dfmt(a, \u0027yyyyMMdd\u0027) \u003d\u003d dfmt(b, \u0027yyyyMMdd\u0027) else \u0027MMM d, HH:mm\u0027))\n\tdata \u003d value[\u0027data\u0027] or {}\n\tgroup \u003d value[\u0027group\u0027] or \u002715 min\u0027\n\tlocale \u003d self.session.props.locale\n\tuncoded \u003d system.util.translate(\u0027Uncoded\u0027, locale)\n\truns \u003d data.get(\u0027runs\u0027) or []\n\tdef bucket(e):\n\t\tif group \u003d\u003d \u0027Entry\u0027: return e[\u0027id\u0027]\n\t\tif group \u003d\u003d \u002715 min\u0027: return e[\u0027t\u0027] // 900000\n\t\tif group \u003d\u003d \u0027Hour\u0027: return e[\u0027t\u0027] // 3600000\n\t\tfor n, r in enumerate(runs):\n\t\t\tif r[\u0027t0\u0027] \u003c\u003d e[\u0027t\u0027] \u003c\u003d r[\u0027t1\u0027]: return n\n\t\treturn -1\n\tgroups, order \u003d {}, []\n\tfor e in data.get(\u0027entries\u0027) or []:\n\t\tkey \u003d (e[\u0027counterId\u0027], e[\u0027itemStateId\u0027], e[\u0027itemId\u0027], e[\u0027workOrderId\u0027], e[\u0027isCoProduct\u0027], bucket(e))\n\t\tg \u003d groups.get(key)\n\t\tif g is None:\n\t\t\tg \u003d groups[key] \u003d {\u0027sel\u0027: False, \u0027kind\u0027: \u0027entries\u0027, \u0027ids\u0027: [], \u0027times\u0027: [], \u0027values\u0027: [], \u0027t0\u0027: e[\u0027t\u0027], \u0027t1\u0027: e[\u0027t\u0027], \u0027qty\u0027: 0.0,\n\t\t\t\t\u0027counterId\u0027: e[\u0027counterId\u0027], \u0027itemStateId\u0027: e[\u0027itemStateId\u0027], \u0027itemId\u0027: e[\u0027itemId\u0027], \u0027workOrderId\u0027: e[\u0027workOrderId\u0027],\n\t\t\t\t\u0027isCoProduct\u0027: e[\u0027isCoProduct\u0027], \u0027reason\u0027: (\u0027%s \u003e %s\u0027 % (e[\u0027category\u0027], e[\u0027reason\u0027]) if e[\u0027category\u0027] else e[\u0027reason\u0027]) if e[\u0027itemStateId\u0027] else uncoded,\n\t\t\t\t\u0027item\u0027: e[\u0027item\u0027] or \u0027\u0027, \u0027workOrder\u0027: e[\u0027workOrder\u0027] or \u0027\u0027}\n\t\t\torder.append(key)\n\t\tg[\u0027ids\u0027].append(e[\u0027id\u0027]); g[\u0027times\u0027].append(e[\u0027t\u0027]); g[\u0027values\u0027].append(e[\u0027value\u0027])\n\t\tg[\u0027qty\u0027] +\u003d e[\u0027value\u0027]; g[\u0027t1\u0027] \u003d e[\u0027t\u0027]\n\trows \u003d []\n\tfor key in order:\n\t\tg \u003d groups[key]\n\t\tg[\u0027entries\u0027] \u003d len(g[\u0027ids\u0027])\n\t\tg[\u0027time\u0027] \u003d span(g[\u0027t0\u0027], g[\u0027t1\u0027])\n\t\tg[\u0027qty\u0027] \u003d round(g[\u0027qty\u0027], 3)\n\t\trows.append(g)\n\tfor r in data.get(\u0027derived\u0027) or []:\n\t\trows.append({\u0027sel\u0027: False, \u0027kind\u0027: \u0027derived\u0027, \u0027ids\u0027: [], \u0027times\u0027: [], \u0027values\u0027: [], \u0027t0\u0027: r[\u0027t0\u0027], \u0027t1\u0027: r[\u0027t1\u0027], \u0027qty\u0027: round(r[\u0027value\u0027], 3),\n\t\t\t\u0027counterId\u0027: data.get(\u0027counterId\u0027), \u0027itemStateId\u0027: None, \u0027itemId\u0027: r[\u0027itemId\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027], \u0027isCoProduct\u0027: False,\n\t\t\t\u0027reason\u0027: system.util.translate(\u0027Uncoded (calculated)\u0027, locale), \u0027item\u0027: r[\u0027item\u0027] or \u0027\u0027, \u0027workOrder\u0027: r[\u0027workOrder\u0027] or \u0027\u0027,\n\t\t\t\u0027entries\u0027: 0, \u0027time\u0027: span(r[\u0027t0\u0027], r[\u0027t1\u0027])})\n\trows.sort(key\u003dlambda r: r[\u0027t0\u0027])\n\treturn rows",
+                  "type": "script"
+                }
+              ],
+              "type": "expr-struct"
+            }
+          },
+          "props.columns[0].visible": {
+            "binding": {
+              "config": {
+                "expression": "{view.custom.userId} \u003e 0"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        },
+        "props": {
+          "bodyStyle": {
+            "classes": "kanoa/font/default"
+          },
+          "columns": [
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "sel",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 0,
+              "header": {
+                "align": "center",
+                "justify": "center",
+                "style": {
+                  "classes": ""
+                },
+                "title": " "
+              },
+              "justify": "center",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "boolean",
+              "resizable": true,
+              "sort": "none",
+              "sortable": false,
+              "strictWidth": true,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": 36
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "time",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 0,
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": "Time"
+              },
+              "justify": "left",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": true,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": 190
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "reason",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 2,
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": "Reason"
+              },
+              "justify": "left",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": false,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": ""
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": true,
+              "field": "qty",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 0,
+              "header": {
+                "align": "center",
+                "justify": "right",
+                "style": {
+                  "classes": ""
+                },
+                "title": "Quantity"
+              },
+              "justify": "right",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "number",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": true,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": 90
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "entries",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 0,
+              "header": {
+                "align": "center",
+                "justify": "center",
+                "style": {
+                  "classes": ""
+                },
+                "title": "Entries"
+              },
+              "justify": "center",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "number",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": true,
+              "style": {
+                "classes": ""
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": 70
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "item",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 1,
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": "",
+                  "paddingLeft": "8px"
+                },
+                "title": "Item"
+              },
+              "justify": "left",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": false,
+              "style": {
+                "classes": "",
+                "paddingLeft": "8px"
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": ""
+            },
+            {
+              "align": "center",
+              "boolean": "checkbox",
+              "dateFormat": "MM/DD/YYYY",
+              "editable": false,
+              "field": "workOrder",
+              "footer": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": ""
+                },
+                "title": ""
+              },
+              "grow": 1,
+              "header": {
+                "align": "center",
+                "justify": "left",
+                "style": {
+                  "classes": "",
+                  "paddingLeft": "8px"
+                },
+                "title": "Work Order"
+              },
+              "justify": "left",
+              "nullFormat": {
+                "includeNullStrings": false,
+                "nullFormatValue": "",
+                "strict": false
+              },
+              "number": "value",
+              "numberFormat": "0,0.##",
+              "progressBar": {
+                "bar": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "max": 100,
+                "min": 0,
+                "track": {
+                  "color": "",
+                  "style": {
+                    "classes": ""
+                  }
+                },
+                "value": {
+                  "enabled": true,
+                  "format": "0,0.##",
+                  "justify": "center",
+                  "style": {
+                    "classes": ""
+                  }
+                }
+              },
+              "render": "auto",
+              "resizable": true,
+              "sort": "none",
+              "sortable": true,
+              "strictWidth": false,
+              "style": {
+                "classes": "",
+                "paddingLeft": "8px"
+              },
+              "toggleSwitch": {
+                "color": {
+                  "selected": "",
+                  "unselected": ""
+                }
+              },
+              "viewParams": {},
+              "viewPath": "",
+              "visible": true,
+              "width": ""
+            }
+          ],
+          "headerStyle": {
+            "classes": "kanoa/font/default",
+            "fontWeight": "bold"
+          },
+          "pager": {
+            "bottom": false
+          },
+          "rows": {
+            "striped": {
+              "enabled": false
+            },
+            "style": {
+              "cursor": "pointer",
+              "gap": "2px",
+              "padding": "2px"
+            }
+          },
+          "selection": {
+            "enableRowSelection": false
+          },
+          "style": {
+            "borderStyle": "none"
+          },
+          "virtualized": true
+        },
+        "type": "ia.display.table"
+      }
+    ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "gap": "8px",
+        "padding": "12px"
+      }
+    },
+    "scripts": {
+      "customMethods": [
+        {
+          "name": "applyReason",
+          "params": [
+            "clear"
+          ],
+          "script": "\n\t# The selected rows get the reason (ddReason), or none (clear). A group of several entries is combined into one entry for its total at its last\n\t# entry\u0027s time, with the same item and work order (chkCombine, unless grouped by entry): its entries are deleted by counter,\n\t# reason, item and work order over its own time, so only them. Otherwise each entry keeps its time and gets the reason. A run\u0027s\n\t# uncoded waste is added as one entry a second before the run\u0027s end in the range\n\t# clear: Clear reason, the entries back to uncoded (a run\u0027s uncoded waste has no entries to clear)\n\treason \u003d None if clear else self.getChild(\u0027flxControls\u0027).getChild(\u0027ddReason\u0027).props.value\n\trows \u003d [r for r in self.getChild(\u0027tblScrap\u0027).props.data if r[\u0027sel\u0027] and not (clear and r[\u0027kind\u0027] \u003d\u003d \u0027derived\u0027)]\n\tif (reason is None and not clear) or not rows: return\n\t# A guest has no Kanoa user id to record the change with (its write would fail): say to log in instead\n\tuserId \u003d self.view.custom.userId\n\tif not userId or userId \u003c\u003d 0:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027scrapEditor\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Log in to change counts.\u0027, self.session.props.locale)})\n\t\treturn\n\tgroup \u003d self.view.custom.group\n\tcombine \u003d bool(self.getChild(\u0027flxControls\u0027).getChild(\u0027chkCombine\u0027).props.selected) and group !\u003d \u0027Entry\u0027\n\tentries \u003d (self.view.custom.data or {}).get(\u0027entries\u0027) or []\n\tupdates \u003d sum([r[\u0027entries\u0027] for r in rows if r[\u0027kind\u0027] \u003d\u003d \u0027entries\u0027 and not (combine and r[\u0027entries\u0027] \u003e 1)])\n\tif updates \u003e 500:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027scrapEditor\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Too many entries to change one at a time: turn on Combine, or select fewer rows\u0027, self.session.props.locale)})\n\t\treturn\n\tmsgs \u003d []\n\tdef seconds(ms): return system.date.fromMillis((long(ms) // 1000) * 1000)\n\tfor r in rows:\n\t\tif r[\u0027kind\u0027] \u003d\u003d \u0027derived\u0027:\n\t\t\tif r[\u0027counterId\u0027] is None: continue\n\t\t\tn, msg \u003d system.kanoa.event.addCounterEvent({\u0027counterId\u0027: r[\u0027counterId\u0027], \u0027tStamp\u0027: seconds(r[\u0027t1\u0027] - 1000), \u0027deltaValue\u0027: r[\u0027qty\u0027],\n\t\t\t\t\u0027itemStateId\u0027: reason, \u0027itemId\u0027: r[\u0027itemId\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027], \u0027isCoProduct\u0027: False}, userId)\n\t\t\tif msg: msgs.append(msg)\n\t\t\tcontinue\n\t\t# Only this group\u0027s entries are in its time with its counter, reason, item and work order (a co-product entry would be too)\n\t\tsame \u003d [e for e in entries if r[\u0027t0\u0027] \u003c\u003d e[\u0027t\u0027] \u003c\u003d r[\u0027t1\u0027] and e[\u0027counterId\u0027] \u003d\u003d r[\u0027counterId\u0027] and e[\u0027itemStateId\u0027] \u003d\u003d r[\u0027itemStateId\u0027]\n\t\t\tand e[\u0027itemId\u0027] \u003d\u003d r[\u0027itemId\u0027] and e[\u0027workOrderId\u0027] \u003d\u003d r[\u0027workOrderId\u0027]]\n\t\tif combine and r[\u0027entries\u0027] \u003e 1 and len(same) \u003d\u003d r[\u0027entries\u0027]:\n\t\t\tn, msg \u003d system.kanoa.event.deleteCounterEvents({\u0027counterId\u0027: r[\u0027counterId\u0027], \u0027startDate\u0027: system.date.fromMillis(r[\u0027t0\u0027]),\n\t\t\t\t\u0027endDate\u0027: system.date.fromMillis(r[\u0027t1\u0027] + 1), \u0027itemStateId\u0027: r[\u0027itemStateId\u0027], \u0027itemId\u0027: r[\u0027itemId\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027]}, userId)\n\t\t\tif msg:\n\t\t\t\tmsgs.append(msg)\n\t\t\t\tcontinue\n\t\t\tn, msg \u003d system.kanoa.event.addCounterEvent({\u0027counterId\u0027: r[\u0027counterId\u0027], \u0027tStamp\u0027: system.date.fromMillis(r[\u0027t1\u0027]), \u0027deltaValue\u0027: r[\u0027qty\u0027],\n\t\t\t\t\u0027itemStateId\u0027: reason, \u0027itemId\u0027: r[\u0027itemId\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027], \u0027isCoProduct\u0027: bool(r[\u0027isCoProduct\u0027])}, userId)\n\t\t\tif msg: msgs.append(msg)\n\t\t\tcontinue\n\t\tfor id, t, val in zip(r[\u0027ids\u0027], r[\u0027times\u0027], r[\u0027values\u0027]):\n\t\t\tresult \u003d system.kanoa.event.updateCounterEvent({\u0027counterEventId\u0027: id, \u0027counterId\u0027: r[\u0027counterId\u0027], \u0027deltaValue\u0027: val, \u0027itemStateId\u0027: reason,\n\t\t\t\t\u0027itemId\u0027: r[\u0027itemId\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027], \u0027tStamp\u0027: system.date.fromMillis(t), \u0027isCoProduct\u0027: bool(r[\u0027isCoProduct\u0027])}, userId)\n\t\t\ttry: msg \u003d result[1]\n\t\t\texcept: msg \u003d None\n\t\t\tif msg: msgs.append(msg)\n\tself.done(msgs)"
+        },
+        {
+          "name": "done",
+          "params": [
+            "msgs"
+          ],
+          "script": "\n\t# After a change: Delete asks again next time, the entries again, the chart and its summary (refreshProductionData), and a toast for any failure\n\tself.view.custom.confirmDelete \u003d False\n\tself.view.refreshBinding(\u0027custom.data\u0027)\n\tsystem.perspective.sendMessage(\u0027refreshProductionData\u0027, {}, scope\u003d\u0027page\u0027)\n\tif msgs:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027scrapEditor\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: msgs[0]})"
+        },
+        {
+          "name": "deleteSelected",
+          "params": [],
+          "script": "\n\t# The selected rows\u0027 entries: a group\u0027s by counter, reason, item and work order over its own time (only them, as Combine\n\t# checks), else each entry at its time. The first click turns the button into Confirm Delete\n\trows \u003d [r for r in self.getChild(\u0027tblScrap\u0027).props.data if r[\u0027sel\u0027] and r[\u0027kind\u0027] \u003d\u003d \u0027entries\u0027]\n\tif not rows: return\n\tif not self.view.custom.confirmDelete:\n\t\tself.view.custom.confirmDelete \u003d True\n\t\treturn\n\t# A guest has no Kanoa user id to record the change with (its write would fail): say to log in instead\n\tuserId \u003d self.view.custom.userId\n\tif not userId or userId \u003c\u003d 0:\n\t\tsystem.kanoa.toast.show({\u0027id\u0027: \u0027scrapEditor\u0027, \u0027type\u0027: \u0027warning\u0027, \u0027message\u0027: system.util.translate(\u0027Log in to change counts.\u0027, self.session.props.locale)})\n\t\treturn\n\tentries \u003d (self.view.custom.data or {}).get(\u0027entries\u0027) or []\n\tmsgs \u003d []\n\tdef remove(r, t0, t1):\n\t\tn, msg \u003d system.kanoa.event.deleteCounterEvents({\u0027counterId\u0027: r[\u0027counterId\u0027], \u0027startDate\u0027: system.date.fromMillis(t0),\n\t\t\t\u0027endDate\u0027: system.date.fromMillis(t1 + 1), \u0027itemStateId\u0027: r[\u0027itemStateId\u0027], \u0027itemId\u0027: r[\u0027itemId\u0027], \u0027workOrderId\u0027: r[\u0027workOrderId\u0027]}, userId)\n\t\tif msg: msgs.append(msg)\n\tfor r in rows:\n\t\tsame \u003d [e for e in entries if r[\u0027t0\u0027] \u003c\u003d e[\u0027t\u0027] \u003c\u003d r[\u0027t1\u0027] and e[\u0027counterId\u0027] \u003d\u003d r[\u0027counterId\u0027] and e[\u0027itemStateId\u0027] \u003d\u003d r[\u0027itemStateId\u0027]\n\t\t\tand e[\u0027itemId\u0027] \u003d\u003d r[\u0027itemId\u0027] and e[\u0027workOrderId\u0027] \u003d\u003d r[\u0027workOrderId\u0027]]\n\t\tif len(same) \u003d\u003d r[\u0027entries\u0027]: remove(r, r[\u0027t0\u0027], r[\u0027t1\u0027])\n\t\telse:\n\t\t\tfor t in r[\u0027times\u0027]: remove(r, t, t)\n\tself.done(msgs)"
+        }
+      ],
+      "extensionFunctions": null,
+      "messageHandlers": []
+    },
+    "type": "ia.container.flex"
+  }
+}

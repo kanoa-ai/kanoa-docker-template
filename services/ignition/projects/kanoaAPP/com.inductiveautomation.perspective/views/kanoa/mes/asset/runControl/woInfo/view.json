@@ -60,6 +60,14 @@
       "parentId": null,
       "reqdQty": 1000,
       "schedQty": null,
+      "startDate": {
+        "$": [
+          "ts",
+          0,
+          1770215710509
+        ],
+        "$ts": 1767942000000
+      },
       "statusColor": "#00D9D9",
       "workOrderId": 1141,
       "workOrderName": "ABC123",
@@ -82,7 +90,7 @@
   },
   "props": {
     "defaultSize": {
-      "height": 112,
+      "height": 132,
       "width": 256
     }
   },
@@ -95,12 +103,25 @@
               {
                 "meta": {
                   "domId": "lblWorkOrder",
-                  "name": "lblWorkOrder"
+                  "name": "lblWorkOrder",
+                  "tooltip": {
+                    "enabled": true,
+                    "location": "bottom"
+                  }
                 },
                 "position": {
+                  "basis": "0px",
                   "grow": 1
                 },
                 "propConfig": {
+                  "meta.tooltip.text": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.text"
+                      },
+                      "type": "property"
+                    }
+                  },
                   "props.text": {
                     "binding": {
                       "config": {
@@ -123,7 +144,10 @@
                     "textAlign": "center"
                   },
                   "textStyle": {
-                    "classes": "kanoa/font/labelLarge"
+                    "classes": "kanoa/font/labelLarge",
+                    "overflow": "hidden",
+                    "textOverflow": "ellipsis",
+                    "whiteSpace": "nowrap"
                   }
                 },
                 "type": "ia.display.label"
@@ -183,7 +207,8 @@
               "name": "flxWorkOrder"
             },
             "position": {
-              "grow": 1
+              "basis": "30px",
+              "shrink": 0
             },
             "propConfig": {
               "props.style.backgroundColor": {
@@ -220,7 +245,6 @@
               "style": {
                 "classes": "kanoa/border",
                 "gap": "5px",
-                "minHeight": "30px",
                 "overflow": "hidden"
               }
             },
@@ -265,6 +289,53 @@
           },
           {
             "meta": {
+              "domId": "lblStart",
+              "name": "lblStart"
+            },
+            "position": {
+              "basis": "20px",
+              "shrink": 0
+            },
+            "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\treturn bool(dict(value).get(\u0027startDate\u0027))",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
+              "props.text": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "transforms": [
+                    {
+                      "code": "\tstartDate \u003d dict(value).get(\u0027startDate\u0027)\n\tif not startDate:\n\t\treturn \u0027\u0027\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\"MM-dd-yy hh:mma\", self.session.props.locale))\n\tfmt.setTimeZone(TimeZone.getTimeZone(self.session.props.device.timezone.id))\n\treturn \"Start %s\" % fmt.format(startDate)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              }
+            },
+            "props": {
+              "style": {
+                "textAlign": "center"
+              }
+            },
+            "type": "ia.display.label"
+          },
+          {
+            "meta": {
               "domId": "lblDue",
               "name": "lblDue"
             },
@@ -273,14 +344,29 @@
               "shrink": 0
             },
             "propConfig": {
+              "position.display": {
+                "binding": {
+                  "config": {
+                    "path": "view.params.value"
+                  },
+                  "overlayOptOut": true,
+                  "transforms": [
+                    {
+                      "code": "\t# Hidden only when the order has a start date but no due date\n\treturn bool(dict(value).get(\u0027dueDate\u0027)) or not dict(value).get(\u0027startDate\u0027)",
+                      "type": "script"
+                    }
+                  ],
+                  "type": "property"
+                }
+              },
               "props.text": {
                 "binding": {
                   "config": {
-                    "path": "view.params.value.dueDate"
+                    "path": "view.params.value"
                   },
                   "transforms": [
                     {
-                      "code": "\treturn \"Due %s\"%(system.date.format(value, \"MM-dd-YY hh:mma\")) if value else \u0027No due date set\u0027",
+                      "code": "\tdueDate \u003d dict(value).get(\u0027dueDate\u0027)\n\tif not dueDate:\n\t\treturn \u0027\u0027 if dict(value).get(\u0027startDate\u0027) else \u0027No due date set\u0027\n\tfrom java.text import SimpleDateFormat\n\tfrom java.util import TimeZone\n\tfmt \u003d SimpleDateFormat(system.kanoa.date.localizeDateFormat(\"MM-dd-yy hh:mma\", self.session.props.locale))\n\tfmt.setTimeZone(TimeZone.getTimeZone(self.session.props.device.timezone.id))\n\treturn \"Due %s\" % fmt.format(dueDate)",
                       "type": "script"
                     }
                   ],

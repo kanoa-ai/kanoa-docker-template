@@ -364,7 +364,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tsecConfig \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), \u0027configName\u0027, \u0027configValue\u0027)\n\tuserId \u003d system.kanoa.security.getIDPUserId(value[\u0027user\u0027])\t\n\tuserCRUD \u003d system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
+            "code": "\t\n\tsecConfig = system.kanoa.utilities.convertDatasetToDict(system.kanoa.security.getConfig({}), 'configName', 'configValue')\n\tuserId = system.kanoa.security.getIDPUserId(value['user'])\t\n\tuserCRUD = system.kanoa.security.getUserAssetCRUD(userId)\n\t\n\treturn {\"userId\": userId, \"config\": secConfig, \"userCRUD\": userCRUD}",
             "type": "script"
           }
         ],
@@ -383,7 +383,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tsystem.perspective.print(\"assetInfo changed. Getting items\")\n\tself.custom.info \u003d {\"text\": \"Getting items...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\n\tparamsDict \u003d {\u0027itemSourceId\u0027: system.kanoa.utilities.getFieldValue(\u0027itemSourceId\u0027, system.kanoa.item.getItemSource({\u0027itemSourceName\u0027: \u0027output\u0027}))}\n\tassetPath \u003d self.custom.assetInfo.assetPath\n\tif assetPath:\n\t\tparamsDict[\u0027assetPath\u0027] \u003d assetPath + \u0027%\u0027\n\telse:\n\t\tuserCRUD \u003d self.custom.security.userCRUD\n\t\tif not userCRUD[\u0027isGatewayAdmin\u0027]: paramsDict[\u0027assetPathList\u0027] \u003d userCRUD[\u0027configureItems\u0027][\u0027assets\u0027]\n\t\n\tdata \u003d system.kanoa.item.getAssetItems(paramsDict)\n\tself.custom.info \u003d {\"text\": \"\", \"type\": \"INFO\", \u0027showBar\u0027: False}\n\tsystem.perspective.print(\"Getting items completed.\")\n\t\n\treturn data",
+            "code": "\n\tsystem.perspective.print(\"assetInfo changed. Getting items\")\n\tself.custom.info = {\"text\": \"Getting items...\", \"type\": \"INFO\", 'showBar': True}\n\tparamsDict = {'itemSourceId': system.kanoa.utilities.getFieldValue('itemSourceId', system.kanoa.item.getItemSource({'itemSourceName': 'output'}))}\n\tassetPath = self.custom.assetInfo.assetPath\n\tif assetPath:\n\t\tparamsDict['assetPath'] = assetPath + '%'\n\telse:\n\t\tuserCRUD = self.custom.security.userCRUD\n\t\tif not userCRUD['isGatewayAdmin']: paramsDict['assetPathList'] = userCRUD['configureItems']['assets']\n\t\n\tparamsDict['includeTooling'] = True\t#a rate set for a specific tool is listed under the machine's own rate\n\tdata = system.kanoa.item.getAssetItems(paramsDict)\n\tself.custom.info = {\"text\": \"\", \"type\": \"INFO\", 'showBar': False}\n\tsystem.perspective.print(\"Getting items completed.\")\n\t\n\treturn data",
             "type": "script"
           }
         ],
@@ -393,7 +393,7 @@
     "custom.table.selection.data": {
       "onChange": {
         "enabled": null,
-        "script": "\t\n\tif len(self.custom.table.selection.data) \u003d\u003d0: return\n\t\n\titemAssetRateIds \u003d [row[\u0027itemAssetRateId\u0027] for row in self.custom.table.selection.data]\n\tsystem.perspective.sendMessage(\"assetItemRatesSelected\", {\u0027itemAssetRateIds\u0027: itemAssetRateIds})\n\t\n\treturn"
+        "script": "\t\n\tif len(self.custom.table.selection.data) ==0: return\n\t\n\titemAssetRateIds = [row['itemAssetRateId'] for row in self.custom.table.selection.data]\n\tsystem.perspective.sendMessage(\"assetItemRatesSelected\", {'itemAssetRateIds': itemAssetRateIds})\n\t\n\treturn"
       }
     },
     "custom.userAction": {
@@ -408,7 +408,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\titemId \u003d value[\u0027data\u0027][0][\u0027itemId\u0027] if len(value[\u0027data\u0027]) \u003e 0 else None\n\n\tsecurity \u003d value[\u0027security\u0027]\n\tcanCreate \u003d False\n\tcanEdit \u003d False\n\tif security[\u0027userCRUD\u0027] is not None and security[\u0027userId\u0027] is not None:\n\t\tif security[\u0027userCRUD\u0027][\u0027isGatewayAdmin\u0027]: \n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True if itemId else False\t\t\t\n\t\telif itemId and security[\u0027userCRUD\u0027][\u0027configureItems\u0027][\u0027enabled\u0027]:\n\t\t\tcanCreate \u003d True\n\t\t\tcanEdit \u003d True\n\t\n\treturn {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}",
+            "code": "\t\n\titemId = value['data'][0]['itemId'] if len(value['data']) > 0 else None\n\n\tsecurity = value['security']\n\tcanCreate = False\n\tcanEdit = False\n\tif security['userCRUD'] is not None and security['userId'] is not None:\n\t\tif security['userCRUD']['isGatewayAdmin']: \n\t\t\tcanCreate = True\n\t\t\tcanEdit = True if itemId else False\t\t\t\n\t\telif itemId and security['userCRUD']['configureItems']['enabled']:\n\t\t\tcanCreate = True\n\t\t\tcanEdit = True\n\t\n\treturn {\"canCreate\": canCreate, \"canDelete\": canEdit, \"canRead\": True, \"canUpdate\": canEdit}",
             "type": "script"
           }
         ],
@@ -537,7 +537,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\n\tself.view.custom.table.data \u003d system.dataset.clearDataset(self.view.custom.table.data)\n\t\n\treturn"
+                        "script": "\n\tself.view.custom.table.data = system.dataset.clearDataset(self.view.custom.table.data)\n\t\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -567,7 +567,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn value.rowCount \u003e 0",
+                          "code": "\t\n\treturn value.rowCount > 0",
                           "type": "script"
                         }
                       ],
@@ -593,7 +593,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tself.view.custom.table.selection.col \u003d None\n\tself.view.custom.table.selection.row \u003d None\n\t\n\treturn"
+                        "script": "\t\n\tself.view.custom.table.selection.col = None\n\tself.view.custom.table.selection.row = None\n\t\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -682,7 +682,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn value[\u0027action\u0027][\u0027canDelete\u0027]",
+                          "code": "\t\n\treturn value['action']['canDelete']",
                           "type": "script"
                         }
                       ],
@@ -741,7 +741,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn value[\u0027action\u0027][\u0027canCreate\u0027]",
+                          "code": "\t\n\treturn value['action']['canCreate']",
                           "type": "script"
                         }
                       ],
@@ -781,7 +781,7 @@
                     "delay": 0,
                     "enabled": true,
                     "location": "center-right",
-                    "text": "Edit item rate info"
+                    "text": "Edit the rate, or pick a tool to add a rate for that tool"
                   }
                 },
                 "position": {
@@ -800,7 +800,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\treturn value[\u0027action\u0027][\u0027canUpdate\u0027]",
+                          "code": "\t\n\treturn value['action']['canUpdate']",
                           "type": "script"
                         }
                       ],
@@ -826,7 +826,7 @@
                   "component": {
                     "onActionPerformed": {
                       "config": {
-                        "script": "\t\n\tsystem.kanoa.utilities.exportToExcel(\u0027Asset Item Rates\u0027, self.view.custom.table.data)\n\t\n\treturn"
+                        "script": "\t\n\tsystem.kanoa.utilities.exportToExcel('Asset Item Rates', self.view.custom.table.data)\n\t\n\treturn"
                       },
                       "scope": "G",
                       "type": "script"
@@ -860,7 +860,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn len(value[\u0027itemData\u0027]) \u003e 0 and value[\u0027userAction\u0027][\u0027canCreate\u0027]",
+                          "code": "\treturn len(value['itemData']) > 0 and value['userAction']['canCreate']",
                           "type": "script"
                         }
                       ],
@@ -920,7 +920,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\treturn (value[\u0027text\u0027] or None) is not None",
+                          "code": "\treturn (value['text'] or None) is not None",
                           "type": "script"
                         }
                       ],
@@ -956,102 +956,6 @@
                   "grow": 1
                 },
                 "propConfig": {
-                  "props.columns[10].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Period\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[11].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Outfeed Units\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[12].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Waste Units\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[13].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Package Count\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[14].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\"Item Enabled\")"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[15].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\"Rate Enabled\")"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[2].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Asset\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[3].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Code\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[4].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Item\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[7].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Std Rate\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[8].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Sch. Rate\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
-                  "props.columns[9].header.title": {
-                    "binding": {
-                      "config": {
-                        "expression": "translate(\u0027Infeed Units\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
                   "props.data": {
                     "binding": {
                       "config": {
@@ -1060,7 +964,7 @@
                       "overlayOptOut": true,
                       "transforms": [
                         {
-                          "code": "\t\n\tdef buildElement(value, fontWeight, foreColor, bgColor):\n\t\tstyle \u003d {\u0027margin\u0027: \u00271px\u0027, \u0027borderRadius\u0027: \u00274px\u0027}\n\t\tif fontWeight is not None:\tstyle.update({\"fontWeight\": fontWeight})\t\t\n\t\tif foreColor is not None: style.update({\"color\": foreColor}) \n\t\telif bgColor: style.update({\"color\": colors[bgColor] })\n\t\tif bgColor is not None: style.update({\u0027backgroundColor\u0027: bgColor, \u0027borderColor\u0027: bgColor})\t\n\t\treturn {\u0027value\u0027: value, \u0027style\u0027:style}\n\n\tsystem.perspective.print(\"itemData changed. Formatting items\")\n\tself.view.custom.info \u003d {\"text\": \"Formatting items...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\t\n\n\t#We\u0027ll figure out a contrasting color here. Much quicker than doing it when we build the table.\n\tsystem.perspective.print(\"Building color dictionary\")\n\tself.view.custom.info \u003d {\"text\": \"Building color dictionary...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\t\t\n\tcolors \u003d {}\n\titemPaths \u003d {}\n\tassetPaths \u003d {}\n\tdata \u003d system.kanoa.utilities.convertDatasetToJSON(value)\n\tfor item in data:\n\t\tcolors[item[\u0027itemColor\u0027]] \u003d None\n\t\tcolors[item[\u0027itemClassColor\u0027]] \u003d None\n\t\titemPaths[item[\u0027path\u0027]] \u003d None\n\t\tassetPaths[item[\u0027assetPath\u0027]] \u003d None\n\n\tsystem.perspective.print(\"Getting contrasting colors\")\n\tself.view.custom.info \u003d {\"text\": \"Getting contrasting colors...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\t\t\n\tfor color in colors:\n\t\tcolors[color] \u003d system.kanoa.utilities.getContrastingColor(color)\n\n\tsystem.perspective.print(\"Building Item paths\")\n\tself.view.custom.info \u003d {\"text\": \"Building Item paths...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\t\t\n\tfor itemPath in itemPaths:\n\t\titemPaths[itemPath] \u003d system.kanoa.utilities.formatPath(itemPath, {})\n\n\tsystem.perspective.print(\"Building asset paths\")\n\tself.view.custom.info \u003d {\"text\": \"Building assets paths...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\t\t\n\tfor assetPath in assetPaths:\n\t\tassetPaths[assetPath] \u003d system.kanoa.utilities.formatPath(assetPath, {})\n\n\tsystem.perspective.print(\"Building view elements\")\n\tself.view.custom.info \u003d {\"text\": \"Building view elements...\", \"type\": \"INFO\", \u0027showBar\u0027: True}\t\t\n\tfor item in data:\n\t\titem[\u0027path\u0027] \u003d buildElement(itemPaths[item[\u0027path\u0027]], None, None, item[\u0027itemColor\u0027] or item[\u0027itemClassColor\u0027])\n\t\titem[\u0027assetPath\u0027] \u003d assetPaths[item[\u0027assetPath\u0027]]\n\n\tself.view.custom.info \u003d {\"text\": \"\", \"type\": \"INFO\", \u0027showBar\u0027: False}\t\n\tsystem.perspective.print(\"Formatting items completed.\")\n\t\n\treturn data",
+                          "code": "\t\n\tdef buildElement(value, fontWeight, foreColor, bgColor):\n\t\tstyle = {'margin': '1px', 'borderRadius': '4px'}\n\t\tif fontWeight is not None:\tstyle.update({\"fontWeight\": fontWeight})\t\t\n\t\tif foreColor is not None: style.update({\"color\": foreColor}) \n\t\telif bgColor: style.update({\"color\": colors[bgColor] })\n\t\tif bgColor is not None: style.update({'backgroundColor': bgColor, 'borderColor': bgColor})\t\n\t\treturn {'value': value, 'style':style}\n\n\tsystem.perspective.print(\"itemData changed. Formatting items\")\n\tself.view.custom.info = {\"text\": \"Formatting items...\", \"type\": \"INFO\", 'showBar': True}\t\n\n\t#We'll figure out a contrasting color here. Much quicker than doing it when we build the table.\n\tsystem.perspective.print(\"Building color dictionary\")\n\tself.view.custom.info = {\"text\": \"Building color dictionary...\", \"type\": \"INFO\", 'showBar': True}\t\t\n\tcolors = {}\n\titemPaths = {}\n\tassetPaths = {}\n\tdata = system.kanoa.utilities.convertDatasetToJSON(value)\n\tfor item in data:\n\t\tcolors[item['itemColor']] = None\n\t\tcolors[item['itemClassColor']] = None\n\t\titemPaths[item['path']] = None\n\t\tassetPaths[item['assetPath']] = None\n\n\tsystem.perspective.print(\"Getting contrasting colors\")\n\tself.view.custom.info = {\"text\": \"Getting contrasting colors...\", \"type\": \"INFO\", 'showBar': True}\t\t\n\tfor color in colors:\n\t\tcolors[color] = system.kanoa.utilities.getContrastingColor(color)\n\n\tsystem.perspective.print(\"Building Item paths\")\n\tself.view.custom.info = {\"text\": \"Building Item paths...\", \"type\": \"INFO\", 'showBar': True}\t\t\n\tfor itemPath in itemPaths:\n\t\titemPaths[itemPath] = system.kanoa.utilities.formatPath(itemPath, {})\n\n\tsystem.perspective.print(\"Building asset paths\")\n\tself.view.custom.info = {\"text\": \"Building assets paths...\", \"type\": \"INFO\", 'showBar': True}\t\t\n\tfor assetPath in assetPaths:\n\t\tassetPaths[assetPath] = system.kanoa.utilities.formatPath(assetPath, {})\n\n\tsystem.perspective.print(\"Building view elements\")\n\tself.view.custom.info = {\"text\": \"Building view elements...\", \"type\": \"INFO\", 'showBar': True}\t\t\n\t#A rate on a machine that uses tooling: the Tool column says Machine rate for its own rate, and Add a rate for a tool works on it\n\ttoolingAssetIds = set(row['assetId'] for row in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.asset.getAssets({'usesTooling': True}))) if data else set()\n\tfor item in data:\n\t\titem['usesTooling'] = item['assetId'] in toolingAssetIds\n\t\tif item['usesTooling'] and not item['toolingName']: item['toolingName'] = 'Machine rate'\n\t\titem['path'] = buildElement(itemPaths[item['path']], None, None, item['itemColor'] or item['itemClassColor'])\n\t\titem['assetPath'] = assetPaths[item['assetPath']]\n\n\tself.view.custom.info = {\"text\": \"\", \"type\": \"INFO\", 'showBar': False}\t\n\tsystem.perspective.print(\"Formatting items completed.\")\n\t\n\treturn data",
                           "type": "script"
                         }
                       ],
@@ -1094,6 +998,21 @@
                         "path": "view.custom.table.selection.row"
                       },
                       "overlayOptOut": true,
+                      "type": "property"
+                    }
+                  },
+                  "props.columns[5].visible": {
+                    "binding": {
+                      "config": {
+                        "path": "this.props.data"
+                      },
+                      "overlayOptOut": true,
+                      "transforms": [
+                        {
+                          "code": "\t#Only a machine that uses tooling can have a rate for a tool\n\treturn any(row['usesTooling'] for row in (value or []))",
+                          "type": "script"
+                        }
+                      ],
                       "type": "property"
                     }
                   }
@@ -1258,7 +1177,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Asset"
                       },
                       "justify": "left",
                       "number": "value",
@@ -1326,7 +1246,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Code"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1393,7 +1314,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Item"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1440,6 +1362,74 @@
                       "viewPath": "",
                       "visible": true,
                       "width": 160
+                    },
+                    {
+                      "align": "center",
+                      "boolean": "checkbox",
+                      "dateFormat": "MM/DD/YYYY",
+                      "editable": false,
+                      "field": "toolingName",
+                      "footer": {
+                        "align": "center",
+                        "justify": "left",
+                        "style": {
+                          "classes": ""
+                        },
+                        "title": ""
+                      },
+                      "header": {
+                        "align": "center",
+                        "justify": "center",
+                        "style": {
+                          "classes": "kanoa/font/default"
+                        },
+                        "title": "Tool"
+                      },
+                      "justify": "center",
+                      "number": "value",
+                      "numberFormat": "0,0.##",
+                      "progressBar": {
+                        "bar": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "max": 100,
+                        "min": 0,
+                        "track": {
+                          "color": "",
+                          "style": {
+                            "classes": ""
+                          }
+                        },
+                        "value": {
+                          "enabled": true,
+                          "format": "0,0.##",
+                          "justify": "center",
+                          "style": {
+                            "classes": ""
+                          }
+                        }
+                      },
+                      "render": "auto",
+                      "resizable": true,
+                      "sort": "none",
+                      "sortable": false,
+                      "strictWidth": true,
+                      "style": {
+                        "classes": ""
+                      },
+                      "toggleSwitch": {
+                        "color": {
+                          "selected": "",
+                          "unselected": ""
+                        }
+                      },
+                      "viewParams": {},
+                      "viewPath": "",
+                      "visible": true,
+                      "width": 140
                     },
                     {
                       "align": "center",
@@ -1596,7 +1586,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Std Rate"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1663,7 +1654,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Sch. Rate"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1730,7 +1722,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Infeed Units"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1797,7 +1790,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Period"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1864,7 +1858,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Outfeed Units"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1931,7 +1926,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Waste Units"
                       },
                       "justify": "center",
                       "number": "value",
@@ -1998,7 +1994,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Package Count"
                       },
                       "justify": "center",
                       "number": "value",
@@ -2065,7 +2062,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Item Enabled"
                       },
                       "justify": "center",
                       "number": "value",
@@ -2132,7 +2130,8 @@
                         "justify": "center",
                         "style": {
                           "classes": "kanoa/font/default"
-                        }
+                        },
+                        "title": "Rate Enabled"
                       },
                       "justify": "center",
                       "number": "value",
@@ -2338,17 +2337,17 @@
         {
           "name": "deleteItemRates",
           "params": [],
-          "script": "\t\n\n\tfor row in self.view.custom.table.selection.data:\n\t\tsystem.perspective.print(\"Deletinging %s\"%row[\u0027itemAssetRateId\u0027])\n\t\tsystem.kanoa.item.deleteItemAssetRate(row[\u0027itemAssetRateId\u0027], self.view.custom.security.userId)\n\t\n\tself.view.refreshBinding(\"custom.table.data\")\n\t\n\treturn"
+          "script": "\t\n\n\tfor row in self.view.custom.table.selection.data:\n\t\tsystem.perspective.print(\"Deletinging %s\"%row['itemAssetRateId'])\n\t\tsystem.kanoa.item.deleteItemAssetRate(row['itemAssetRateId'], self.view.custom.security.userId)\n\t\n\tself.view.refreshBinding(\"custom.table.data\")\n\t\n\treturn"
         },
         {
           "name": "openRateEditor",
           "params": [],
-          "script": "\t\n\titemAssetRateIds \u003d [row[\u0027itemAssetRateId\u0027] for row in self.view.custom.table.selection.data]\n\tsystem.perspective.openPopup(\"Item Rate Editor\", view\u003d\"kanoa/mes/config/items/itemRateEditor\", params\u003d{\u0027values\u0027:{\u0027itemAssetRateIds\u0027:itemAssetRateIds}}, title\u003d\u0027Item Rate Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, viewportBound\u003dTrue)\n\t\n\treturn"
+          "script": "\t\n\titemAssetRateIds = [row['itemAssetRateId'] for row in self.view.custom.table.selection.data]\n\tsystem.perspective.openPopup(\"Item Rate Editor\", view=\"kanoa/mes/config/items/itemRateEditor\", params={'values':{'itemAssetRateIds':itemAssetRateIds}}, title='Item Rate Editor', resizable=True, draggable=True, viewportBound=True)\n\t\n\treturn"
         },
         {
           "name": "openLinkEditor",
           "params": [],
-          "script": "\t\n\tsystem.perspective.openPopup(\"Link Editor\", view\u003d\"kanoa/mes/config/items/itemAssetLinker\", params\u003d {}, title\u003d\u0027Item Asset Link Editor\u0027, resizable\u003dTrue, draggable\u003dTrue, viewportBound\u003dTrue)\n\t\n\treturn"
+          "script": "\t\n\tsystem.perspective.openPopup(\"Link Editor\", view=\"kanoa/mes/config/items/itemAssetLinker\", params= {}, title='Item Asset Link Editor', resizable=True, draggable=True, viewportBound=True)\n\t\n\treturn"
         }
       ],
       "extensionFunctions": null,
