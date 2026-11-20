@@ -1,5 +1,24 @@
 {
   "custom": {
+    "dates": {
+      "endDate": {
+        "$": [
+          "ts",
+          192,
+          1795128714192
+        ],
+        "$ts": 1785135600000
+      },
+      "selectedRange": "Today",
+      "startDate": {
+        "$": [
+          "ts",
+          192,
+          1795128714192
+        ],
+        "$ts": 1785049200000
+      }
+    },
     "filter": {
       "assetId": null,
       "assetPath": null,
@@ -8,61 +27,66 @@
           "$": [
             "ts",
             192,
-            1777652457414
+            1785080201287
           ],
-          "$ts": 1777791600000
+          "$ts": 1785135600000
         },
-        "selectedRange": "This Week",
+        "selectedRange": "Today",
         "startDate": {
           "$": [
             "ts",
             192,
-            1777652457414
+            1785080201287
           ],
-          "$ts": 1777186800000
+          "$ts": 1785049200000
         }
       },
       "displayOptions": {
+        "dueMarkerMinCycleMins": 5,
         "showInfeed": true,
         "showLevels": null,
+        "showModes": true,
         "showOutfeed": true,
         "showTarget": true,
         "showWaste": true
       },
       "interval": null,
+      "showAssetName": false,
+      "showDateRange": true,
+      "showOptions": false,
+      "uncodedScrapPercent": 5,
       "woInfo": {
         "product": null,
         "scheduleId": null,
         "woId": null
       }
     },
-    "dates": {
-      "startDate": null,
-      "endDate": null,
-      "selectedRange": "Today"
-    },
-    "zoomId": null,
-    "overRange": false
+    "overRange": false,
+    "zoomId": "befcf325-40bc-4d2f-ae73-608d17e7e75f"
   },
   "params": {
     "value": {
       "assetPath": null,
       "displayOptions": {
+        "dueMarkerMinCycleMins": 5,
         "showInfeed": true,
         "showLevels": null,
+        "showModes": true,
         "showOutfeed": true,
         "showTarget": true,
-        "showWaste": true,
-        "showModes": true
+        "showWaste": true
       },
       "interval": null,
       "showAssetName": false,
-      "showOptions": false,
       "showDateRange": true,
+      "showOptions": false,
       "uncodedScrapPercent": 5
     }
   },
   "propConfig": {
+    "custom.dates": {
+      "persistent": true
+    },
     "custom.filter": {
       "binding": {
         "config": {
@@ -82,11 +106,7 @@
       },
       "persistent": true
     },
-    "params.value": {
-      "paramDirection": "input",
-      "persistent": true
-    },
-    "custom.dates": {
+    "custom.overRange": {
       "persistent": true
     },
     "custom.zoomId": {
@@ -104,7 +124,8 @@
       },
       "persistent": true
     },
-    "custom.overRange": {
+    "params.value": {
+      "paramDirection": "input",
       "persistent": true
     }
   },
@@ -119,8 +140,7 @@
               "name": "evDateRange"
             },
             "position": {
-              "grow": 1,
-              "shrink": 1
+              "grow": 1
             },
             "propConfig": {
               "props.params.dates.endDate": {
@@ -169,6 +189,7 @@
                 },
                 "value": {
                   "display": {
+                    "autoRefreshHidden": true,
                     "persistent": false,
                     "showAutoRefresh": true,
                     "showDateSelector": true,
@@ -262,8 +283,8 @@
         "props": {
           "alignItems": "center",
           "style": {
-            "padding": "5px",
-            "gap": "5px"
+            "gap": "5px",
+            "padding": "5px"
           }
         },
         "type": "ia.container.flex"
@@ -539,6 +560,17 @@
         "position": {
           "shrink": 0
         },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "expression": "// The checkboxes and levels row, only when the widget\u0027s showOptions is on: the chart alone, as on the Production page, by default\r\ncoalesce({view.params.value.showOptions}, false)"
+              },
+              "overlayOptOut": true,
+              "type": "expr"
+            }
+          }
+        },
         "props": {
           "alignContent": "center",
           "alignItems": "center",
@@ -551,47 +583,36 @@
             "padding": "5px"
           }
         },
-        "type": "ia.container.flex",
-        "propConfig": {
-          "position.display": {
-            "binding": {
-              "config": {
-                "expression": "// The checkboxes and levels row, only when the widget\u0027s showOptions is on: the chart alone, as on the Production page, by default\r\ncoalesce({view.params.value.showOptions}, false)"
-              },
-              "overlayOptOut": true,
-              "type": "expr"
-            }
-          }
-        }
+        "type": "ia.container.flex"
       },
       {
-        "type": "ia.display.label",
         "meta": {
           "name": "lblOverRange"
         },
         "position": {
           "shrink": 0
         },
+        "propConfig": {
+          "position.display": {
+            "binding": {
+              "config": {
+                "path": "view.custom.overRange"
+              },
+              "overlayOptOut": true,
+              "type": "property"
+            }
+          }
+        },
         "props": {
-          "text": "Choose a range of up to 7 days",
           "style": {
             "classes": "kanoa/font/bodyLarge",
             "color": "var(--kcOnSurfaceVariant)",
             "padding": "16px 16px 4px",
             "textAlign": "center"
-          }
+          },
+          "text": "Choose a range of up to 7 days"
         },
-        "propConfig": {
-          "position.display": {
-            "binding": {
-              "type": "property",
-              "config": {
-                "path": "view.custom.overRange"
-              },
-              "overlayOptOut": true
-            }
-          }
-        }
+        "type": "ia.display.label"
       },
       {
         "meta": {
@@ -607,10 +628,10 @@
             "binding": {
               "config": {
                 "struct": {
-                  "filter": "{view.custom.filter}",
                   "dates": "{view.custom.dates}",
-                  "show": "{view.params.value.showDateRange}",
+                  "filter": "{view.custom.filter}",
                   "pct": "{view.params.value.uncodedScrapPercent}",
+                  "show": "{view.params.value.showDateRange}",
                   "zoomId": "{view.custom.zoomId}"
                 },
                 "waitOnAll": false
@@ -631,31 +652,38 @@
           "direction": "column",
           "elementPosition": {
             "basis": "0px",
-            "grow": 1,
             "shrink": 0
+          },
+          "elementStyle": {
+            "minHeight": "600px"
           },
           "path": "kanoa/mes/analytics/widgets/productionCounts/countBarChart",
           "style": {
             "gap": "5px"
           },
-          "useDefaultViewWidth": false,
-          "elementStyle": {
-            "minHeight": "600px"
-          },
-          "useDefaultViewHeight": false
+          "useDefaultViewHeight": false,
+          "useDefaultViewWidth": false
         },
         "type": "ia.display.flex-repeater"
       }
     ],
+    "events": {
+      "system": {
+        "onStartup": {
+          "config": {
+            "script": "\t# A widget saved before the mode overlay has no displayOptions, or none with showModes: the chart treats showModes as on,\n\t# so the checkbox matches. Without displayOptions there\u0027s nothing to set (868mwaypk)\n\tvalue \u003d self.view.params.value\n\tif value is None or not value.has_key(\u0027displayOptions\u0027) or value.displayOptions is None: return\n\ttry:\n\t\tshowModes \u003d value.displayOptions[\u0027showModes\u0027]\n\texcept:\n\t\tshowModes \u003d None\n\tif showModes is None:\n\t\tvalue.displayOptions.showModes \u003d True"
+          },
+          "scope": "G",
+          "type": "script"
+        }
+      }
+    },
     "meta": {
       "domId": "root",
       "name": "root"
     },
     "props": {
-      "direction": "column",
-      "style": {
-        "overflow": "auto"
-      }
+      "direction": "column"
     },
     "scripts": {
       "customMethods": [],
@@ -670,17 +698,6 @@
         }
       ]
     },
-    "type": "ia.container.flex",
-    "events": {
-      "system": {
-        "onStartup": {
-          "config": {
-            "script": "\t# A widget saved before the mode overlay has no displayOptions, or none with showModes: the chart treats showModes as on,\n\t# so the checkbox matches. Without displayOptions there\u0027s nothing to set (868mwaypk)\n\tvalue \u003d self.view.params.value\n\tif value is None or not value.has_key(\u0027displayOptions\u0027) or value.displayOptions is None: return\n\ttry:\n\t\tshowModes \u003d value.displayOptions[\u0027showModes\u0027]\n\texcept:\n\t\tshowModes \u003d None\n\tif showModes is None:\n\t\tvalue.displayOptions.showModes \u003d True"
-          },
-          "scope": "G",
-          "type": "script"
-        }
-      }
-    }
+    "type": "ia.container.flex"
   }
 }

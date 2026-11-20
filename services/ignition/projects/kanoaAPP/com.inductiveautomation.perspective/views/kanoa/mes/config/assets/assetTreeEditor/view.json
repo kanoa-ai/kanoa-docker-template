@@ -1,52 +1,7 @@
 {
   "custom": {
     "assetAttributes": {},
-    "assetGroups": [
-      {
-        "label": "Test",
-        "value": 1
-      },
-      {
-        "label": "New",
-        "value": 2
-      },
-      {
-        "label": "New test",
-        "value": 3
-      },
-      {
-        "label": "alr now",
-        "value": 4
-      },
-      {
-        "label": "fgfg",
-        "value": 5
-      },
-      {
-        "label": "ghgh",
-        "value": 6
-      },
-      {
-        "label": "hgjhj",
-        "value": 7
-      },
-      {
-        "label": "klkl",
-        "value": 8
-      },
-      {
-        "label": "Machines",
-        "value": 1002
-      },
-      {
-        "label": "Coating Lines",
-        "value": 1003
-      },
-      {
-        "label": "Manual Packaging Lines",
-        "value": 1004
-      }
-    ],
+    "assetGroups": [],
     "assetTypes": [],
     "assets": {
       "assetIdList": [],
@@ -76,7 +31,7 @@
       "canDelete": false,
       "canRead": true,
       "canUpdate": false,
-      "userId": 5
+      "userId": null
     },
     "validation": {
       "assetNameValid": true
@@ -94,7 +49,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tassetPath \u003d value[\u0027assetPath\u0027]\n\tif assetPath is None: return {}\n\t\n\tattrs \u003d {}\n\tattributes \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getAssetAttributes({\u0027assetPath\u0027: assetPath}), \u0027assetAttrName\u0027, None)\n\t\n\tdef getAttr(attributeName, defaultValue\u003dNone, inherit\u003dTrue):\n\t\tattrRow \u003d attributes.get(attributeName) or {}\n\t\trawValue \u003d attrRow.get(\u0027assetAttrValue\u0027)\n\t\n\t\tif rawValue is not None: assetAttrValue \u003d system.util.jsonDecode(rawValue)\n\t\telif inherit: assetAttrValue \u003d system.util.jsonDecode(system.kanoa.asset.getClosestAncestorAttribute(assetPath, attributeName))\n\t\telse: assetAttrValue \u003d defaultValue\n\t\n\t\tif assetAttrValue is None: assetAttrValue \u003d defaultValue\n\t\n\t\thasLocalAttr \u003d attrRow.get(\u0027assetAttrId\u0027) is not None\n\t\n\t\tif value[\u0027parentId\u0027] is None: inherited \u003d False\n\t\telif not inherit: inherited \u003d False\n\t\telse: inherited \u003d not hasLocalAttr\n\n#\t\tsystem.perspective.print(\"%s parentId\u003d%s attrRow\u003d%s hasLocalAttr\u003d%s inherited\u003d%s\" % (attributeName, value.get(\u0027parentId\u0027), attrRow, hasLocalAttr, inherited))\n\t\treturn {\u0027assetAttrId\u0027: attrRow.get(\u0027assetAttrId\u0027), \u0027inherited\u0027: inherited, \u0027value\u0027: assetAttrValue}\n\n\t# _ProductionDay\n\tattr \u003d getAttr(\u0027_ProductionDay\u0027, {\u0027startTime\u0027: 0, \u0027endTime\u0027: 0})\n\tattrs[\u0027_ProductionDay\u0027] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027startTime\u0027: str(attr[\u0027value\u0027][\u0027startTime\u0027]).zfill(4), \u0027endTime\u0027: str(attr[\u0027value\u0027][\u0027endTime\u0027]).zfill(4)}\n\t\n\t# _assetOEEStateDisplay\n\tattr \u003d getAttr(\u0027_assetOEEStateDisplay\u0027, \u0027kanoa/mes/asset/overview/assetOEEStateDefault\u0027)\n\tattrs[\u0027_assetOEEStateDisplay\u0027] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: attr[\u0027value\u0027]}\n\t\n\t# _showOnMainDisplay\n\tattr \u003d getAttr(\u0027_showOnMainDisplay\u0027, (value.get(\u0027assetTypeName\u0027) or \u0027\u0027).lower() \u003d\u003d \u0027line\u0027, inherit\u003dFalse)\n\tattrs[\u0027_showOnMainDisplay\u0027] \u003d {\u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: bool(attr[\u0027value\u0027])}\n\t\n\t# _oeeThreshold\n\tattr \u003d getAttr(\u0027_oeeThreshold\u0027, {\u0027oee\u0027: 0.6, \u0027a\u0027: 0.8, \u0027p\u0027: 0.8, \u0027q\u0027: 0.8, \u0027oeeTolerance\u0027: 0.1, \u0027aTolerance\u0027: 0.1, \u0027pTolerance\u0027: 0.1, \u0027qTolerance\u0027: 0.1})\n\t\n\tthreshold \u003d attr[\u0027value\u0027]\n\t\n\tif threshold.has_key(\u0027targetThreshold\u0027):\n\t\tthreshold[\u0027oeeTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold[\u0027aTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold[\u0027pTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold[\u0027qTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold.pop(\u0027targetThreshold\u0027, None)\n\t\tsystem.kanoa.asset.addAssetAttribute(value[\u0027assetId\u0027], \u0027_oeeThreshold\u0027, system.util.jsonEncode(threshold), self.session.custom.kanoa.security.userId)\n\t\n\tattrs[\u0027_oeeThreshold\u0027] \u003d {\n\t\t\u0027inherited\u0027: attr[\u0027inherited\u0027],\n\t\t\u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027],\n\t\t\u0027oee\u0027: float(threshold[\u0027oee\u0027]),\n\t\t\u0027a\u0027: float(threshold[\u0027a\u0027]),\n\t\t\u0027p\u0027: float(threshold[\u0027p\u0027]),\n\t\t\u0027q\u0027: float(threshold[\u0027q\u0027]),\n\t\t\u0027oeeTolerance\u0027: float(threshold[\u0027oeeTolerance\u0027]),\n\t\t\u0027aTolerance\u0027: float(threshold[\u0027aTolerance\u0027]),\n\t\t\u0027pTolerance\u0027: float(threshold[\u0027pTolerance\u0027]),\n\t\t\u0027qTolerance\u0027: float(threshold[\u0027qTolerance\u0027])\n\t}\n\t\n\t# _runControl\n\tattributeName \u003d \u0027_runControl\u0027\n\tattr \u003d getAttr(attributeName, {\u0027mode\u0027: True, \u0027schedule\u0027: True, \u0027order\u0027: True, \u0027product\u0027: True, \u0027defaultTab\u0027: \u0027mode\u0027}, inherit\u003dTrue)\n\trunControl \u003d attr[\u0027value\u0027] or {}\n\t\n\tattrs[attributeName] \u003d {\n\t\t\u0027inherited\u0027: attr[\u0027inherited\u0027],\n\t\t\u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027],\n\t\t\u0027value\u0027: {\n\t\t\t\u0027mode\u0027: bool(runControl.get(\u0027mode\u0027, True)),\n\t\t\t\u0027schedule\u0027: bool(runControl.get(\u0027schedule\u0027, True)),\n\t\t\t\u0027order\u0027: bool(runControl.get(\u0027order\u0027, True)),\n\t\t\t\u0027product\u0027: bool(runControl.get(\u0027product\u0027, True)),\n\t\t\t\u0027defaultTab\u0027: runControl.get(\u0027defaultTab\u0027, \u0027mode\u0027)\n\t\t}\n\t}\n\n\t# simple value attrs\n\tfor attributeName, defaultValue, coerce in [\n\t\t(\u0027_intelligentScheduling\u0027, 0, bool),\n\t\t(\u0027_orderQtySelection\u0027, 0, bool),\n\t\t(\u0027_shiftTimeOnly\u0027, 0, bool),\n\t\t(\u0027_speedLossEnabled\u0027, 1, bool),\t#Real-time speed loss, on unless turned off here or above\n\t]:\n\t\tattr \u003d getAttr(attributeName, defaultValue)\n\t\tattrs[attributeName] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: coerce(attr[\u0027value\u0027])}\n\n#\t# simple value attrs\n#\tfor attributeName, defaultValue, coerce in [\n#\t\t(\u0027_intelligentScheduling\u0027, 0, lambda x: x),\n#\t\t(\u0027_orderQtySelection\u0027, 0, bool),\n#\t\t(\u0027_shiftTimeOnly\u0027, 0, lambda x: x),\n#\t]:\n#\t\tattr \u003d getAttr(attributeName, defaultValue)\n#\t\tattrs[attributeName] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: coerce(attr[\u0027value\u0027])}\n\t\n\treturn attrs",
+            "code": "\n\tassetPath \u003d value[\u0027assetPath\u0027]\n\tif assetPath is None: return {}\n\t\n\tattrs \u003d {}\n\tattributes \u003d system.kanoa.utilities.convertDatasetToDict(system.kanoa.asset.getAssetAttributes({\u0027assetPath\u0027: assetPath}), \u0027assetAttrName\u0027, None)\n\t\n\tdef getAttr(attributeName, defaultValue\u003dNone, inherit\u003dTrue):\n\t\tattrRow \u003d attributes.get(attributeName) or {}\n\t\trawValue \u003d attrRow.get(\u0027assetAttrValue\u0027)\n\t\n\t\tif rawValue is not None: assetAttrValue \u003d system.util.jsonDecode(rawValue)\n\t\telif inherit: assetAttrValue \u003d system.util.jsonDecode(system.kanoa.asset.getClosestAncestorAttribute(assetPath, attributeName))\n\t\telse: assetAttrValue \u003d defaultValue\n\t\n\t\tif assetAttrValue is None: assetAttrValue \u003d defaultValue\n\t\n\t\thasLocalAttr \u003d attrRow.get(\u0027assetAttrId\u0027) is not None\n\t\n\t\tif value[\u0027parentId\u0027] is None: inherited \u003d False\n\t\telif not inherit: inherited \u003d False\n\t\telse: inherited \u003d not hasLocalAttr\n\n#\t\tsystem.perspective.print(\"%s parentId\u003d%s attrRow\u003d%s hasLocalAttr\u003d%s inherited\u003d%s\" % (attributeName, value.get(\u0027parentId\u0027), attrRow, hasLocalAttr, inherited))\n\t\treturn {\u0027assetAttrId\u0027: attrRow.get(\u0027assetAttrId\u0027), \u0027inherited\u0027: inherited, \u0027value\u0027: assetAttrValue}\n\n\t# _ProductionDay\n\tattr \u003d getAttr(\u0027_ProductionDay\u0027, {\u0027startTime\u0027: 0, \u0027endTime\u0027: 0})\n\tattrs[\u0027_ProductionDay\u0027] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027startTime\u0027: str(attr[\u0027value\u0027][\u0027startTime\u0027]).zfill(4), \u0027endTime\u0027: str(attr[\u0027value\u0027][\u0027endTime\u0027]).zfill(4)}\n\t\n\t# _assetOEEStateDisplay\n\tattr \u003d getAttr(\u0027_assetOEEStateDisplay\u0027, \u0027kanoa/mes/asset/overview/assetOEEStateDefault\u0027)\n\tattrs[\u0027_assetOEEStateDisplay\u0027] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: attr[\u0027value\u0027]}\n\t\n\t# _showOnMainDisplay\n\tattr \u003d getAttr(\u0027_showOnMainDisplay\u0027, (value.get(\u0027assetTypeName\u0027) or \u0027\u0027).lower() \u003d\u003d \u0027line\u0027, inherit\u003dFalse)\n\tattrs[\u0027_showOnMainDisplay\u0027] \u003d {\u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: bool(attr[\u0027value\u0027])}\n\t\n\t# _oeeThreshold\n\tattr \u003d getAttr(\u0027_oeeThreshold\u0027, {\u0027oee\u0027: 0.6, \u0027a\u0027: 0.8, \u0027p\u0027: 0.8, \u0027q\u0027: 0.8, \u0027oeeTolerance\u0027: 0.1, \u0027aTolerance\u0027: 0.1, \u0027pTolerance\u0027: 0.1, \u0027qTolerance\u0027: 0.1})\n\t\n\tthreshold \u003d attr[\u0027value\u0027]\n\t\n\tif threshold.has_key(\u0027targetThreshold\u0027):\n\t\tthreshold[\u0027oeeTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold[\u0027aTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold[\u0027pTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold[\u0027qTolerance\u0027] \u003d threshold[\u0027targetThreshold\u0027]\n\t\tthreshold.pop(\u0027targetThreshold\u0027, None)\n\t\tsystem.kanoa.asset.addAssetAttribute(value[\u0027assetId\u0027], \u0027_oeeThreshold\u0027, system.util.jsonEncode(threshold), self.session.custom.kanoa.security.userId)\n\t\n\tattrs[\u0027_oeeThreshold\u0027] \u003d {\n\t\t\u0027inherited\u0027: attr[\u0027inherited\u0027],\n\t\t\u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027],\n\t\t\u0027oee\u0027: float(threshold[\u0027oee\u0027]),\n\t\t\u0027a\u0027: float(threshold[\u0027a\u0027]),\n\t\t\u0027p\u0027: float(threshold[\u0027p\u0027]),\n\t\t\u0027q\u0027: float(threshold[\u0027q\u0027]),\n\t\t\u0027oeeTolerance\u0027: float(threshold[\u0027oeeTolerance\u0027]),\n\t\t\u0027aTolerance\u0027: float(threshold[\u0027aTolerance\u0027]),\n\t\t\u0027pTolerance\u0027: float(threshold[\u0027pTolerance\u0027]),\n\t\t\u0027qTolerance\u0027: float(threshold[\u0027qTolerance\u0027])\n\t}\n\t\n\t# _runControl\n\tattributeName \u003d \u0027_runControl\u0027\n\tattr \u003d getAttr(attributeName, {\u0027mode\u0027: True, \u0027schedule\u0027: True, \u0027order\u0027: True, \u0027product\u0027: True, \u0027defaultTab\u0027: \u0027mode\u0027}, inherit\u003dTrue)\n\trunControl \u003d attr[\u0027value\u0027] or {}\n\t\n\tattrs[attributeName] \u003d {\n\t\t\u0027inherited\u0027: attr[\u0027inherited\u0027],\n\t\t\u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027],\n\t\t\u0027value\u0027: {\n\t\t\t\u0027mode\u0027: bool(runControl.get(\u0027mode\u0027, True)),\n\t\t\t\u0027schedule\u0027: bool(runControl.get(\u0027schedule\u0027, True)),\n\t\t\t\u0027order\u0027: bool(runControl.get(\u0027order\u0027, True)),\n\t\t\t\u0027product\u0027: bool(runControl.get(\u0027product\u0027, True)),\n\t\t\t\u0027defaultTab\u0027: (runControl.get(\u0027defaultTab\u0027) or \u0027mode\u0027)\n\t\t}\n\t}\n\n\t# simple value attrs\n\tfor attributeName, defaultValue, coerce in [\n\t\t(\u0027_intelligentScheduling\u0027, 0, bool),\n\t\t(\u0027_orderQtySelection\u0027, 0, bool),\n\t\t(\u0027_shiftTimeOnly\u0027, 0, bool),\n\t\t(\u0027_speedLossEnabled\u0027, 1, bool),\t#Real-time speed loss, on unless turned off here or above\n\t]:\n\t\tattr \u003d getAttr(attributeName, defaultValue)\n\t\tattrs[attributeName] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: coerce(attr[\u0027value\u0027])}\n\n#\t# simple value attrs\n#\tfor attributeName, defaultValue, coerce in [\n#\t\t(\u0027_intelligentScheduling\u0027, 0, lambda x: x),\n#\t\t(\u0027_orderQtySelection\u0027, 0, bool),\n#\t\t(\u0027_shiftTimeOnly\u0027, 0, lambda x: x),\n#\t]:\n#\t\tattr \u003d getAttr(attributeName, defaultValue)\n#\t\tattrs[attributeName] \u003d {\u0027inherited\u0027: attr[\u0027inherited\u0027], \u0027assetAttrId\u0027: attr[\u0027assetAttrId\u0027], \u0027value\u0027: coerce(attr[\u0027value\u0027])}\n\t\n\treturn attrs",
             "type": "script"
           }
         ],
@@ -1019,14 +974,6 @@
                   "grow": 1
                 },
                 "propConfig": {
-                  "props.path": {
-                    "binding": {
-                      "config": {
-                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
-                      },
-                      "type": "expr"
-                    }
-                  },
                   "props.params.refresh": {
                     "binding": {
                       "config": {
@@ -1055,6 +1002,14 @@
                       "overlayOptOut": true,
                       "type": "property"
                     }
+                  },
+                  "props.path": {
+                    "binding": {
+                      "config": {
+                        "expression": "if(isNull({this.props.params.values.data}), \u0027\u0027, \u0027kanoa/core/templates/selectors/tree/treeSelector\u0027)"
+                      },
+                      "type": "expr"
+                    }
                   }
                 },
                 "props": {
@@ -1077,8 +1032,7 @@
                       },
                       "treePath": "assetPath"
                     }
-                  },
-                  "path": "kanoa/core/templates/selectors/tree/treeSelector"
+                  }
                 },
                 "type": "ia.display.view"
               }
@@ -2922,7 +2876,7 @@
                             "props": {
                               "style": {
                                 "backgroundColor": "--kcSurface",
-                                "color": "--kcOnPrimaryContainer",
+                                "color": "--kcOnSurfaceVariant",
                                 "marginLeft": "3px",
                                 "paddingLeft": "5px",
                                 "paddingRight": "5px",
@@ -3828,7 +3782,6 @@
                                 "position": {
                                   "shrink": 0
                                 },
-                                "propConfig": {},
                                 "props": {
                                   "style": {
                                     "textAlign": "right",
@@ -3896,6 +3849,21 @@
                                   "shrink": 0
                                 },
                                 "propConfig": {
+                                  "position.display": {
+                                    "binding": {
+                                      "config": {
+                                        "path": "view.custom.assets.selectedAssetInfo.parentId"
+                                      },
+                                      "overlayOptOut": true,
+                                      "transforms": [
+                                        {
+                                          "code": "\t#A top-level asset has nothing to inherit from\n\treturn value is not None",
+                                          "type": "script"
+                                        }
+                                      ],
+                                      "type": "property"
+                                    }
+                                  },
                                   "props.enabled": {
                                     "binding": {
                                       "config": {
@@ -3918,21 +3886,6 @@
                                         "path": "view.custom.assetAttributes._speedLossEnabled.inherited"
                                       },
                                       "overlayOptOut": true,
-                                      "type": "property"
-                                    }
-                                  },
-                                  "position.display": {
-                                    "binding": {
-                                      "config": {
-                                        "path": "view.custom.assets.selectedAssetInfo.parentId"
-                                      },
-                                      "overlayOptOut": true,
-                                      "transforms": [
-                                        {
-                                          "code": "\t#A top-level asset has nothing to inherit from\n\treturn value is not None",
-                                          "type": "script"
-                                        }
-                                      ],
                                       "type": "property"
                                     }
                                   }
@@ -4027,7 +3980,7 @@
                             "props": {
                               "style": {
                                 "backgroundColor": "--kcSurface",
-                                "color": "--kcOnPrimaryContainer",
+                                "color": "--kcOnSurfaceVariant",
                                 "marginLeft": "3px",
                                 "paddingLeft": "5px",
                                 "paddingRight": "5px",
@@ -4854,7 +4807,7 @@
                             "props": {
                               "style": {
                                 "backgroundColor": "--kcSurface",
-                                "color": "--kcOnPrimaryContainer",
+                                "color": "--kcOnSurfaceVariant",
                                 "marginLeft": "3px",
                                 "paddingLeft": "5px",
                                 "paddingRight": "5px",

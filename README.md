@@ -13,7 +13,7 @@ starting point for your own implementation.
 | --- | --- | --- |
 | `db` | `mcr.microsoft.com/mssql/server:2022-latest` | SQL Server (Developer edition) |
 | `db-init` | `mcr.microsoft.com/mssql-tools:latest` | One-shot job that creates the application database on startup, then exits |
-| `kanoa` | `inductiveautomation/ignition:8.3.10` | Ignition gateway with KanoaMES modules(1.16.0) |
+| `kanoa` | `inductiveautomation/ignition:8.3.10` | Ignition gateway with KanoaMES modules(1.16.1) |
 
 ## Prerequisites
 

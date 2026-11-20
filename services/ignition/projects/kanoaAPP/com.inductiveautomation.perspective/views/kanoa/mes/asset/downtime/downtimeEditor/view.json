@@ -95,7 +95,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\n\tstateEventId \u003d -1 if len(value) \u003d\u003d 0 else value[0]\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getStateEventById(stateEventId), 0)\n\tself.custom.origStateEventInfo \u003d info\n\treturn info",
+            "code": "\t\n\t# Read the ids live, not value: at open a run can start with the popup\u0027s default params (no ids) and finish after\n\t# the real one, which blanked the editor and its reasons (868mxnpkc). No ids or no event keeps what\u0027s loaded.\n\tlogger \u003d system.util.getLogger(\u0027kanoa.downtimeEditor\u0027)\n\tidList \u003d self.params.value.idList if self.params.value is not None else None\n\tif idList is None or len(idList) \u003d\u003d 0:\n\t\tlogger.debugf(\u0027stateEventInfo: no event ids (run started with %s), keeping event %s\u0027, value, self.custom.stateEventInfo.stateEventId)\n\t\treturn self.custom.stateEventInfo\n\t\n\tinfo \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.event.getStateEventById(idList[0]), 0)\n\tif info is None or info.get(\u0027stateEventId\u0027) is None:\n\t\tlogger.warnf(\u0027stateEventInfo: state event %s not found, keeping event %s\u0027, idList[0], self.custom.stateEventInfo.stateEventId)\n\t\treturn self.custom.stateEventInfo\n\t\n\tlogger.debugf(\u0027stateEventInfo: loaded state event %s (asset %s, state %s)\u0027, idList[0], info.get(\u0027assetStateId\u0027), info.get(\u0027stateName\u0027))\n\tself.custom.origStateEventInfo \u003d info\n\treturn info",
             "type": "script"
           }
         ],
@@ -253,7 +253,7 @@
                   "overlayOptOut": true,
                   "transforms": [
                     {
-                      "code": "\t\n\treturn system.kanoa.asset.getAssetStates({\u0027assetId\u0027: value or -1, \u0027enabled\u0027: True, \u0027selectable\u0027: True})",
+                      "code": "\t\n\t# The event read live: a run started before the event loaded would list no reasons (868mxnpkc). An event with no\n\t# state asset lists its own asset\u0027s states.\n\tinfo \u003d self.view.custom.stateEventInfo\n\tassetId \u003d info.assetStateId or info.assetId\n\treturn system.kanoa.asset.getAssetStates({\u0027assetId\u0027: assetId or -1, \u0027enabled\u0027: True, \u0027selectable\u0027: True})",
                       "type": "script"
                     }
                   ],

@@ -1,6 +1,5 @@
 {
   "custom": {
-    "dashboards": null,
     "display": {
       "screenName": "stationPanel"
     },
@@ -13,91 +12,103 @@
       "userCRUD": {
         "approveQualityCheck": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "approveWorkOrders": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "configureAssets": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "configureItems": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "configureLots": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
+          ],
+          "enabled": true
+        },
+        "configureMaintenance": {
+          "assets": [
+            "CoreForge"
+          ],
+          "enabled": true
+        },
+        "configureProcedures": {
+          "assets": [
+            "CoreForge"
           ],
           "enabled": true
         },
         "configureQuality": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "configureSecurity": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "configureWorkOrders": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "editOperations": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "enterQualityCheck": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "enterWorkOrders": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "isGatewayAdmin": true,
         "operateAssets": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "scheduleOperations": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         },
         "scheduleShifts": {
           "assets": [
-            "Kanoa Box Co\\Box Plant\\Packaging\\Box Line 2"
+            "CoreForge"
           ],
           "enabled": true
         }
       },
-      "userId": 5,
+      "userId": 4,
       "userName": "jason"
     },
     "userAction": {
@@ -155,7 +166,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tsystem.perspective.print(\"dashboardFilter change\")\n\n\tif value[\u0027dashboardId\u0027]:\n\t\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getDashboards({\u0027dashboardId\u0027: value.get(\u0027dashboardId\u0027) or -1}),0)\n\t\tdata[\u0027screenDashboardId\u0027] \u003d None\n\telif value[\u0027assetId\u0027]:\n\t\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getScreenDashboards({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027screenName\u0027: self.custom.display.screenName or \u0027none\u0027}),0)\n\telse:\n\t\t# No asset yet (the view opens before its asset arrives): show nothing rather than the screen default, which could\n\t\t# reach the viewer after the asset\u0027s own dashboard (868mw9nf9)\n\t\tdata \u003d {\u0027dashboardId\u0027: None, \u0027path\u0027: None, \u0027screenDashboardId\u0027: None}\n\t\t\n\tdata[\u0027assetId\u0027] \u003d value[\u0027assetId\u0027]\n\tdata[\u0027screenName\u0027] \u003d self.custom.display.screenName\n\tdata[\u0027edited\u0027] \u003d value[\u0027edited\u0027]\t#if the user changes the dashboard and wants to set it as default, we\u0027ll use this flag to display the default button\n\t\n\treturn data",
+            "code": "\n\tif value[\u0027dashboardId\u0027]:\n\t\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getDashboards({\u0027dashboardId\u0027: value.get(\u0027dashboardId\u0027) or -1}),0)\n\t\tdata[\u0027screenDashboardId\u0027] \u003d None\n\telif value[\u0027assetId\u0027]:\n\t\tdata \u003d system.kanoa.utilities.convertDatasetRowToJSON(system.kanoa.dashboard.getScreenDashboards({\u0027assetId\u0027: value[\u0027assetId\u0027], \u0027screenName\u0027: self.custom.display.screenName or \u0027none\u0027}),0)\n\telse:\n\t\t# No asset yet (the view opens before its asset arrives): show nothing rather than the screen default, which could\n\t\t# reach the viewer after the asset\u0027s own dashboard (868mw9nf9)\n\t\tdata \u003d {\u0027dashboardId\u0027: None, \u0027path\u0027: None, \u0027screenDashboardId\u0027: None}\n\t\t\n\tdata[\u0027assetId\u0027] \u003d value[\u0027assetId\u0027]\n\tdata[\u0027screenName\u0027] \u003d self.custom.display.screenName\n\tdata[\u0027edited\u0027] \u003d value[\u0027edited\u0027]\t#if the user changes the dashboard and wants to set it as default, we\u0027ll use this flag to display the default button\n\tlogger \u003d system.util.getLogger(\u0027kanoa.dashboard\u0027)\n\tif logger.isDebugEnabled():\n\t\tlogger.debug(\u0027Asset Operation panel on page %s: asset %s, screen %s, dashboard %s\u0027 % (self.page.props.pageId, data[\u0027assetId\u0027], data[\u0027screenName\u0027], data.get(\u0027dashboardId\u0027)))\n\treturn data",
             "type": "script"
           }
         ],
@@ -618,7 +629,7 @@
         {
           "messageType": "assetOPDashboardSelected",
           "pageScope": true,
-          "script": "\n\tsystem.perspective.print(\u0027assetOPDashboardSelected() msg rcvd with %s\u0027%payload)\n\n\tassetId \u003d self.view.custom.display.dashboardFilter.assetId\n\tif assetId is None: return\n\t\n\tdashboardInfo \u003d payload[\u0027selection\u0027][0][\u0027value\u0027] if len(payload[\u0027selection\u0027]) \u003e 0 else None\n\tdisplay \u003d self.view.custom.display\n\tdashboardFilter \u003d dict(display[\u0027dashboardFilter\u0027])\n\tdashboardFilter[\u0027dashboardId\u0027] \u003d dashboardInfo.get(\u0027dashboardId\u0027, -1)\n\tdashboardFilter[\u0027path\u0027] \u003d dashboardInfo.get(\u0027path\u0027)\n\tdashboardFilter[\u0027edited\u0027] \u003d False\n\t\n#\tsystem.perspective.print(\u0027checking if this is default dashboard\u0027)\n\tif dashboardInfo and dashboardInfo[\u0027dashboardId\u0027] is not None:\n\t\tdashboardFilter[\u0027edited\u0027] \u003d True\n\t\tscreenDashboards \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.dashboard.getScreenDashboards({\u0027assetId\u0027: assetId, \u0027screenName\u0027: self.view.custom.display.screenName}))\n\t\tfor item in screenDashboards:\n\t\t\tif item[\u0027assetId\u0027] and item[\u0027dashboardId\u0027] \u003d\u003d dashboardInfo[\u0027dashboardId\u0027]:\n\t\t\t\tdashboardFilter[\u0027edited\u0027] \u003d False\n\t\t\t\tbreak\n\t\t\n\tself.view.custom.display.dashboardFilter \u003d dashboardFilter\n\n\treturn",
+          "script": "\n\tsystem.perspective.print(\u0027assetOPDashboardSelected() msg rcvd with %s\u0027%payload)\n\n\tassetId \u003d self.view.custom.display.dashboardFilter.assetId\n\tif assetId is None: return\n\t\n\tselection \u003d payload.get(\u0027selection\u0027) or []\n\tdashboardInfo \u003d selection[0].get(\u0027value\u0027) if len(selection) \u003e 0 else None\n\t# Empty selection (deselect, tree rebuild, asset switch): keep the current dashboard (868mwzd4h)\n\tif not dashboardInfo: return\n\tdisplay \u003d self.view.custom.display\n\tdashboardFilter \u003d dict(display[\u0027dashboardFilter\u0027])\n\tdashboardFilter[\u0027dashboardId\u0027] \u003d dashboardInfo.get(\u0027dashboardId\u0027, -1)\n\tdashboardFilter[\u0027path\u0027] \u003d dashboardInfo.get(\u0027path\u0027)\n\tdashboardFilter[\u0027edited\u0027] \u003d False\n\t\n#\tsystem.perspective.print(\u0027checking if this is default dashboard\u0027)\n\tif dashboardInfo and dashboardInfo[\u0027dashboardId\u0027] is not None:\n\t\tdashboardFilter[\u0027edited\u0027] \u003d True\n\t\tscreenDashboards \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.dashboard.getScreenDashboards({\u0027assetId\u0027: assetId, \u0027screenName\u0027: self.view.custom.display.screenName}))\n\t\tfor item in screenDashboards:\n\t\t\tif item[\u0027assetId\u0027] and item[\u0027dashboardId\u0027] \u003d\u003d dashboardInfo[\u0027dashboardId\u0027]:\n\t\t\t\tdashboardFilter[\u0027edited\u0027] \u003d False\n\t\t\t\tbreak\n\t\t\n\tself.view.custom.display.dashboardFilter \u003d dashboardFilter\n\n\treturn",
           "sessionScope": false,
           "viewScope": false
         },

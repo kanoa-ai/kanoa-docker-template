@@ -1,22 +1,80 @@
 {
   "custom": {
-    "asset": {},
     "blockReason": "quality",
-    "mounted": [],
     "mountInfo": {
       "startDate": null,
       "target": "",
       "toolingAssetId": null
     },
-    "positions": [],
     "refresh": null,
-    "selectedData": [],
-    "selectedRow": null,
-    "shiftStart": null,
-    "userAction": {
-      "canConfigure": false,
-      "canOperate": false
-    }
+    "security": {
+      "config": {
+        "allowGuest": "1",
+        "userSource": "default",
+        "userSources": "[\"default\"]"
+      },
+      "userCRUD": {
+        "approveQualityCheck": {
+          "assets": [],
+          "enabled": false
+        },
+        "approveWorkOrders": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureAssets": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureItems": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureLots": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureQuality": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureSecurity": {
+          "assets": [],
+          "enabled": false
+        },
+        "configureWorkOrders": {
+          "assets": [],
+          "enabled": false
+        },
+        "editOperations": {
+          "assets": [],
+          "enabled": false
+        },
+        "enterQualityCheck": {
+          "assets": [],
+          "enabled": false
+        },
+        "enterWorkOrders": {
+          "assets": [],
+          "enabled": false
+        },
+        "isGatewayAdmin": true,
+        "operateAssets": {
+          "assets": [],
+          "enabled": false
+        },
+        "scheduleOperations": {
+          "assets": [],
+          "enabled": false
+        },
+        "scheduleShifts": {
+          "assets": [],
+          "enabled": false
+        }
+      },
+      "userId": null
+    },
+    "selectedRow": null
   },
   "params": {
     "value": {
@@ -24,20 +82,6 @@
     }
   },
   "propConfig": {
-    "custom.security": {
-      "binding": {
-        "config": {
-          "path": "session.custom.kanoa.security"
-        },
-        "overlayOptOut": true,
-        "type": "property"
-      },
-      "persistent": true
-    },
-    "params.value": {
-      "paramDirection": "input",
-      "persistent": true
-    },
     "custom.asset": {
       "binding": {
         "config": {
@@ -72,12 +116,41 @@
         "type": "expr-struct"
       }
     },
+    "custom.positions": {
+      "binding": {
+        "config": {
+          "struct": {
+            "refresh": "{view.custom.refresh}",
+            "selected": "{view.custom.selectedData}"
+          },
+          "waitOnAll": true
+        },
+        "overlayOptOut": true,
+        "transforms": [
+          {
+            "code": "\n\tif len(value[\u0027selected\u0027]) !\u003d 1: return []\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getPositions({\u0027toolingAssetId\u0027: value[\u0027selected\u0027][0][\u0027toolingAssetId\u0027]}) or [])\n\treturn [{\u0027toolingPositionId\u0027: r[\u0027toolingPositionId\u0027], \u0027positionNumber\u0027: r[\u0027positionNumber\u0027], \u0027positionType\u0027: r[\u0027positionType\u0027],\n\t\t\t \u0027itemName\u0027: r[\u0027itemName\u0027] or \u0027\u0027, \u0027outputQty\u0027: r[\u0027outputQty\u0027], \u0027isBlocked\u0027: bool(r[\u0027isBlocked\u0027]), \u0027blockReason\u0027: r[\u0027blockReason\u0027] or \u0027\u0027}\n\t\t\tfor r in rows if r[\u0027outputQty\u0027] \u003e 0]",
+            "type": "script"
+          }
+        ],
+        "type": "expr-struct"
+      }
+    },
+    "custom.security": {
+      "binding": {
+        "config": {
+          "path": "session.custom.kanoa.security"
+        },
+        "overlayOptOut": true,
+        "type": "property"
+      },
+      "persistent": true
+    },
     "custom.selectedData": {
       "binding": {
         "config": {
           "struct": {
-            "rows": "{view.custom.mounted}",
-            "row": "{view.custom.selectedRow}"
+            "row": "{view.custom.selectedRow}",
+            "rows": "{view.custom.mounted}"
           },
           "waitOnAll": true
         },
@@ -110,31 +183,12 @@
         "type": "expr-struct"
       }
     },
-    "custom.positions": {
-      "binding": {
-        "config": {
-          "struct": {
-            "selected": "{view.custom.selectedData}",
-            "refresh": "{view.custom.refresh}"
-          },
-          "waitOnAll": true
-        },
-        "overlayOptOut": true,
-        "transforms": [
-          {
-            "code": "\n\tif len(value[\u0027selected\u0027]) !\u003d 1: return []\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getPositions({\u0027toolingAssetId\u0027: value[\u0027selected\u0027][0][\u0027toolingAssetId\u0027]}) or [])\n\treturn [{\u0027toolingPositionId\u0027: r[\u0027toolingPositionId\u0027], \u0027positionNumber\u0027: r[\u0027positionNumber\u0027], \u0027positionType\u0027: r[\u0027positionType\u0027],\n\t\t\t \u0027itemName\u0027: r[\u0027itemName\u0027] or \u0027\u0027, \u0027outputQty\u0027: r[\u0027outputQty\u0027], \u0027isBlocked\u0027: bool(r[\u0027isBlocked\u0027]), \u0027blockReason\u0027: r[\u0027blockReason\u0027] or \u0027\u0027}\n\t\t\tfor r in rows if r[\u0027outputQty\u0027] \u003e 0]",
-            "type": "script"
-          }
-        ],
-        "type": "expr-struct"
-      }
-    },
     "custom.userAction": {
       "binding": {
         "config": {
           "struct": {
-            "security": "{view.custom.security}",
-            "assetPath": "{view.custom.asset.assetPath}"
+            "assetPath": "{view.custom.asset.assetPath}",
+            "security": "{view.custom.security}"
           },
           "waitOnAll": true
         },
@@ -147,6 +201,10 @@
         ],
         "type": "expr-struct"
       }
+    },
+    "params.value": {
+      "paramDirection": "input",
+      "persistent": true
     }
   },
   "props": {
@@ -156,19 +214,6 @@
     }
   },
   "root": {
-    "meta": {
-      "name": "root"
-    },
-    "props": {
-      "direction": "column",
-      "style": {
-        "classes": "kanoa/font/default",
-        "gap": 5,
-        "overflow": "hidden",
-        "padding": 5
-      }
-    },
-    "type": "ia.container.flex",
     "children": [
       {
         "meta": {
@@ -205,19 +250,6 @@
         "type": "ia.display.label"
       },
       {
-        "meta": {
-          "name": "flxMounted"
-        },
-        "position": {
-          "basis": "220px",
-          "grow": 1
-        },
-        "props": {
-          "style": {
-            "classes": "kanoa/border"
-          }
-        },
-        "type": "ia.container.flex",
         "children": [
           {
             "meta": {
@@ -227,15 +259,6 @@
               "grow": 1
             },
             "propConfig": {
-              "props.data": {
-                "binding": {
-                  "config": {
-                    "path": "view.custom.mounted"
-                  },
-                  "overlayOptOut": true,
-                  "type": "property"
-                }
-              },
               "props.columns[2].dateFormat": {
                 "binding": {
                   "config": {
@@ -250,11 +273,20 @@
                   "type": "property"
                 }
               },
+              "props.data": {
+                "binding": {
+                  "config": {
+                    "path": "view.custom.mounted"
+                  },
+                  "overlayOptOut": true,
+                  "type": "property"
+                }
+              },
               "props.selection.selectedRow": {
                 "binding": {
                   "config": {
-                    "path": "view.custom.selectedRow",
-                    "bidirectional": true
+                    "bidirectional": true,
+                    "path": "view.custom.selectedRow"
                   },
                   "overlayOptOut": true,
                   "type": "property"
@@ -264,29 +296,6 @@
             "props": {
               "bodyStyle": {
                 "classes": "kanoa/font/default"
-              },
-              "dragOrderable": false,
-              "headerStyle": {
-                "classes": "kanoa/font/default",
-                "fontWeight": "bold"
-              },
-              "pager": {
-                "bottom": false
-              },
-              "rows": {
-                "striped": {
-                  "enabled": false
-                },
-                "style": {
-                  "gap": "2px",
-                  "padding": "2px"
-                }
-              },
-              "selection": {
-                "mode": "single"
-              },
-              "style": {
-                "borderStyle": "none"
               },
               "columns": [
                 {
@@ -428,7 +437,6 @@
                 {
                   "align": "center",
                   "boolean": "checkbox",
-                  "dateFormat": "YYYY-MM-DD HH:mm",
                   "editable": false,
                   "field": "since",
                   "footer": {
@@ -766,28 +774,46 @@
                   "width": 300
                 }
               ],
-              "data": []
+              "dragOrderable": false,
+              "headerStyle": {
+                "classes": "kanoa/font/default",
+                "fontWeight": "bold"
+              },
+              "pager": {
+                "bottom": false
+              },
+              "rows": {
+                "striped": {
+                  "enabled": false
+                },
+                "style": {
+                  "gap": "2px",
+                  "padding": "2px"
+                }
+              },
+              "selection": {},
+              "style": {
+                "borderStyle": "none"
+              }
             },
             "type": "ia.display.table"
           }
-        ]
-      },
-      {
+        ],
         "meta": {
-          "name": "flxSelected"
+          "name": "flxMounted"
         },
         "position": {
-          "basis": "40px",
-          "shrink": 0
+          "basis": "220px",
+          "grow": 1
         },
         "props": {
           "style": {
-            "gap": "5px",
-            "overflow": "hidden",
-            "padding": "3px"
+            "classes": "kanoa/border"
           }
         },
-        "type": "ia.container.flex",
+        "type": "ia.container.flex"
+      },
+      {
         "children": [
           {
             "events": {
@@ -917,13 +943,20 @@
             "type": "ia.input.button"
           }
         ],
+        "meta": {
+          "name": "flxSelected"
+        },
+        "position": {
+          "basis": "40px",
+          "shrink": 0
+        },
         "propConfig": {
           "position.display": {
             "binding": {
               "config": {
                 "struct": {
-                  "rows": "{view.custom.selectedData}",
-                  "action": "{view.custom.userAction}"
+                  "action": "{view.custom.userAction}",
+                  "rows": "{view.custom.selectedData}"
                 },
                 "waitOnAll": true
               },
@@ -937,42 +970,19 @@
               "type": "expr-struct"
             }
           }
-        }
-      },
-      {
-        "meta": {
-          "name": "flxBottom"
-        },
-        "position": {
-          "basis": "280px",
-          "shrink": 0
         },
         "props": {
           "style": {
             "gap": "5px",
-            "overflow": "hidden"
+            "overflow": "hidden",
+            "padding": "3px"
           }
         },
-        "type": "ia.container.flex",
+        "type": "ia.container.flex"
+      },
+      {
         "children": [
           {
-            "meta": {
-              "name": "flxMount"
-            },
-            "position": {
-              "basis": "50%",
-              "grow": 1
-            },
-            "props": {
-              "direction": "column",
-              "style": {
-                "gap": "5px",
-                "overflow": "hidden",
-                "classes": "kanoa/border",
-                "padding": "5px"
-              }
-            },
-            "type": "ia.container.flex",
             "children": [
               {
                 "meta": {
@@ -992,20 +1002,6 @@
                 "type": "ia.display.label"
               },
               {
-                "meta": {
-                  "name": "flxTool"
-                },
-                "position": {
-                  "basis": "32px",
-                  "shrink": 0
-                },
-                "props": {
-                  "style": {
-                    "gap": "5px",
-                    "overflow": "hidden"
-                  }
-                },
-                "type": "ia.container.flex",
                 "children": [
                   {
                     "meta": {
@@ -1032,52 +1028,64 @@
                       "grow": 1
                     },
                     "propConfig": {
-                      "props.value": {
-                        "binding": {
-                          "config": {
-                            "path": "view.custom.mountInfo.toolingAssetId",
-                            "bidirectional": true
-                          },
-                          "overlayOptOut": true,
-                          "type": "property"
-                        }
-                      },
                       "props.options": {
                         "binding": {
                           "config": {
                             "struct": {
-                              "refresh": "{view.custom.refresh}",
-                              "asset": "{view.custom.asset}"
+                              "asset": "{view.custom.asset}",
+                              "mounted": "{view.custom.mounted}",
+                              "refresh": "{view.custom.refresh}"
                             },
                             "waitOnAll": true
                           },
                           "overlayOptOut": true,
                           "transforms": [
                             {
-                              "code": "\n\t# Only the tools that can go on this machine: its site\u0027s, and those outside any site\n\tassetId \u003d value[\u0027asset\u0027].get(\u0027assetId\u0027) if value[\u0027asset\u0027] else None\n\tif assetId is None: return []\n\trows \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027enabled\u0027: True, \u0027mountableOn\u0027: assetId}) or [])\n\treturn [{\u0027value\u0027: r[\u0027toolingAssetId\u0027], \u0027label\u0027: r[\u0027assetName\u0027]} for r in rows if not r[\u0027isMounted\u0027]]",
+                              "code": "\n\t#The tools that can be mounted here from this screen: not mounted anywhere, in this machine\u0027s site (or outside any\n\t#site), and with an enabled Fits On rule that allows this machine, its asset type, or a tool mounted on it (to go in\n\t#its pockets). A tool with no rules isn\u0027t offered here; a machine\u0027s Tooling tags can still mount it\n\tasset \u003d value[\u0027asset\u0027]\n\tassetId \u003d asset.get(\u0027assetId\u0027) if asset else None\n\tif assetId is None: return []\n\ttools \u003d system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getTools({\u0027enabled\u0027: True, \u0027mountableOn\u0027: assetId}) or []) or []\n\ttypeOf \u003d dict((r[\u0027toolingAssetId\u0027], r[\u0027assetTypeId\u0027]) for r in tools)\n\tmountedIds \u003d set()\n\tfor m in (value[\u0027mounted\u0027] or []):\n\t\ttry: mountedIds.add(m[\u0027toolingAssetId\u0027])\n\t\texcept: pass\n\tmountedTypes \u003d set(typeOf[i] for i in mountedIds if typeOf.get(i) is not None)\n\tmachineType \u003d asset.get(\u0027assetTypeId\u0027)\n\n\tdef allows(rule):\n\t\tif rule[\u0027parentAssetId\u0027] is not None: return rule[\u0027parentAssetId\u0027] \u003d\u003d assetId\n\t\tif rule[\u0027parentToolingAssetId\u0027] is not None: return rule[\u0027parentToolingAssetId\u0027] in mountedIds\n\t\treturn rule[\u0027parentAssetTypeId\u0027] is not None and (rule[\u0027parentAssetTypeId\u0027] \u003d\u003d machineType or rule[\u0027parentAssetTypeId\u0027] in mountedTypes)\n\n\tfitTools, fitTypes \u003d set(), set()\n\tfor rule in system.kanoa.utilities.convertDatasetToJSON(system.kanoa.tooling.getCompatibilityRules({\u0027enabled\u0027: True}) or []) or []:\n\t\tif not allows(rule): continue\n\t\tif rule[\u0027childToolingAssetId\u0027] is not None: fitTools.add(rule[\u0027childToolingAssetId\u0027])\n\t\telif rule[\u0027childAssetTypeId\u0027] is not None: fitTypes.add(rule[\u0027childAssetTypeId\u0027])\n\treturn [{\u0027value\u0027: r[\u0027toolingAssetId\u0027], \u0027label\u0027: r[\u0027assetName\u0027]} for r in tools\n\t\t\tif not r[\u0027isMounted\u0027] and (r[\u0027toolingAssetId\u0027] in fitTools or r[\u0027assetTypeId\u0027] in fitTypes)]",
                               "type": "script"
                             }
                           ],
                           "type": "expr-struct"
                         }
+                      },
+                      "props.placeholder.text": {
+                        "binding": {
+                          "config": {
+                            "path": "this.props.options"
+                          },
+                          "overlayOptOut": true,
+                          "transforms": [
+                            {
+                              "code": "\t#Say why the list is empty: only tools with a Fits On rule for this machine are offered\n\treturn \u0027A tool that is not mounted\u0027 if len(value or []) \u003e 0 else \u0027No unmounted tool fits this machine (see the Fits On tab in Tooling)\u0027",
+                              "type": "script"
+                            }
+                          ],
+                          "type": "property"
+                        }
+                      },
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.mountInfo.toolingAssetId"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
                       }
                     },
                     "props": {
-                      "placeholder": {
-                        "text": "A tool that is not mounted"
-                      },
-                      "showClearIcon": true,
+                      "placeholder": {},
                       "search": {
                         "noResultsText": "No unmounted tools at this site"
-                      }
+                      },
+                      "showClearIcon": true
                     },
                     "type": "ia.input.dropdown"
                   }
-                ]
-              },
-              {
+                ],
                 "meta": {
-                  "name": "flxTarget"
+                  "name": "flxTool"
                 },
                 "position": {
                   "basis": "32px",
@@ -1089,7 +1097,9 @@
                     "overflow": "hidden"
                   }
                 },
-                "type": "ia.container.flex",
+                "type": "ia.container.flex"
+              },
+              {
                 "children": [
                   {
                     "meta": {
@@ -1116,16 +1126,6 @@
                       "grow": 1
                     },
                     "propConfig": {
-                      "props.value": {
-                        "binding": {
-                          "config": {
-                            "path": "view.custom.mountInfo.target",
-                            "bidirectional": true
-                          },
-                          "overlayOptOut": true,
-                          "type": "property"
-                        }
-                      },
                       "props.options": {
                         "binding": {
                           "config": {
@@ -1143,6 +1143,16 @@
                           ],
                           "type": "expr-struct"
                         }
+                      },
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.mountInfo.target"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
                       }
                     },
                     "props": {
@@ -1153,11 +1163,9 @@
                     },
                     "type": "ia.input.dropdown"
                   }
-                ]
-              },
-              {
+                ],
                 "meta": {
-                  "name": "flxStart"
+                  "name": "flxTarget"
                 },
                 "position": {
                   "basis": "32px",
@@ -1169,7 +1177,9 @@
                     "overflow": "hidden"
                   }
                 },
-                "type": "ia.container.flex",
+                "type": "ia.container.flex"
+              },
+              {
                 "children": [
                   {
                     "meta": {
@@ -1196,16 +1206,6 @@
                       "grow": 1
                     },
                     "propConfig": {
-                      "props.value": {
-                        "binding": {
-                          "config": {
-                            "path": "view.custom.mountInfo.startDate",
-                            "bidirectional": true
-                          },
-                          "overlayOptOut": true,
-                          "type": "property"
-                        }
-                      },
                       "props.format": {
                         "binding": {
                           "config": {
@@ -1219,14 +1219,38 @@
                           ],
                           "type": "property"
                         }
+                      },
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.mountInfo.startDate"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
                       }
                     },
                     "props": {
-                      "format": "YYYY-MM-DD HH:mm"
+                      "formattedValue": null
                     },
                     "type": "ia.input.date-time-input"
                   }
-                ]
+                ],
+                "meta": {
+                  "name": "flxStart"
+                },
+                "position": {
+                  "basis": "32px",
+                  "shrink": 0
+                },
+                "props": {
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden"
+                  }
+                },
+                "type": "ia.container.flex"
               },
               {
                 "meta": {
@@ -1263,21 +1287,6 @@
                 "type": "ia.display.label"
               },
               {
-                "meta": {
-                  "name": "flxMountActions"
-                },
-                "position": {
-                  "shrink": 0
-                },
-                "props": {
-                  "justify": "center",
-                  "style": {
-                    "gap": "5px",
-                    "overflow": "hidden",
-                    "padding": "5px"
-                  }
-                },
-                "type": "ia.container.flex",
                 "children": [
                   {
                     "events": {
@@ -1310,16 +1319,38 @@
                     },
                     "type": "ia.input.button"
                   }
-                ]
+                ],
+                "meta": {
+                  "name": "flxMountActions"
+                },
+                "position": {
+                  "shrink": 0
+                },
+                "props": {
+                  "justify": "center",
+                  "style": {
+                    "gap": "5px",
+                    "overflow": "hidden",
+                    "padding": "5px"
+                  }
+                },
+                "type": "ia.container.flex"
               }
             ],
+            "meta": {
+              "name": "flxMount"
+            },
+            "position": {
+              "basis": "50%",
+              "grow": 1
+            },
             "propConfig": {
               "position.display": {
                 "binding": {
                   "config": {
                     "struct": {
-                      "asset": "{view.custom.asset}",
-                      "action": "{view.custom.userAction}"
+                      "action": "{view.custom.userAction}",
+                      "asset": "{view.custom.asset}"
                     },
                     "waitOnAll": true
                   },
@@ -1333,26 +1364,19 @@
                   "type": "expr-struct"
                 }
               }
-            }
-          },
-          {
-            "meta": {
-              "name": "flxPositions"
-            },
-            "position": {
-              "basis": "50%",
-              "grow": 1
             },
             "props": {
               "direction": "column",
               "style": {
+                "classes": "kanoa/border",
                 "gap": "5px",
                 "overflow": "hidden",
-                "classes": "kanoa/border",
                 "padding": "5px"
               }
             },
-            "type": "ia.container.flex",
+            "type": "ia.container.flex"
+          },
+          {
             "children": [
               {
                 "meta": {
@@ -1372,20 +1396,6 @@
                 "type": "ia.display.label"
               },
               {
-                "meta": {
-                  "name": "flxReason"
-                },
-                "position": {
-                  "basis": "32px",
-                  "shrink": 0
-                },
-                "props": {
-                  "style": {
-                    "gap": "5px",
-                    "overflow": "hidden"
-                  }
-                },
-                "type": "ia.container.flex",
                 "children": [
                   {
                     "meta": {
@@ -1412,16 +1422,6 @@
                       "grow": 1
                     },
                     "propConfig": {
-                      "props.value": {
-                        "binding": {
-                          "config": {
-                            "path": "view.custom.blockReason",
-                            "bidirectional": true
-                          },
-                          "overlayOptOut": true,
-                          "type": "property"
-                        }
-                      },
                       "props.options": {
                         "binding": {
                           "config": {
@@ -1436,31 +1436,40 @@
                           ],
                           "type": "expr"
                         }
+                      },
+                      "props.value": {
+                        "binding": {
+                          "config": {
+                            "bidirectional": true,
+                            "path": "view.custom.blockReason"
+                          },
+                          "overlayOptOut": true,
+                          "type": "property"
+                        }
                       }
                     },
                     "props": {
-                      "placeholder": {
-                        "text": "Select..."
-                      },
                       "showClearIcon": true
                     },
                     "type": "ia.input.dropdown"
                   }
-                ]
-              },
-              {
+                ],
                 "meta": {
-                  "name": "flxPosTable"
+                  "name": "flxReason"
                 },
                 "position": {
-                  "grow": 1
+                  "basis": "32px",
+                  "shrink": 0
                 },
                 "props": {
                   "style": {
-                    "classes": "kanoa/border"
+                    "gap": "5px",
+                    "overflow": "hidden"
                   }
                 },
-                "type": "ia.container.flex",
+                "type": "ia.container.flex"
+              },
+              {
                 "children": [
                   {
                     "events": {
@@ -1494,29 +1503,6 @@
                     "props": {
                       "bodyStyle": {
                         "classes": "kanoa/font/default"
-                      },
-                      "dragOrderable": false,
-                      "headerStyle": {
-                        "classes": "kanoa/font/default",
-                        "fontWeight": "bold"
-                      },
-                      "pager": {
-                        "bottom": false
-                      },
-                      "rows": {
-                        "striped": {
-                          "enabled": false
-                        },
-                        "style": {
-                          "gap": "2px",
-                          "padding": "2px"
-                        }
-                      },
-                      "selection": {
-                        "mode": "single"
-                      },
-                      "style": {
-                        "borderStyle": "none"
                       },
                       "columns": [
                         {
@@ -1928,13 +1914,51 @@
                           "width": 90
                         }
                       ],
-                      "data": []
+                      "dragOrderable": false,
+                      "headerStyle": {
+                        "classes": "kanoa/font/default",
+                        "fontWeight": "bold"
+                      },
+                      "pager": {
+                        "bottom": false
+                      },
+                      "rows": {
+                        "striped": {
+                          "enabled": false
+                        },
+                        "style": {
+                          "gap": "2px",
+                          "padding": "2px"
+                        }
+                      },
+                      "style": {
+                        "borderStyle": "none"
+                      }
                     },
                     "type": "ia.display.table"
                   }
-                ]
+                ],
+                "meta": {
+                  "name": "flxPosTable"
+                },
+                "position": {
+                  "grow": 1
+                },
+                "props": {
+                  "style": {
+                    "classes": "kanoa/border"
+                  }
+                },
+                "type": "ia.container.flex"
               }
             ],
+            "meta": {
+              "name": "flxPositions"
+            },
+            "position": {
+              "basis": "50%",
+              "grow": 1
+            },
             "propConfig": {
               "position.display": {
                 "binding": {
@@ -1951,11 +1975,47 @@
                   "type": "property"
                 }
               }
-            }
+            },
+            "props": {
+              "direction": "column",
+              "style": {
+                "classes": "kanoa/border",
+                "gap": "5px",
+                "overflow": "hidden",
+                "padding": "5px"
+              }
+            },
+            "type": "ia.container.flex"
           }
-        ]
+        ],
+        "meta": {
+          "name": "flxBottom"
+        },
+        "position": {
+          "basis": "280px",
+          "shrink": 0
+        },
+        "props": {
+          "style": {
+            "gap": "5px",
+            "overflow": "hidden"
+          }
+        },
+        "type": "ia.container.flex"
       }
     ],
+    "meta": {
+      "name": "root"
+    },
+    "props": {
+      "direction": "column",
+      "style": {
+        "classes": "kanoa/font/default",
+        "gap": 5,
+        "overflow": "hidden",
+        "padding": 5
+      }
+    },
     "scripts": {
       "customMethods": [
         {
@@ -2029,6 +2089,7 @@
           "viewScope": false
         }
       ]
-    }
+    },
+    "type": "ia.container.flex"
   }
 }

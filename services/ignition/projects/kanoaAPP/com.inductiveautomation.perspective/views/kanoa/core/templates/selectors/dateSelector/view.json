@@ -12,7 +12,7 @@
           "$": [
             "ts",
             0,
-            1789078091878
+            1795209044801
           ],
           "$ts": 1785135600000
         },
@@ -21,12 +21,13 @@
           "$": [
             "ts",
             0,
-            1789078091878
+            1795209044802
           ],
           "$ts": 1785049200000
         }
       },
       "display": {
+        "autoRefreshHidden": false,
         "persistent": false,
         "showAutoRefresh": true,
         "showDateSelector": true,
@@ -102,8 +103,8 @@
       "autoRefresh": true,
       "intervalMin": 1
     },
-    "zoomStack": [],
-    "zoomLast": 0
+    "zoomLast": 0,
+    "zoomStack": []
   },
   "events": {
     "system": {
@@ -122,7 +123,7 @@
         "$": [
           "ts",
           192,
-          1789078091879
+          1795209044823
         ],
         "$ts": 1785135600000
       },
@@ -131,7 +132,7 @@
         "$": [
           "ts",
           192,
-          1789078091879
+          1795209044823
         ],
         "$ts": 1785049200000
       }
@@ -139,6 +140,7 @@
     "value": {
       "assetPath": "xxx",
       "display": {
+        "autoRefreshHidden": false,
         "persistent": false,
         "showAutoRefresh": true,
         "showDateSelector": true,
@@ -242,7 +244,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\n\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\tinfo \u003d system.kanoa.dashboard.getWidgetFilters(value[\u0027page\u0027], value[\u0027viewParams\u0027], value[\u0027sessionCustomProps\u0027], self.session.props.device.timezone.id)\n\tinfo[\u0027oeeEnabled\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027oeeEnabled\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: info[\u0027assetPath\u0027]}))\n\t\n\t# Not persistent: the range is this selector\u0027s own (setRange keeps it on the view), so a re-run caused by another\n\t# change to session.custom.kanoa doesn\u0027t put the page\u0027s stored range back over it (868mwak13)\n\tdisplay \u003d value[\u0027viewParams\u0027].get(\u0027display\u0027) if value[\u0027viewParams\u0027] else None\n\tif display and display.get(\u0027persistent\u0027) is False:\n\t\tcurrent \u003d self.custom.session\n\t\t# Only a range this selector set itself (local): the view\u0027s saved default is a design-time date, not a choice\n\t\tif current and current.has_key(\u0027dateRange\u0027) and current[\u0027dateRange\u0027] and current[\u0027dateRange\u0027].has_key(\u0027local\u0027) and current[\u0027dateRange\u0027][\u0027local\u0027]:\n\t\t\tinfo[\u0027dateRange\u0027] \u003d {\u0027startDate\u0027: current[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: current[\u0027dateRange\u0027][\u0027endDate\u0027], \u0027selectedRange\u0027: current[\u0027dateRange\u0027][\u0027selectedRange\u0027], \u0027local\u0027: True}\n\t\n\treturn info",
+            "code": "\n\tpage \u003d \u0027designer\u0027 if \u0027/\u0027 in value[\u0027page\u0027] else value[\u0027page\u0027]\n\tinfo \u003d system.kanoa.dashboard.getWidgetFilters(value[\u0027page\u0027], value[\u0027viewParams\u0027], value[\u0027sessionCustomProps\u0027], self.session.props.device.timezone.id)\n\tinfo[\u0027oeeEnabled\u0027] \u003d system.kanoa.utilities.getFieldValue(\u0027oeeEnabled\u0027, system.kanoa.asset.getAssets({\u0027assetPath\u0027: info[\u0027assetPath\u0027]}))\n\t\n\t# Not persistent: the range is this selector\u0027s own (setRange keeps it on the view), so a re-run caused by another\n\t# change to session.custom.kanoa doesn\u0027t put the page\u0027s stored range back over it (868mwak13)\n\tdisplay \u003d value[\u0027viewParams\u0027].get(\u0027display\u0027) if value[\u0027viewParams\u0027] else None\n\tif display and display.get(\u0027persistent\u0027) is False:\n\t\tcurrent \u003d self.custom.session\n\t\t# Only a range this selector set itself in this session: \u0027local\u0027 holds the session\u0027s id. The view\u0027s saved value is a\n\t\t# design-time range, and a Designer save stores it with the Designer\u0027s \u0027local\u0027 too (#493 saved local: True with no\n\t\t# range selected, so Production Counts opened blank on the save\u0027s dates), so a range from another session is ignored\n\t\tif current and current.has_key(\u0027dateRange\u0027) and current[\u0027dateRange\u0027] and current[\u0027dateRange\u0027].has_key(\u0027local\u0027) and current[\u0027dateRange\u0027][\u0027local\u0027] \u003d\u003d self.session.props.id:\n\t\t\tinfo[\u0027dateRange\u0027] \u003d {\u0027startDate\u0027: current[\u0027dateRange\u0027][\u0027startDate\u0027], \u0027endDate\u0027: current[\u0027dateRange\u0027][\u0027endDate\u0027], \u0027selectedRange\u0027: current[\u0027dateRange\u0027][\u0027selectedRange\u0027], \u0027local\u0027: self.session.props.id}\n\t\n\treturn info",
             "type": "script"
           }
         ],
@@ -270,7 +272,7 @@
         "overlayOptOut": true,
         "transforms": [
           {
-            "code": "\t\t\n\treturn value[\u0027autoRefresh\u0027] and value[\u0027display\u0027].has_key(\u0027showAutoRefresh\u0027) and value[\u0027display\u0027][\u0027showAutoRefresh\u0027] and value[\u0027selectedRange\u0027] in (\u0027Current Run\u0027, \u0027Current Shift\u0027)\n\t\n\t",
+            "code": "\t# display.autoRefreshHidden hides the toggle but keeps the timer running for Current Run / Current Shift, as if the\n\t# toggle were on (at the default interval), so the range\u0027s end keeps moving to now (868mwzcch)\n\thidden \u003d value[\u0027display\u0027].has_key(\u0027autoRefreshHidden\u0027) and value[\u0027display\u0027][\u0027autoRefreshHidden\u0027]\n\ton \u003d hidden or (value[\u0027autoRefresh\u0027] and value[\u0027display\u0027].has_key(\u0027showAutoRefresh\u0027) and value[\u0027display\u0027][\u0027showAutoRefresh\u0027])\n\treturn on and value[\u0027selectedRange\u0027] in (\u0027Current Run\u0027, \u0027Current Shift\u0027)\n",
             "type": "script"
           }
         ],
@@ -478,7 +480,7 @@
           }
         },
         "props": {
-          "formattedValue": "07/26/26 00:00 PDT",
+          "formattedValue": "07/26/26 00:00 MST",
           "formattedValues": {
             "date": "Jun 27, 2020",
             "datetime": "Jun 27, 2020 10:00 PM",
@@ -496,7 +498,6 @@
           "style": {
             "borderBottomLeftRadius": "5px",
             "borderBottomRightRadius": "5px",
-            "borderColor": "var(--border)",
             "borderStyle": "solid",
             "borderTopLeftRadius": "5px",
             "borderTopRightRadius": "5px",
@@ -602,7 +603,7 @@
           }
         },
         "props": {
-          "formattedValue": "07/27/26 00:00 PDT",
+          "formattedValue": "07/27/26 00:00 MST",
           "formattedValues": {
             "date": "Jun 28, 2020",
             "datetime": "Jun 28, 2020 10:00 PM",
@@ -620,7 +621,6 @@
           "style": {
             "borderBottomLeftRadius": "5px",
             "borderBottomRightRadius": "5px",
-            "borderColor": "var(--border)",
             "borderStyle": "solid",
             "borderTopLeftRadius": "5px",
             "borderTopRightRadius": "5px",
@@ -982,7 +982,7 @@
               "overlayOptOut": true,
               "transforms": [
                 {
-                  "code": "\t\n\tshowAutoRefresh \u003d True if not value[\u0027session\u0027][\u0027display\u0027].has_key(\u0027showAutoRefresh\u0027) else value[\u0027session\u0027][\u0027display\u0027][\u0027showAutoRefresh\u0027]\t\n\treturn (value[\u0027session\u0027][\u0027oeeEnabled\u0027] or False) and showAutoRefresh and value[\u0027session\u0027][\u0027dateRange\u0027][\u0027selectedRange\u0027] in (\u0027Current Run\u0027, \u0027Current Shift\u0027)\n\t\n\t",
+                  "code": "\t\n\tshowAutoRefresh \u003d True if not value[\u0027session\u0027][\u0027display\u0027].has_key(\u0027showAutoRefresh\u0027) else value[\u0027session\u0027][\u0027display\u0027][\u0027showAutoRefresh\u0027]\t\n\t# display.autoRefreshHidden: the toggle, its label and the interval stay hidden; the timer still runs (868mwzcch)\n\thidden \u003d value[\u0027session\u0027][\u0027display\u0027].has_key(\u0027autoRefreshHidden\u0027) and value[\u0027session\u0027][\u0027display\u0027][\u0027autoRefreshHidden\u0027]\n\treturn (value[\u0027session\u0027][\u0027oeeEnabled\u0027] or False) and showAutoRefresh and value[\u0027session\u0027][\u0027dateRange\u0027][\u0027selectedRange\u0027] in (\u0027Current Run\u0027, \u0027Current Shift\u0027) and not hidden\n\t\n\t",
                   "type": "script"
                 }
               ],
@@ -1028,14 +1028,14 @@
             "startDate",
             "endDate"
           ],
-          "script": "\n#\tsystem.perspective.print(\"setRange() called with %s %s %s\" %(selectedRange, startDate, endDate))\t\n\n\tif selectedRange !\u003d \u0027Custom\u0027:\n\t\tassetPath \u003d self.view.custom.session[\u0027assetPath\u0027] if self.view.custom.session.has_key(\u0027assetPath\u0027) else None\n\t\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027selectedDateRange\u0027: selectedRange, \u0027clientTZ\u0027: self.session.props.device.timezone.id}\n\t\tstartDate, endDate \u003d system.kanoa.date.getDateRange(paramsDict)\n#\t\tsystem.perspective.print(\"getDateRange() called with %s returned %s %s\"%(paramsDict, startDate, endDate))\n\t\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n#\t\tsystem.perspective.print(\"Setting local dates to %s %s as this is not persistent\"%(startDate, endDate))\n\t\t# selectedRange too, so the dropdown shows Custom for a picked date (868mwak13)\n\t\tself.view.custom.session.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: selectedRange, \u0027local\u0027: True}\n\telse:\n#\t\tsystem.perspective.print(\"storeDateRangeSelection() called with %s %s\"%(startDate, endDate))\n\t\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, selectedRange)\n\t\tself.view.refreshBinding(\"custom.session\")\n\t\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\tsystem.perspective.sendMessage(\u0027dateSelectorUpdate\u0027, {})\n\t\n\treturn"
+          "script": "\n#\tsystem.perspective.print(\"setRange() called with %s %s %s\" %(selectedRange, startDate, endDate))\t\n\n\tif selectedRange !\u003d \u0027Custom\u0027:\n\t\tassetPath \u003d self.view.custom.session[\u0027assetPath\u0027] if self.view.custom.session.has_key(\u0027assetPath\u0027) else None\n\t\tparamsDict \u003d {\u0027assetPath\u0027: assetPath, \u0027selectedDateRange\u0027: selectedRange, \u0027clientTZ\u0027: self.session.props.device.timezone.id}\n\t\tstartDate, endDate \u003d system.kanoa.date.getDateRange(paramsDict)\n#\t\tsystem.perspective.print(\"getDateRange() called with %s returned %s %s\"%(paramsDict, startDate, endDate))\n\t\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n#\t\tsystem.perspective.print(\"Setting local dates to %s %s as this is not persistent\"%(startDate, endDate))\n\t\t# selectedRange too, so the dropdown shows Custom for a picked date (868mwak13)\n\t\tself.view.custom.session.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: selectedRange, \u0027local\u0027: self.session.props.id}\n\telse:\n#\t\tsystem.perspective.print(\"storeDateRangeSelection() called with %s %s\"%(startDate, endDate))\n\t\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, selectedRange)\n\t\tself.view.refreshBinding(\"custom.session\")\n\t\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\tsystem.perspective.sendMessage(\u0027dateSelectorUpdate\u0027, {})\n\t\n\treturn"
         },
         {
           "name": "incrementRange",
           "params": [
             "increment"
           ],
-          "script": "\n\tif increment !\u003d 0:\n\t\tperiod \u003d self.view.custom.period\n\t\tstartDate \u003d self.view.custom.session.dateRange.startDate\n\t\tendDate \u003d self.view.custom.session.dateRange.endDate\n\t\t\n\t\tif period \u003d\u003d \u0027Day\u0027:\n\t\t\tstartDate \u003d system.date.addDays(startDate, increment)\n\t\t\tendDate \u003d system.date.addDays(endDate, increment)\n\t\telif period \u003d\u003d \u0027Week\u0027:\n\t\t\tstartDate \u003d system.date.addWeeks(startDate, increment)\n\t\t\tendDate \u003d system.date.addWeeks(endDate, increment)\n\t\telif period \u003d\u003d \u0027Month\u0027:\n\t\t\tstartDate \u003d system.date.addMonths(startDate, increment)\n\t\t\tendDate \u003d system.date.addMonths(endDate, increment)\n\t\telif period \u003d\u003d \u0027Year\u0027:\n\t\t\tstartDate \u003d system.date.addYears(startDate, increment)\n\t\t\tendDate \u003d system.date.addYears(endDate, increment)\n\t\t\t\t\t\t\n\t# Not persistent: the range is this selector\u0027s own, as in setRange (868mwak13)\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n\t\tself.view.custom.session.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: \u0027Custom\u0027, \u0027local\u0027: True}\n\t\treturn\n\t\n#\tsystem.perspective.print(\"calling storeDateRangeSelection() with %s %s %s\"%(startDate, endDate, selectedRange))\n\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, \u0027Custom\u0027)\n\tself.view.refreshBinding(\"custom.session\")\n\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\t\n\treturn"
+          "script": "\n\tif increment !\u003d 0:\n\t\tperiod \u003d self.view.custom.period\n\t\tstartDate \u003d self.view.custom.session.dateRange.startDate\n\t\tendDate \u003d self.view.custom.session.dateRange.endDate\n\t\t\n\t\tif period \u003d\u003d \u0027Day\u0027:\n\t\t\tstartDate \u003d system.date.addDays(startDate, increment)\n\t\t\tendDate \u003d system.date.addDays(endDate, increment)\n\t\telif period \u003d\u003d \u0027Week\u0027:\n\t\t\tstartDate \u003d system.date.addWeeks(startDate, increment)\n\t\t\tendDate \u003d system.date.addWeeks(endDate, increment)\n\t\telif period \u003d\u003d \u0027Month\u0027:\n\t\t\tstartDate \u003d system.date.addMonths(startDate, increment)\n\t\t\tendDate \u003d system.date.addMonths(endDate, increment)\n\t\telif period \u003d\u003d \u0027Year\u0027:\n\t\t\tstartDate \u003d system.date.addYears(startDate, increment)\n\t\t\tendDate \u003d system.date.addYears(endDate, increment)\n\t\t\t\t\t\t\n\t# Not persistent: the range is this selector\u0027s own, as in setRange (868mwak13)\n\tif self.view.params.value.display.has_key(\u0027persistent\u0027) and not self.view.params.value.display[\u0027persistent\u0027]:\n\t\tself.view.custom.session.dateRange \u003d {\u0027startDate\u0027: startDate, \u0027endDate\u0027: endDate, \u0027selectedRange\u0027: \u0027Custom\u0027, \u0027local\u0027: self.session.props.id}\n\t\treturn\n\t\n#\tsystem.perspective.print(\"calling storeDateRangeSelection() with %s %s %s\"%(startDate, endDate, selectedRange))\n\tsystem.kanoa.utilities.storeDateRangeSelection(self, startDate, endDate, \u0027Custom\u0027)\n\tself.view.refreshBinding(\"custom.session\")\n\tsystem.perspective.sendMessage(\"dateRangeSessionChanged\", {})\n\t\t\n\treturn"
         }
       ],
       "extensionFunctions": null,
@@ -1050,9 +1050,9 @@
         {
           "messageType": "setDateRange",
           "pageScope": true,
+          "script": "\n\t# Another component sets a Custom range on this selector, e.g. a box dragged across a Production Counts chart: only the\n\t# selector whose id (params.value.id) the message names\n\ttry:\n\t\tmine \u003d self.view.params.value[\u0027id\u0027]\n\texcept:\n\t\tmine \u003d None\n\tif not mine or not payload or payload.get(\u0027id\u0027) !\u003d mine: return\n\tif payload.get(\u0027startDate\u0027) is None or payload.get(\u0027endDate\u0027) is None: return\n\t# The range it\u0027s already on, or a repeat of the last one (a chart can send its selection twice): nothing to do\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tsame \u003d lambda a, b: a is not None and b is not None and abs(system.date.toMillis(a) - system.date.toMillis(b)) \u003c 1000\n\tif dr is not None and same(dr[\u0027startDate\u0027], payload[\u0027startDate\u0027]) and same(dr[\u0027endDate\u0027], payload[\u0027endDate\u0027]): return\n\tnow \u003d system.date.toMillis(system.date.now())\n\tif now - (self.view.custom.zoomLast or 0) \u003c 2000: return\n\tself.view.custom.zoomLast \u003d now\n\t# The range this replaces, so Zoom out (icoZoomOut) can go back to it; each drag adds one\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tstack \u003d list(self.view.custom.zoomStack or [])\n\t\tstack.append({\u0027selectedRange\u0027: dr[\u0027selectedRange\u0027], \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]})\n\t\tself.view.custom.zoomStack \u003d stack\n\tself.setRange(\u0027Custom\u0027, payload[\u0027startDate\u0027], payload[\u0027endDate\u0027])\n\t# Tell the page the range a zoom set (the Production page loads its chart for it: dateRangeZoomed)\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tsystem.perspective.sendMessage(\u0027dateRangeZoomed\u0027, {\u0027id\u0027: mine, \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]}, scope\u003d\u0027page\u0027)",
           "sessionScope": false,
-          "viewScope": false,
-          "script": "\n\t# Another component sets a Custom range on this selector, e.g. a box dragged across a Production Counts chart: only the\n\t# selector whose id (params.value.id) the message names\n\ttry:\n\t\tmine \u003d self.view.params.value[\u0027id\u0027]\n\texcept:\n\t\tmine \u003d None\n\tif not mine or not payload or payload.get(\u0027id\u0027) !\u003d mine: return\n\tif payload.get(\u0027startDate\u0027) is None or payload.get(\u0027endDate\u0027) is None: return\n\t# The range it\u0027s already on, or a repeat of the last one (a chart can send its selection twice): nothing to do\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tsame \u003d lambda a, b: a is not None and b is not None and abs(system.date.toMillis(a) - system.date.toMillis(b)) \u003c 1000\n\tif dr is not None and same(dr[\u0027startDate\u0027], payload[\u0027startDate\u0027]) and same(dr[\u0027endDate\u0027], payload[\u0027endDate\u0027]): return\n\tnow \u003d system.date.toMillis(system.date.now())\n\tif now - (self.view.custom.zoomLast or 0) \u003c 2000: return\n\tself.view.custom.zoomLast \u003d now\n\t# The range this replaces, so Zoom out (icoZoomOut) can go back to it; each drag adds one\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tstack \u003d list(self.view.custom.zoomStack or [])\n\t\tstack.append({\u0027selectedRange\u0027: dr[\u0027selectedRange\u0027], \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]})\n\t\tself.view.custom.zoomStack \u003d stack\n\tself.setRange(\u0027Custom\u0027, payload[\u0027startDate\u0027], payload[\u0027endDate\u0027])\n\t# Tell the page the range a zoom set (the Production page loads its chart for it: dateRangeZoomed)\n\tdr \u003d self.view.custom.session.dateRange if self.view.custom.session is not None and self.view.custom.session.has_key(\u0027dateRange\u0027) else None\n\tif dr is not None:\n\t\tsystem.perspective.sendMessage(\u0027dateRangeZoomed\u0027, {\u0027id\u0027: mine, \u0027startDate\u0027: dr[\u0027startDate\u0027], \u0027endDate\u0027: dr[\u0027endDate\u0027]}, scope\u003d\u0027page\u0027)"
+          "viewScope": false
         }
       ]
     },
