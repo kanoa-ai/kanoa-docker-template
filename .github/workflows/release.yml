@@ -1,0 +1,73 @@
+# Creates a GitHub release whenever the KanoaMES module version in
+# docker-compose.yaml changes on main. The tag is v<KanoaMES version>; if that
+# tag already exists, the workflow does nothing.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths: [docker-compose.yaml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read versions from docker-compose.yaml
+        id: versions
+        run: |
+          mes=$(grep -oE 'KanoaMES_[0-9]+\.[0-9]+\.[0-9]+\.modl' docker-compose.yaml | head -1 | sed -E 's/KanoaMES_(.*)\.modl/\1/')
+          ignition=$(grep -oE 'inductiveautomation/ignition:[0-9.]+' docker-compose.yaml | head -1 | cut -d: -f2)
+          if [ -z "$mes" ]; then
+            echo "::error::Could not find KanoaMES_<version>.modl in docker-compose.yaml"
+            exit 1
+          fi
+          echo "mes=$mes" >> "$GITHUB_OUTPUT"
+          echo "ignition=$ignition" >> "$GITHUB_OUTPUT"
+          echo "tag=v$mes" >> "$GITHUB_OUTPUT"
+          echo "docs=$(echo "$mes" | cut -d. -f1,2 | tr . _)" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether the release already exists
+        id: check
+        env:
+          TAG: ${{ steps.versions.outputs.tag }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists; nothing to release."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.versions.outputs.tag }}
+          MES: ${{ steps.versions.outputs.mes }}
+          IGNITION: ${{ steps.versions.outputs.ignition }}
+          DOCS: ${{ steps.versions.outputs.docs }}
+        run: |
+          prev=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          range=${prev:+$prev..}HEAD
+          {
+            echo "Updates the Docker template to KanoaMES $MES on Ignition $IGNITION."
+            echo
+            echo "## Changes"
+            git log --no-merges --format='- %s' "$range"
+            echo
+            echo "Full KanoaMES release notes: https://docs.kanoa.ai/releaseNotes/v$DOCS/"
+          } > notes.md
+          cat notes.md
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --notes-file notes.md
